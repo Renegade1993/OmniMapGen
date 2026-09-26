@@ -1,0 +1,307 @@
+{
+	"library": [
+		"config/widgets/commonPrimitives.json"
+	],
+	"items": [
+		{
+			"name": "help_waterCoverage",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 166,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.waterCoverage.hover",
+				"help": "vcmi.mapGen.waterCoverage.help"
+			}
+		},
+		{
+			"name": "label_waterCoverage",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.waterCoverage.hover",
+			"position": {
+				"x": 58,
+				"y": 171
+			}
+		},
+		{
+			"name": "slider_waterCoverage",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 170
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 12,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/waterCoverage",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 0,
+			"valueLabel": "value_waterCoverage",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_waterCoverage",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 171
+			}
+		},
+		{
+			"name": "help_waterShape",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 196,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.waterShape.hover",
+				"help": "vcmi.mapGen.waterShape.help"
+			}
+		},
+		{
+			"name": "label_waterShape",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.waterShape.hover",
+			"position": {
+				"x": 58,
+				"y": 201
+			}
+		},
+		{
+			"name": "slider_waterShape",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 200
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 6,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/waterShape",
+			"valueMin": 0,
+			"valueStep": 1,
+			"valueDefault": 0,
+			"valueLabel": "value_waterShape",
+			"valueNames": [
+				[
+					0,
+					"vcmi.mapGen.waterShape.stop0"
+				],
+				[
+					1,
+					"vcmi.mapGen.waterShape.stop1"
+				],
+				[
+					2,
+					"vcmi.mapGen.waterShape.stop2"
+				],
+				[
+					3,
+					"vcmi.mapGen.waterShape.stop3"
+				],
+				[
+					4,
+					"vcmi.mapGen.waterShape.stop4"
+				],
+				[
+					5,
+					"vcmi.mapGen.waterShape.stop5"
+				],
+				[
+					6,
+					"vcmi.mapGen.waterShape.stop6"
+				]
+			]
+		},
+		{
+			"name": "value_waterShape",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 201
+			}
+		},
+		{
+			"name": "help_waterAccess",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 226,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.waterAccess.hover",
+				"help": "vcmi.mapGen.waterAccess.help"
+			}
+		},
+		{
+			"name": "label_waterAccess",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.waterAccess.hover",
+			"position": {
+				"x": 58,
+				"y": 231
+			}
+		},
+		{
+			"name": "slider_waterAccess",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 230
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 3,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/waterAccess",
+			"valueMin": 0,
+			"valueStep": 1,
+			"valueDefault": 2,
+			"valueLabel": "value_waterAccess",
+			"valueNames": [
+				[
+					0,
+					"vcmi.mapGen.waterAccess.stop0"
+				],
+				[
+					1,
+					"vcmi.mapGen.waterAccess.stop1"
+				],
+				[
+					2,
+					"vcmi.mapGen.waterAccess.stop2"
+				],
+				[
+					3,
+					"vcmi.mapGen.waterAccess.stop3"
+				]
+			]
+		},
+		{
+			"name": "value_waterAccess",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 231
+			}
+		},
+		{
+			"name": "help_waterTreasure",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 256,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.waterTreasure.hover",
+				"help": "vcmi.mapGen.waterTreasure.help"
+			}
+		},
+		{
+			"name": "label_waterTreasure",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.waterTreasure.hover",
+			"position": {
+				"x": 58,
+				"y": 261
+			}
+		},
+		{
+			"name": "slider_waterTreasure",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 260
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 30,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/waterTreasure",
+			"valueMin": 0,
+			"valueStep": 0.1,
+			"valueDefault": 1,
+			"valueLabel": "value_waterTreasure",
+			"valueDecimals": 1
+		},
+		{
+			"name": "value_waterTreasure",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 261
+			}
+		}
+	]
+}

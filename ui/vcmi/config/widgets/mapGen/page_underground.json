@@ -1,0 +1,200 @@
+{
+	"library": [
+		"config/widgets/commonPrimitives.json"
+	],
+	"items": [
+		{
+			"name": "help_subterraneanGateRatio",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 166,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.subterraneanGateRatio.hover",
+				"help": "vcmi.mapGen.subterraneanGateRatio.help"
+			}
+		},
+		{
+			"name": "label_subterraneanGateRatio",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.subterraneanGateRatio.hover",
+			"position": {
+				"x": 58,
+				"y": 171
+			}
+		},
+		{
+			"name": "slider_subterraneanGateRatio",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 170
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/subterraneanGateRatio",
+			"valueMin": 0,
+			"valueStep": 0.1,
+			"valueDefault": 1,
+			"valueLabel": "value_subterraneanGateRatio",
+			"valueDecimals": 1
+		},
+		{
+			"name": "value_subterraneanGateRatio",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 171
+			}
+		},
+		{
+			"name": "help_subterraneanNarrow",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 196,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.subterraneanNarrow.hover",
+				"help": "vcmi.mapGen.subterraneanNarrow.help"
+			}
+		},
+		{
+			"name": "label_subterraneanNarrow",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.subterraneanNarrow.hover",
+			"position": {
+				"x": 58,
+				"y": 201
+			}
+		},
+		{
+			"name": "slider_subterraneanNarrow",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 200
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/subterraneanNarrow",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 0.6,
+			"valueLabel": "value_subterraneanNarrow",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_subterraneanNarrow",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 201
+			}
+		},
+		{
+			"name": "help_subterraneanOpen",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 226,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.subterraneanOpen.hover",
+				"help": "vcmi.mapGen.subterraneanOpen.help"
+			}
+		},
+		{
+			"name": "label_subterraneanOpen",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.subterraneanOpen.hover",
+			"position": {
+				"x": 58,
+				"y": 231
+			}
+		},
+		{
+			"name": "slider_subterraneanOpen",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 230
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 14,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/subterraneanOpen",
+			"valueMin": 0.2,
+			"valueStep": 0.05,
+			"valueDefault": 0.57,
+			"valueLabel": "value_subterraneanOpen",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_subterraneanOpen",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 231
+			}
+		}
+	]
+}

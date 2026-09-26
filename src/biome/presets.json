@@ -1,0 +1,8 @@
+{
+	"_comment": "Named lever sets for the MapGen UI and --preset. A preset lists only the levers it moves; everything else stays at the generator default (src/biome/knobs.js, BIOME_DEFAULTS). 'nostalgia' IS the default: the corpus-calibrated values of queue items 18-24, measured against K's own RandomMaps archive, which is Nostalgia-family, Jebus Cross and Headquarters maps for the most part.",
+	"nostalgia": {
+		"label": "Nostalgia",
+		"help": "The default. Calibrated against the random maps you have played: zone rims, treasure, mines, towns, monsters and terrain at the rates those maps carry.",
+		"values": {}
+	}
+}

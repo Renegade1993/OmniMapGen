@@ -1,0 +1,392 @@
+{
+	"library": [
+		"config/widgets/commonPrimitives.json"
+	],
+	"items": [
+		{
+			"name": "help_borderSolidity",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 166,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.borderSolidity.hover",
+				"help": "vcmi.mapGen.borderSolidity.help"
+			}
+		},
+		{
+			"name": "label_borderSolidity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.borderSolidity.hover",
+			"position": {
+				"x": 58,
+				"y": 171
+			}
+		},
+		{
+			"name": "slider_borderSolidity",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 170
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/borderSolidity",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 1,
+			"valueLabel": "value_borderSolidity",
+			"valueNames": [
+				[
+					0,
+					"vcmi.mapGen.borderSolidity.stop0"
+				],
+				[
+					0.25,
+					"vcmi.mapGen.borderSolidity.stop1"
+				],
+				[
+					0.5,
+					"vcmi.mapGen.borderSolidity.stop2"
+				],
+				[
+					0.75,
+					"vcmi.mapGen.borderSolidity.stop3"
+				],
+				[
+					1,
+					"vcmi.mapGen.borderSolidity.stop4"
+				]
+			]
+		},
+		{
+			"name": "value_borderSolidity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 171
+			}
+		},
+		{
+			"name": "help_interconnectivity",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 196,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.interconnectivity.hover",
+				"help": "vcmi.mapGen.interconnectivity.help"
+			}
+		},
+		{
+			"name": "label_interconnectivity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.interconnectivity.hover",
+			"position": {
+				"x": 58,
+				"y": 201
+			}
+		},
+		{
+			"name": "slider_interconnectivity",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 200
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/interconnectivity",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 0.6,
+			"valueLabel": "value_interconnectivity",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_interconnectivity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 201
+			}
+		},
+		{
+			"name": "help_interconnectPortal",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 226,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.interconnectPortal.hover",
+				"help": "vcmi.mapGen.interconnectPortal.help"
+			}
+		},
+		{
+			"name": "label_interconnectPortal",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.interconnectPortal.hover",
+			"position": {
+				"x": 58,
+				"y": 231
+			}
+		},
+		{
+			"name": "slider_interconnectPortal",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 230
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 50,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/interconnectPortal",
+			"valueMin": 0,
+			"valueStep": 0.02,
+			"valueDefault": 0.2,
+			"valueLabel": "value_interconnectPortal",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_interconnectPortal",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 231
+			}
+		},
+		{
+			"name": "help_openPathNoRoad",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 256,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.openPathNoRoad.hover",
+				"help": "vcmi.mapGen.openPathNoRoad.help"
+			}
+		},
+		{
+			"name": "label_openPathNoRoad",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.openPathNoRoad.hover",
+			"position": {
+				"x": 58,
+				"y": 261
+			}
+		},
+		{
+			"name": "slider_openPathNoRoad",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 260
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/openPathNoRoad",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 0.55,
+			"valueLabel": "value_openPathNoRoad",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_openPathNoRoad",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 261
+			}
+		},
+		{
+			"name": "help_openPathRoad",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 286,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.openPathRoad.hover",
+				"help": "vcmi.mapGen.openPathRoad.help"
+			}
+		},
+		{
+			"name": "label_openPathRoad",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.openPathRoad.hover",
+			"position": {
+				"x": 58,
+				"y": 291
+			}
+		},
+		{
+			"name": "slider_openPathRoad",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 290
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/openPathRoad",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 0.26,
+			"valueLabel": "value_openPathRoad",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_openPathRoad",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 291
+			}
+		},
+		{
+			"name": "help_roadNetwork",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 316,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.roadNetwork.hover",
+				"help": "vcmi.mapGen.roadNetwork.help"
+			}
+		},
+		{
+			"name": "label_roadNetwork",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.roadNetwork.hover",
+			"position": {
+				"x": 58,
+				"y": 321
+			}
+		},
+		{
+			"name": "check_roadNetwork",
+			"type": "toggleButton",
+			"image": "lobby/checkbox",
+			"position": {
+				"x": 202,
+				"y": 315
+			},
+			"setting": "persistent:mapGen/params/roadNetwork",
+			"selected": true,
+			"help": {
+				"hover": "vcmi.mapGen.roadNetwork.hover",
+				"help": "vcmi.mapGen.roadNetwork.help"
+			}
+		}
+	]
+}

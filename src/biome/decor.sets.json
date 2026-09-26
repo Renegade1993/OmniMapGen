@@ -1,0 +1,5606 @@
+{
+ "note": "Engine obstacle sets (biomes.json) joined with harvested masks from decor.templates.json by build_decor_sets.js. terrain -> objectType -> [{name, factions, templates:[{type, animation, mask}]}]. Regenerate, do not edit.",
+ "sets": {
+  "dt": {
+   "crater": [
+    {
+     "name": "templateSet2",
+     "factions": [],
+     "templates": [
+      {
+       "type": "crater",
+       "animation": "AVLct1d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct2d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct3d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct4d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct5d0",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "plant": [
+    {
+     "name": "dirtRedFlowers",
+     "factions": [],
+     "templates": [
+      {
+       "type": "flowers",
+       "animation": "AVLfl1d0",
+       "mask": [
+        "VBB"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLfl6d0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLfl7d0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "dirtLightFlowers",
+     "factions": [],
+     "templates": [
+      {
+       "type": "flowers",
+       "animation": "AVLfl4d0",
+       "mask": [
+        "VBB"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLfl5d0",
+       "mask": [
+        "BBB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "dirtYellowFlowers",
+     "factions": [],
+     "templates": [
+      {
+       "type": "flowers",
+       "animation": "AVLfl3d0",
+       "mask": [
+        "VBB"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLfl8d0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "dirtPurpleFlowers",
+     "factions": [],
+     "templates": [
+      {
+       "type": "flowers",
+       "animation": "AVLfl2d0",
+       "mask": [
+        "VBB"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLfl9d0",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet14",
+     "factions": [],
+     "templates": [
+      {
+       "type": "shrub",
+       "animation": "AVLsh1d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh2d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh3d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh4d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh5d0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh6d0",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh7d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh8d0",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "dirtStumps",
+     "factions": [],
+     "templates": [
+      {
+       "type": "log",
+       "animation": "AvLdlog",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "stump",
+       "animation": "AvLStm1",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "stump",
+       "animation": "AvLStm2",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "stump",
+       "animation": "AvLStm3",
+       "mask": [
+        "VB"
+       ]
+      }
+     ]
+    }
+   ],
+   "lake": [
+    {
+     "name": "templateSet5",
+     "factions": [],
+     "templates": [
+      {
+       "type": "lake",
+       "animation": "AVLlk1d0",
+       "mask": [
+        "BBBBBBB",
+        "BBBBBBB",
+        "BBBVVVV"
+       ]
+      },
+      {
+       "type": "lake",
+       "animation": "AVLlk2d0",
+       "mask": [
+        "BBBB",
+        "BBBB"
+       ]
+      },
+      {
+       "type": "lake",
+       "animation": "AVLlk3d0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "rock": [
+    {
+     "name": "templateSet7",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mound",
+       "animation": "AVLmd1d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "mound",
+       "animation": "AVLmd2d0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet10",
+     "factions": [],
+     "templates": [
+      {
+       "type": "outcropping",
+       "animation": "AVLoc1d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLoc2d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLoc3d0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet13",
+     "factions": [],
+     "templates": [
+      {
+       "type": "rock",
+       "animation": "AvLRD01",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRD02",
+       "mask": [
+        "VVV",
+        "VBB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRD04",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLrk3d0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLrk5d0",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ],
+   "mountain": [
+    {
+     "name": "templateSet8",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mountain",
+       "animation": "avlmtdr1",
+       "mask": [
+        "VVVVVV",
+        "VBBBBV",
+        "VBBBBB",
+        "VVVBBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtdr2",
+       "mask": [
+        "VVVVVV",
+        "VVBBBB",
+        "VBBBBB",
+        "VBBBVV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtdr3",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtdr4",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtdr5",
+       "mask": [
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtdr6",
+       "mask": [
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtdr7",
+       "mask": [
+        "VVVVVV",
+        "VBBBVV",
+        "VVVBBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtdr8",
+       "mask": [
+        "VVVVVV",
+        "VVVBBB",
+        "VBBBVV"
+       ]
+      }
+     ]
+    }
+   ],
+   "tree": [
+    {
+     "name": "templateSet9",
+     "factions": [],
+     "templates": [
+      {
+       "type": "oakTrees",
+       "animation": "avlautr0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "avlautr1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLAUTR2",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLAUTR3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLAUTR4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLAUTR5",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLautr6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLautr7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet11",
+     "factions": [],
+     "templates": [
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR2",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR5",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLpntr6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLpntr7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet16",
+     "factions": [],
+     "templates": [
+      {
+       "type": "trees",
+       "animation": "AVLtr1d0",
+       "mask": [
+        "VVV",
+        "VBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtr2d0",
+       "mask": [
+        "VVV",
+        "VBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtr3d0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      }
+     ]
+    }
+   ],
+   "other": [
+    {
+     "name": "templateSet17",
+     "factions": [],
+     "templates": [
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt00",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt01",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt02",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt03",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt04",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt05",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt06",
+       "mask": [
+        "VVV",
+        "BBB"
+       ]
+      },
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt07",
+       "mask": [
+        "VVV",
+        "BBB"
+       ]
+      },
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt08",
+       "mask": [
+        "VVV",
+        "BBB"
+       ]
+      },
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt09",
+       "mask": [
+        "VVV",
+        "BBB"
+       ]
+      },
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt10",
+       "mask": [
+        "VVV",
+        "BBB"
+       ]
+      },
+      {
+       "type": "dirtHills",
+       "animation": "avlxdt11",
+       "mask": [
+        "VVV",
+        "BBB"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "sa": {
+   "plant": [
+    {
+     "name": "cactus",
+     "factions": [],
+     "templates": [
+      {
+       "type": "cactus",
+       "animation": "AVLca010",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca020",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca030",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca040",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca050",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca060",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca070",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca080",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca100",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca110",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca120",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca130",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "sandYucca",
+     "factions": [],
+     "templates": [
+      {
+       "type": "trees",
+       "animation": "AVLyuc10",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLyuc20",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLyuc30",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ],
+   "crater": [
+    {
+     "name": "sandCraters",
+     "factions": [],
+     "templates": [
+      {
+       "type": "crater",
+       "animation": "AVLctds0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "sandPit",
+       "animation": "AVLspit0",
+       "mask": [
+        "BBB"
+       ]
+      }
+     ]
+    }
+   ],
+   "mountain": [
+    {
+     "name": "templateSet32",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mountain",
+       "animation": "AVLmtds1",
+       "mask": [
+        "VVVVVV",
+        "VBBBBV",
+        "VBBBBB",
+        "VVVBBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtds2",
+       "mask": [
+        "VVVVVV",
+        "VVBBBB",
+        "VBBBBB",
+        "VBBBVV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtds3",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtds4",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtds5",
+       "mask": [
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtds6",
+       "mask": [
+        "VVBB",
+        "VBBV"
+       ]
+      }
+     ]
+    }
+   ],
+   "rock": [
+    {
+     "name": "templateSet34",
+     "factions": [],
+     "templates": [
+      {
+       "type": "sandDune",
+       "animation": "AVLdun10",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "sandDune",
+       "animation": "AVLdun20",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "sandDune",
+       "animation": "AVLdun30",
+       "mask": [
+        "BBB"
+       ]
+      }
+     ]
+    }
+   ],
+   "animal": [
+    {
+     "name": "templateSet36",
+     "factions": [],
+     "templates": [
+      {
+       "type": "skull",
+       "animation": "AVLskul0",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ],
+   "tree": [
+    {
+     "name": "sandPalms",
+     "factions": [],
+     "templates": [
+      {
+       "type": "trees",
+       "animation": "AVLplm10",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLplm20",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLplm30",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLplm40",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLplm50",
+       "mask": [
+        "VVV",
+        "VBV"
+       ]
+      }
+     ]
+    }
+   ],
+   "other": [
+    {
+     "name": "templateSet38",
+     "factions": [],
+     "templates": [
+      {
+       "type": "desertHills",
+       "animation": "avlxds01",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "desertHills",
+       "animation": "avlxds02",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "desertHills",
+       "animation": "avlxds03",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "desertHills",
+       "animation": "avlxds04",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "desertHills",
+       "animation": "avlxds05",
+       "mask": [
+        "BV",
+        "BB"
+       ]
+      },
+      {
+       "type": "desertHills",
+       "animation": "avlxds06",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "desertHills",
+       "animation": "avlxds07",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "desertHills",
+       "animation": "avlxds08",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "desertHills",
+       "animation": "avlxds09",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "desertHills",
+       "animation": "avlxds10",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "desertHills",
+       "animation": "avlxds11",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "desertHills",
+       "animation": "avlxds12",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "gr": {
+   "crater": [
+    {
+     "name": "templateSet50",
+     "factions": [],
+     "templates": [
+      {
+       "type": "crater",
+       "animation": "AVLct1g0",
+       "mask": [
+        "BBBB",
+        "VBBB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct2g0",
+       "mask": [
+        "BBB",
+        "BBB",
+        "BBB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct3g0",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct5g0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLctrg0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "plant": [
+    {
+     "name": "grassRedFlowers",
+     "factions": [],
+     "templates": [
+      {
+       "type": "flowers",
+       "animation": "AVLf01g0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLf02g0",
+       "mask": [
+        "VBBB"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLf07g0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "grassPurpleFlowers",
+     "factions": [],
+     "templates": [
+      {
+       "type": "flowers",
+       "animation": "AVLf03g0",
+       "mask": [
+        "VVV",
+        "BBB"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLf08g0",
+       "mask": [
+        "VBB"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLf12g0",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "grassYellowFlowers",
+     "factions": [],
+     "templates": [
+      {
+       "type": "flowers",
+       "animation": "AVLf04g0",
+       "mask": [
+        "VBBB"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLf05g0",
+       "mask": [
+        "VBBB"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLf09g0",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLf10g0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "flowers",
+       "animation": "AVLf11g0",
+       "mask": [
+        "VB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "grassWhiteFlowers",
+     "factions": [],
+     "templates": [
+      {
+       "type": "flowers",
+       "animation": "AVLf06g0",
+       "mask": [
+        "VVV",
+        "VBB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet54",
+     "factions": [],
+     "templates": [
+      {
+       "type": "log",
+       "animation": "AvLdlog",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet62",
+     "factions": [],
+     "templates": [
+      {
+       "type": "shrub",
+       "animation": "AVLsh1g0",
+       "mask": [
+        "VBBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh2g0",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh3g0",
+       "mask": [
+        "VBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh4g0",
+       "mask": [
+        "VBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh5g0",
+       "mask": [
+        "VBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh6g0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet63",
+     "factions": [],
+     "templates": [
+      {
+       "type": "stump",
+       "animation": "AvLStm1",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "stump",
+       "animation": "AvLStm2",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "stump",
+       "animation": "AvLStm3",
+       "mask": [
+        "VB"
+       ]
+      }
+     ]
+    }
+   ],
+   "lake": [
+    {
+     "name": "templateSet53",
+     "factions": [],
+     "templates": [
+      {
+       "type": "lake",
+       "animation": "AVLlk1g0",
+       "mask": [
+        "BBBBB",
+        "BBBBB",
+        "VBBBV"
+       ]
+      },
+      {
+       "type": "lake",
+       "animation": "AVLlk2g0",
+       "mask": [
+        "BBBB",
+        "BBBB"
+       ]
+      },
+      {
+       "type": "lake",
+       "animation": "AVLlk3g0",
+       "mask": [
+        "BBB"
+       ]
+      }
+     ]
+    }
+   ],
+   "rock": [
+    {
+     "name": "templateSet55",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mound",
+       "animation": "AVLmd1g0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "mound",
+       "animation": "AVLmd2g0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet58",
+     "factions": [],
+     "templates": [
+      {
+       "type": "outcropping",
+       "animation": "AVLoc1g0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLoc2g0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLoc3g0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet61",
+     "factions": [],
+     "templates": [
+      {
+       "type": "rock",
+       "animation": "AvLRG01",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRG02",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRG03",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRG04",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRG05",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRG06",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRG07",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRG08",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRG09",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRG10",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRG11",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ],
+   "mountain": [
+    {
+     "name": "greyMountains",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mountain",
+       "animation": "AVLmtgn0",
+       "mask": [
+        "VVVVVV",
+        "VVBBBB",
+        "VBBBBB",
+        "VBBBVV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtgn1",
+       "mask": [
+        "VVVVVV",
+        "VBBBBV",
+        "VBBBBB",
+        "VVVBBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtgn2",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtgn3",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtgn4",
+       "mask": [
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtgn5",
+       "mask": [
+        "VBBV",
+        "VVBB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "brownMountains",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mountain",
+       "animation": "AVLmtgr1",
+       "mask": [
+        "VVVVVV",
+        "VVVVVV",
+        "VBBBBV",
+        "VBBBBB",
+        "VVVBBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtgr2",
+       "mask": [
+        "VVVVVV",
+        "VVBBBB",
+        "VBBBBB",
+        "VBBBVV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtgr3",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtgr4",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtgr5",
+       "mask": [
+        "BBV",
+        "VBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtgr6",
+       "mask": [
+        "VBB",
+        "BBV"
+       ]
+      }
+     ]
+    }
+   ],
+   "tree": [
+    {
+     "name": "greenOakTrees",
+     "factions": [],
+     "templates": [
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR2",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR4",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR5",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLsptr7",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLsptr8",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "autumnOakTrees",
+     "factions": [],
+     "templates": [
+      {
+       "type": "oakTrees",
+       "animation": "avlautr0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "avlautr1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLAUTR2",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLAUTR3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLAUTR4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLAUTR5",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLautr6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLautr7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet59",
+     "factions": [],
+     "templates": [
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR2",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLPNTR5",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLpntr6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLpntr7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "swampTreesOnGrass",
+     "factions": [
+      "fortress"
+     ],
+     "templates": [
+      {
+       "type": "trees",
+       "animation": "AVLswmp0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp2",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp5",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtr1d0",
+       "mask": [
+        "VVV",
+        "VBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtr2d0",
+       "mask": [
+        "VVV",
+        "VBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtr3d0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLwlw10",
+       "mask": [
+        "VVV",
+        "BBB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLwlw20",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLwlw30",
+       "mask": [
+        "V",
+        "B"
+       ]
+      }
+     ]
+    }
+   ],
+   "other": [
+    {
+     "name": "templateSet65",
+     "factions": [],
+     "templates": [
+      {
+       "type": "grassHills",
+       "animation": "avlxgr01",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "grassHills",
+       "animation": "avlxgr02",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "grassHills",
+       "animation": "avlxgr03",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "grassHills",
+       "animation": "avlxgr04",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "grassHills",
+       "animation": "avlxgr05",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "grassHills",
+       "animation": "avlxgr06",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "grassHills",
+       "animation": "avlxgr07",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "grassHills",
+       "animation": "avlxgr08",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "grassHills",
+       "animation": "avlxgr09",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "grassHills",
+       "animation": "avlxgr10",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "grassHills",
+       "animation": "avlxgr11",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "grassHills",
+       "animation": "avlxgr12",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "sn": {
+   "crater": [
+    {
+     "name": "templateSet77",
+     "factions": [],
+     "templates": [
+      {
+       "type": "crater",
+       "animation": "AVLctsn0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "tree": [
+    {
+     "name": "templateSet78",
+     "factions": [],
+     "templates": [
+      {
+       "type": "deadVegetation",
+       "animation": "AVLd1sn0",
+       "mask": [
+        "VVV",
+        "VBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLd2sn0",
+       "mask": [
+        "VVVV",
+        "VBBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLd3sn0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLd4sn0",
+       "mask": [
+        "VVV",
+        "VBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLd5sn0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLd6sn0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLd7sn0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLd8sn0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLd9sn0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLddsn0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLddsn1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLddsn2",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLddsn3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLddsn4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLddsn5",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLddsn6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLddsn7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet83",
+     "factions": [],
+     "templates": [
+      {
+       "type": "pineTrees",
+       "animation": "AVLSNTR0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLSNTR1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLSNTR2",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLSNTR3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLSNTR4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLSNTR5",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLsntr6",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "pineTrees",
+       "animation": "AVLsntr7",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      }
+     ]
+    }
+   ],
+   "lake": [
+    {
+     "name": "templateSet79",
+     "factions": [],
+     "templates": [
+      {
+       "type": "frozenLake",
+       "animation": "AVLflk10",
+       "mask": [
+        "BBBBB",
+        "BBBBB"
+       ]
+      },
+      {
+       "type": "frozenLake",
+       "animation": "AVLflk20",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "frozenLake",
+       "animation": "AVLflk30",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "mountain": [
+    {
+     "name": "templateSet81",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mountain",
+       "animation": "AVLmtsn1",
+       "mask": [
+        "VVVVV",
+        "BBBBV",
+        "BBBBB",
+        "VVBBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsn2",
+       "mask": [
+        "VVVVVV",
+        "VVBBBB",
+        "VBBBBB",
+        "VBBBVV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsn3",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsn4",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsn5",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsn6",
+       "mask": [
+        "VVBB",
+        "VBBV"
+       ]
+      }
+     ]
+    }
+   ],
+   "rock": [
+    {
+     "name": "templateSet82",
+     "factions": [],
+     "templates": [
+      {
+       "type": "outcropping",
+       "animation": "AVLo1sn0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLo2sn0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLo3sn0",
+       "mask": [
+        "BBB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet85",
+     "factions": [],
+     "templates": [
+      {
+       "type": "rock",
+       "animation": "AVLr1sn0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr2sn0",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr3sn0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr4sn0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr5sn0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr6sn0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr7sn0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr8sn0",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ],
+   "plant": [
+    {
+     "name": "templateSet86",
+     "factions": [],
+     "templates": [
+      {
+       "type": "shrub",
+       "animation": "AVLs1sn0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLs2sn0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLs3sn0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet87",
+     "factions": [],
+     "templates": [
+      {
+       "type": "stump",
+       "animation": "AVLp1sn0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "stump",
+       "animation": "AVLp2sn0",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "sw": {
+   "crater": [
+    {
+     "name": "templateSet99",
+     "factions": [],
+     "templates": [
+      {
+       "type": "crater",
+       "animation": "AVLctrs0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "tree": [
+    {
+     "name": "templateSet100",
+     "factions": [],
+     "templates": [
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD2",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLdead2",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD5",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLdead6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLdead7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLdt1s0",
+       "mask": [
+        "VV",
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLdt2s0",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLdt3s0",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLswp60",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLswp70",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "swampTrees",
+     "factions": [],
+     "templates": [
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR2",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR4",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR5",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLSPTR6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLsptr7",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "oakTrees",
+       "animation": "AVLsptr8",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "floodedPalms",
+     "factions": [],
+     "templates": [
+      {
+       "type": "trees",
+       "animation": "AVLswmp0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp2",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp5",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLswmp7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "swampTrees2",
+     "factions": [],
+     "templates": [
+      {
+       "type": "trees",
+       "animation": "AVLtr1d0",
+       "mask": [
+        "VVV",
+        "VBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtr2d0",
+       "mask": [
+        "VVV",
+        "VBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtr3d0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLwlw10",
+       "mask": [
+        "VVV",
+        "BBB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLwlw20",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLwlw30",
+       "mask": [
+        "V",
+        "B"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "swampPalms",
+     "factions": [],
+     "templates": [
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswtr0",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswtr1",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswtr2",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswtr3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswtr4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBV"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswtr5",
+       "mask": [
+        "VVBBVV",
+        "VBBVBV"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswtr6",
+       "mask": [
+        "VBV",
+        "VBV"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswtr7",
+       "mask": [
+        "VVBV",
+        "VBBB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswtr8",
+       "mask": [
+        "VBB",
+        "VBB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswtr9",
+       "mask": [
+        "VVVVVV",
+        "VBBVBB",
+        "VVBBBV"
+       ]
+      }
+     ]
+    }
+   ],
+   "lake": [
+    {
+     "name": "templateSet102",
+     "factions": [],
+     "templates": [
+      {
+       "type": "lake",
+       "animation": "AVLlk1s0",
+       "mask": [
+        "VBBBBBV",
+        "VBBBBBV",
+        "VVBBBBV"
+       ]
+      },
+      {
+       "type": "lake",
+       "animation": "AVLlk2s0",
+       "mask": [
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "lake",
+       "animation": "AVLlk3s0",
+       "mask": [
+        "BBV",
+        "BBV",
+        "BBV"
+       ]
+      },
+      {
+       "type": "lake",
+       "animation": "AVLswp50",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "plant": [
+    {
+     "name": "templateSet103",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mandrake",
+       "animation": "AVLman10",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "mandrake",
+       "animation": "AVLman20",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "mandrake",
+       "animation": "AVLman40",
+       "mask": [
+        "BBB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet109",
+     "factions": [],
+     "templates": [
+      {
+       "type": "shrub",
+       "animation": "AVLs01s0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLs02s0",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLs03s0",
+       "mask": [
+        "BBBBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLs04s0",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLs06s0",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLs07s0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLs08s0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLs09s0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLs10s0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLs11s0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLswp10",
+       "mask": [
+        "VBBBB",
+        "BBBBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLswp20",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLswp30",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLswp40",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "swampSinglePalms",
+     "factions": [],
+     "templates": [
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt00",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt01",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt02",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt04",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt05",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt06",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt07",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt08",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt09",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt10",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt11",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt12",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt13",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt14",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt15",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt16",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt17",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "avlswt19",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      }
+     ]
+    }
+   ],
+   "mountain": [
+    {
+     "name": "templateSet105",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mountain",
+       "animation": "AVLmtsw1",
+       "mask": [
+        "VVVVVV",
+        "VBBBBV",
+        "VBBBBB",
+        "VVVBBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsw2",
+       "mask": [
+        "VVVVVV",
+        "VVBBBB",
+        "VBBBBB",
+        "VBBBVV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsw3",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsw4",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsw5",
+       "mask": [
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsw6",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      }
+     ]
+    }
+   ],
+   "rock": [
+    {
+     "name": "templateSet108",
+     "factions": [],
+     "templates": [
+      {
+       "type": "rock",
+       "animation": "AVLrk1s0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLrk2s0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLrk3s0",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLrk4s0",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ],
+   "other": [
+    {
+     "name": "templateSet112",
+     "factions": [],
+     "templates": [
+      {
+       "type": "swampFoliage",
+       "animation": "avlxsw01",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "swampFoliage",
+       "animation": "avlxsw02",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "swampFoliage",
+       "animation": "avlxsw03",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "swampFoliage",
+       "animation": "avlxsw04",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "swampFoliage",
+       "animation": "avlxsw05",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "swampFoliage",
+       "animation": "avlxsw06",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "swampFoliage",
+       "animation": "avlxsw07",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "swampFoliage",
+       "animation": "avlxsw08",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "swampFoliage",
+       "animation": "avlxsw09",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "swampFoliage",
+       "animation": "avlxsw10",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "swampFoliage",
+       "animation": "avlxsw11",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "rg": {
+   "plant": [
+    {
+     "name": "templateSet124",
+     "factions": [],
+     "templates": [
+      {
+       "type": "cactus",
+       "animation": "AVLca1r0",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "cactus",
+       "animation": "AVLca2r0",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet134",
+     "factions": [],
+     "templates": [
+      {
+       "type": "shrub",
+       "animation": "AVLsh1r0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh2r0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "AVLsh3r0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "avlsh4r0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "avlsh5r0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "avlsh6r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "avlsh7r0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "avlsh8r0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "shrub",
+       "animation": "avlsh9r0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "roughStumps",
+     "factions": [],
+     "templates": [
+      {
+       "type": "log",
+       "animation": "AvLdlog",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "stump",
+       "animation": "AvLStm1",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "stump",
+       "animation": "AvLStm2",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "stump",
+       "animation": "AvLStm3",
+       "mask": [
+        "VB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "roughSmallTree",
+     "factions": [],
+     "templates": [
+      {
+       "type": "trees",
+       "animation": "AVLroug1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLroug2",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "roughYucca",
+     "factions": [],
+     "templates": [
+      {
+       "type": "trees",
+       "animation": "AVLyuc10",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLyuc20",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLyuc30",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ],
+   "crater": [
+    {
+     "name": "roughCraters",
+     "factions": [],
+     "templates": [
+      {
+       "type": "canyon",
+       "animation": "AVLglly0",
+       "mask": [
+        "BBVV",
+        "BBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct1r0",
+       "mask": [
+        "VBB",
+        "BBV"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct2r0",
+       "mask": [
+        "BB",
+        "BB",
+        "BV"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct3r0",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct4r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct5r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct6r0",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct7r0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct8r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct9r0",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLctrr0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "rock": [
+    {
+     "name": "templateSet129",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mound",
+       "animation": "AVLmd1r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "mound",
+       "animation": "AVLmd2r0",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "mound",
+       "animation": "AVLmd3r0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet131",
+     "factions": [],
+     "templates": [
+      {
+       "type": "outcropping",
+       "animation": "AVLoc1r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLoc2r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLoc3r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLoc4r0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet133",
+     "factions": [],
+     "templates": [
+      {
+       "type": "rock",
+       "animation": "avlbuzr0",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr02r0",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr03r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr04r0",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr06r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr07r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr08r0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr09r0",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr10r0",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr11r0",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr12r0",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr13r0",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr14r0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr15r0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRR01",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AvLRR05",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "mountain": [
+    {
+     "name": "templateSet130",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mountain",
+       "animation": "avlmtrf1",
+       "mask": [
+        "VVVVVV",
+        "VBBBBV",
+        "VBBBBB",
+        "VVVBBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtrf2",
+       "mask": [
+        "VVVVVV",
+        "VVBBBB",
+        "VBBBBB",
+        "VBBBVV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtrf3",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtrf4",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtrf5",
+       "mask": [
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "avlmtrf6",
+       "mask": [
+        "VVBB",
+        "VBBV"
+       ]
+      }
+     ]
+    }
+   ],
+   "animal": [
+    {
+     "name": "templateSet135",
+     "factions": [],
+     "templates": [
+      {
+       "type": "skull",
+       "animation": "AVLskul0",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ],
+   "lake": [
+    {
+     "name": "roughLake",
+     "factions": [],
+     "templates": [
+      {
+       "type": "lakeDUPLICATE",
+       "animation": "AVLlk1r",
+       "mask": [
+        "VBBV",
+        "BBBB"
+       ]
+      }
+     ]
+    }
+   ],
+   "other": [
+    {
+     "name": "templateSet139",
+     "factions": [],
+     "templates": [
+      {
+       "type": "trees",
+       "animation": "AVLtRo00",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo01",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo02",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo03",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo04",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo05",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo06",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo07",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo08",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo09",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo10",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo11",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtRo12",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "treesDUPLICATE",
+       "animation": "AVLtrRo0",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtrRo2",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtrRo3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtrRo5",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtrRo6",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "trees",
+       "animation": "AVLtrRo7",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet140",
+     "factions": [],
+     "templates": [
+      {
+       "type": "roughHills",
+       "animation": "avlxro01",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "roughHills",
+       "animation": "avlxro02",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "roughHills",
+       "animation": "avlxro03",
+       "mask": [
+        "VB",
+        "BB"
+       ]
+      },
+      {
+       "type": "roughHills",
+       "animation": "avlxro04",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "roughHills",
+       "animation": "avlxro05",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "roughHills",
+       "animation": "avlxro06",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "roughHills",
+       "animation": "avlxro07",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "roughHills",
+       "animation": "avlxro08",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "roughHills",
+       "animation": "avlxro09",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "roughHills",
+       "animation": "avlxro10",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "roughHills",
+       "animation": "avlxro11",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "roughHills",
+       "animation": "avlxro12",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "sb": {
+   "crater": [
+    {
+     "name": "templateSet152",
+     "factions": [],
+     "templates": [
+      {
+       "type": "crater",
+       "animation": "AVLct1u0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct2u0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct3u0",
+       "mask": [
+        "B",
+        "B"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct4u0",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct5u0",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ],
+   "tree": [
+    {
+     "name": "templateSet153",
+     "factions": [],
+     "templates": [
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD2",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD5",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      }
+     ]
+    }
+   ],
+   "lake": [
+    {
+     "name": "templateSet155",
+     "factions": [],
+     "templates": [
+      {
+       "type": "lake",
+       "animation": "AVLlk1u0",
+       "mask": [
+        "VVBBBBBB",
+        "VBBBBBBB",
+        "VBBBBBBV"
+       ]
+      },
+      {
+       "type": "lake",
+       "animation": "AVLlk2u0",
+       "mask": [
+        "VVVV",
+        "BBBB",
+        "BBBB"
+       ]
+      },
+      {
+       "type": "lake",
+       "animation": "AVLlk3u0",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet156",
+     "factions": [],
+     "templates": [
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv1u0",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv2u0",
+       "mask": [
+        "B",
+        "B"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv3u0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet157",
+     "factions": [],
+     "templates": [
+      {
+       "type": "lavaLake",
+       "animation": "AVLllk10",
+       "mask": [
+        "BBB",
+        "BBB"
+       ]
+      },
+      {
+       "type": "lavaLake",
+       "animation": "AVLllk20",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "plant": [
+    {
+     "name": "templateSet158",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mushrooms",
+       "animation": "AVLms010",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "mushrooms",
+       "animation": "AVLms020",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "mushrooms",
+       "animation": "AVLms030",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "mushrooms",
+       "animation": "AVLms040",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "mushrooms",
+       "animation": "AVLms050",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "mushrooms",
+       "animation": "AVLms060",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "mushrooms",
+       "animation": "AVLms070",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "mushrooms",
+       "animation": "AVLms080",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "mushrooms",
+       "animation": "AVLms090",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "mushrooms",
+       "animation": "AVLms100",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "mushrooms",
+       "animation": "AVLms110",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "mushrooms",
+       "animation": "AVLms120",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "mountain": [
+    {
+     "name": "templateSet159",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mountain",
+       "animation": "AVLmtsb0",
+       "mask": [
+        "VVVVVV",
+        "VVBBBB",
+        "VBBBBB",
+        "VBBBVV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsb1",
+       "mask": [
+        "VVVVVV",
+        "VBBBBV",
+        "VBBBBB",
+        "VVVBBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsb2",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsb3",
+       "mask": [
+        "VVVV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsb4",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtsb5",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      }
+     ]
+    }
+   ],
+   "rock": [
+    {
+     "name": "templateSet160",
+     "factions": [],
+     "templates": [
+      {
+       "type": "outcropping",
+       "animation": "AVLoc1u0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLoc2u0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLoc3u0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "outcropping",
+       "animation": "AVLoc4u0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "templateSet162",
+     "factions": [],
+     "templates": [
+      {
+       "type": "rock",
+       "animation": "AVLr01u0",
+       "mask": [
+        "VVV",
+        "VBB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr02u0",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr03u0",
+       "mask": [
+        "VBB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr04u0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr05u0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr06u0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr07u0",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr08u0",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr09u0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr10u0",
+       "mask": [
+        "VBB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr11u0",
+       "mask": [
+        "V",
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr12u0",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr13u0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr14u0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr15u0",
+       "mask": [
+        "VB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLr16u0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLstg10",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLstg20",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLstg30",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLstg40",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLstg50",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "rock",
+       "animation": "AVLstg60",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      }
+     ]
+    }
+   ],
+   "other": [
+    {
+     "name": "templateSet163",
+     "factions": [],
+     "templates": [
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu01",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu02",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu03",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu04",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu05",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu06",
+       "mask": [
+        "VB",
+        "BB"
+       ]
+      },
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu07",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu08",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu09",
+       "mask": [
+        "BBB"
+       ]
+      },
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu10",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu11",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "subterraneanRocks",
+       "animation": "avlxsu12",
+       "mask": [
+        "B"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "lv": {
+   "crater": [
+    {
+     "name": "lavaChasm",
+     "factions": [],
+     "templates": [
+      {
+       "type": "crater",
+       "animation": "AVLc10l0",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLc11l0",
+       "mask": [
+        "BB",
+        "VB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLc12l0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLc13l0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLc14l0",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct1l0",
+       "mask": [
+        "BBBB",
+        "BBBB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct2l0",
+       "mask": [
+        "BB",
+        "BB",
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct3l0",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct4l0",
+       "mask": [
+        "BB",
+        "BV"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct5l0",
+       "mask": [
+        "B",
+        "B"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct6l0",
+       "mask": [
+        "B",
+        "B"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct7l0",
+       "mask": [
+        "B",
+        "B"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct8l0",
+       "mask": [
+        "B",
+        "B"
+       ]
+      },
+      {
+       "type": "crater",
+       "animation": "AVLct9l0",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "tree": [
+    {
+     "name": "lavaDeadTree",
+     "factions": [],
+     "templates": [
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD0",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD1",
+       "mask": [
+        "VV",
+        "VB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD2",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD3",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLdead4",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD5",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLdead6",
+       "mask": [
+        "VVVV",
+        "VBBV",
+        "VBBB",
+        "VVBB"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLDEAD7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      },
+      {
+       "type": "deadVegetation",
+       "animation": "AVLdead7",
+       "mask": [
+        "VVVV",
+        "VVBB",
+        "VBBB",
+        "VBBV"
+       ]
+      }
+     ]
+    }
+   ],
+   "lake": [
+    {
+     "name": "lavaLake",
+     "factions": [],
+     "templates": [
+      {
+       "type": "lavaLake",
+       "animation": "AVLlav10",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlav20",
+       "mask": [
+        "VBB",
+        "BBB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlav30",
+       "mask": [
+        "BBBBBB",
+        "BBBBBB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlav40",
+       "mask": [
+        "BBB",
+        "BBB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlav50",
+       "mask": [
+        "BBB",
+        "BBB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlav60",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlav70",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlav80",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlav90",
+       "mask": [
+        "BBB",
+        "BBB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv100",
+       "mask": [
+        "BBB",
+        "BBB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv110",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv120",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv130",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv140",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv150",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv160",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv170",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv180",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv190",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv200",
+       "mask": [
+        "BB",
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv210",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv220",
+       "mask": [
+        "B"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv230",
+       "mask": [
+        "B",
+        "B"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv240",
+       "mask": [
+        "BB"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv250",
+       "mask": [
+        "B",
+        "B"
+       ]
+      },
+      {
+       "type": "lavaFlow",
+       "animation": "AVLlv260",
+       "mask": [
+        "BB"
+       ]
+      }
+     ]
+    }
+   ],
+   "mountain": [
+    {
+     "name": "templateSet180",
+     "factions": [],
+     "templates": [
+      {
+       "type": "mountain",
+       "animation": "AVLmtvo1",
+       "mask": [
+        "VVVVV",
+        "BBBBV",
+        "BBBBB",
+        "VVBBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtvo2",
+       "mask": [
+        "VVVVV",
+        "VBBBV",
+        "BBBBB",
+        "BBBVV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtvo3",
+       "mask": [
+        "VVV",
+        "BBB",
+        "VBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtvo4",
+       "mask": [
+        "VVV",
+        "BBB",
+        "BBV"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtvo5",
+       "mask": [
+        "BBV",
+        "VBB"
+       ]
+      },
+      {
+       "type": "mountain",
+       "animation": "AVLmtvo6",
+       "mask": [
+        "VBB",
+        "BBV"
+       ]
+      }
+     ]
+    },
+    {
+     "name": "volcanos",
+     "factions": [],
+     "templates": [
+      {
+       "type": "volcano",
+       "animation": "AVLvol10",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "volcano",
+       "animation": "AVLvol20",
+       "mask": [
+        "VV",
+        "BB"
+       ]
+      },
+      {
+       "type": "volcano",
+       "animation": "AVLvol30",
+       "mask": [
+        "VVV",
+        "VVV",
+        "BBB"
+       ]
+      },
+      {
+       "type": "volcano",
+       "animation": "AVLvol40",
+       "mask": [
+        "VBV",
+        "BBB"
+       ]
+      },
+      {
+       "type": "volcano",
+       "animation": "AVLvol50",
+       "mask": [
+        "VVVVV",
+        "VVVVV",
+        "VVVVV",
+        "VBBBV",
+        "VBBBV"
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

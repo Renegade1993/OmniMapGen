@@ -1,0 +1,418 @@
+/**
+ * waterfill.js - boats, shipyards and what lies on the water (queue item
+ * 25d, water phase W2).
+ *
+ * Modelled on the engine's WaterProxy (lib/rmg/modificators/WaterProxy.cpp):
+ * a water body under 25 cells gets nothing (line 168); a zone on the shore
+ * that holds a town gets a shipyard, any other zone a boat (lines 184-213),
+ * and no land object crowds the boarding spot. Templates come from the game's
+ * own object table (water_templates.json, tools/extract_h3_templates.js).
+ *
+ * Two passes. Harbours go in right after the towns (placeHarbours), so every
+ * later pass routes around them and their boarding cells stay free. Water
+ * treasure and scenery go in last (fillWater), on water only, where a boat
+ * launched from a harbour can sail, after the passes that prune objects they
+ * judge unreachable over land.
+ *
+ * waterAccess: 0 no harbours, 1 shipyards at player starts only, 2 shipyards
+ * in every town zone (the engine's rule; default), 3 also a boat in every
+ * other zone on the shore. waterTreasure multiplies the treasure rates.
+ */
+'use strict';
+
+const { OCCUPIED, RESERVED, blockingCells, visitableCells, allowedDirs,
+	footprintFits, footprintBlock, reserveCell, makeConnectivityGuard } = require('./content');
+const WT = require('./water_templates.json').templates;
+
+const BOAT_SUBTYPES = ['boatNecropolis', 'boatCastle', 'boatFortress'];
+const SCENERY_TYPE = { 125: 'kelp', 147: 'rock', 161: 'reef' };
+const identity = t => {
+	if (t.kind === 'boat') return ['boat', BOAT_SUBTYPES[t.subid] || 'boatCastle'];
+	if (t.kind === 'waterScenery') return [SCENERY_TYPE[t.id], 'object'];
+	if (['shipyard', 'whirlpool', 'oceanBottle'].includes(t.kind)) return [t.kind, 'object'];
+	return [t.kind, t.kind];
+};
+const templatesOf = kind => WT.filter(t => t.kind === kind);
+
+// per 1000 cells of sailable water; waterTreasure scales them. The corpus
+// has no water to measure, so these follow the engine's water zones in
+// spirit: a scatter of pickups, a few one-visit sites, rare banks.
+const TREASURE_RATES = [
+	['flotsam', 2.2], ['seaChest', 1.8], ['shipwreckSurvivor', 0.6], ['buoy', 0.6],
+	['mermaids', 0.4], ['derelictShip', 0.35], ['shipwreck', 0.35],
+];
+const SCENERY_RATE = { kelp: 5, blocking: 4 };
+const MIN_BODY = 25;
+
+function waterBodies(water, W, H) {
+	const id = new Int32Array(W * H).fill(-1);
+	const bodies = [];
+	for (let c0 = 0; c0 < W * H; c0++) {
+		if (!water[c0] || id[c0] >= 0) continue;
+		const k = bodies.length, q = [c0];
+		id[c0] = k;
+		for (let h = 0; h < q.length; h++) {
+			const c = q[h], x = c % W, y = (c / W) | 0;
+			for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+				const d = ny * W + nx;
+				if (water[d] && id[d] < 0) { id[d] = k; q.push(d); }
+			}
+		}
+		bodies.push({ cells: q, size: q.length });
+	}
+	return { id, bodies };
+}
+
+const inMask = (tpl, x, y, W, H) => {
+	const h = tpl.mask.length;
+	for (let r = 0; r < h; r++) {
+		const w = tpl.mask[r].length;
+		for (let i = 0; i < w; i++) {
+			const cx = x - (w - 1 - i), cy = y - (h - 1 - r);
+			if (cx < 0 || cy < 0 || cx >= W || cy >= H) return false;
+		}
+	}
+	return true;
+};
+
+// the shipyard's launch tiles, in the engine's order (CGShipyard::getOutOffsets)
+const LAUNCH = [[-2, 0], [2, 0], [-2, 1], [2, 1], [-1, 1], [1, 1], [0, 1],
+	[-2, -1], [2, -1], [-1, -1], [1, -1], [0, -1]];
+
+/**
+ * ctx: { W, H, l, water, zone, classes, blocked, rng, p, objects, towns,
+ *        playerStarts, objectEntry, reachable }
+ * Places shipyards and boats; returns harbours [{ body, cell }] (the water
+ * cell a boat stands on or a shipyard launches onto) for fillWater.
+ */
+function placeHarbours(ctx) {
+	const { W, H, l, water, zone, blocked, rng, p, objects, towns, playerStarts, objectEntry } = ctx;
+	// an island map without harbours strands every player, so it gets at
+	// least the start shipyards whatever the setting says
+	const access = Math.max(ctx.islands ? 1 : 0,
+		Math.round(Number.isFinite(p.waterAccess) ? p.waterAccess : 2));
+	if (!water || access <= 0) return [];
+	const base = l * W * H;
+	const { id, bodies } = waterBodies(water, W, H);
+	const startZones = new Set(playerStarts.map(s => zone[s.y * W + s.x]));
+	const townZones = new Set(towns.filter(t => t.l === l).map(t => zone[t.y * W + t.x]));
+	const free = c => !(blocked[base + c] & (OCCUPIED | RESERVED));
+	const near = (c, list, r) => list.some(s => Math.max(Math.abs(s.x - c % W), Math.abs(s.y - ((c / W) | 0))) <= r);
+	const shipyards = templatesOf('shipyard'), boats = templatesOf('boat');
+	const harbours = [];
+	const used = new Set();                          // water cells promised to a harbour
+	const boatUsed = [];
+
+	const tryShipyard = (b, z) => {
+		const tpl = shipyards[0].template;
+		// anchors: the three blocked cells sit on this zone's shore land
+		const cand = [];
+		for (const c of bodies[b].cells) {
+			const x = c % W, y = (c / W) | 0;
+			for (let dy = -2; dy <= 2; dy++)
+				for (let dx = -3; dx <= 3; dx++) {
+					const ax = x + dx, ay = y + dy;
+					if (ax < 0 || ay < 0 || ax >= W || ay >= H) continue;
+					cand.push(ay * W + ax);
+				}
+		}
+		const seen = new Set();
+		const order = cand.filter(c => !seen.has(c) && seen.add(c));
+		for (let i = order.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [order[i], order[j]] = [order[j], order[i]]; }
+		for (const a of order) {
+			const ax = a % W, ay = (a / W) | 0;
+			if (!inMask(tpl, ax, ay, W, H) || !footprintFits(tpl, ax, ay, l, W, H, blocked)) continue;
+			const own = blockingCells(tpl, ax, ay).map(([u, v]) => v * W + u);
+			if (own.some(c => water[c] || zone[c] !== z)) continue;
+			if (near(a, playerStarts, 4)) continue;
+			// a hero walks up to it from the row below
+			const [vx, vy] = visitableCells(tpl, ax, ay)[0];
+			const approach = allowedDirs(tpl).map(([dx, dy]) => [vx + dx, vy + dy])
+				.filter(([u, v]) => u >= 0 && v >= 0 && u < W && v < H)
+				.map(([u, v]) => v * W + u).filter(c => !own.includes(c) && !water[c] && free(c));
+			if (!approach.length) continue;
+			// the tile it launches onto: the engine takes the first free water
+			// tile in its offset order, which has to be this body's
+			let launch = -1;
+			for (const [dx, dy] of LAUNCH) {
+				const u = vx + dx, v = vy + dy;
+				if (u < 0 || v < 0 || u >= W || v >= H) continue;
+				const c = v * W + u;
+				if (!water[c]) continue;
+				launch = c;
+				break;
+			}
+			if (launch < 0 || id[launch] !== b || used.has(launch)) continue;
+			// and a hero can step from land into that boat
+			const lx = launch % W, ly = (launch / W) | 0;
+			let boarding = -1;
+			for (let dy = -1; dy <= 1 && boarding < 0; dy++)
+				for (let dx = -1; dx <= 1 && boarding < 0; dx++) {
+					const u = lx + dx, v = ly + dy;
+					if (u < 0 || v < 0 || u >= W || v >= H || (!dx && !dy)) continue;
+					const c = v * W + u;
+					if (!water[c] && free(c) && !own.includes(c)) boarding = c;
+				}
+			if (boarding < 0) continue;
+			const [type, subtype] = identity(shipyards[0]);
+			objects.push(objectEntry(type, ax, ay, l, tpl, subtype));
+			footprintBlock(tpl, ax, ay, l, W, H, blocked);
+			for (const c of approach) reserveCell(blocked, l, W, H, c);
+			reserveCell(blocked, l, W, H, boarding);
+			used.add(launch);
+			harbours.push({ body: b, cell: launch, kind: 'shipyard', zone: z,
+				boarding: [...approach, boarding] });
+			return true;
+		}
+		return false;
+	};
+
+	const tryBoat = (b, z, landOk = d => zone[d] === z, relaxed = false) => {
+		const tplEntry = boats[(rng() * boats.length) | 0];
+		const tpl = tplEntry.template;
+		const shore = [];
+		for (const c of bodies[b].cells) {
+			const x = c % W, y = (c / W) | 0;
+			for (let dy = -1; dy <= 1; dy++)
+				for (let dx = -1; dx <= 1; dx++) {
+					const u = x + dx, v = y + dy;
+					if (u < 0 || v < 0 || u >= W || v >= H) continue;
+					const d = v * W + u;
+					if (!water[d] && landOk(d) && free(d)) shore.push([d, c]);
+				}
+		}
+		for (let i = shore.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [shore[i], shore[j]] = [shore[j], shore[i]]; }
+		for (const [land, w] of shore) {
+			if (used.has(w) || (!relaxed && near(land, playerStarts, 4))) continue;
+			if (!relaxed && boatUsed.some(q => Math.max(Math.abs(q % W - w % W), Math.abs(((q / W) | 0) - ((w / W) | 0))) < 6)) continue;
+			// the boat's visitable tile is the middle of its bottom row
+			const ax = w % W + 1, ay = (w / W) | 0;
+			if (!inMask(tpl, ax, ay, W, H)) continue;
+			const [vx, vy] = visitableCells(tpl, ax, ay)[0];
+			if (vy * W + vx !== w) continue;
+			const [type, subtype] = identity(tplEntry);
+			objects.push(objectEntry(type, ax, ay, l, tpl, subtype));
+			reserveCell(blocked, l, W, H, land);
+			used.add(w);
+			boatUsed.push(w);
+			// a hero boards from any open land beside the boat
+			const boarding = [];
+			for (let dy = -1; dy <= 1; dy++)
+				for (let dx = -1; dx <= 1; dx++) {
+					const u = w % W + dx, v = ((w / W) | 0) + dy;
+					if ((dx || dy) && u >= 0 && v >= 0 && u < W && v < H && !water[v * W + u]) boarding.push(v * W + u);
+				}
+			harbours.push({ body: b, cell: w, kind: 'boat', zone: z, boarding });
+			return true;
+		}
+		return false;
+	};
+
+	bodies.forEach((body, b) => {
+		if (body.size < MIN_BODY) return;
+		const shoreZones = new Set();
+		for (const c of body.cells) {
+			const x = c % W, y = (c / W) | 0;
+			for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]])
+				if (u >= 0 && v >= 0 && u < W && v < H && !water[v * W + u]) shoreZones.add(zone[v * W + u]);
+		}
+		for (const z of [...shoreZones].sort((a, c) => a - c)) {
+			const start = startZones.has(z), town = start || townZones.has(z);
+			const wantYard = town && (start || access >= 2);
+			const wantBoat = access >= 3 || (start && access >= 1);
+			// on an island map a start also gets a boat waiting on its shore:
+			// buying one at a shipyard is not something every AI can do
+			if (wantYard && tryShipyard(b, z) && !(ctx.islands && start)) continue;
+			if (wantBoat || wantYard) tryBoat(b, z);
+		}
+	});
+	if (ctx.islands) {
+		// Every start's island must have a boat waiting on it: a shipyard
+		// alone strands any AI that cannot buy one. A start whose island got
+		// none above (its zone missed the shore, or the shore was taken) gets
+		// one on any shore of that island; with none, the map cannot be played.
+		const island = new Int32Array(W * H).fill(-1);
+		let k = 0;
+		for (let c0 = 0; c0 < W * H; c0++) {
+			if (water[c0] || island[c0] >= 0) continue;
+			const q = [c0];
+			island[c0] = k;
+			for (let h = 0; h < q.length; h++) {
+				const c = q[h], x = c % W, y = (c / W) | 0;
+				for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]])
+					if (u >= 0 && v >= 0 && u < W && v < H && !water[v * W + u] && island[v * W + u] < 0) { island[v * W + u] = k; q.push(v * W + u); }
+			}
+			k++;
+		}
+		// the islands each body's shore touches: a harbour on a lake inside
+		// an island leads nowhere
+		const touches = bodies.map(() => new Set());
+		for (let c = 0; c < W * H; c++) {
+			if (!water[c]) continue;
+			const x = c % W, y = (c / W) | 0;
+			for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]])
+				if (u >= 0 && v >= 0 && u < W && v < H && !water[v * W + u]) touches[id[c]].add(island[v * W + u]);
+		}
+		const outward = b => bodies[b].size >= MIN_BODY && touches[b].size >= 2;
+		for (const s of playerStarts) {
+			const home = island[s.y * W + s.x];
+			if (home < 0 || harbours.some(h => h.kind === 'boat' && outward(h.body)
+				&& h.boarding.some(c => island[c] === home))) continue;
+			let ok = false;
+			for (let b = 0; b < bodies.length && !ok; b++)
+				if (outward(b) && touches[b].has(home)) ok = tryBoat(b, zone[s.y * W + s.x], d => island[d] === home, true);
+			if (!ok) throw new Error('An island start has no shore a boat can use; lower the amount of water or pick another water layout.');
+		}
+	}
+	if (harbours.length)
+		console.error(`[gen] level ${l}: water harbours: `
+			+ `${harbours.filter(h => h.kind === 'shipyard').length} shipyard(s), `
+			+ `${harbours.filter(h => h.kind === 'boat').length} boat(s)`);
+	return harbours;
+}
+
+/**
+ * Treasure and scenery on the water a harbour's boat can reach. Runs last.
+ * ctx: { W, H, l, water, harbours, rng, p, objects, objectEntry }
+ */
+function fillWater(ctx) {
+	const { W, H, l, water, harbours, rng, p, objects, objectEntry } = ctx;
+	if (!water || !harbours || !harbours.length) return 0;
+	const mult = Number.isFinite(p.waterTreasure) ? p.waterTreasure : 1;
+	// the water layer: land and everything already on the water is taken
+	const wb = new Uint8Array(W * H);
+	for (let c = 0; c < W * H; c++) if (!water[c]) wb[c] = OCCUPIED;
+	for (const o of objects) {
+		if ((o.l || 0) !== l || !o.template || !o.template.mask) continue;
+		for (const [x, y] of blockingCells(o.template, o.x, o.y))
+			if (x >= 0 && y >= 0 && x < W && y < H) wb[y * W + x] |= OCCUPIED;
+	}
+	// keep every harbour's tile and the water around it open for the boat
+	for (const h of harbours) {
+		const x = h.cell % W, y = (h.cell / W) | 0;
+		for (let dy = -1; dy <= 1; dy++)
+			for (let dx = -1; dx <= 1; dx++) {
+				const u = x + dx, v = y + dy;
+				if (u >= 0 && v >= 0 && u < W && v < H) wb[v * W + u] |= RESERVED;
+			}
+	}
+	const { id, bodies } = waterBodies(water, W, H);
+	let placed = 0;
+	for (const b of [...new Set(harbours.map(h => h.body))].sort((a, c) => a - c)) {
+		const seed = harbours.find(h => h.body === b).cell;
+		// what a boat can reach, kept in one piece as things are placed
+		const guard = makeConnectivityGuard(wb, 0, W, H, 0, seed);
+		const cells = bodies[b].cells.slice();
+		for (let i = cells.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [cells[i], cells[j]] = [cells[j], cells[i]]; }
+		const area = bodies[b].size / 1000;
+		const wanted = [];
+		for (const [kind, rate] of TREASURE_RATES) {
+			const n = area * rate * mult;
+			const k = Math.floor(n) + (rng() < n - Math.floor(n) ? 1 : 0);
+			for (let i = 0; i < k; i++) wanted.push(kind);
+		}
+		const kelp = Math.round(area * SCENERY_RATE.kelp), rocks = Math.round(area * SCENERY_RATE.blocking);
+		for (let i = 0; i < kelp; i++) wanted.push('kelp');
+		for (let i = 0; i < rocks; i++) wanted.push('blocking');
+		let cursor = 0;
+		const sceneryOf = kind => templatesOf('waterScenery').filter(t =>
+			kind === 'kelp' ? t.id === 125 : t.id !== 125);
+		for (const kind of wanted) {
+			const pool = kind === 'kelp' || kind === 'blocking' ? sceneryOf(kind) : templatesOf(kind);
+			if (!pool.length) continue;
+			const entry = pool[(rng() * pool.length) | 0];
+			const tpl = entry.template;
+			for (let tries = 0; tries < cells.length; tries++) {
+				const c = cells[(cursor + tries) % cells.length];
+				const x = c % W, y = (c / W) | 0;
+				if (!inMask(tpl, x, y, W, H)) continue;
+				// every masked cell on this water body (scenery art over land
+				// would read as a rock on the beach)
+				let onWater = true;
+				for (let r = 0; r < tpl.mask.length && onWater; r++)
+					for (let i = 0; i < tpl.mask[r].length; i++) {
+						const u = x - (tpl.mask[r].length - 1 - i), v = y - (tpl.mask.length - 1 - r);
+						if (!water[v * W + u] || id[v * W + u] !== b) { onWater = false; break; }
+					}
+				if (!onWater || !footprintFits(tpl, x, y, 0, W, H, wb)) continue;
+				const walls = blockingCells(tpl, x, y).map(([u, v]) => v * W + u);
+				// kelp blocks nothing, so footprintFits waves it through anywhere:
+				// keep its art off cells another object or a harbour uses
+				if (!walls.length) {
+					let clear = true;
+					for (let r = 0; r < tpl.mask.length && clear; r++)
+						for (let i = 0; i < tpl.mask[r].length; i++) {
+							const u = x - (tpl.mask[r].length - 1 - i), v = y - (tpl.mask.length - 1 - r);
+							if (wb[v * W + u] & (OCCUPIED | RESERVED)) { clear = false; break; }
+						}
+					if (!clear) continue;
+				}
+				if (walls.length && !guard.accepts(walls)) continue;
+				// a visit needs open water beside it that a boat can reach
+				const vis = visitableCells(tpl, x, y);
+				if (vis.length) {
+					let ok = false;
+					for (const [vx, vy] of vis)
+						for (const [dx, dy] of allowedDirs(tpl)) {
+							const u = vx + dx, v = vy + dy;
+							if (u < 0 || v < 0 || u >= W || v >= H) continue;
+							const n = v * W + u;
+							if (!walls.includes(n) && !(wb[n] & OCCUPIED) && guard.reachable[n]) { ok = true; break; }
+						}
+					if (!ok) continue;
+				}
+				const [type, subtype] = identity(entry);
+				objects.push(objectEntry(type, x, y, l, tpl, subtype));
+				footprintBlock(tpl, x, y, 0, W, H, wb);
+				if (walls.length) guard.refresh();
+				else
+					for (let r = 0; r < tpl.mask.length; r++)
+						for (let i = 0; i < tpl.mask[r].length; i++)
+							wb[(y - (tpl.mask.length - 1 - r)) * W + x - (tpl.mask[r].length - 1 - i)] |= RESERVED;
+				// pickups keep a cell of open water around them
+				if (vis.length)
+					for (const [vx, vy] of vis)
+						for (let dy = -1; dy <= 1; dy++)
+							for (let dx = -1; dx <= 1; dx++) {
+								const u = vx + dx, v = vy + dy;
+								if (u >= 0 && v >= 0 && u < W && v < H) wb[v * W + u] |= RESERVED;
+							}
+				placed++;
+				cursor = (cursor + tries + 1) % cells.length;
+				break;
+			}
+		}
+	}
+	if (placed) console.error(`[gen] level ${l}: ${placed} object(s) on the water`);
+	return placed;
+}
+
+/**
+ * Island maps (water W3): one link per harbour, from its boarding ground to
+ * every land cell beside the water it sails (a landing). The links feed
+ * followLinks and sweepStranded, which then treat a boat the way they treat
+ * a portal pair. Each link is [boarding, shore, true (one way), kind].
+ */
+function sailLinksFor(harbours, water, W, H) {
+	if (!harbours || !harbours.length) return [];
+	const { id } = waterBodies(water, W, H);
+	const shoreOf = new Map();
+	for (let c = 0; c < W * H; c++) {
+		if (water[c]) continue;
+		const x = c % W, y = (c / W) | 0, seen = new Set();
+		for (let dy = -1; dy <= 1; dy++)
+			for (let dx = -1; dx <= 1; dx++) {
+				const u = x + dx, v = y + dy;
+				if ((!dx && !dy) || u < 0 || v < 0 || u >= W || v >= H || !water[v * W + u]) continue;
+				const b = id[v * W + u];
+				if (seen.has(b)) continue;
+				seen.add(b);
+				if (!shoreOf.has(b)) shoreOf.set(b, []);
+				shoreOf.get(b).push(c);
+			}
+	}
+	return harbours.map(h => [h.boarding, shoreOf.get(h.body) || [], true, h.kind]);
+}
+
+module.exports = { placeHarbours, fillWater, waterBodies, sailLinksFor, MIN_BODY };

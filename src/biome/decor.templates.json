@@ -1,0 +1,8390 @@
+{
+ "single": {
+  "gr": [
+   {
+    "type": "grassHills",
+    "animation": "avlxgr10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.28322,
+    "cells": 1
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.26224,
+    "cells": 1
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.25874,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.1014,
+    "cells": 1
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf12g0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02797,
+    "cells": 1
+   },
+   {
+    "type": "stump",
+    "animation": "AvLStm1",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02797,
+    "cells": 1
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf01g0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02098,
+    "cells": 1
+   },
+   {
+    "type": "stump",
+    "animation": "AvLStm2",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.01748,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00851,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00768,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00749,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00749,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00736,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00739,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00686,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.006,
+    "cells": 1
+   },
+   {
+    "type": "log",
+    "animation": "AvLdlog",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00229,
+    "cells": 1
+   }
+  ],
+  "dt": [
+   {
+    "type": "rock",
+    "animation": "AVLrk5d0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.2511,
+    "cells": 1
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLfl9d0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.17621,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh5d0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.163,
+    "cells": 1
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLfl6d0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.15419,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh8d0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.11454,
+    "cells": 1
+   },
+   {
+    "type": "stump",
+    "animation": "AvLStm2",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.08811,
+    "cells": 1
+   },
+   {
+    "type": "stump",
+    "animation": "AvLStm1",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.05286,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00719,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00649,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00633,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00633,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00622,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00768,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00713,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00624,
+    "cells": 1
+   },
+   {
+    "type": "log",
+    "animation": "AvLdlog",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02632,
+    "cells": 1
+   }
+  ],
+  "sa": [
+   {
+    "type": "desertHills",
+    "animation": "avlxds11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.07831,
+    "cells": 1
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca070",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0738,
+    "cells": 1
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06928,
+    "cells": 1
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06928,
+    "cells": 1
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca040",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06476,
+    "cells": 1
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06476,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLplm10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06024,
+    "cells": 1
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca120",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06024,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLyuc10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06024,
+    "cells": 1
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca110",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06024,
+    "cells": 1
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca130",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06024,
+    "cells": 1
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.05271,
+    "cells": 1
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.05271,
+    "cells": 1
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca010",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.04367,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLyuc30",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03916,
+    "cells": 1
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03012,
+    "cells": 1
+   },
+   {
+    "type": "skull",
+    "animation": "AVLskul0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03012,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLyuc20",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03012,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00144,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0013,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00127,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00127,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00124,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00232,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00215,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00188,
+    "cells": 1
+   }
+  ],
+  "sn": [
+   {
+    "type": "shrub",
+    "animation": "AVLs2sn0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.20136,
+    "cells": 1
+   },
+   {
+    "type": "stump",
+    "animation": "AVLp2sn0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.19683,
+    "cells": 1
+   },
+   {
+    "type": "stump",
+    "animation": "AVLp1sn0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.19231,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs1sn0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.14932,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr7sn0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.05882,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr8sn0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.04525,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr1sn0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.04299,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr4sn0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.04299,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr5sn0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0362,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr3sn0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03394,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00605,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00546,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00533,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00533,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00523,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00942,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00875,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00765,
+    "cells": 1
+   }
+  ],
+  "sw": [
+   {
+    "type": "rock",
+    "animation": "AVLrk2s0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.16162,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLrk4s0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.13131,
+    "cells": 1
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.11869,
+    "cells": 1
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.09596,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt16",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.08838,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLrk1s0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.05808,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt15",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.05808,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLswp70",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.05051,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt08",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.05051,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs10s0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.04293,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs11s0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03788,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt09",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0303,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs07s0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0303,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs08s0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02273,
+    "cells": 1
+   },
+   {
+    "type": "mandrake",
+    "animation": "AVLman10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02273,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00402,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00362,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00353,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00353,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00347,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00362,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00337,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00294,
+    "cells": 1
+   },
+   {
+    "type": "log",
+    "animation": "AvLdlog",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00114,
+    "cells": 1
+   }
+  ],
+  "rg": [
+   {
+    "type": "skull",
+    "animation": "AVLskul0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.11544,
+    "cells": 1
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.08892,
+    "cells": 1
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct7r0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0702,
+    "cells": 1
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0702,
+    "cells": 1
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.05616,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr15r0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0546,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr14r0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.04836,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLyuc30",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.04524,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo06",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.04524,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRR01",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.04212,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo04",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.04212,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "avlsh5r0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03276,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "avlsh8r0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03276,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh3r0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0312,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLyuc10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0312,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh1r0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02808,
+    "cells": 1
+   },
+   {
+    "type": "stump",
+    "animation": "AvLStm2",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02808,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "avlsh7r0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02652,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLyuc20",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02652,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "avlsh4r0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0234,
+    "cells": 1
+   },
+   {
+    "type": "stump",
+    "animation": "AvLStm1",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0234,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh2r0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02184,
+    "cells": 1
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca2r0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0156,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00159,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00148,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00129,
+    "cells": 1
+   },
+   {
+    "type": "log",
+    "animation": "AvLdlog",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02288,
+    "cells": 1
+   }
+  ],
+  "lv": [
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv160",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.17143,
+    "cells": 1
+   },
+   {
+    "type": "crater",
+    "animation": "AVLc12l0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.14857,
+    "cells": 1
+   },
+   {
+    "type": "crater",
+    "animation": "AVLc14l0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.14857,
+    "cells": 1
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv150",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.12286,
+    "cells": 1
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv170",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.12286,
+    "cells": 1
+   },
+   {
+    "type": "crater",
+    "animation": "AVLc13l0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.11714,
+    "cells": 1
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv210",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.1,
+    "cells": 1
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv220",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06857,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00264,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00238,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00232,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00232,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00228,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00116,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00108,
+    "cells": 1
+   }
+  ],
+  "sb": [
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.08951,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.08322,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.07692,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.07273,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06923,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06783,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06783,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms110",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06643,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06643,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms040",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.06224,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLstg40",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.04056,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr09u0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03986,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr16u0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03776,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr13u0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03427,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr14u0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.03007,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLstg20",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02937,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLstg50",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02937,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLstg30",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.02797,
+    "cells": 1
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct2u0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00559,
+    "cells": 1
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct5u0",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0028,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00414,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00373,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00364,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00364,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00358,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu12",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00522,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu10",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00485,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu11",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00424,
+    "cells": 1
+   }
+  ]
+ },
+ "clusters": {
+  "gr": [
+   {
+    "type": "lake",
+    "animation": "AVLlk2g0",
+    "mask": [
+     "BBBB",
+     "BBBB"
+    ],
+    "weight": 0.05337,
+    "cells": 8
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk1g0",
+    "mask": [
+     "BBBBB",
+     "BBBBB",
+     "VBBBV"
+    ],
+    "weight": 0.04489,
+    "cells": 13
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct2g0",
+    "mask": [
+     "BBB",
+     "BBB",
+     "BBB"
+    ],
+    "weight": 0.03858,
+    "cells": 9
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct1g0",
+    "mask": [
+     "BBBB",
+     "VBBB"
+    ],
+    "weight": 0.03237,
+    "cells": 7
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr03",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.03217,
+    "cells": 2
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr01",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.03051,
+    "cells": 2
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr04",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.03031,
+    "cells": 4
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr02",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.03031,
+    "cells": 2
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr06",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.02979,
+    "cells": 4
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr05",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.02896,
+    "cells": 2
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLsptr7",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.0271,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgn3",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.02544,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgn2",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.02472,
+    "cells": 5
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLsptr8",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.02379,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgn1",
+    "mask": [
+     "VVVVVV",
+     "VBBBBV",
+     "VBBBBB",
+     "VVVBBB"
+    ],
+    "weight": 0.02276,
+    "cells": 12
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgn0",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.02151,
+    "cells": 12
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgr3",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.02069,
+    "cells": 5
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr07",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.02007,
+    "cells": 3
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr09",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.01986,
+    "cells": 3
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr08",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.01893,
+    "cells": 3
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG02",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01882,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG01",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01748,
+    "cells": 2
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgr4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.01655,
+    "cells": 5
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLpntr6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.01531,
+    "cells": 7
+   },
+   {
+    "type": "mound",
+    "animation": "AVLmd1g0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.0151,
+    "cells": 2
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgr1",
+    "mask": [
+     "VVVVVV",
+     "VVVVVV",
+     "VBBBBV",
+     "VBBBBB",
+     "VVVBBB"
+    ],
+    "weight": 0.01489,
+    "cells": 12
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLpntr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.01479,
+    "cells": 7
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLautr6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.01407,
+    "cells": 7
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc2g0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01407,
+    "cells": 2
+   },
+   {
+    "type": "mound",
+    "animation": "AVLmd2g0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01396,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct5g0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01386,
+    "cells": 2
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc1g0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01355,
+    "cells": 2
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLautr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.01303,
+    "cells": 7
+   },
+   {
+    "type": "crater",
+    "animation": "AVLctrg0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01303,
+    "cells": 2
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgr2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.01148,
+    "cells": 12
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc3g0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01086,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct3g0",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.01034,
+    "cells": 4
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk3g0",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00931,
+    "cells": 3
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgn4",
+    "mask": [
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00683,
+    "cells": 4
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgn5",
+    "mask": [
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.0061,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.0059,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR4",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00528,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00507,
+    "cells": 4
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG04",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00507,
+    "cells": 1
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgr5",
+    "mask": [
+     "BBV",
+     "VBB"
+    ],
+    "weight": 0.00486,
+    "cells": 4
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR2",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00486,
+    "cells": 4
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf10g0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00476,
+    "cells": 2
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR5",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00465,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLAUTR3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00465,
+    "cells": 4
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgr6",
+    "mask": [
+     "VBB",
+     "BBV"
+    ],
+    "weight": 0.00455,
+    "cells": 4
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf08g0",
+    "mask": [
+     "VBB"
+    ],
+    "weight": 0.00424,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG09",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00403,
+    "cells": 1
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLAUTR4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00403,
+    "cells": 4
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG03",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00403,
+    "cells": 1
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00403,
+    "cells": 4
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG05",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00393,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG07",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00393,
+    "cells": 1
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00393,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLAUTR5",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00372,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLAUTR2",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00372,
+    "cells": 4
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh3g0",
+    "mask": [
+     "VBB"
+    ],
+    "weight": 0.00372,
+    "cells": 2
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf06g0",
+    "mask": [
+     "VVV",
+     "VBB"
+    ],
+    "weight": 0.00372,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG08",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00362,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG10",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00352,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG06",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00331,
+    "cells": 1
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR5",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.003,
+    "cells": 4
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh6g0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.0029,
+    "cells": 2
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf03g0",
+    "mask": [
+     "VVV",
+     "BBB"
+    ],
+    "weight": 0.00279,
+    "cells": 3
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh5g0",
+    "mask": [
+     "VBB"
+    ],
+    "weight": 0.00279,
+    "cells": 2
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00279,
+    "cells": 1
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00259,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh4g0",
+    "mask": [
+     "VBB"
+    ],
+    "weight": 0.00259,
+    "cells": 2
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00248,
+    "cells": 1
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR2",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00217,
+    "cells": 1
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00217,
+    "cells": 1
+   },
+   {
+    "type": "oakTrees",
+    "animation": "avlautr0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00186,
+    "cells": 1
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf04g0",
+    "mask": [
+     "VBBB"
+    ],
+    "weight": 0.00186,
+    "cells": 3
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLsntr6",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00176,
+    "cells": 7
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf05g0",
+    "mask": [
+     "VBBB"
+    ],
+    "weight": 0.00176,
+    "cells": 3
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf11g0",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00165,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh1g0",
+    "mask": [
+     "VBBB"
+    ],
+    "weight": 0.00145,
+    "cells": 3
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh2g0",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00145,
+    "cells": 3
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf09g0",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00134,
+    "cells": 1
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00134,
+    "cells": 12
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf02g0",
+    "mask": [
+     "VBBB"
+    ],
+    "weight": 0.00124,
+    "cells": 3
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00124,
+    "cells": 12
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLf07g0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00124,
+    "cells": 2
+   },
+   {
+    "type": "trees",
+    "animation": "AVLDEAD7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00114,
+    "cells": 7
+   },
+   {
+    "type": "oakTrees",
+    "animation": "avlautr1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00103,
+    "cells": 1
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00103,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00083,
+    "cells": 5
+   },
+   {
+    "type": "stump",
+    "animation": "AvLStm3",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00062,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00062,
+    "cells": 7
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00062,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr6",
+    "mask": [
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00052,
+    "cells": 4
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00041,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr8",
+    "mask": [
+     "VVVVVV",
+     "VVVBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00041,
+    "cells": 6
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00031,
+    "cells": 12
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00031,
+    "cells": 4
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct2r0",
+    "mask": [
+     "BB",
+     "BB",
+     "BV"
+    ],
+    "weight": 0.00031,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtvo4",
+    "mask": [
+     "VVV",
+     "BBB",
+     "BBV"
+    ],
+    "weight": 0.00031,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsw2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00031,
+    "cells": 12
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu06",
+    "mask": [
+     "VB",
+     "BB"
+    ],
+    "weight": 0.0019,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu08",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.0008,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu07",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00079,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu09",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00069,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu01",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00045,
+    "cells": 4
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu02",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00044,
+    "cells": 4
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00086,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00077,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00075,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00075,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00074,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms110",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00073,
+    "cells": 1
+   },
+   {
+    "type": "lavaLake",
+    "animation": "AVLllk10",
+    "mask": [
+     "BBB",
+     "BBB"
+    ],
+    "weight": 0.00024,
+    "cells": 6
+   }
+  ],
+  "dt": [
+   {
+    "type": "mountain",
+    "animation": "avlmtdr1",
+    "mask": [
+     "VVVVVV",
+     "VBBBBV",
+     "VBBBBB",
+     "VVVBBB"
+    ],
+    "weight": 0.06724,
+    "cells": 12
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr3",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.05716,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.05459,
+    "cells": 12
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.04996,
+    "cells": 5
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk2d0",
+    "mask": [
+     "BBBB",
+     "BBBB"
+    ],
+    "weight": 0.04832,
+    "cells": 8
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr8",
+    "mask": [
+     "VVVVVV",
+     "VVVBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.04493,
+    "cells": 6
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr7",
+    "mask": [
+     "VVVVVV",
+     "VBBBVV",
+     "VVVBBB"
+    ],
+    "weight": 0.04051,
+    "cells": 6
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLpntr6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.03609,
+    "cells": 7
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct5d0",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.02755,
+    "cells": 4
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLpntr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.02652,
+    "cells": 7
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk1d0",
+    "mask": [
+     "BBBBBBB",
+     "BBBBBBB",
+     "BBBVVVV"
+    ],
+    "weight": 0.0257,
+    "cells": 17
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr5",
+    "mask": [
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.02498,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLautr6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.02334,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr6",
+    "mask": [
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.02221,
+    "cells": 4
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt04",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.01974,
+    "cells": 2
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt01",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.01964,
+    "cells": 2
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt05",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.01922,
+    "cells": 2
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt03",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.01912,
+    "cells": 2
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt00",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.01902,
+    "cells": 2
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt02",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.01871,
+    "cells": 2
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLautr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.01809,
+    "cells": 7
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt06",
+    "mask": [
+     "VVV",
+     "BBB"
+    ],
+    "weight": 0.01388,
+    "cells": 3
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk3d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01357,
+    "cells": 2
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt09",
+    "mask": [
+     "VVV",
+     "BBB"
+    ],
+    "weight": 0.01285,
+    "cells": 3
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt11",
+    "mask": [
+     "VVV",
+     "BBB"
+    ],
+    "weight": 0.01203,
+    "cells": 3
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt08",
+    "mask": [
+     "VVV",
+     "BBB"
+    ],
+    "weight": 0.01151,
+    "cells": 3
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt07",
+    "mask": [
+     "VVV",
+     "BBB"
+    ],
+    "weight": 0.011,
+    "cells": 3
+   },
+   {
+    "type": "dirtHills",
+    "animation": "avlxdt10",
+    "mask": [
+     "VVV",
+     "BBB"
+    ],
+    "weight": 0.0109,
+    "cells": 3
+   },
+   {
+    "type": "rock",
+    "animation": "AVLrk3d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00771,
+    "cells": 2
+   },
+   {
+    "type": "mound",
+    "animation": "AVLmd1d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.0075,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct3d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.0074,
+    "cells": 2
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.0072,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRD02",
+    "mask": [
+     "VVV",
+     "VBB"
+    ],
+    "weight": 0.0072,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRD01",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00709,
+    "cells": 2
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc1d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00679,
+    "cells": 2
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR5",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00679,
+    "cells": 4
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtr3d0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00679,
+    "cells": 1
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct4d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00668,
+    "cells": 2
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc2d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00668,
+    "cells": 2
+   },
+   {
+    "type": "mound",
+    "animation": "AVLmd2d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00637,
+    "cells": 2
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00637,
+    "cells": 4
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct1d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00617,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct2d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00617,
+    "cells": 2
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtr2d0",
+    "mask": [
+     "VVV",
+     "VBV"
+    ],
+    "weight": 0.00576,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtr1d0",
+    "mask": [
+     "VVV",
+     "VBV"
+    ],
+    "weight": 0.00576,
+    "cells": 1
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00565,
+    "cells": 4
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc3d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00555,
+    "cells": 2
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00555,
+    "cells": 1
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLfl3d0",
+    "mask": [
+     "VBB"
+    ],
+    "weight": 0.00555,
+    "cells": 2
+   },
+   {
+    "type": "oakTrees",
+    "animation": "avlautr1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00545,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRD04",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00524,
+    "cells": 1
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLfl1d0",
+    "mask": [
+     "VBB"
+    ],
+    "weight": 0.00504,
+    "cells": 2
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh2d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00493,
+    "cells": 2
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh4d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00493,
+    "cells": 2
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR2",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00493,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLAUTR5",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00463,
+    "cells": 4
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh7d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00452,
+    "cells": 2
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLfl8d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00452,
+    "cells": 2
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh1d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00422,
+    "cells": 2
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh3d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.0038,
+    "cells": 2
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLfl4d0",
+    "mask": [
+     "VBB"
+    ],
+    "weight": 0.0036,
+    "cells": 2
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLfl7d0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.0036,
+    "cells": 2
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLAUTR3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.0035,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "avlautr0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.0035,
+    "cells": 1
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLAUTR4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00329,
+    "cells": 4
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLfl2d0",
+    "mask": [
+     "VBB"
+    ],
+    "weight": 0.00319,
+    "cells": 2
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLAUTR2",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00267,
+    "cells": 4
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLfl5d0",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00226,
+    "cells": 3
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLsptr8",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00216,
+    "cells": 7
+   },
+   {
+    "type": "stump",
+    "animation": "AvLStm3",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00206,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh6d0",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00206,
+    "cells": 3
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsw2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00103,
+    "cells": 12
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLsntr6",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00093,
+    "cells": 7
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00082,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00082,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00072,
+    "cells": 5
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00072,
+    "cells": 7
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr9",
+    "mask": [
+     "VVVVVV",
+     "VBBVBB",
+     "VVBBBV"
+    ],
+    "weight": 0.00072,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgn2",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00072,
+    "cells": 5
+   },
+   {
+    "type": "trees",
+    "animation": "AVLDEAD7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00051,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgn0",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00051,
+    "cells": 12
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtds2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00041,
+    "cells": 12
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk3s0",
+    "mask": [
+     "BBV",
+     "BBV",
+     "BBV"
+    ],
+    "weight": 0.00041,
+    "cells": 6
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00031,
+    "cells": 12
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk1g0",
+    "mask": [
+     "BBBBB",
+     "BBBBB",
+     "VBBBV"
+    ],
+    "weight": 0.00031,
+    "cells": 13
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct4l0",
+    "mask": [
+     "BB",
+     "BV"
+    ],
+    "weight": 0.00031,
+    "cells": 3
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsw4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00031,
+    "cells": 5
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00031,
+    "cells": 4
+   },
+   {
+    "type": "trees",
+    "animation": "AVLDEAD6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.00031,
+    "cells": 7
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr6",
+    "mask": [
+     "VBV",
+     "VBV"
+    ],
+    "weight": 0.00031,
+    "cells": 2
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtds4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00031,
+    "cells": 5
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu06",
+    "mask": [
+     "VB",
+     "BB"
+    ],
+    "weight": 0.00171,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu08",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00072,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu07",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00071,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu09",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00062,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu01",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.0004,
+    "cells": 4
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu02",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.0004,
+    "cells": 4
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00072,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00065,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00063,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00063,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00062,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms110",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00062,
+    "cells": 1
+   },
+   {
+    "type": "log",
+    "animation": "AvLdlog",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00162,
+    "cells": 1
+   },
+   {
+    "type": "lavaLake",
+    "animation": "AVLllk10",
+    "mask": [
+     "BBB",
+     "BBB"
+    ],
+    "weight": 0.00023,
+    "cells": 6
+   }
+  ],
+  "sa": [
+   {
+    "type": "mountain",
+    "animation": "AVLmtds3",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.12987,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtds4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.10299,
+    "cells": 5
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds05",
+    "mask": [
+     "BV",
+     "BB"
+    ],
+    "weight": 0.09489,
+    "cells": 3
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtds1",
+    "mask": [
+     "VVVVVV",
+     "VBBBBV",
+     "VBBBBB",
+     "VVVBBB"
+    ],
+    "weight": 0.06175,
+    "cells": 12
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtds2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.05776,
+    "cells": 12
+   },
+   {
+    "type": "sandDune",
+    "animation": "AVLdun10",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.04772,
+    "cells": 2
+   },
+   {
+    "type": "sandDune",
+    "animation": "AVLdun20",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.04718,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLctds0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.03994,
+    "cells": 2
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtds5",
+    "mask": [
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.03843,
+    "cells": 4
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds04",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.03498,
+    "cells": 4
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds01",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.03498,
+    "cells": 4
+   },
+   {
+    "type": "sandPit",
+    "animation": "AVLspit0",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.03465,
+    "cells": 3
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtds6",
+    "mask": [
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.03368,
+    "cells": 4
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds02",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.03303,
+    "cells": 4
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds06",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.0312,
+    "cells": 4
+   },
+   {
+    "type": "sandDune",
+    "animation": "AVLdun30",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.02839,
+    "cells": 3
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds03",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.02656,
+    "cells": 2
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds07",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.01932,
+    "cells": 3
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds08",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.01403,
+    "cells": 3
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds09",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.01371,
+    "cells": 3
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLautr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.01188,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00529,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00529,
+    "cells": 5
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca100",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00464,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLplm30",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00464,
+    "cells": 1
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLpntr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00432,
+    "cells": 7
+   },
+   {
+    "type": "trees",
+    "animation": "AVLplm50",
+    "mask": [
+     "VVV",
+     "VBV"
+    ],
+    "weight": 0.00378,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLplm40",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00378,
+    "cells": 1
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00313,
+    "cells": 12
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00313,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00313,
+    "cells": 5
+   },
+   {
+    "type": "trees",
+    "animation": "AVLplm20",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00281,
+    "cells": 1
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr8",
+    "mask": [
+     "VVVVVV",
+     "VVVBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00248,
+    "cells": 6
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca060",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00248,
+    "cells": 1
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00216,
+    "cells": 12
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLsptr8",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.0013,
+    "cells": 7
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk1g0",
+    "mask": [
+     "BBBBB",
+     "BBBBB",
+     "VBBBV"
+    ],
+    "weight": 0.0013,
+    "cells": 13
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgn2",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.0013,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn6",
+    "mask": [
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.0013,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.0013,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgr4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.0013,
+    "cells": 5
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLsntr6",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.0013,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgr2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00097,
+    "cells": 12
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00097,
+    "cells": 12
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct2r0",
+    "mask": [
+     "BB",
+     "BB",
+     "BV"
+    ],
+    "weight": 0.00097,
+    "cells": 5
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu06",
+    "mask": [
+     "VB",
+     "BB"
+    ],
+    "weight": 0.00046,
+    "cells": 3
+   }
+  ],
+  "sn": [
+   {
+    "type": "pineTrees",
+    "animation": "AVLsntr7",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.0739,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn3",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.06611,
+    "cells": 5
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.05927,
+    "cells": 7
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLsntr6",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.05737,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn1",
+    "mask": [
+     "VVVVV",
+     "BBBBV",
+     "BBBBB",
+     "VVBBB"
+    ],
+    "weight": 0.05464,
+    "cells": 12
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.04948,
+    "cells": 12
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.04948,
+    "cells": 5
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.04822,
+    "cells": 7
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs3sn0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.04443,
+    "cells": 2
+   },
+   {
+    "type": "frozenLake",
+    "animation": "AVLflk30",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.04064,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLctsn0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.038,
+    "cells": 2
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLd4sn0",
+    "mask": [
+     "VVV",
+     "VBB"
+    ],
+    "weight": 0.03327,
+    "cells": 2
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLd1sn0",
+    "mask": [
+     "VVV",
+     "VBB"
+    ],
+    "weight": 0.03179,
+    "cells": 2
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLd2sn0",
+    "mask": [
+     "VVVV",
+     "VBBB"
+    ],
+    "weight": 0.03095,
+    "cells": 3
+   },
+   {
+    "type": "frozenLake",
+    "animation": "AVLflk20",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.02863,
+    "cells": 3
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr6sn0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.02169,
+    "cells": 2
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn5",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.01958,
+    "cells": 4
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr2sn0",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.01958,
+    "cells": 2
+   },
+   {
+    "type": "frozenLake",
+    "animation": "AVLflk10",
+    "mask": [
+     "BBBBB",
+     "BBBBB"
+    ],
+    "weight": 0.01705,
+    "cells": 10
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn6",
+    "mask": [
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.01516,
+    "cells": 4
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLSNTR4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.0139,
+    "cells": 4
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLSNTR5",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.01379,
+    "cells": 4
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLSNTR3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.01348,
+    "cells": 4
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLSNTR2",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.01274,
+    "cells": 4
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLSNTR1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.01221,
+    "cells": 1
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLo1sn0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01126,
+    "cells": 2
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLSNTR0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.01053,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn2",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.01042,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.0099,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.0099,
+    "cells": 4
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLo2sn0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.0099,
+    "cells": 2
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn5",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00863,
+    "cells": 4
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLo3sn0",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00747,
+    "cells": 3
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLd6sn0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00621,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00558,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00526,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLd8sn0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00516,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLd5sn0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00474,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLd7sn0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00453,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLd3sn0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00432,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLd9sn0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00379,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00179,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00168,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtds4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00158,
+    "cells": 5
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLsptr8",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00147,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00137,
+    "cells": 12
+   },
+   {
+    "type": "trees",
+    "animation": "AVLDEAD7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00126,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgn2",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00095,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtds2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00095,
+    "cells": 12
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLautr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00084,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr8",
+    "mask": [
+     "VVVVVV",
+     "VVVBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00074,
+    "cells": 6
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLpntr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00074,
+    "cells": 7
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk1g0",
+    "mask": [
+     "BBBBB",
+     "BBBBB",
+     "VBBBV"
+    ],
+    "weight": 0.00074,
+    "cells": 13
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk1d0",
+    "mask": [
+     "BBBBBBB",
+     "BBBBBBB",
+     "BBBVVVV"
+    ],
+    "weight": 0.00063,
+    "cells": 17
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00053,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsw2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00053,
+    "cells": 12
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk1s0",
+    "mask": [
+     "VBBBBBV",
+     "VBBBBBV",
+     "VVBBBBV"
+    ],
+    "weight": 0.00032,
+    "cells": 14
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct2r0",
+    "mask": [
+     "BB",
+     "BB",
+     "BV"
+    ],
+    "weight": 0.00032,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00032,
+    "cells": 12
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr6",
+    "mask": [
+     "VBV",
+     "VBV"
+    ],
+    "weight": 0.00032,
+    "cells": 2
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu06",
+    "mask": [
+     "VB",
+     "BB"
+    ],
+    "weight": 0.00179,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu08",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00075,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu07",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00074,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu09",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00065,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu01",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00042,
+    "cells": 4
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu02",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00042,
+    "cells": 4
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00059,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00053,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00052,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00052,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00051,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms110",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0005,
+    "cells": 1
+   },
+   {
+    "type": "lavaLake",
+    "animation": "AVLllk10",
+    "mask": [
+     "BBB",
+     "BBB"
+    ],
+    "weight": 0.00024,
+    "cells": 6
+   }
+  ],
+  "sw": [
+   {
+    "type": "oakTrees",
+    "animation": "AVLsptr7",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.05677,
+    "cells": 7
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk1s0",
+    "mask": [
+     "VBBBBBV",
+     "VBBBBBV",
+     "VVBBBBV"
+    ],
+    "weight": 0.05465,
+    "cells": 14
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLsptr8",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.05062,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsw1",
+    "mask": [
+     "VVVVVV",
+     "VBBBBV",
+     "VBBBBB",
+     "VVVBBB"
+    ],
+    "weight": 0.04967,
+    "cells": 12
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk3s0",
+    "mask": [
+     "BBV",
+     "BBV",
+     "BBV"
+    ],
+    "weight": 0.04724,
+    "cells": 6
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsw3",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.04565,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsw2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.04078,
+    "cells": 12
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.0377,
+    "cells": 7
+   },
+   {
+    "type": "trees",
+    "animation": "AVLswmp6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.03463,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsw4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.02743,
+    "cells": 5
+   },
+   {
+    "type": "trees",
+    "animation": "AVLswmp7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.02595,
+    "cells": 7
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.02531,
+    "cells": 7
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr6",
+    "mask": [
+     "VBV",
+     "VBV"
+    ],
+    "weight": 0.02288,
+    "cells": 2
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr9",
+    "mask": [
+     "VVVVVV",
+     "VBBVBB",
+     "VVBBBV"
+    ],
+    "weight": 0.01949,
+    "cells": 7
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk2s0",
+    "mask": [
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.01949,
+    "cells": 5
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLswp10",
+    "mask": [
+     "VBBBB",
+     "BBBBB"
+    ],
+    "weight": 0.01885,
+    "cells": 9
+   },
+   {
+    "type": "rock",
+    "animation": "AVLrk3s0",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.0179,
+    "cells": 2
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBV"
+    ],
+    "weight": 0.01695,
+    "cells": 6
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsw5",
+    "mask": [
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.01483,
+    "cells": 4
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsw6",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.01387,
+    "cells": 4
+   },
+   {
+    "type": "lake",
+    "animation": "AVLswp50",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01356,
+    "cells": 2
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw07",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.01292,
+    "cells": 3
+   },
+   {
+    "type": "trees",
+    "animation": "AVLwlw10",
+    "mask": [
+     "VVV",
+     "BBB"
+    ],
+    "weight": 0.01207,
+    "cells": 3
+   },
+   {
+    "type": "crater",
+    "animation": "AVLctrs0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01176,
+    "cells": 2
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw06",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.0108,
+    "cells": 4
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs03s0",
+    "mask": [
+     "BBBBB"
+    ],
+    "weight": 0.0108,
+    "cells": 5
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw08",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.01049,
+    "cells": 3
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.01017,
+    "cells": 4
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw03",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00985,
+    "cells": 4
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw09",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00985,
+    "cells": 3
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw04",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00921,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR5",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00868,
+    "cells": 4
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr7",
+    "mask": [
+     "VVBV",
+     "VBBB"
+    ],
+    "weight": 0.00805,
+    "cells": 4
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw05",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00773,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR4",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00741,
+    "cells": 4
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw01",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00741,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00741,
+    "cells": 4
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw02",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00678,
+    "cells": 4
+   },
+   {
+    "type": "trees",
+    "animation": "AVLwlw20",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00678,
+    "cells": 2
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr5",
+    "mask": [
+     "VVBBVV",
+     "VBBVBV"
+    ],
+    "weight": 0.00646,
+    "cells": 5
+   },
+   {
+    "type": "trees",
+    "animation": "AVLswmp2",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00551,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLdt1s0",
+    "mask": [
+     "VV",
+     "VV",
+     "BB"
+    ],
+    "weight": 0.0053,
+    "cells": 2
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr2",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.0053,
+    "cells": 4
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr8",
+    "mask": [
+     "VBB",
+     "VBB"
+    ],
+    "weight": 0.0053,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLdt3s0",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.0053,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLdt2s0",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00498,
+    "cells": 2
+   },
+   {
+    "type": "trees",
+    "animation": "AVLswmp3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00466,
+    "cells": 4
+   },
+   {
+    "type": "trees",
+    "animation": "AVLswmp4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00466,
+    "cells": 4
+   },
+   {
+    "type": "mandrake",
+    "animation": "AVLman40",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00466,
+    "cells": 3
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD5",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00434,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLswp60",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00434,
+    "cells": 2
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt00",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00434,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLswp30",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00434,
+    "cells": 3
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLswp40",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00434,
+    "cells": 2
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00434,
+    "cells": 4
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs01s0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00402,
+    "cells": 2
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs06s0",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00402,
+    "cells": 2
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr0",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00402,
+    "cells": 4
+   },
+   {
+    "type": "trees",
+    "animation": "AVLswmp5",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00371,
+    "cells": 4
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt10",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00371,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLswp20",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00371,
+    "cells": 3
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs04s0",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00371,
+    "cells": 3
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00307,
+    "cells": 4
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt17",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00307,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt14",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00307,
+    "cells": 1
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR2",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00307,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs09s0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00307,
+    "cells": 2
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00307,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD2",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00275,
+    "cells": 4
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00244,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt05",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00244,
+    "cells": 1
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLSPTR0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00244,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLdead6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.00244,
+    "cells": 7
+   },
+   {
+    "type": "mandrake",
+    "animation": "AVLman20",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00244,
+    "cells": 2
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00212,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt12",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00212,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt02",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00212,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtr2d0",
+    "mask": [
+     "VVV",
+     "VBV"
+    ],
+    "weight": 0.00212,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs02s0",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00212,
+    "cells": 3
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtds2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00212,
+    "cells": 12
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.0018,
+    "cells": 7
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt06",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.0018,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt07",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.0018,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt04",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.0018,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr1",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.0018,
+    "cells": 4
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt19",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00159,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt01",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00159,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLswmp0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00159,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLdead7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00159,
+    "cells": 7
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLautr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00159,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgn2",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00127,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtds4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00127,
+    "cells": 5
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtr3d0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00127,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt11",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00095,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLdead2",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00095,
+    "cells": 4
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt13",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00095,
+    "cells": 1
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLpntr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00095,
+    "cells": 7
+   },
+   {
+    "type": "trees",
+    "animation": "AVLwlw30",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00095,
+    "cells": 1
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00095,
+    "cells": 5
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu06",
+    "mask": [
+     "VB",
+     "BB"
+    ],
+    "weight": 0.00079,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu08",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00033,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu07",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00033,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu09",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00029,
+    "cells": 3
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00039,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00035,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00034,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00034,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00034,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms110",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00034,
+    "cells": 1
+   }
+  ],
+  "rg": [
+   {
+    "type": "mountain",
+    "animation": "avlmtrf3",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.10367,
+    "cells": 5
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct2r0",
+    "mask": [
+     "BB",
+     "BB",
+     "BV"
+    ],
+    "weight": 0.07051,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.0675,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf1",
+    "mask": [
+     "VVVVVV",
+     "VBBBBV",
+     "VBBBBB",
+     "VVVBBB"
+    ],
+    "weight": 0.06082,
+    "cells": 12
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.05813,
+    "cells": 12
+   },
+   {
+    "type": "canyon",
+    "animation": "AVLglly0",
+    "mask": [
+     "BBVV",
+     "BBBB",
+     "VVBB"
+    ],
+    "weight": 0.0562,
+    "cells": 8
+   },
+   {
+    "type": "lakeDUPLICATE",
+    "animation": "AVLlk1r",
+    "mask": [
+     "VBBV",
+     "BBBB"
+    ],
+    "weight": 0.0422,
+    "cells": 6
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro03",
+    "mask": [
+     "VB",
+     "BB"
+    ],
+    "weight": 0.04199,
+    "cells": 3
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct3r0",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.02885,
+    "cells": 3
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf5",
+    "mask": [
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.02121,
+    "cells": 4
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtrf6",
+    "mask": [
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.01679,
+    "cells": 4
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc4r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01529,
+    "cells": 2
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc2r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01518,
+    "cells": 2
+   },
+   {
+    "type": "mound",
+    "animation": "AVLmd3r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01453,
+    "cells": 2
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro01",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.014,
+    "cells": 2
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro09",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.01378,
+    "cells": 3
+   },
+   {
+    "type": "mound",
+    "animation": "AVLmd1r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01335,
+    "cells": 2
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc1r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01292,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct5r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01281,
+    "cells": 2
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro07",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.01249,
+    "cells": 3
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro08",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.01206,
+    "cells": 3
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc3r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01184,
+    "cells": 2
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro05",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.01173,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct1r0",
+    "mask": [
+     "VBB",
+     "BBV"
+    ],
+    "weight": 0.0113,
+    "cells": 4
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro02",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.01098,
+    "cells": 4
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct8r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01087,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLctrr0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01066,
+    "cells": 2
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro06",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.01033,
+    "cells": 4
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct9r0",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.0099,
+    "cells": 4
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtrRo3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00958,
+    "cells": 4
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr06r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00958,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct4r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00947,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr09r0",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00915,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr03r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00915,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr04r0",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00861,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct6r0",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00807,
+    "cells": 4
+   },
+   {
+    "type": "rock",
+    "animation": "avlbuzr0",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00807,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr02r0",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00786,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr07r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00786,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRR05",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00764,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr08r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00764,
+    "cells": 2
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtrRo5",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00764,
+    "cells": 4
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtrRo2",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00732,
+    "cells": 4
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro04",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00678,
+    "cells": 4
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr11r0",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00495,
+    "cells": 1
+   },
+   {
+    "type": "shrub",
+    "animation": "avlsh6r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00463,
+    "cells": 2
+   },
+   {
+    "type": "shrub",
+    "animation": "avlsh9r0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00431,
+    "cells": 2
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtrRo6",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.0042,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr10r0",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.0042,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr13r0",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00388,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo07",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00377,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtrRo7",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00366,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo08",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00344,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo02",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00334,
+    "cells": 1
+   },
+   {
+    "type": "mound",
+    "animation": "AVLmd2r0",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00312,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo01",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00312,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo00",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00301,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo09",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00301,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo12",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00291,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo11",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00291,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr12r0",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00258,
+    "cells": 1
+   },
+   {
+    "type": "stump",
+    "animation": "AvLStm3",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00258,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo05",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00237,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo03",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00226,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLtRo10",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00183,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLroug1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00161,
+    "cells": 1
+   },
+   {
+    "type": "trees",
+    "animation": "AVLroug2",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00118,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLddsn7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00108,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00108,
+    "cells": 12
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca1r0",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00086,
+    "cells": 1
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00075,
+    "cells": 12
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLpntr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00075,
+    "cells": 7
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLPNTR3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.00065,
+    "cells": 4
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk1g0",
+    "mask": [
+     "BBBBB",
+     "BBBBB",
+     "VBBBV"
+    ],
+    "weight": 0.00065,
+    "cells": 13
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "AVLtrRo0",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00065,
+    "cells": 4
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswt17",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00065,
+    "cells": 1
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "avlswtr6",
+    "mask": [
+     "VBV",
+     "VBV"
+    ],
+    "weight": 0.00065,
+    "cells": 2
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLautr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00043,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "avlmtdr4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00043,
+    "cells": 5
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "AVLtrRo2",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00043,
+    "cells": 4
+   },
+   {
+    "type": "treesDUPLICATE",
+    "animation": "AVLtRo09",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00043,
+    "cells": 1
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLsntr6",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00043,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtgr4",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00043,
+    "cells": 5
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLsptr8",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00043,
+    "cells": 7
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu06",
+    "mask": [
+     "VB",
+     "BB"
+    ],
+    "weight": 0.00044,
+    "cells": 3
+   },
+   {
+    "type": "log",
+    "animation": "AvLdlog",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00141,
+    "cells": 1
+   }
+  ],
+  "lv": [
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.08374,
+    "cells": 7
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv230",
+    "mask": [
+     "B",
+     "B"
+    ],
+    "weight": 0.06726,
+    "cells": 2
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.06474,
+    "cells": 7
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv250",
+    "mask": [
+     "B",
+     "B"
+    ],
+    "weight": 0.06097,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct2l0",
+    "mask": [
+     "BB",
+     "BB",
+     "BB",
+     "BB"
+    ],
+    "weight": 0.04984,
+    "cells": 8
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct1l0",
+    "mask": [
+     "BBBB",
+     "BBBB"
+    ],
+    "weight": 0.04963,
+    "cells": 8
+   },
+   {
+    "type": "crater",
+    "animation": "AVLc11l0",
+    "mask": [
+     "BB",
+     "VB"
+    ],
+    "weight": 0.03903,
+    "cells": 3
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct4l0",
+    "mask": [
+     "BB",
+     "BV"
+    ],
+    "weight": 0.03075,
+    "cells": 3
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlav30",
+    "mask": [
+     "BBBBBB",
+     "BBBBBB"
+    ],
+    "weight": 0.02907,
+    "cells": 12
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtvo1",
+    "mask": [
+     "VVVVV",
+     "BBBBV",
+     "BBBBB",
+     "VVBBB"
+    ],
+    "weight": 0.02676,
+    "cells": 12
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlav20",
+    "mask": [
+     "VBB",
+     "BBB"
+    ],
+    "weight": 0.02361,
+    "cells": 5
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.02256,
+    "cells": 4
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct3l0",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.02162,
+    "cells": 4
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct8l0",
+    "mask": [
+     "B",
+     "B"
+    ],
+    "weight": 0.02162,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct6l0",
+    "mask": [
+     "B",
+     "B"
+    ],
+    "weight": 0.02109,
+    "cells": 2
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv120",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01994,
+    "cells": 2
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD2",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.01941,
+    "cells": 4
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct7l0",
+    "mask": [
+     "B",
+     "B"
+    ],
+    "weight": 0.01941,
+    "cells": 2
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv240",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01826,
+    "cells": 2
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv140",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01794,
+    "cells": 2
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtvo3",
+    "mask": [
+     "VVV",
+     "BBB",
+     "VBB"
+    ],
+    "weight": 0.01763,
+    "cells": 5
+   },
+   {
+    "type": "volcano",
+    "animation": "AVLvol30",
+    "mask": [
+     "VVV",
+     "VVV",
+     "BBB"
+    ],
+    "weight": 0.01679,
+    "cells": 3
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.01679,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD5",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.01658,
+    "cells": 4
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct5l0",
+    "mask": [
+     "B",
+     "B"
+    ],
+    "weight": 0.01511,
+    "cells": 2
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv260",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01364,
+    "cells": 2
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtvo4",
+    "mask": [
+     "VVV",
+     "BBB",
+     "BBV"
+    ],
+    "weight": 0.01312,
+    "cells": 5
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv130",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.0128,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLc10l0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01259,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct9l0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.01165,
+    "cells": 2
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtvo2",
+    "mask": [
+     "VVVVV",
+     "VBBBV",
+     "BBBBB",
+     "BBBVV"
+    ],
+    "weight": 0.01144,
+    "cells": 11
+   },
+   {
+    "type": "volcano",
+    "animation": "AVLvol40",
+    "mask": [
+     "VBV",
+     "BBB"
+    ],
+    "weight": 0.00997,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00965,
+    "cells": 1
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00913,
+    "cells": 1
+   },
+   {
+    "type": "volcano",
+    "animation": "AVLvol20",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00797,
+    "cells": 2
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtvo5",
+    "mask": [
+     "BBV",
+     "VBB"
+    ],
+    "weight": 0.00745,
+    "cells": 4
+   },
+   {
+    "type": "volcano",
+    "animation": "AVLvol10",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00682,
+    "cells": 2
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv200",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00651,
+    "cells": 4
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv110",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00651,
+    "cells": 4
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlav40",
+    "mask": [
+     "BBB",
+     "BBB"
+    ],
+    "weight": 0.0063,
+    "cells": 6
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv190",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.0063,
+    "cells": 4
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv180",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00598,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLdead6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.00546,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtvo6",
+    "mask": [
+     "VBB",
+     "BBV"
+    ],
+    "weight": 0.00514,
+    "cells": 4
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlav90",
+    "mask": [
+     "BBB",
+     "BBB"
+    ],
+    "weight": 0.00483,
+    "cells": 6
+   },
+   {
+    "type": "lavaLake",
+    "animation": "AVLlav10",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00451,
+    "cells": 4
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv100",
+    "mask": [
+     "BBB",
+     "BBB"
+    ],
+    "weight": 0.00451,
+    "cells": 6
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlav60",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00399,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLdead7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00367,
+    "cells": 7
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlav70",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00315,
+    "cells": 4
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlav80",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00315,
+    "cells": 4
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlav50",
+    "mask": [
+     "BBB",
+     "BBB"
+    ],
+    "weight": 0.00283,
+    "cells": 6
+   },
+   {
+    "type": "volcano",
+    "animation": "AVLvol50",
+    "mask": [
+     "VVVVV",
+     "VVVVV",
+     "VVVVV",
+     "VBBBV",
+     "VBBBV"
+    ],
+    "weight": 0.00252,
+    "cells": 6
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk1g0",
+    "mask": [
+     "BBBBB",
+     "BBBBB",
+     "VBBBV"
+    ],
+    "weight": 0.00231,
+    "cells": 13
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsn2",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.00115,
+    "cells": 12
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLdead4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.00115,
+    "cells": 4
+   },
+   {
+    "type": "trees",
+    "animation": "AVLDEAD7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00115,
+    "cells": 7
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLpntr7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00084,
+    "cells": 7
+   },
+   {
+    "type": "oakTrees",
+    "animation": "AVLsptr8",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00084,
+    "cells": 7
+   },
+   {
+    "type": "pineTrees",
+    "animation": "AVLsntr6",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.00084,
+    "cells": 7
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu06",
+    "mask": [
+     "VB",
+     "BB"
+    ],
+    "weight": 0.00029,
+    "cells": 3
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00022,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0002,
+    "cells": 1
+   },
+   {
+    "type": "lavaLake",
+    "animation": "AVLllk10",
+    "mask": [
+     "BBB",
+     "BBB"
+    ],
+    "weight": 0.00021,
+    "cells": 6
+   }
+  ],
+  "sb": [
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv2u0",
+    "mask": [
+     "B",
+     "B"
+    ],
+    "weight": 0.09722,
+    "cells": 2
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD6",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.08053,
+    "cells": 7
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu06",
+    "mask": [
+     "VB",
+     "BB"
+    ],
+    "weight": 0.07645,
+    "cells": 3
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct3u0",
+    "mask": [
+     "B",
+     "B"
+    ],
+    "weight": 0.06618,
+    "cells": 2
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD7",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.06501,
+    "cells": 7
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsb3",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VVBB"
+    ],
+    "weight": 0.05812,
+    "cells": 5
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsb2",
+    "mask": [
+     "VVVV",
+     "VBBB",
+     "VBBV"
+    ],
+    "weight": 0.04307,
+    "cells": 5
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu08",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.0321,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu07",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.03151,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu09",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.02789,
+    "cells": 3
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD2",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.01832,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD4",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.01797,
+    "cells": 4
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu01",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.01786,
+    "cells": 4
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu02",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.01774,
+    "cells": 4
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu04",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.01727,
+    "cells": 4
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsb4",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.01646,
+    "cells": 4
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu03",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.01646,
+    "cells": 4
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsb5",
+    "mask": [
+     "VVVV",
+     "VBBV",
+     "VVBB"
+    ],
+    "weight": 0.01646,
+    "cells": 4
+   },
+   {
+    "type": "lavaLake",
+    "animation": "AVLllk10",
+    "mask": [
+     "BBB",
+     "BBB"
+    ],
+    "weight": 0.01587,
+    "cells": 6
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD5",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.01587,
+    "cells": 4
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsb1",
+    "mask": [
+     "VVVVVV",
+     "VBBBBV",
+     "VBBBBB",
+     "VVVBBB"
+    ],
+    "weight": 0.01506,
+    "cells": 12
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD3",
+    "mask": [
+     "VVVV",
+     "VVBB",
+     "VBBV"
+    ],
+    "weight": 0.01412,
+    "cells": 4
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD1",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.01319,
+    "cells": 1
+   },
+   {
+    "type": "mountain",
+    "animation": "AVLmtsb0",
+    "mask": [
+     "VVVVVV",
+     "VVBBBB",
+     "VBBBBB",
+     "VBBBVV"
+    ],
+    "weight": 0.01167,
+    "cells": 12
+   },
+   {
+    "type": "deadVegetation",
+    "animation": "AVLDEAD0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.01132,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms100",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.01015,
+    "cells": 1
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu05",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00969,
+    "cells": 2
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms120",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00945,
+    "cells": 2
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms010",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00817,
+    "cells": 2
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms060",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00817,
+    "cells": 2
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc4u0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00805,
+    "cells": 2
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk2u0",
+    "mask": [
+     "VVVV",
+     "BBBB",
+     "BBBB"
+    ],
+    "weight": 0.00805,
+    "cells": 8
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc1u0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00794,
+    "cells": 2
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc2u0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00782,
+    "cells": 2
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms070",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00747,
+    "cells": 2
+   },
+   {
+    "type": "outcropping",
+    "animation": "AVLoc3u0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00724,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLstg60",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00724,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr15u0",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00572,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr08u0",
+    "mask": [
+     "VB"
+    ],
+    "weight": 0.00549,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr04u0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00549,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr05u0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00537,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr11u0",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00537,
+    "cells": 1
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv1u0",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00537,
+    "cells": 4
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr10u0",
+    "mask": [
+     "VBB"
+    ],
+    "weight": 0.00525,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr07u0",
+    "mask": [
+     "V",
+     "B"
+    ],
+    "weight": 0.00514,
+    "cells": 1
+   },
+   {
+    "type": "lavaLake",
+    "animation": "AVLllk20",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00502,
+    "cells": 4
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr06u0",
+    "mask": [
+     "VV",
+     "VB"
+    ],
+    "weight": 0.00502,
+    "cells": 1
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr03u0",
+    "mask": [
+     "VBB"
+    ],
+    "weight": 0.00502,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr12u0",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00467,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLstg10",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00432,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr02u0",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.00432,
+    "cells": 2
+   },
+   {
+    "type": "rock",
+    "animation": "AVLr01u0",
+    "mask": [
+     "VVV",
+     "VBB"
+    ],
+    "weight": 0.00408,
+    "cells": 2
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv3u0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00373,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct4u0",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00362,
+    "cells": 4
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk3u0",
+    "mask": [
+     "VV",
+     "BB"
+    ],
+    "weight": 0.0021,
+    "cells": 2
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct1u0",
+    "mask": [
+     "BB"
+    ],
+    "weight": 0.00117,
+    "cells": 2
+   },
+   {
+    "type": "lake",
+    "animation": "AVLlk1u0",
+    "mask": [
+     "VVBBBBBB",
+     "VBBBBBBB",
+     "VBBBBBBV"
+    ],
+    "weight": 0.00058,
+    "cells": 19
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu06",
+    "mask": [
+     "VB",
+     "BB"
+    ],
+    "weight": 0.00131,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu08",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00055,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu07",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00054,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu09",
+    "mask": [
+     "BBB"
+    ],
+    "weight": 0.00048,
+    "cells": 3
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu01",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.00031,
+    "cells": 4
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu02",
+    "mask": [
+     "BB",
+     "BB"
+    ],
+    "weight": 0.0003,
+    "cells": 4
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00046,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms050",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00041,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms020",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0004,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms080",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0004,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms090",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.0004,
+    "cells": 1
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms110",
+    "mask": [
+     "B"
+    ],
+    "weight": 0.00039,
+    "cells": 1
+   }
+  ]
+ },
+ "note": "harvested from 71 installed RMG maps; core art only (no animation path contains a slash, so nothing here needs a mod). single = one-cell border art, clusters = free-standing terrain features. Real maps block 17.8 percent of their cells with scenery at 5.03 blocking cells per decoration."
+}

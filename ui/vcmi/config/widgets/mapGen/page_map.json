@@ -1,0 +1,532 @@
+{
+	"library": [
+		"config/widgets/commonPrimitives.json"
+	],
+	"items": [
+		{
+			"name": "help_map.size",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 166,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.map.size.hover",
+				"help": "vcmi.mapGen.map.size.help"
+			}
+		},
+		{
+			"name": "label_map.size",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.map.size.hover",
+			"position": {
+				"x": 58,
+				"y": 171
+			}
+		},
+		{
+			"name": "slider_map.size",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 170
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 6,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/map/size",
+			"valueMin": 36,
+			"valueStep": 36,
+			"valueDefault": 108,
+			"valueLabel": "value_map.size",
+			"valueNames": [
+				[
+					36,
+					"vcmi.mapGen.map.size.stop0"
+				],
+				[
+					72,
+					"vcmi.mapGen.map.size.stop1"
+				],
+				[
+					108,
+					"vcmi.mapGen.map.size.stop2"
+				],
+				[
+					144,
+					"vcmi.mapGen.map.size.stop3"
+				],
+				[
+					180,
+					"vcmi.mapGen.map.size.stop4"
+				],
+				[
+					216,
+					"vcmi.mapGen.map.size.stop5"
+				],
+				[
+					252,
+					"vcmi.mapGen.map.size.stop6"
+				]
+			]
+		},
+		{
+			"name": "value_map.size",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 171
+			}
+		},
+		{
+			"name": "help_map.underground",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 196,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.map.underground.hover",
+				"help": "vcmi.mapGen.map.underground.help"
+			}
+		},
+		{
+			"name": "label_map.underground",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.map.underground.hover",
+			"position": {
+				"x": 58,
+				"y": 201
+			}
+		},
+		{
+			"name": "check_map.underground",
+			"type": "toggleButton",
+			"image": "lobby/checkbox",
+			"position": {
+				"x": 202,
+				"y": 195
+			},
+			"setting": "persistent:mapGen/map/underground",
+			"selected": false,
+			"help": {
+				"hover": "vcmi.mapGen.map.underground.hover",
+				"help": "vcmi.mapGen.map.underground.help"
+			}
+		},
+		{
+			"name": "help_map.declareMods",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 226,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.map.declareMods.hover",
+				"help": "vcmi.mapGen.map.declareMods.help"
+			}
+		},
+		{
+			"name": "label_map.declareMods",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.map.declareMods.hover",
+			"position": {
+				"x": 58,
+				"y": 231
+			}
+		},
+		{
+			"name": "check_map.declareMods",
+			"type": "toggleButton",
+			"image": "lobby/checkbox",
+			"position": {
+				"x": 202,
+				"y": 225
+			},
+			"setting": "persistent:mapGen/map/declareMods",
+			"selected": false,
+			"help": {
+				"hover": "vcmi.mapGen.map.declareMods.hover",
+				"help": "vcmi.mapGen.map.declareMods.help"
+			}
+		},
+		{
+			"name": "help_map.players",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 256,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.map.players.hover",
+				"help": "vcmi.mapGen.map.players.help"
+			}
+		},
+		{
+			"name": "label_map.players",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.map.players.hover",
+			"position": {
+				"x": 58,
+				"y": 261
+			}
+		},
+		{
+			"name": "group_map.players",
+			"type": "toggleGroup",
+			"position": {
+				"x": 58,
+				"y": 280
+			},
+			"setting": "persistent:mapGen/map/players",
+			"values": [
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8
+			],
+			"selected": 2,
+			"items": [
+				{
+					"index": 0,
+					"type": "toggleButton",
+					"image": "RANNUM2",
+					"position": {
+						"x": 0,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.players.hover",
+						"help": "vcmi.mapGen.map.players.help"
+					}
+				},
+				{
+					"index": 1,
+					"type": "toggleButton",
+					"image": "RANNUM3",
+					"position": {
+						"x": 32,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.players.hover",
+						"help": "vcmi.mapGen.map.players.help"
+					}
+				},
+				{
+					"index": 2,
+					"type": "toggleButton",
+					"image": "RANNUM4",
+					"position": {
+						"x": 64,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.players.hover",
+						"help": "vcmi.mapGen.map.players.help"
+					}
+				},
+				{
+					"index": 3,
+					"type": "toggleButton",
+					"image": "RANNUM5",
+					"position": {
+						"x": 96,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.players.hover",
+						"help": "vcmi.mapGen.map.players.help"
+					}
+				},
+				{
+					"index": 4,
+					"type": "toggleButton",
+					"image": "RANNUM6",
+					"position": {
+						"x": 128,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.players.hover",
+						"help": "vcmi.mapGen.map.players.help"
+					}
+				},
+				{
+					"index": 5,
+					"type": "toggleButton",
+					"image": "RANNUM7",
+					"position": {
+						"x": 160,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.players.hover",
+						"help": "vcmi.mapGen.map.players.help"
+					}
+				},
+				{
+					"index": 6,
+					"type": "toggleButton",
+					"image": "RANNUM8",
+					"position": {
+						"x": 192,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.players.hover",
+						"help": "vcmi.mapGen.map.players.help"
+					}
+				}
+			]
+		},
+		{
+			"name": "help_map.humans",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 320,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.map.humans.hover",
+				"help": "vcmi.mapGen.map.humans.help"
+			}
+		},
+		{
+			"name": "label_map.humans",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.map.humans.hover",
+			"position": {
+				"x": 58,
+				"y": 325
+			}
+		},
+		{
+			"name": "group_map.humans",
+			"type": "toggleGroup",
+			"position": {
+				"x": 58,
+				"y": 344
+			},
+			"setting": "persistent:mapGen/map/humans",
+			"values": [
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8
+			],
+			"selected": 0,
+			"items": [
+				{
+					"index": 0,
+					"type": "toggleButton",
+					"image": "RANNUM1",
+					"position": {
+						"x": 0,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.humans.hover",
+						"help": "vcmi.mapGen.map.humans.help"
+					}
+				},
+				{
+					"index": 1,
+					"type": "toggleButton",
+					"image": "RANNUM2",
+					"position": {
+						"x": 32,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.humans.hover",
+						"help": "vcmi.mapGen.map.humans.help"
+					}
+				},
+				{
+					"index": 2,
+					"type": "toggleButton",
+					"image": "RANNUM3",
+					"position": {
+						"x": 64,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.humans.hover",
+						"help": "vcmi.mapGen.map.humans.help"
+					}
+				},
+				{
+					"index": 3,
+					"type": "toggleButton",
+					"image": "RANNUM4",
+					"position": {
+						"x": 96,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.humans.hover",
+						"help": "vcmi.mapGen.map.humans.help"
+					}
+				},
+				{
+					"index": 4,
+					"type": "toggleButton",
+					"image": "RANNUM5",
+					"position": {
+						"x": 128,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.humans.hover",
+						"help": "vcmi.mapGen.map.humans.help"
+					}
+				},
+				{
+					"index": 5,
+					"type": "toggleButton",
+					"image": "RANNUM6",
+					"position": {
+						"x": 160,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.humans.hover",
+						"help": "vcmi.mapGen.map.humans.help"
+					}
+				},
+				{
+					"index": 6,
+					"type": "toggleButton",
+					"image": "RANNUM7",
+					"position": {
+						"x": 192,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.humans.hover",
+						"help": "vcmi.mapGen.map.humans.help"
+					}
+				},
+				{
+					"index": 7,
+					"type": "toggleButton",
+					"image": "RANNUM8",
+					"position": {
+						"x": 224,
+						"y": 0
+					},
+					"help": {
+						"hover": "vcmi.mapGen.map.humans.hover",
+						"help": "vcmi.mapGen.map.humans.help"
+					}
+				}
+			]
+		},
+		{
+			"name": "help_map.template",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 388,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.map.template.hover",
+				"help": "vcmi.mapGen.map.template.help"
+			}
+		},
+		{
+			"name": "label_map.template",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.map.template.hover",
+			"position": {
+				"x": 58,
+				"y": 393
+			}
+		},
+		{
+			"name": "buttonChooseTemplate",
+			"type": "button",
+			"image": "MapGenButton80",
+			"position": {
+				"x": 202,
+				"y": 384
+			},
+			"callback": "chooseMapGenTemplate",
+			"help": {
+				"hover": "vcmi.mapGen.map.template.hover",
+				"help": "vcmi.mapGen.map.template.help"
+			},
+			"items": [
+				{
+					"type": "label",
+					"font": "small",
+					"alignment": "center",
+					"color": "yellow",
+					"text": "vcmi.mapGen.template.button"
+				}
+			]
+		},
+		{
+			"name": "labelTemplateName",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 58,
+				"y": 423
+			}
+		}
+	]
+}

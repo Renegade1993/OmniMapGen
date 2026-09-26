@@ -1,0 +1,122 @@
+/**
+ * extract_h3_templates.js - read object templates out of the installed
+ * Heroes 3 data (queue item 25d, water phase W2).
+ *
+ * The engine takes every core object's templates from DATA/OBJECTS
+ * (Objects.txt in H3ab_bmp.lod over H3bitmap.lod; ZOBJCTS in the editor), not from JSON config, so the generator's asset index has none
+ * for them and its object pools were harvested from corpus maps instead. The
+ * corpus has no water, so boats, shipyards, water treasure and water scenery
+ * have no harvested templates. This reads the table itself, crops each
+ * template to its .msk size exactly as ObjectTemplate::readTxt + readMsk do,
+ * and writes the ones a water map needs as the JSON the map format carries.
+ *
+ *   node tools/extract_h3_templates.js <dataDir> > src/biome/water_templates.json
+ *
+ * dataDir is the folder holding the game's .lod archives (read only). It is
+ * always named: like the generator, this never guesses where the game lives.
+ */
+'use strict';
+
+const fs = require('fs'), path = require('path'), zlib = require('zlib');
+
+function readLod(file) {
+	const b = fs.readFileSync(file);
+	if (b.toString('latin1', 0, 3) !== 'LOD') throw new Error(`${file}: not a LOD archive`);
+	const count = b.readUInt32LE(8);
+	const entries = new Map();
+	for (let i = 0; i < count; i++) {
+		const o = 92 + i * 32;
+		const name = b.toString('latin1', o, o + 16).replace(/\0.*$/s, '');
+		entries.set(name.toUpperCase(), { offset: b.readUInt32LE(o + 16), size: b.readUInt32LE(o + 20),
+			csize: b.readUInt32LE(o + 28) });
+	}
+	return {
+		has: n => entries.has(n.toUpperCase()),
+		read: n => {
+			const e = entries.get(n.toUpperCase());
+			if (!e) return null;
+			const raw = b.subarray(e.offset, e.offset + (e.csize || e.size));
+			return e.csize ? zlib.inflateSync(raw) : Buffer.from(raw);
+		},
+	};
+}
+
+// Obj ids (lib/constants/EntityIdentifiers.h) of what a water map uses
+const WANTED = {
+	8: 'boat', 87: 'shipyard', 29: 'flotsam', 82: 'seaChest', 86: 'shipwreckSurvivor',
+	59: 'oceanBottle', 11: 'buoy', 111: 'whirlpool', 24: 'derelictShip', 85: 'shipwreck',
+	52: 'mermaids', 42: 'lighthouse',
+};
+// visitable from the top row too (ObjectTemplate::isOnVisitableFromTopList)
+const FROM_TOP = new Set([29, 82, 86, 11, 59, 8, 111, 33, 219, 81, 12, 9, 212, 215, 22]);
+const TERRAINS = ['dirt', 'sand', 'grass', 'snow', 'swamp', 'rough', 'subterra', 'lava', 'water'];
+
+function main() {
+	const dataDir = process.argv[2];
+	if (!dataDir) {
+		console.error('usage: node tools/extract_h3_templates.js <dataDir> > out.json');
+		process.exit(1);
+	}
+	const sprites = ['H3sprite.lod', 'H3ab_spr.lod']
+		.map(f => path.join(dataDir, f)).filter(f => fs.existsSync(f)).map(readLod);
+	// the engine reads DATA/OBJECTS, and the Armageddon's Blade archive is
+	// mounted over the base one, so its copy wins where both exist
+	let txt = null;
+	for (const f of ['H3ab_bmp.lod', 'H3bitmap.lod']) {
+		const p = path.join(dataDir, f);
+		if (!txt && fs.existsSync(p)) txt = readLod(p).read('Objects.txt');
+	}
+	if (!txt) throw new Error('Objects.txt not found in H3ab_bmp.lod or H3bitmap.lod');
+	const lines = txt.toString('latin1').split(/\r?\n/).slice(1).filter(l => l.trim());
+	const out = [];
+	for (const line of lines) {
+		const s = line.trim().split(' ');
+		if (s.length !== 9) continue;
+		const [def, blockStr, visitStr, , terrStr, cls, sub, type, prio] = s;
+		const id = +cls;
+		const allowed = TERRAINS.filter((_, i) => terrStr[8 - i] === '1');
+		const waterOnly = allowed.length === 1 && allowed[0] === 'water';
+		// water scenery: any non-visitable template that stands only on water
+		const isScenery = waterOnly && !/1/.test(visitStr);
+		if (!WANTED[id] && !isScenery) continue;
+		// internal orientation: [0][0] is the anchor, rows go up, columns left
+		const used = [];
+		for (let i = 0; i < 6; i++) {
+			used.push([]);
+			for (let j = 0; j < 8; j++)
+				used[i].push({ blocked: blockStr[i * 8 + j] === '0', visit: visitStr[i * 8 + j] === '1' });
+		}
+		let w = 8, h = 6;
+		const mskName = def.replace(/\.def$/i, '.msk');
+		for (const lod of sprites)
+			if (lod.has(mskName)) { const m = lod.read(mskName); w = m[0]; h = m[1]; break; }
+		// JSON rows run top to bottom, left to right, anchor bottom right
+		const mask = [];
+		for (let i = h - 1; i >= 0; i--) {
+			let row = '';
+			for (let j = w - 1; j >= 0; j--) {
+				const t = used[i][j] || { blocked: false, visit: false };
+				row += t.blocked ? (t.visit ? 'A' : 'B') : 'V';
+			}
+			mask.push(row);
+		}
+		const fromTop = FROM_TOP.has(id) || [2, 3, 4, 5].includes(+type);
+		out.push({
+			kind: WANTED[id] || 'waterScenery', id, subid: +sub,
+			template: {
+				animation: def.replace(/\.def$/i, ''), editorAnimation: '', mask,
+				...(/1/.test(visitStr) ? { visitableFrom: fromTop ? ['+++', '+-+', '+++'] : ['---', '+-+', '+++'] } : {}),
+				...(prio !== '0' ? { zIndex: +prio * 100 } : {}),
+			},
+			allowedTerrains: allowed,
+		});
+	}
+	process.stdout.write(JSON.stringify({
+		_comment: 'Generated by tools/extract_h3_templates.js from Objects.txt (H3ab_bmp.lod over H3bitmap.lod) and the .msk sizes (H3sprite.lod, H3ab_spr.lod). Do not edit by hand.',
+		templates: out,
+	}, null, '\t') + '\n');
+	console.error(`${out.length} templates: ` + Object.entries(out.reduce((m, t) => (m[t.kind] = (m[t.kind] || 0) + 1, m), {}))
+		.map(([k, n]) => `${k} ${n}`).join(', '));
+}
+
+main();

@@ -1,0 +1,7 @@
+{
+	"_about": "Guard themes (--guardtheme <name>): every guard on the map becomes a creature whose identifier contains one of the terms, from core or any active mod, nearest the level the guard was planned at. Terms, not a fixed creature list, so a mod that adds a matching creature joins the theme without an edit here.",
+	"golems": {
+		"label": "Golems and constructs",
+		"match": ["golem", "automaton", "gargoyle", "juggernaut", "colossus", "construct"]
+	}
+}

@@ -1,0 +1,3 @@
+# Store text with LF and give each checkout its platform's endings (21 files had
+# CRLF from Windows editors; DMB Dev's check before the first commit)
+* text=auto

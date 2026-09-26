@@ -1,0 +1,4262 @@
+{
+ "_provenance": "Harvested 2026-09-20 from 71 VCMI RMG maps under Documents/My Games/vcmi/Maps/RandomMaps. Masks and visitableFrom are copied verbatim from engine-written records; the terrain->animation mapping was derived by reading the terrain code under each placed mine. Only core H3 defs are listed (no mod-scoped paths), so these load on any install. coreBanks holds the seven vanilla Heroes 3 creature banks, whose templates also live only in the LOD archives and were harvested the same way. bonuses holds the classic one-visit buildings (shrines, stat boosters, magic wells), harvested the same way. structures/barriers added 2026-09-21 by the same method: the most common engine-written record per object across the same 71 maps, core defs only. barriers are the one-cell (mask [\"B\"]) blocking decorations, keyed by the terrain code read from under each placed instance. bonuses re-measured 2026-09-21 across 30 maps: weights are the rate per 1000 cells times 100, and thirteen types were added that the generator had never emitted (schoolOfWar, leanTo, wagon, warriorTomb, faerieRing, fountainOfFortune, fountainOfYouth, oasis, stables, temple, rallyFlag, wateringHole, corpse). spellScroll and dragonUtopia added 2026-09-21: the scroll template comes from config/objects/moddables.json and the 66 core spells are the ones real maps actually put on scrolls, since an identifier the engine cannot resolve silently becomes spell 0. Corpus rates: scrolls 3.55 per 1000 cells, utopias 0.41. utilities + concreteDwellings harvested 2026-09-22 by MapGen SWE2: utilities are the corpus one-visit/portal/quest types the generator never emitted (seerHut, crypt, denOfThieves, observatory, markets, camps, monolith subtypes - monoliths must be placed in PAIRS of one subtype), core art only, weight = corpus rate/1k x100. concreteDwellings are the corpus-resolved creatureGenerator* subtypes with level = the produced creatures config level. pileKinds re-measured 2026-09-24 from vmap_census.js over the same 71 maps (rate per 1000 cells x10); the 2026-09-20 weights gave gold 23% of concrete piles against the corpus 29%.",
+ "mineTerrainAnim": {
+  "sawmill": {
+   "gr": "AVMsawg0",
+   "dt": "AVMsawd0",
+   "sn": "AVMswsn0",
+   "rg": "AVMsawr0",
+   "sa": "AVMswds0",
+   "sb": "AVMsawl0",
+   "lv": "AVMsawl0",
+   "ws": "AVMsawl0",
+   "sw": "AVMsawl0"
+  },
+  "orePit": {
+   "gr": "AVMore0",
+   "dt": "AVMordr0",
+   "sn": "AVMorsn0",
+   "sw": "AVMorsw0",
+   "rg": "AVMorro0",
+   "sb": "AVMorsb0",
+   "lv": "AVMorlv0",
+   "sa": "AVMords0",
+   "ws": "AVMorro0"
+  },
+  "goldMine": {
+   "gr": "AVMgogr0",
+   "dt": "AVMgodr0",
+   "sn": "AVMgosn0",
+   "sw": "AVMgosw0",
+   "rg": "AVMgorf0",
+   "sb": "AVMgosb0",
+   "lv": "AVMgovo0",
+   "sa": "AVMgods0",
+   "ws": "AVMgorf0"
+  },
+  "gemPond": {
+   "gr": "AVMgems0",
+   "dt": "AVMgedr0",
+   "sn": "AVMgesn0",
+   "sw": "AVMgems0",
+   "rg": "AVMgerf0",
+   "sb": "AVMgerf0",
+   "lv": "AVMgelv0",
+   "sa": "AVMgerf0",
+   "ws": "AVMgerf0"
+  },
+  "crystalCavern": {
+   "gr": "AVMcrgr0",
+   "dt": "AVMcrdr0",
+   "sn": "AVMcrsn0",
+   "sw": "AVMcrsw0",
+   "rg": "AVMcrrf0",
+   "sb": "AVMcrsu0",
+   "lv": "AVMcrvo0",
+   "sa": "AVMcrds0",
+   "ws": "AVMcrrf0"
+  },
+  "alchemistLab": {
+   "sn": "AVMalcs0"
+  },
+  "sulfurDune": {}
+ },
+ "mineDefaultAnim": {
+  "sawmill": "AVMsawg0",
+  "orePit": "AVMore0",
+  "goldMine": "AVMgogr0",
+  "gemPond": "AVMgems0",
+  "crystalCavern": "AVMcrgr0",
+  "alchemistLab": "AVMalch0",
+  "sulfurDune": "AVMsulf0"
+ },
+ "templates": {
+  "AVMalch0": {
+   "mask": [
+    "VVV",
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMalcs0": {
+   "mask": [
+    "VVV",
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMcrdr0": {
+   "mask": [
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMcrds0": {
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMcrgr0": {
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMcrrf0": {
+   "mask": [
+    "VVV",
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMcrsn0": {
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMcrsu0": {
+   "mask": [
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMcrsw0": {
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMcrvo0": {
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgedr0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgelv0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgems0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgerf0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgesn0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgodr0": {
+   "mask": [
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgods0": {
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgogr0": {
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgorf0": {
+   "mask": [
+    "VVV",
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgosb0": {
+   "mask": [
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgosn0": {
+   "mask": [
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgosw0": {
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMgovo0": {
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMordr0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMords0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMore0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMorlv0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMorro0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMorsb0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMorsn0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMorsw0": {
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMsawd0": {
+   "mask": [
+    "VVVVV",
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMsawg0": {
+   "mask": [
+    "VVVVV",
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMsawl0": {
+   "mask": [
+    "VVVVV",
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMsawr0": {
+   "mask": [
+    "VVVVV",
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMsulf0": {
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMswds0": {
+   "mask": [
+    "VVVVV",
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMswsn0": {
+   "mask": [
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVTchst0": {
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVTcrys0": {
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVTgems0": {
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVTgold0": {
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVTmerc0": {
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVTore0": {
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVTrndm0": {
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVTsulf0": {
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVTwood0": {
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "adcfra": {
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  }
+ },
+ "pileAnim": {
+  "randomResource": "AVTrndm0",
+  "wood": "AVTwood0",
+  "ore": "AVTore0",
+  "mercury": "AVTmerc0",
+  "sulfur": "AVTsulf0",
+  "crystal": "AVTcrys0",
+  "gems": "AVTgems0",
+  "gold": "AVTgold0"
+ },
+ "chestAnim": "AVTchst0",
+ "campfireAnim": "adcfra",
+ "coreBanks": [
+  {
+   "subtype": "cyclopsStockpile",
+   "animation": "AVXbnk10",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "subtype": "dragonFlyHive",
+   "weight": 4,
+   "animation": "AVXbnk70",
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "subtype": "dwarvenTreasury",
+   "animation": "AVXbnk20",
+   "mask": [
+    "VVV",
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "subtype": "griffinConservatory",
+   "animation": "AVXbnk30",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "subtype": "impCache",
+   "animation": "AVXbnk40",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "subtype": "medusaStore",
+   "weight": 0.5,
+   "animation": "AVXbnk50",
+   "mask": [
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "subtype": "nagaBank",
+   "animation": "AVXbnk60",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  }
+ ],
+ "bonuses": [
+  {
+   "type": "shrineOfMagicLevel1",
+   "subtype": "shrineOfMagicLevel1",
+   "animation": "AVXl1sh0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 142
+  },
+  {
+   "type": "corpse",
+   "subtype": "corpse",
+   "animation": "AVXskds0",
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ],
+   "weight": 80
+  },
+  {
+   "type": "wagon",
+   "subtype": "wagon",
+   "animation": "AVTwagn0",
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 35
+  },
+  {
+   "type": "idolOfFortune",
+   "subtype": "idolOfFortune",
+   "animation": "AVSidol0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 60
+  },
+  {
+   "type": "starAxis",
+   "subtype": "starAxis",
+   "animation": "AVSaxis0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 34
+  },
+  {
+   "type": "schoolOfMagic",
+   "subtype": "schoolOfMagic",
+   "animation": "AVSschm0",
+   "mask": [
+    "VV",
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 33
+  },
+  {
+   "type": "marlettoTower",
+   "subtype": "marlettoTower",
+   "animation": "AvSMarl",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 29
+  },
+  {
+   "type": "rallyFlag",
+   "subtype": "rallyFlag",
+   "animation": "AVXrlly0",
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 29
+  },
+  {
+   "type": "mercenaryCamp",
+   "subtype": "mercenaryCamp",
+   "animation": "AVSmerc0",
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 28
+  },
+  {
+   "type": "temple",
+   "subtype": "temple",
+   "animation": "AVStmpl0",
+   "mask": [
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 28
+  },
+  {
+   "type": "shrineOfMagicLevel2",
+   "subtype": "shrineOfMagicLevel2",
+   "animation": "AVXl2sh0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 27
+  },
+  {
+   "type": "schoolOfWar",
+   "subtype": "schoolOfWar",
+   "animation": "AVSwar20",
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "BBBB",
+    "VBAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 27
+  },
+  {
+   "type": "magicWell",
+   "subtype": "magicWell",
+   "animation": "AVXwlsn0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 24
+  },
+  {
+   "type": "shrineOfMagicLevel3",
+   "subtype": "shrineOfMagicLevel3",
+   "animation": "AVXl3sh0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 19
+  },
+  {
+   "type": "warriorTomb",
+   "subtype": "warriorTomb",
+   "animation": "AVXtomb0",
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 18
+  },
+  {
+   "type": "arena",
+   "subtype": "arena",
+   "animation": "AVSarna0",
+   "mask": [
+    "VVV",
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 15
+  },
+  {
+   "type": "libraryOfEnlightenment",
+   "subtype": "libraryOfEnlightenment",
+   "animation": "AVSlibr0",
+   "mask": [
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 14
+  },
+  {
+   "type": "leanTo",
+   "subtype": "leanTo",
+   "animation": "AVMlean0",
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 14
+  },
+  {
+   "type": "tavern",
+   "subtype": "object",
+   "animation": "AVXtvrn0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 23
+  },
+  {
+   "type": "altarOfSacrifice",
+   "subtype": "object",
+   "animation": "AvXAltar",
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 20
+  },
+  {
+   "type": "gardenOfRevelation",
+   "subtype": "gardenOfRevelation",
+   "animation": "AVSgrdn0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 12
+  },
+  {
+   "type": "stables",
+   "subtype": "stables",
+   "animation": "AVXstbl0",
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 8
+  },
+  {
+   "type": "treeOfKnowledge",
+   "subtype": "treeOfKnowledge",
+   "animation": "AVXtrek0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 7
+  },
+  {
+   "type": "faerieRing",
+   "subtype": "faerieRing",
+   "animation": "AVSring0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 6
+  },
+  {
+   "type": "fountainOfFortune",
+   "subtype": "fountainOfFortune",
+   "animation": "AVSfntn0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 6
+  },
+  {
+   "type": "fountainOfYouth",
+   "subtype": "fountainOfYouth",
+   "animation": "AVXfyth0",
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 6
+  },
+  {
+   "type": "oasis",
+   "subtype": "oasis",
+   "animation": "AVXosis0",
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 1
+  },
+  {
+   "type": "wateringHole",
+   "subtype": "wateringHole",
+   "animation": "AVXwtrh0",
+   "mask": [
+    "VVVV",
+    "AAAA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "weight": 1
+  }
+ ],
+ "structures": {
+  "learningStone": {
+   "animation": "AVSgzbo0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "scholar": {
+   "animation": "AVXschl0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mysticalGarden": {
+   "animation": "AVTmyst0",
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "waterWheel": {
+   "animation": "AVMwwhl0",
+   "mask": [
+    "VVV",
+    "BBB",
+    "BBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "windmill": {
+   "animation": "AVMwndd0",
+   "mask": [
+    "VVVVV",
+    "VVVVV",
+    "VVVAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "witchHut": {
+   "animation": "AVSwtch0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "monolithTwoWay": {
+   "animation": "AVXmn2g0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "subterraneanGate": {
+   "animation": "AvTCave",
+   "mask": [
+    "VVVV",
+    "VVBV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "subterraneanGateUnder": {
+   "animation": "AvTCave",
+   "mask": [
+    "VVVV",
+    "VVBV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  }
+ },
+ "structureSubtype": {
+  "learningStone": "learningStone",
+  "scholar": "scholar",
+  "mysticalGarden": "mysticalGarden",
+  "waterWheel": "waterWheel",
+  "windmill": "windmill",
+  "witchHut": "witchHut",
+  "subterraneanGate": "object"
+ },
+ "barriers": {
+  "dt": [
+   {
+    "type": "rock",
+    "animation": "AVLrk5d0"
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLfl9d0"
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLsh5d0"
+   },
+   {
+    "type": "flowers",
+    "animation": "AVLfl6d0"
+   }
+  ],
+  "gr": [
+   {
+    "type": "grassHills",
+    "animation": "avlxgr10"
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr12"
+   },
+   {
+    "type": "grassHills",
+    "animation": "avlxgr11"
+   },
+   {
+    "type": "rock",
+    "animation": "AvLRG11"
+   }
+  ],
+  "lv": [
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv160"
+   },
+   {
+    "type": "crater",
+    "animation": "AVLc12l0"
+   },
+   {
+    "type": "crater",
+    "animation": "AVLc14l0"
+   },
+   {
+    "type": "lavaFlow",
+    "animation": "AVLlv150"
+   }
+  ],
+  "rg": [
+   {
+    "type": "skull",
+    "animation": "AVLskul0"
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro11"
+   },
+   {
+    "type": "crater",
+    "animation": "AVLct7r0"
+   },
+   {
+    "type": "roughHills",
+    "animation": "avlxro10"
+   }
+  ],
+  "sa": [
+   {
+    "type": "desertHills",
+    "animation": "avlxds11"
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca070"
+   },
+   {
+    "type": "desertHills",
+    "animation": "avlxds12"
+   },
+   {
+    "type": "cactus",
+    "animation": "AVLca050"
+   }
+  ],
+  "sb": [
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu12"
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu10"
+   },
+   {
+    "type": "mushrooms",
+    "animation": "AVLms030"
+   },
+   {
+    "type": "subterraneanRocks",
+    "animation": "avlxsu11"
+   }
+  ],
+  "sn": [
+   {
+    "type": "shrub",
+    "animation": "AVLs2sn0"
+   },
+   {
+    "type": "stump",
+    "animation": "AVLp2sn0"
+   },
+   {
+    "type": "stump",
+    "animation": "AVLp1sn0"
+   },
+   {
+    "type": "shrub",
+    "animation": "AVLs1sn0"
+   }
+  ],
+  "sw": [
+   {
+    "type": "rock",
+    "animation": "AVLrk2s0"
+   },
+   {
+    "type": "rock",
+    "animation": "AVLrk4s0"
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw11"
+   },
+   {
+    "type": "swampFoliage",
+    "animation": "avlxsw10"
+   }
+  ]
+ },
+ "barrierDefault": [
+  {
+   "type": "rock",
+   "animation": "AVLrk5d0"
+  },
+  {
+   "type": "flowers",
+   "animation": "AVLfl9d0"
+  },
+  {
+   "type": "shrub",
+   "animation": "AVLsh5d0"
+  },
+  {
+   "type": "flowers",
+   "animation": "AVLfl6d0"
+  }
+ ],
+ "spellScroll": {
+  "subtype": "object",
+  "animation": "AVA0001",
+  "mask": [
+   "VA"
+  ],
+  "visitableFrom": [
+   "+++",
+   "+-+",
+   "+++"
+  ],
+  "spells": [
+   "core:airElemental",
+   "core:airShield",
+   "core:animateDead",
+   "core:antiMagic",
+   "core:armageddon",
+   "core:berserk",
+   "core:bless",
+   "core:blind",
+   "core:bloodlust",
+   "core:chainLightning",
+   "core:clone",
+   "core:counterstrike",
+   "core:cure",
+   "core:curse",
+   "core:deathRipple",
+   "core:destroyUndead",
+   "core:dimensionDoor",
+   "core:disguise",
+   "core:dispel",
+   "core:disruptingRay",
+   "core:earthElemental",
+   "core:earthquake",
+   "core:fireElemental",
+   "core:fireShield",
+   "core:fireWall",
+   "core:fireball",
+   "core:fly",
+   "core:forceField",
+   "core:forgetfulness",
+   "core:fortune",
+   "core:frenzy",
+   "core:frostRing",
+   "core:haste",
+   "core:hypnotize",
+   "core:iceBolt",
+   "core:implosion",
+   "core:inferno",
+   "core:landMine",
+   "core:lightningBolt",
+   "core:magicArrow",
+   "core:magicMirror",
+   "core:meteorShower",
+   "core:mirth",
+   "core:misfortune",
+   "core:prayer",
+   "core:precision",
+   "core:protectAir",
+   "core:protectEarth",
+   "core:protectFire",
+   "core:protectWater",
+   "core:quicksand",
+   "core:removeObstacle",
+   "core:resurrection",
+   "core:sacrifice",
+   "core:shield",
+   "core:slayer",
+   "core:slow",
+   "core:sorrow",
+   "core:stoneSkin",
+   "core:teleport",
+   "core:townPortal",
+   "core:viewAir",
+   "core:viewEarth",
+   "core:visions",
+   "core:waterElemental",
+   "core:weakness"
+  ]
+ },
+ "dragonUtopia": {
+  "subtype": "dragonUtopia",
+  "animation": "AVSutop0",
+  "mask": [
+   "VVVVVVV",
+   "VVVVVVV",
+   "VVVBBBB",
+   "VBBBBBV",
+   "VVVBBAV"
+  ],
+  "visitableFrom": [
+   "---",
+   "+-+",
+   "+++"
+  ]
+ },
+ "specials": {
+  "_comment": "pandoraBox / prison / obelisk / grail plumbing, harvested 2026-09-21. Core defs only. prison heroes are the full 144-hero core roster from config/heroes/*.json; experience weights are the corpus distribution (0 = none). pandoraCreatures is type->amount->count as observed; pandoraSpells is the core-only union of spells seen on corpus pandora lists. obeliskTerrainAnim maps the terrain shortId under each corpus obelisk anchor to its def; AvXOblK covers sand and subterranean.",
+  "pandoraBox": {
+   "subtype": "object",
+   "animation": "ava0128",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ],
+   "rewardWeights": {
+    "experience": 1857,
+    "creatures": 1199,
+    "spells": 467,
+    "gold": 449
+   },
+   "expWeights": {
+    "5000": 647,
+    "10000": 498,
+    "15000": 340,
+    "20000": 372
+   },
+   "goldWeights": {
+    "5000": 141,
+    "10000": 128,
+    "15000": 89,
+    "20000": 91
+   },
+   "spellListSizes": {
+    "12": 266,
+    "15": 163,
+    "60": 38
+   }
+  },
+  "prison": {
+   "subtype": "prison",
+   "animation": "AVXprsn0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "heroes": [
+    "core:orrin",
+    "core:valeska",
+    "core:edric",
+    "core:sylvia",
+    "core:lordHaart",
+    "core:sorsha",
+    "core:christian",
+    "core:tyris",
+    "core:rion",
+    "core:adela",
+    "core:cuthbert",
+    "core:adelaide",
+    "core:ingham",
+    "core:sanya",
+    "core:loynis",
+    "core:caitlin",
+    "core:pasis",
+    "core:thunar",
+    "core:ignissa",
+    "core:lacus",
+    "core:monere",
+    "core:erdamon",
+    "core:fiur",
+    "core:kalt",
+    "core:luna",
+    "core:brissa",
+    "core:ciele",
+    "core:labetha",
+    "core:inteus",
+    "core:aenain",
+    "core:gelare",
+    "core:grindan",
+    "core:lorelei",
+    "core:arlach",
+    "core:dace",
+    "core:ajit",
+    "core:damacon",
+    "core:gunnar",
+    "core:synca",
+    "core:shakti",
+    "core:alamar",
+    "core:jaegar",
+    "core:malekith",
+    "core:jeddite",
+    "core:geon",
+    "core:deemer",
+    "core:sephinroth",
+    "core:darkstorn",
+    "core:bron",
+    "core:drakon",
+    "core:wystan",
+    "core:tazar",
+    "core:alkin",
+    "core:korbac",
+    "core:gerwulf",
+    "core:broghild",
+    "core:mirlanda",
+    "core:rosic",
+    "core:voy",
+    "core:verdish",
+    "core:merist",
+    "core:styg",
+    "core:andra",
+    "core:tiva",
+    "core:fiona",
+    "core:rashka",
+    "core:marius",
+    "core:ignatius",
+    "core:octavia",
+    "core:calh",
+    "core:pyre",
+    "core:nymus",
+    "core:ayden",
+    "core:xyron",
+    "core:axsis",
+    "core:olema",
+    "core:calid",
+    "core:ash",
+    "core:zydar",
+    "core:xarfax",
+    "core:straker",
+    "core:vokial",
+    "core:moandor",
+    "core:charna",
+    "core:tamika",
+    "core:isra",
+    "core:clavius",
+    "core:galthran",
+    "core:septienna",
+    "core:aislinn",
+    "core:sandro",
+    "core:nimbus",
+    "core:thant",
+    "core:xsi",
+    "core:vidomina",
+    "core:nagash",
+    "core:mephala",
+    "core:ufretin",
+    "core:jenova",
+    "core:ryland",
+    "core:thorgrim",
+    "core:ivor",
+    "core:clancy",
+    "core:kyrre",
+    "core:coronius",
+    "core:uland",
+    "core:elleshar",
+    "core:gem",
+    "core:malcom",
+    "core:melodia",
+    "core:alagar",
+    "core:aeris",
+    "core:yog",
+    "core:gurnisson",
+    "core:jabarkas",
+    "core:shiva",
+    "core:gretchin",
+    "core:krellion",
+    "core:cragHack",
+    "core:tyraxor",
+    "core:gird",
+    "core:vey",
+    "core:dessa",
+    "core:terek",
+    "core:zubin",
+    "core:gundula",
+    "core:oris",
+    "core:saurug",
+    "core:piquedram",
+    "core:thane",
+    "core:josephine",
+    "core:neela",
+    "core:torosar",
+    "core:fafner",
+    "core:rissa",
+    "core:iona",
+    "core:astral",
+    "core:halon",
+    "core:serena",
+    "core:daremyth",
+    "core:theodorus",
+    "core:solmyr",
+    "core:cyra",
+    "core:aine"
+   ],
+   "expWeights": {
+    "0": 166,
+    "5000": 370,
+    "15000": 490,
+    "90000": 254,
+    "500000": 229
+   }
+  },
+  "obelisk": {
+   "subtype": "object",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "terrainAnim": {
+    "dt": "AvXOblG",
+    "gr": "AvXOblW",
+    "sn": "AvXOblP",
+    "sw": "AvXOblB",
+    "rg": "AvXOblO",
+    "sa": "AvXOblK",
+    "sb": "AvXOblK",
+    "lv": "AvXOblY"
+   },
+   "defaultAnim": "AvXOblG"
+  },
+  "pandoraCreatures": [
+   [
+    "core:greaterBasilisk",
+    15,
+    6
+   ],
+   [
+    "core:zombieLord",
+    50,
+    5
+   ],
+   [
+    "core:walkingDead",
+    70,
+    3
+   ],
+   [
+    "core:goblinWolfRider",
+    50,
+    9
+   ],
+   [
+    "core:imp",
+    100,
+    7
+   ],
+   [
+    "core:hobgoblinWolfRider",
+    35,
+    6
+   ],
+   [
+    "core:wraith",
+    30,
+    5
+   ],
+   [
+    "core:masterGremlin",
+    80,
+    10
+   ],
+   [
+    "core:obsidianGargoyle",
+    35,
+    10
+   ],
+   [
+    "core:halfling",
+    70,
+    5
+   ],
+   [
+    "core:halberdier",
+    45,
+    3
+   ],
+   [
+    "core:evilEye",
+    25,
+    2
+   ],
+   [
+    "core:monk",
+    25,
+    2
+   ],
+   [
+    "core:mummy",
+    35,
+    6
+   ],
+   [
+    "core:goblin",
+    80,
+    8
+   ],
+   [
+    "core:familiar",
+    80,
+    5
+   ],
+   [
+    "core:nomad",
+    25,
+    8
+   ],
+   [
+    "core:stoneGolem",
+    20,
+    7
+   ],
+   [
+    "core:cerberus",
+    20,
+    6
+   ],
+   [
+    "core:troll",
+    15,
+    7
+   ],
+   [
+    "core:archangel",
+    3,
+    2
+   ],
+   [
+    "core:angel",
+    5,
+    4
+   ],
+   [
+    "core:pixie",
+    90,
+    7
+   ],
+   [
+    "core:zealot",
+    20,
+    1
+   ],
+   [
+    "core:dendroidGuard",
+    30,
+    3
+   ],
+   [
+    "core:champion",
+    10,
+    2
+   ],
+   [
+    "core:grandElf",
+    25,
+    2
+   ],
+   [
+    "core:iceElemental",
+    25,
+    2
+   ],
+   [
+    "core:cavalier",
+    10,
+    3
+   ],
+   [
+    "core:rustDragon",
+    1,
+    5
+   ],
+   [
+    "core:stoneGargoyle",
+    40,
+    5
+   ],
+   [
+    "core:skeleton",
+    80,
+    6
+   ],
+   [
+    "core:sprite",
+    50,
+    8
+   ],
+   [
+    "core:pikeman",
+    60,
+    5
+   ],
+   [
+    "core:basilisk",
+    20,
+    9
+   ],
+   [
+    "core:wyvernMonarch",
+    15,
+    3
+   ],
+   [
+    "core:mightyGorgon",
+    15,
+    5
+   ],
+   [
+    "core:fireDragonFly",
+    30,
+    4
+   ],
+   [
+    "core:gnoll",
+    90,
+    8
+   ],
+   [
+    "core:gorgon",
+    15,
+    4
+   ],
+   [
+    "core:lizardWarrior",
+    35,
+    11
+   ],
+   [
+    "core:chaosHydra",
+    4,
+    2
+   ],
+   [
+    "core:serpentFly",
+    35,
+    5
+   ],
+   [
+    "core:orc",
+    45,
+    6
+   ],
+   [
+    "core:orcChieftain",
+    35,
+    8
+   ],
+   [
+    "core:thunderbird",
+    15,
+    4
+   ],
+   [
+    "core:ogreMage",
+    15,
+    6
+   ],
+   [
+    "core:cyclop",
+    15,
+    5
+   ],
+   [
+    "core:gremlin",
+    110,
+    6
+   ],
+   [
+    "core:ironGolem",
+    35,
+    7
+   ],
+   [
+    "core:ghostDragon",
+    5,
+    1
+   ],
+   [
+    "core:hellHound",
+    25,
+    1
+   ],
+   [
+    "core:marksman",
+    40,
+    5
+   ],
+   [
+    "core:wyvern",
+    15,
+    2
+   ],
+   [
+    "core:gnollMarauder",
+    60,
+    4
+   ],
+   [
+    "core:hornedDemon",
+    25,
+    3
+   ],
+   [
+    "core:pitFiend",
+    20,
+    2
+   ],
+   [
+    "core:magog",
+    30,
+    3
+   ],
+   [
+    "core:beholder",
+    25,
+    3
+   ],
+   [
+    "core:harpy",
+    45,
+    9
+   ],
+   [
+    "core:troglodyte",
+    80,
+    2
+   ],
+   [
+    "core:goldGolem",
+    25,
+    6
+   ],
+   [
+    "core:enchanter",
+    15,
+    5
+   ],
+   [
+    "core:giant",
+    8,
+    49
+   ],
+   [
+    "core:sharpshooter",
+    20,
+    4
+   ],
+   [
+    "core:archMage",
+    15,
+    7
+   ],
+   [
+    "core:naga",
+    12,
+    7
+   ],
+   [
+    "core:nagaQueen",
+    8,
+    3
+   ],
+   [
+    "core:masterGenie",
+    15,
+    5
+   ],
+   [
+    "core:ogre",
+    30,
+    4
+   ],
+   [
+    "core:ancientBehemoth",
+    4,
+    2
+   ],
+   [
+    "core:boar",
+    50,
+    1
+   ],
+   [
+    "core:infernalTroglodyte",
+    60,
+    7
+   ],
+   [
+    "core:magicElemental",
+    10,
+    4
+   ],
+   [
+    "core:magmaElemental",
+    30,
+    2
+   ],
+   [
+    "core:peasant",
+    330,
+    6
+   ],
+   [
+    "core:royalGriffin",
+    20,
+    4
+   ],
+   [
+    "core:unicorn",
+    12,
+    2
+   ],
+   [
+    "core:griffin",
+    25,
+    2
+   ],
+   [
+    "core:pegasus",
+    25,
+    3
+   ],
+   [
+    "core:silverPegasus",
+    20,
+    6
+   ],
+   [
+    "core:crusader",
+    20,
+    1
+   ],
+   [
+    "core:harpyHag",
+    30,
+    3
+   ],
+   [
+    "core:archer",
+    60,
+    4
+   ],
+   [
+    "core:lizardman",
+    45,
+    9
+   ],
+   [
+    "core:battleDwarf",
+    35,
+    6
+   ],
+   [
+    "core:dwarf",
+    50,
+    4
+   ],
+   [
+    "core:rogue",
+    50,
+    3
+   ],
+   [
+    "core:centaurCaptain",
+    35,
+    4
+   ],
+   [
+    "core:gog",
+    45,
+    9
+   ],
+   [
+    "core:centaur",
+    50,
+    5
+   ],
+   [
+    "core:fireElemental",
+    35,
+    2
+   ],
+   [
+    "core:airElemental",
+    20,
+    4
+   ],
+   [
+    "core:dendroidSoldier",
+    20,
+    2
+   ],
+   [
+    "core:scorpicore",
+    12,
+    1
+   ],
+   [
+    "core:minotaur",
+    20,
+    2
+   ],
+   [
+    "core:woodElf",
+    40,
+    1
+   ],
+   [
+    "core:firebird",
+    6,
+    1
+   ],
+   [
+    "core:warUnicorn",
+    10,
+    2
+   ],
+   [
+    "core:earthElemental",
+    50,
+    1
+   ],
+   [
+    "core:hobgoblin",
+    60,
+    4
+   ],
+   [
+    "core:roc",
+    15,
+    3
+   ],
+   [
+    "core:cyclopKing",
+    15,
+    2
+   ],
+   [
+    "core:skeletonWarrior",
+    60,
+    2
+   ],
+   [
+    "core:waterElemental",
+    30,
+    3
+   ],
+   [
+    "core:stormElemental",
+    15,
+    2
+   ],
+   [
+    "core:efreetSultan",
+    8,
+    1
+   ],
+   [
+    "core:pitLord",
+    15,
+    3
+   ],
+   [
+    "core:energyElemental",
+    25,
+    2
+   ],
+   [
+    "core:swordsman",
+    25,
+    1
+   ],
+   [
+    "core:mage",
+    20,
+    2
+   ],
+   [
+    "core:manticore",
+    15,
+    1
+   ],
+   [
+    "core:redDragon",
+    5,
+    1
+   ],
+   [
+    "core:archDevil",
+    3,
+    3
+   ],
+   [
+    "core:greenDragon",
+    5,
+    1
+   ],
+   [
+    "core:medusa",
+    25,
+    1
+   ],
+   [
+    "core:hydra",
+    6,
+    3
+   ],
+   [
+    "core:phoenix",
+    4,
+    3
+   ],
+   [
+    "core:devil",
+    5,
+    1
+   ],
+   [
+    "core:efreet",
+    12,
+    2
+   ],
+   [
+    "core:genie",
+    20,
+    2
+   ]
+  ],
+  "pandoraSpells": [
+   "core:airElemental",
+   "core:airShield",
+   "core:animateDead",
+   "core:antiMagic",
+   "core:armageddon",
+   "core:berserk",
+   "core:bless",
+   "core:blind",
+   "core:bloodlust",
+   "core:chainLightning",
+   "core:clone",
+   "core:counterstrike",
+   "core:cure",
+   "core:curse",
+   "core:deathRipple",
+   "core:destroyUndead",
+   "core:dimensionDoor",
+   "core:disguise",
+   "core:dispel",
+   "core:disruptingRay",
+   "core:earthElemental",
+   "core:earthquake",
+   "core:fireElemental",
+   "core:fireShield",
+   "core:fireWall",
+   "core:fireball",
+   "core:fly",
+   "core:forceField",
+   "core:forgetfulness",
+   "core:fortune",
+   "core:frenzy",
+   "core:frostRing",
+   "core:haste",
+   "core:hypnotize",
+   "core:iceBolt",
+   "core:implosion",
+   "core:inferno",
+   "core:landMine",
+   "core:lightningBolt",
+   "core:magicArrow",
+   "core:magicMirror",
+   "core:meteorShower",
+   "core:mirth",
+   "core:misfortune",
+   "core:prayer",
+   "core:precision",
+   "core:protectAir",
+   "core:protectEarth",
+   "core:protectFire",
+   "core:protectWater",
+   "core:quicksand",
+   "core:removeObstacle",
+   "core:resurrection",
+   "core:sacrifice",
+   "core:shield",
+   "core:slayer",
+   "core:slow",
+   "core:sorrow",
+   "core:stoneSkin",
+   "core:teleport",
+   "core:townPortal",
+   "core:viewAir",
+   "core:viewEarth",
+   "core:visions",
+   "core:waterElemental",
+   "core:weakness"
+  ]
+ },
+ "utilities": [
+  {
+   "type": "freelancersGuild",
+   "subtype": "object",
+   "weight": 0.24,
+   "animation": "avxfgld",
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "denOfThieves",
+   "subtype": "object",
+   "weight": 0.27,
+   "animation": "avxdend0",
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "crypt",
+   "subtype": "crypt",
+   "weight": 0.22,
+   "animation": "AVXgyne0",
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "blackMarket",
+   "subtype": "object",
+   "weight": 0.16,
+   "animation": "AVXmktb0",
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "redwoodObservatory",
+   "subtype": "redwoodObservatory",
+   "weight": 0.17,
+   "animation": "avxredw",
+   "mask": [
+    "VV",
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "refugeeCamp",
+   "subtype": "object",
+   "weight": 0.15,
+   "animation": "AVGrefg0",
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "warMachineFactory",
+   "subtype": "object",
+   "weight": 0.15,
+   "animation": "AVGsieg0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith2",
+   "weight": 0.05,
+   "animation": "AVXmn2o0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith1",
+   "weight": 0.05,
+   "animation": "AVXmn2g0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith4",
+   "weight": 0.05,
+   "animation": "AVXmn4b0",
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith5",
+   "weight": 0.05,
+   "animation": "AVXmn5b0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith3",
+   "weight": 0.05,
+   "animation": "AVXmn2p0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith6",
+   "weight": 0.05,
+   "animation": "AVXmn6b0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "seerHut",
+   "subtype": "0",
+   "weight": 0.08,
+   "animation": "AVXseer0",
+   "mask": [
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "seerHut",
+   "subtype": "2",
+   "weight": 0.08,
+   "animation": "AVXseeb0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "seerHut",
+   "subtype": "1",
+   "weight": 0.08,
+   "animation": "AVXseey0",
+   "mask": [
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith8",
+   "weight": 0.25,
+   "animation": "AVXmn8b0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith7",
+   "weight": 0.25,
+   "animation": "AVXmn7b0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith28",
+   "weight": 0.25,
+   "animation": "AVXmn2p0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith32",
+   "weight": 0.25,
+   "animation": "AVXmn7b0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith29",
+   "weight": 0.25,
+   "animation": "AVXmn4b0",
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith26",
+   "weight": 0.25,
+   "animation": "AVXmn2g0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith31",
+   "weight": 0.25,
+   "animation": "AVXmn6b0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith45",
+   "weight": 0.25,
+   "animation": "AVXmn2g0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith30",
+   "weight": 0.25,
+   "animation": "AVXmn5b0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith46",
+   "weight": 0.25,
+   "animation": "AVXmn2o0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith25",
+   "weight": 0.25,
+   "animation": "AVXmn2g0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith27",
+   "weight": 0.25,
+   "animation": "AVXmn2o0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith33",
+   "weight": 0.25,
+   "animation": "AVXmn8b0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith47",
+   "weight": 0.25,
+   "animation": "AVXmn2o0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith48",
+   "weight": 0.25,
+   "animation": "AVXmn2p0",
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  {
+   "type": "monolithTwoWay",
+   "subtype": "monolith49",
+   "weight": 0.25,
+   "animation": "AVXmn4b0",
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  }
+ ],
+ "concreteDwellings": [
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hovel",
+   "weight": 3,
+   "animation": "AVGpeas",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 1
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "goblinBarracks",
+   "weight": 1,
+   "animation": "AVGgobl0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 1
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "warren",
+   "weight": 1,
+   "animation": "AVGtrog0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 1
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "workshop",
+   "weight": 1,
+   "animation": "AVGgrem0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 1
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "thatchedHut",
+   "weight": 1,
+   "animation": "AVGhalf",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 1
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "impCrucible",
+   "weight": 1,
+   "animation": "AVGimp0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 1
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "magicLantern",
+   "weight": 1,
+   "animation": "AVGpixie",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 1
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "guardhouse",
+   "weight": 1,
+   "animation": "AVGpike0",
+   "mask": [
+    "VVV",
+    "VBV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 1
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "centaurStables",
+   "weight": 1,
+   "animation": "AVGcent0",
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 1
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cursedTemple",
+   "weight": 1,
+   "animation": "AVGskel0",
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 1
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "gnollHut",
+   "weight": 1,
+   "animation": "AVGgnll0",
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 1
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "boarGlen",
+   "weight": 1,
+   "animation": "AVGboar",
+   "mask": [
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hallOfSins",
+   "weight": 1,
+   "animation": "AVGgogs0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dwarfCottage",
+   "weight": 1,
+   "animation": "AVGdwrf0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "parapet",
+   "weight": 1,
+   "animation": "AVGgarg0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "harpyLoft",
+   "weight": 1,
+   "animation": "AVGharp0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfAir",
+   "weight": 1,
+   "animation": "AVG2ela",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorSpecial",
+   "subtype": "elementalConflux",
+   "weight": 1,
+   "animation": "AVGelem0",
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "rogueCavern",
+   "weight": 1,
+   "animation": "AVGrog",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "graveyard",
+   "weight": 1,
+   "animation": "AVGzomb0",
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "archersTower",
+   "weight": 1,
+   "animation": "AVGcros0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "wolfPen",
+   "weight": 1,
+   "animation": "AVGwolf0",
+   "mask": [
+    "VVV",
+    "VBV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "lizardDen",
+   "weight": 1,
+   "animation": "AVGlzrd0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 2
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "nomadTent",
+   "weight": 2,
+   "animation": "AVGnomd",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 3
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "tombOfCurses",
+   "weight": 1,
+   "animation": "AVGmumy",
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 3
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "kennels",
+   "weight": 1,
+   "animation": "AVGhell0",
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 3
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "serpentFlyHive",
+   "weight": 1,
+   "animation": "AVGdfly0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 3
+  },
+  {
+   "type": "creatureGeneratorSpecial",
+   "subtype": "golemFactory",
+   "weight": 1,
+   "animation": "AVGgolm0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 3
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfWater",
+   "weight": 1,
+   "animation": "AVG2elw",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 3
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "homestead",
+   "weight": 1,
+   "animation": "AVGelf0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 3
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "tombOfSouls",
+   "weight": 1,
+   "animation": "AVGwght0",
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVVV",
+    "VVAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 3
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "griffinTower",
+   "weight": 1,
+   "animation": "AVGgrff0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 3
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "pillarOfEyes",
+   "weight": 1,
+   "animation": "AVGbhld0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 3
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "orcTower",
+   "weight": 1,
+   "animation": "AVGorcg0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 3
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mageTower",
+   "weight": 2,
+   "animation": "AVGmage0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 4
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "demonGate",
+   "weight": 1,
+   "animation": "AVGdemn0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 4
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "ogreFort",
+   "weight": 1,
+   "animation": "AVGogre0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 4
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "basiliskPit",
+   "weight": 1,
+   "animation": "AVGbasl0",
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 4
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "barracks",
+   "weight": 1,
+   "animation": "AVGswor0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 4
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "enchantedSpring",
+   "weight": 1,
+   "animation": "AVGpega0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 4
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfFire",
+   "weight": 1,
+   "animation": "AVG2elf",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 4
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "medusaChapel",
+   "weight": 1,
+   "animation": "AVGmdsa0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 4
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "treetopTower",
+   "weight": 1,
+   "animation": "AVGshrp",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 4
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "estate",
+   "weight": 1,
+   "animation": "AVGvamp0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 4
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfWishes",
+   "weight": 3,
+   "animation": "AVGgeni0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 5
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cliffNest",
+   "weight": 2,
+   "animation": "AVGrocs0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 5
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mausoleum",
+   "weight": 1,
+   "animation": "AVGlich0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 5
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "labyrinth",
+   "weight": 1,
+   "animation": "AVGmino0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 5
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hellHole",
+   "weight": 1,
+   "animation": "AVGpit0",
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 5
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "trollBridge",
+   "weight": 1,
+   "animation": "AVGtrll",
+   "mask": [
+    "VVV",
+    "VBV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 5
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfEarth",
+   "weight": 1,
+   "animation": "AVG2ele",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 5
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "gorgonLair",
+   "weight": 1,
+   "animation": "AVGgorg0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 5
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "monastery",
+   "weight": 1,
+   "animation": "AVGmonk0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 5
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dendroidArches",
+   "weight": 1,
+   "animation": "AVGtree0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 5
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hallOfDarkness",
+   "weight": 2,
+   "animation": "AVGbkni0",
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVVV",
+    "VVBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 6
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "goldenPavilion",
+   "weight": 2,
+   "animation": "AVGnaga0",
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVBB",
+    "VVBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 6
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "trainingGrounds",
+   "weight": 2,
+   "animation": "AVGcavl0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 6
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "enchantersHollow",
+   "weight": 2,
+   "animation": "AVGench",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 6
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "fireLake",
+   "weight": 1,
+   "animation": "AVGefre0",
+   "mask": [
+    "VV",
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 6
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cyclopsCave",
+   "weight": 1,
+   "animation": "AVGcycl0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 6
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "unicornGlade",
+   "weight": 1,
+   "animation": "AVG2uni",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 6
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "manticoreLair",
+   "weight": 1,
+   "animation": "AVGmant0",
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 6
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfThought",
+   "weight": 1,
+   "animation": "AVGelp",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 6
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "unicornGladeBig",
+   "weight": 1,
+   "animation": "AVGunic0",
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 6
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "wyvernNest",
+   "weight": 1,
+   "animation": "AVGwyvn0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 6
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "behemothCrag",
+   "weight": 2,
+   "animation": "AVGbhmt0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 7
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "pyre",
+   "weight": 2,
+   "animation": "AVGfbrd",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 7
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cloudTemple",
+   "weight": 2,
+   "animation": "AVGtitn0",
+   "mask": [
+    "VVV",
+    "VBV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 7
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dragonCave",
+   "weight": 2,
+   "animation": "AVGrdrg0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 7
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "forsakenPalace",
+   "weight": 1,
+   "animation": "AVGdevl0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 7
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dragonVault",
+   "weight": 1,
+   "animation": "AVGbone0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 7
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dragonCliffs",
+   "weight": 1,
+   "animation": "AVGgdrg0",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 7
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hydraPond",
+   "weight": 1,
+   "animation": "AVGhydr0",
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 7
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "portalOfGlory",
+   "weight": 1,
+   "animation": "AVGangl0",
+   "mask": [
+    "VVVV",
+    "VBAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 7
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "magicForest",
+   "weight": 4,
+   "animation": "AVGfdrg",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 8
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "frozenCliffs",
+   "weight": 4,
+   "animation": "AVGazur",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 10
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "crystalCavern",
+   "weight": 4,
+   "animation": "AVGcdrg",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 10
+  },
+  {
+   "type": "creatureGeneratorCommon",
+   "subtype": "sulfurousLair",
+   "weight": 3,
+   "animation": "AVGrust",
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ],
+   "level": 10
+  }
+ ],
+ "pileKinds": {
+   "gold": 47,
+   "wood": 22,
+   "ore": 22,
+   "crystal": 17,
+   "sulfur": 17,
+   "mercury": 18,
+   "gems": 17
+  }
+}

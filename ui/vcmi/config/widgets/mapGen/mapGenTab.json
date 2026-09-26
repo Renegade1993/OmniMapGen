@@ -1,0 +1,368 @@
+{
+	"library": [
+		"config/widgets/commonPrimitives.json"
+	],
+	"pages": [
+		"config/widgets/mapGen/page_map.json",
+		"config/widgets/mapGen/page_zones.json",
+		"config/widgets/mapGen/page_borders.json",
+		"config/widgets/mapGen/page_treasure.json",
+		"config/widgets/mapGen/page_monsters.json",
+		"config/widgets/mapGen/page_underground.json",
+		"config/widgets/mapGen/page_scenery.json",
+		"config/widgets/mapGen/page_water.json"
+	],
+	"defaults": {
+		"params": {
+			"zoneCells": 400,
+			"zoneCap": 300,
+			"highLootRatio": 0.15,
+			"townRatio": 0.1,
+			"lowLootRatio": 0.25,
+			"biomeWobble": 0.6,
+			"borderSolidity": 1,
+			"interconnectivity": 0.6,
+			"interconnectPortal": 0.2,
+			"openPathNoRoad": 0.55,
+			"openPathRoad": 0.26,
+			"roadNetwork": 1,
+			"artifactDensity": 0.006,
+			"artifactRichness": 0.5,
+			"pickupDensity": 1,
+			"resourceDensity": 1,
+			"mineDensity": 1,
+			"starterMines": 1,
+			"dwellingDensity": 1,
+			"bonusDensity": 1,
+			"monsterStrength": 0,
+			"stackScale": 1,
+			"guardDensity": 1,
+			"objectGuardShare": 0.75,
+			"guardTreasure": 1,
+			"guardMines": 1,
+			"guardDwellings": 1,
+			"guardBottlenecks": 1,
+			"chokeGuardRatio": 0.7,
+			"guardPortals": 0,
+			"lootGuardWeight": 1,
+			"mineGuardWeight": 1,
+			"subterraneanGateRatio": 1,
+			"subterraneanNarrow": 0.6,
+			"subterraneanOpen": 0.57,
+			"decorDensity": 1,
+			"rivers": 1,
+			"waterCoverage": 0,
+			"waterShape": 0,
+			"waterAccess": 2,
+			"waterTreasure": 1
+		},
+		"map": {
+			"size": 108,
+			"underground": 0,
+			"players": 4,
+			"humans": 1,
+			"template": "",
+			"declareMods": 0
+		}
+	},
+	"items": [
+		{
+			"name": "background",
+			"type": "picture",
+			"image": "AdventureOptionsBackgroundClear",
+			"position": {
+				"x": 0,
+				"y": 6
+			}
+		},
+		{
+			"name": "textureCampaignOverdraw",
+			"type": "texture",
+			"color": "blue",
+			"image": "DIBOXBCK",
+			"rect": {
+				"x": 378,
+				"y": 14,
+				"w": 10,
+				"h": 569
+			}
+		},
+		{
+			"name": "labelTitle",
+			"type": "label",
+			"font": "big",
+			"alignment": "center",
+			"color": "yellow",
+			"text": "vcmi.lobby.mapGen.hover",
+			"position": {
+				"x": 222,
+				"y": 36
+			}
+		},
+		{
+			"name": "labelSubTitle",
+			"type": "label",
+			"font": "small",
+			"alignment": "center",
+			"color": "white",
+			"text": "vcmi.mapGen.tab.subtitle",
+			"position": {
+				"x": 222,
+				"y": 60
+			}
+		},
+		{
+			"name": "pageButtons",
+			"type": "toggleGroup",
+			"position": {
+				"x": 0,
+				"y": 0
+			},
+			"items": [
+				{
+					"index": 0,
+					"type": "toggleButton",
+					"image": "MapGenButton80",
+					"position": {
+						"x": 28,
+						"y": 80
+					},
+					"help": {
+						"hover": "vcmi.mapGen.page.map.hover",
+						"help": "vcmi.mapGen.page.map.help"
+					},
+					"items": [
+						{
+							"type": "label",
+							"font": "small",
+							"alignment": "center",
+							"color": "yellow",
+							"text": "vcmi.mapGen.page.map.hover"
+						}
+					]
+				},
+				{
+					"index": 1,
+					"type": "toggleButton",
+					"image": "MapGenButton80",
+					"position": {
+						"x": 116,
+						"y": 80
+					},
+					"help": {
+						"hover": "vcmi.mapGen.page.zones.hover",
+						"help": "vcmi.mapGen.page.zones.help"
+					},
+					"items": [
+						{
+							"type": "label",
+							"font": "small",
+							"alignment": "center",
+							"color": "yellow",
+							"text": "vcmi.mapGen.page.zones.hover"
+						}
+					]
+				},
+				{
+					"index": 2,
+					"type": "toggleButton",
+					"image": "MapGenButton80",
+					"position": {
+						"x": 204,
+						"y": 80
+					},
+					"help": {
+						"hover": "vcmi.mapGen.page.borders.hover",
+						"help": "vcmi.mapGen.page.borders.help"
+					},
+					"items": [
+						{
+							"type": "label",
+							"font": "small",
+							"alignment": "center",
+							"color": "yellow",
+							"text": "vcmi.mapGen.page.borders.hover"
+						}
+					]
+				},
+				{
+					"index": 3,
+					"type": "toggleButton",
+					"image": "MapGenButton80",
+					"position": {
+						"x": 292,
+						"y": 80
+					},
+					"help": {
+						"hover": "vcmi.mapGen.page.treasure.hover",
+						"help": "vcmi.mapGen.page.treasure.help"
+					},
+					"items": [
+						{
+							"type": "label",
+							"font": "small",
+							"alignment": "center",
+							"color": "yellow",
+							"text": "vcmi.mapGen.page.treasure.hover"
+						}
+					]
+				},
+				{
+					"index": 4,
+					"type": "toggleButton",
+					"image": "MapGenButton80",
+					"position": {
+						"x": 28,
+						"y": 116
+					},
+					"help": {
+						"hover": "vcmi.mapGen.page.monsters.hover",
+						"help": "vcmi.mapGen.page.monsters.help"
+					},
+					"items": [
+						{
+							"type": "label",
+							"font": "small",
+							"alignment": "center",
+							"color": "yellow",
+							"text": "vcmi.mapGen.page.monsters.hover"
+						}
+					]
+				},
+				{
+					"index": 5,
+					"type": "toggleButton",
+					"image": "MapGenButton80",
+					"position": {
+						"x": 116,
+						"y": 116
+					},
+					"help": {
+						"hover": "vcmi.mapGen.page.underground.hover",
+						"help": "vcmi.mapGen.page.underground.help"
+					},
+					"items": [
+						{
+							"type": "label",
+							"font": "small",
+							"alignment": "center",
+							"color": "yellow",
+							"text": "vcmi.mapGen.page.underground.hover"
+						}
+					]
+				},
+				{
+					"index": 6,
+					"type": "toggleButton",
+					"image": "MapGenButton80",
+					"position": {
+						"x": 204,
+						"y": 116
+					},
+					"help": {
+						"hover": "vcmi.mapGen.page.scenery.hover",
+						"help": "vcmi.mapGen.page.scenery.help"
+					},
+					"items": [
+						{
+							"type": "label",
+							"font": "small",
+							"alignment": "center",
+							"color": "yellow",
+							"text": "vcmi.mapGen.page.scenery.hover"
+						}
+					]
+				},
+				{
+					"index": 7,
+					"type": "toggleButton",
+					"image": "MapGenButton80",
+					"position": {
+						"x": 292,
+						"y": 116
+					},
+					"help": {
+						"hover": "vcmi.mapGen.page.water.hover",
+						"help": "vcmi.mapGen.page.water.help"
+					},
+					"items": [
+						{
+							"type": "label",
+							"font": "small",
+							"alignment": "center",
+							"color": "yellow",
+							"text": "vcmi.mapGen.page.water.hover"
+						}
+					]
+				}
+			],
+			"callback": "activateMapGenPage"
+		},
+		{
+			"name": "lineTop",
+			"type": "horizontalLine",
+			"rect": {
+				"x": 14,
+				"y": 154,
+				"w": 372,
+				"h": 3
+			}
+		},
+		{
+			"name": "lineBottom",
+			"type": "horizontalLine",
+			"rect": {
+				"x": 14,
+				"y": 540,
+				"w": 372,
+				"h": 3
+			}
+		},
+		{
+			"name": "defaultsButton",
+			"type": "button",
+			"image": "MapGenButton80",
+			"position": {
+				"x": 28,
+				"y": 548
+			},
+			"help": {
+				"hover": "vcmi.mapGen.defaults.hover",
+				"help": "vcmi.mapGen.defaults.help"
+			},
+			"callback": "resetMapGenDefaults",
+			"items": [
+				{
+					"type": "label",
+					"font": "small",
+					"alignment": "center",
+					"color": "yellow",
+					"text": "vcmi.mapGen.defaults.hover"
+				}
+			]
+		},
+		{
+			"name": "generateButton",
+			"type": "button",
+			"image": "MapGenButton190",
+			"position": {
+				"x": 202,
+				"y": 548
+			},
+			"help": {
+				"hover": "vcmi.mapGen.generate.hover",
+				"help": "vcmi.mapGen.generate.help"
+			},
+			"callback": "generateMapGenMap",
+			"items": [
+				{
+					"type": "label",
+					"font": "medium",
+					"alignment": "center",
+					"color": "yellow",
+					"text": "vcmi.mapGen.generate.hover"
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,112 @@
+{
+	"library": [
+		"config/widgets/commonPrimitives.json"
+	],
+	"items": [
+		{
+			"name": "help_decorDensity",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 166,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.decorDensity.hover",
+				"help": "vcmi.mapGen.decorDensity.help"
+			}
+		},
+		{
+			"name": "label_decorDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.decorDensity.hover",
+			"position": {
+				"x": 58,
+				"y": 171
+			}
+		},
+		{
+			"name": "slider_decorDensity",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 170
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/decorDensity",
+			"valueMin": 0,
+			"valueStep": 0.1,
+			"valueDefault": 1,
+			"valueLabel": "value_decorDensity",
+			"valueDecimals": 1,
+			"valueSuffix": "x"
+		},
+		{
+			"name": "value_decorDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 171
+			}
+		},
+		{
+			"name": "help_rivers",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 196,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.rivers.hover",
+				"help": "vcmi.mapGen.rivers.help"
+			}
+		},
+		{
+			"name": "label_rivers",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.rivers.hover",
+			"position": {
+				"x": 58,
+				"y": 201
+			}
+		},
+		{
+			"name": "check_rivers",
+			"type": "toggleButton",
+			"image": "lobby/checkbox",
+			"position": {
+				"x": 202,
+				"y": 195
+			},
+			"setting": "persistent:mapGen/params/rivers",
+			"selected": true,
+			"help": {
+				"hover": "vcmi.mapGen.rivers.hover",
+				"help": "vcmi.mapGen.rivers.help"
+			}
+		}
+	]
+}

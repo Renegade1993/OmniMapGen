@@ -1,0 +1,14 @@
+{
+	"type": "object",
+	"additionalProperties": false,
+	"default": {},
+	"required": [
+		"externalGenerator"
+	],
+	"properties": {
+		"externalGenerator": {
+			"type": "string",
+			"default": "mapgen\\generate.cmd"
+		}
+	}
+}

@@ -1,0 +1,391 @@
+{
+	"library": [
+		"config/widgets/commonPrimitives.json"
+	],
+	"items": [
+		{
+			"name": "help_zoneCells",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 166,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.zoneCells.hover",
+				"help": "vcmi.mapGen.zoneCells.help"
+			}
+		},
+		{
+			"name": "label_zoneCells",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.zoneCells.hover",
+			"position": {
+				"x": 58,
+				"y": 171
+			}
+		},
+		{
+			"name": "slider_zoneCells",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 170
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 27,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/zoneCells",
+			"valueMin": 150,
+			"valueStep": 50,
+			"valueDefault": 400,
+			"valueLabel": "value_zoneCells",
+			"valueDecimals": 0
+		},
+		{
+			"name": "value_zoneCells",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 171
+			}
+		},
+		{
+			"name": "help_zoneCap",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 196,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.zoneCap.hover",
+				"help": "vcmi.mapGen.zoneCap.help"
+			}
+		},
+		{
+			"name": "label_zoneCap",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.zoneCap.hover",
+			"position": {
+				"x": 58,
+				"y": 201
+			}
+		},
+		{
+			"name": "slider_zoneCap",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 200
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 446,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/zoneCap",
+			"valueMin": 4,
+			"valueStep": 1,
+			"valueDefault": 300,
+			"valueLabel": "value_zoneCap",
+			"valueDecimals": 0
+		},
+		{
+			"name": "value_zoneCap",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 201
+			}
+		},
+		{
+			"name": "help_highLootRatio",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 226,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.highLootRatio.hover",
+				"help": "vcmi.mapGen.highLootRatio.help"
+			}
+		},
+		{
+			"name": "label_highLootRatio",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.highLootRatio.hover",
+			"position": {
+				"x": 58,
+				"y": 231
+			}
+		},
+		{
+			"name": "slider_highLootRatio",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 230
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/highLootRatio",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 0.15,
+			"valueLabel": "value_highLootRatio",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_highLootRatio",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 231
+			}
+		},
+		{
+			"name": "help_townRatio",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 256,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.townRatio.hover",
+				"help": "vcmi.mapGen.townRatio.help"
+			}
+		},
+		{
+			"name": "label_townRatio",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.townRatio.hover",
+			"position": {
+				"x": 58,
+				"y": 261
+			}
+		},
+		{
+			"name": "slider_townRatio",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 260
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/townRatio",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 0.1,
+			"valueLabel": "value_townRatio",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_townRatio",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 261
+			}
+		},
+		{
+			"name": "help_lowLootRatio",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 286,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.lowLootRatio.hover",
+				"help": "vcmi.mapGen.lowLootRatio.help"
+			}
+		},
+		{
+			"name": "label_lowLootRatio",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.lowLootRatio.hover",
+			"position": {
+				"x": 58,
+				"y": 291
+			}
+		},
+		{
+			"name": "slider_lowLootRatio",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 290
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/lowLootRatio",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 0.25,
+			"valueLabel": "value_lowLootRatio",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_lowLootRatio",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 291
+			}
+		},
+		{
+			"name": "help_biomeWobble",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 316,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.biomeWobble.hover",
+				"help": "vcmi.mapGen.biomeWobble.help"
+			}
+		},
+		{
+			"name": "label_biomeWobble",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.biomeWobble.hover",
+			"position": {
+				"x": 58,
+				"y": 321
+			}
+		},
+		{
+			"name": "slider_biomeWobble",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 320
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 30,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/biomeWobble",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 0.6,
+			"valueLabel": "value_biomeWobble",
+			"valueDecimals": 2
+		},
+		{
+			"name": "value_biomeWobble",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 321
+			}
+		}
+	]
+}

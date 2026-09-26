@@ -1,0 +1,33 @@
+# OmniMapGen - what stays out of the repository.
+
+# installed and generated
+node_modules/
+cache/
+.tmp/
+.electron-profile/
+
+# measurement output: fidelity-lens runs, sweeps and probe maps (hundreds of MB)
+out/
+
+# the corpus: 79 maps VCMI generated in K's own games, with his mods' content
+# (kept in the project folder; the lens reads it from here)
+corpus/
+
+# machine-specific: names this machine's test install folders
+vcmi-external-generator.cmd
+
+# scratch logs and notes at the top level (probe and census runs)
+/*.log
+/*.txt
+/q_*.js
+/scratch_*.js
+/audit*.cmd
+
+# retired code (the Electron app, retired 2026-09-26): kept in the project folder,
+# not published
+retired/
+
+# OmniAI's observation page: it reads OmniAI's decision log and belongs with OmniAI;
+# kept in the project folder
+tools/omni_dashboard.js
+tools/omni_dashboard_page.html

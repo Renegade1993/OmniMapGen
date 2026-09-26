@@ -1,0 +1,498 @@
+{
+	"library": [
+		"config/widgets/commonPrimitives.json"
+	],
+	"items": [
+		{
+			"name": "help_artifactDensity",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 166,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.artifactDensity.hover",
+				"help": "vcmi.mapGen.artifactDensity.help"
+			}
+		},
+		{
+			"name": "label_artifactDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.artifactDensity.hover",
+			"position": {
+				"x": 58,
+				"y": 171
+			}
+		},
+		{
+			"name": "slider_artifactDensity",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 170
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/artifactDensity",
+			"valueMin": 0,
+			"valueStep": 0.001,
+			"valueDefault": 0.006,
+			"valueLabel": "value_artifactDensity",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_artifactDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 171
+			}
+		},
+		{
+			"name": "help_artifactRichness",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 196,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.artifactRichness.hover",
+				"help": "vcmi.mapGen.artifactRichness.help"
+			}
+		},
+		{
+			"name": "label_artifactRichness",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.artifactRichness.hover",
+			"position": {
+				"x": 58,
+				"y": 201
+			}
+		},
+		{
+			"name": "slider_artifactRichness",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 200
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 20,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/artifactRichness",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 0.5,
+			"valueLabel": "value_artifactRichness",
+			"valueDisplayScale": 100,
+			"valueDecimals": 0,
+			"valueSuffix": "%"
+		},
+		{
+			"name": "value_artifactRichness",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 201
+			}
+		},
+		{
+			"name": "help_pickupDensity",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 226,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.pickupDensity.hover",
+				"help": "vcmi.mapGen.pickupDensity.help"
+			}
+		},
+		{
+			"name": "label_pickupDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.pickupDensity.hover",
+			"position": {
+				"x": 58,
+				"y": 231
+			}
+		},
+		{
+			"name": "slider_pickupDensity",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 230
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 30,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/pickupDensity",
+			"valueMin": 0,
+			"valueStep": 0.1,
+			"valueDefault": 1,
+			"valueLabel": "value_pickupDensity",
+			"valueDecimals": 1,
+			"valueSuffix": "x"
+		},
+		{
+			"name": "value_pickupDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 231
+			}
+		},
+		{
+			"name": "help_resourceDensity",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 256,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.resourceDensity.hover",
+				"help": "vcmi.mapGen.resourceDensity.help"
+			}
+		},
+		{
+			"name": "label_resourceDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.resourceDensity.hover",
+			"position": {
+				"x": 58,
+				"y": 261
+			}
+		},
+		{
+			"name": "slider_resourceDensity",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 260
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 30,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/resourceDensity",
+			"valueMin": 0,
+			"valueStep": 0.1,
+			"valueDefault": 1,
+			"valueLabel": "value_resourceDensity",
+			"valueDecimals": 1,
+			"valueSuffix": "x"
+		},
+		{
+			"name": "value_resourceDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 261
+			}
+		},
+		{
+			"name": "help_mineDensity",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 286,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.mineDensity.hover",
+				"help": "vcmi.mapGen.mineDensity.help"
+			}
+		},
+		{
+			"name": "label_mineDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.mineDensity.hover",
+			"position": {
+				"x": 58,
+				"y": 291
+			}
+		},
+		{
+			"name": "slider_mineDensity",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 290
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 30,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/mineDensity",
+			"valueMin": 0,
+			"valueStep": 0.1,
+			"valueDefault": 1,
+			"valueLabel": "value_mineDensity",
+			"valueDecimals": 1,
+			"valueSuffix": "x"
+		},
+		{
+			"name": "value_mineDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 291
+			}
+		},
+		{
+			"name": "help_starterMines",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 316,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.starterMines.hover",
+				"help": "vcmi.mapGen.starterMines.help"
+			}
+		},
+		{
+			"name": "label_starterMines",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.starterMines.hover",
+			"position": {
+				"x": 58,
+				"y": 321
+			}
+		},
+		{
+			"name": "check_starterMines",
+			"type": "toggleButton",
+			"image": "lobby/checkbox",
+			"position": {
+				"x": 202,
+				"y": 315
+			},
+			"setting": "persistent:mapGen/params/starterMines",
+			"selected": true,
+			"help": {
+				"hover": "vcmi.mapGen.starterMines.hover",
+				"help": "vcmi.mapGen.starterMines.help"
+			}
+		},
+		{
+			"name": "help_dwellingDensity",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 346,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.dwellingDensity.hover",
+				"help": "vcmi.mapGen.dwellingDensity.help"
+			}
+		},
+		{
+			"name": "label_dwellingDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.dwellingDensity.hover",
+			"position": {
+				"x": 58,
+				"y": 351
+			}
+		},
+		{
+			"name": "slider_dwellingDensity",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 350
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 30,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/dwellingDensity",
+			"valueMin": 0,
+			"valueStep": 0.1,
+			"valueDefault": 1,
+			"valueLabel": "value_dwellingDensity",
+			"valueDecimals": 1,
+			"valueSuffix": "x"
+		},
+		{
+			"name": "value_dwellingDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 351
+			}
+		},
+		{
+			"name": "help_bonusDensity",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 376,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.bonusDensity.hover",
+				"help": "vcmi.mapGen.bonusDensity.help"
+			}
+		},
+		{
+			"name": "label_bonusDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.bonusDensity.hover",
+			"position": {
+				"x": 58,
+				"y": 381
+			}
+		},
+		{
+			"name": "slider_bonusDensity",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 380
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 30,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/bonusDensity",
+			"valueMin": 0,
+			"valueStep": 0.1,
+			"valueDefault": 1,
+			"valueLabel": "value_bonusDensity",
+			"valueDecimals": 1,
+			"valueSuffix": "x"
+		},
+		{
+			"name": "value_bonusDensity",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 381
+			}
+		}
+	]
+}
