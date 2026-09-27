@@ -47,3 +47,29 @@ test('a two-level map where no gate fits still links the underground (fuzz seed 
 		'nothing on the surface leads down');
 	fs.rmSync(out, { force: true });
 });
+
+test('links between levels are carried by gate pairs laid over each other (2SM4d(3))', { timeout: 240000 }, () => {
+	// The engine lays both levels out as one drawing and places a link's gates
+	// before anything else in its zones. Laid out apart and gated last, template
+	// links between levels found no shared ground and went to monoliths: [HotA]
+	// Nostalgia made 0-5 gate pairs of 24 links (2026-09-26).
+	const { spawnSync } = require('child_process');
+	const fs = require('fs');
+	const out = path.join(testTmp(), 'vmapgen_levels_gates.vmap');
+	const r = spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'),
+		'--w', '72', '--h', '72', '--players', '2', '--seed', '7', '--out', out, '--underground', '1',
+		'--template', '2SM4d(3)', '--accommodate', 'size,players,humans,underground', '--declaremods', '0'],
+	{ encoding: 'utf8', timeout: 200000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
+	assert.strictEqual(r.status, 0, r.stderr.slice(-600));
+	const m = r.stderr.match(/(\d+) cross-level template link\(s\): (\d+) gate pair\(s\), (\d+) portal pair\(s\)/);
+	assert.ok(m, 'the template has links between levels');
+	const [links, gates] = [Number(m[1]), Number(m[2])];
+	assert.ok(links > 0 && gates * 2 >= links, `${gates} of ${links} links between levels are gate pairs`);
+	const { readVmap } = require('../src/preview/render');
+	const { objects } = readVmap(out);
+	const below = new Set(objects.filter(o => (o.l || 0) === 1 && o.type === 'subterraneanGate').map(o => `${o.x},${o.y}`));
+	const above = objects.filter(o => (o.l || 0) === 0 && o.type === 'subterraneanGate');
+	assert.ok(above.length >= gates, 'every gate pair is on the map');
+	for (const g of above) assert.ok(below.has(`${g.x},${g.y}`), `the gate at ${g.x},${g.y} has its lower half under it`);
+	fs.rmSync(out, { force: true });
+});

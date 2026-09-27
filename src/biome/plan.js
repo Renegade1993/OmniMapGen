@@ -1163,6 +1163,63 @@ function layoutStats(zone, seeds, tplZones, tplConns, unfulfilled, forced, W, H,
 		links: tplConns.filter(isLandLink).length, unfulfilled: unfulfilled.length };
 }
 
+/**
+ * For each zone of level l, the mean seed of the zones it links to on levels
+ * already laid out (null for a zone with no such link): where the layout pulls
+ * it, so a link between levels has ground both zones share.
+ */
+function crossLevelAnchors(zonePlan, plans, l) {
+	const n = (zonePlan.perLevel[l] || []).length;
+	const sum = Array.from({ length: n }, () => ({ x: 0, y: 0, k: 0 }));
+	for (const c of zonePlan.connections || []) {
+		if (!c.aRef || !c.bRef || c.aRef.l === c.bRef.l) continue;
+		const [here, there] = c.aRef.l === l ? [c.aRef, c.bRef] : c.bRef.l === l ? [c.bRef, c.aRef] : [null, null];
+		if (!here || there.l >= l || !plans[there.l] || !plans[there.l].seeds) continue;
+		const s = plans[there.l].seeds[there.i];
+		if (!s || here.i >= n) continue;
+		sum[here.i].x += s.x; sum[here.i].y += s.y; sum[here.i].k++;
+	}
+	return sum.map(a => (a.k ? { x: a.x / a.k, y: a.y / a.k } : null));
+}
+
+/**
+ * The template links between level l and a level below it, each with the
+ * zones at both ends and its index in the plan's connection list (the key a
+ * held gate site is found by on both levels).
+ */
+function crossLinks(zonePlan, l) {
+	const out = [];
+	(zonePlan.connections || []).forEach((c, k) => {
+		if (!c.aRef || !c.bRef || c.aRef.l === c.bRef.l) return;
+		const [lo, hi] = c.aRef.l < c.bRef.l ? [c.aRef, c.bRef] : [c.bRef, c.aRef];
+		if (lo.l === l || hi.l === l) out.push({ k, lo, hi });
+	});
+	return out;
+}
+
+/** A subterranean gate's ground held: the footprint OCCUPIED, the cells before it RESERVED. */
+function holdGateGround(tpl, x, y, l, W, H, blocked) {
+	for (const [a, b] of blockingCells(tpl, x, y)) blocked[l * W * H + b * W + a] |= OCCUPIED;
+	for (const [vx, vy] of visitableCells(tpl, x, y))
+		for (const [dx, dy] of allowedDirs(tpl)) {
+			const nx = vx + dx, ny = vy + dy;
+			if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+			reserveCell(blocked, l, W, H, ny * W + nx);
+		}
+}
+
+/** The held ground given back, for the gate pass to place the gate on it. */
+function releaseGateGround(tpl, x, y, l, W, H, blocked) {
+	for (const [a, b] of blockingCells(tpl, x, y))
+		if (a >= 0 && b >= 0 && a < W && b < H) blocked[l * W * H + b * W + a] &= ~(OCCUPIED | RESERVED);
+	for (const [vx, vy] of visitableCells(tpl, x, y))
+		for (const [dx, dy] of allowedDirs(tpl)) {
+			const nx = vx + dx, ny = vy + dy;
+			if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+			blocked[l * W * H + ny * W + nx] &= ~RESERVED;
+		}
+}
+
 /** A template link a shared border has to carry: guarded (the default) or wide. */
 const isLandLink = c => !c.type || c.type === 'guarded' || c.type === 'wide';
 
@@ -1183,7 +1240,7 @@ const isLandLink = c => !c.type || c.type === 'guarded' || c.type === 'wide';
  * Returns {seeds, zone, missing, links, sizeErr, k, tries}; k is -1 for the preset.
  */
 function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = null, seed = 1,
-	levelIndex = 0, p, tries: triesIn, preset = null }) {
+	levelIndex = 0, p, tries: triesIn, preset = null, anchors = null }) {
 	const weights = tplZones.map(z => Math.max(1, z.size || 10));
 	const want = weights.map(s => s * s / weights.reduce((a, v) => a + v * v, 0));
 	const wantedLinks = new Set(tplConns.filter(isLandLink).map(c => Math.min(c.a, c.b) * 100000 + Math.max(c.a, c.b)));
@@ -1204,7 +1261,7 @@ function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = 
 		const s = k < 0
 			? preset.map((q, i) => ({ x: q.x, y: q.y,
 				player: tplZones[i].type === 'playerStart' || tplZones[i].type === 'cpuStart' }))
-			: layoutZoneSeeds(tplZones, layoutConns, W, H, playerStarts, lrng, { ...opts, repulse });
+			: layoutZoneSeeds(tplZones, layoutConns, W, H, playerStarts, lrng, { ...opts, repulse, anchors });
 		if (water)
 			for (const q of s)
 				if (water[q.y * W + q.x]) Object.assign(q, nearestLand(W, H, water, q.x, q.y));
@@ -1271,7 +1328,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	if (tplZones && tplZones.length) {
 		const best = chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water,
 			seed: params.seed || 1, levelIndex, p,
-			preset: p.zonePlan.presetSeeds && p.zonePlan.presetSeeds[levelIndex] });
+			preset: p.zonePlan.presetSeeds && p.zonePlan.presetSeeds[levelIndex], anchors: p.layoutAnchors || null });
 		({ seeds, zone } = best);
 		if (best.tries > 1)
 			console.error(`[gen] level ${levelIndex}: ${best.k < 0 ? 'the free layout the starts came from' : `zone layout ${best.k + 1} of ${best.tries}`} kept, `
@@ -1479,6 +1536,30 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	let openMask = null;
 	if (underground && p.undergroundRock !== false) {
 		openMask = carveUnderground(W, H, zone, seeds, edges, connections, p, rng);
+		// under each gate site the level above held (gateSites, above), floor
+		// for this half: a small chamber, and a tunnel from it to the chamber
+		// of the zone the link names, so the gate does not open into a sealed
+		// pocket; only where that zone lies under the site
+		if (p.zonePlan && p.gateSitesAbove && p.gateSitesAbove.length) {
+			const links = new Map(crossLinks(p.zonePlan, levelIndex).filter(c => c.hi.l === levelIndex).map(c => [c.k, c]));
+			const open = (x, y, r) => {
+				for (let yy = Math.max(0, Math.floor(y - r)); yy <= Math.min(H - 1, Math.ceil(y + r)); yy++)
+					for (let xx = Math.max(0, Math.floor(x - r)); xx <= Math.min(W - 1, Math.ceil(x + r)); xx++)
+						if ((xx - x) ** 2 + (yy - y) ** 2 <= r * r && zone[yy * W + xx] === zone[y * W + x]) openMask[yy * W + xx] = 1;
+			};
+			for (const s of p.gateSitesAbove) {
+				const c = links.get(s.k);
+				if (!c || zone[s.y * W + s.x] !== c.hi.i) continue;
+				open(s.x, s.y, 2.6);
+				let cx = 0, cy = 0, n = 0;
+				for (let i = 0; i < zone.length; i++) if (zone[i] === c.hi.i) { cx += i % W; cy += (i / W) | 0; n++; }
+				cx = Math.round(cx / n); cy = Math.round(cy / n);
+				for (let x = s.x, y = s.y, step = 0; step < W + H && (x !== cx || y !== cy); step++) {
+					if (Math.abs(cx - x) >= Math.abs(cy - y)) x += Math.sign(cx - x); else y += Math.sign(cy - y);
+					open(x, y, 1.1);
+				}
+			}
+		}
 		// shape the carve for the terrain art before anything reads it (queue
 		// 26): no sprite fits one-cell rock or one-cell notches
 		if (p.caveChecker) {
@@ -1492,6 +1573,22 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			if (!openMask[c]) { blocked[levelIndex * W * H + c] |= OCCUPIED; rock++; }
 		console.error(`[gen] level ${levelIndex}: ${rock} cells of solid rock, `
 			+ `${W * H - rock} carved open`);
+	}
+	// the lower halves of the held gates, on the floor opened for them
+	const gateSitesHere = [];
+	if (p.zonePlan && p.gateSitesAbove && p.gateSitesAbove.length) {
+		const links = new Map(crossLinks(p.zonePlan, levelIndex).filter(c => c.hi.l === levelIndex).map(c => [c.k, c]));
+		const tpl = OBJECT_DEFS.subterraneanGateUnder;
+		for (const s of p.gateSitesAbove) {
+			const c = links.get(s.k);
+			if (!c || zone[s.y * W + s.x] !== c.hi.i) continue;
+			if (!footprintFits(tpl, s.x, s.y, levelIndex, W, H, blocked)) continue;
+			if (!entranceOpen(tpl, s.x, s.y, levelIndex, W, H, blocked, null)) continue;
+			holdGateGround(tpl, s.x, s.y, levelIndex, W, H, blocked);
+			gateSitesHere.push({ k: s.k, x: s.x, y: s.y });
+		}
+		console.error(`[gen] level ${levelIndex}: ground held below ${gateSitesHere.length} of the `
+			+ `${p.gateSitesAbove.length} gate site(s) above`);
 	}
 	// Underground lava is a floor share, not a zone share: the per-class
 	// 9:1 draw picks lava for about a tenth of ZONES, but a lava zone on a
@@ -1834,6 +1931,49 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				console.error(`[gen] level ${levelIndex}: zone ${meta.spec && meta.spec.id} holds ground for `
 					+ `${meta.townSpots.length} of its ${want} town(s)`);
 		});
+	}
+
+	// The ground of each subterranean gate a template link down to the next
+	// level will need. The engine places a zone's connections before any of its
+	// objects (ConnectionsPlacer), and a gate pair needs one x,y open in both
+	// zones; left to the end, the surface half found its ground spent and the
+	// cave half found rock, so [HotA] Nostalgia's 24 links between levels made
+	// 0-5 gate pairs and monoliths took the rest (corpus: 21 gates a map). The
+	// site is in this end's zone, nearest where the zone at the other end is
+	// laid out (crossLevelAnchors puts it on the mean of its partners here),
+	// held as a town's ground is; the level below opens its cave under it and
+	// holds the other half, and the gate pass tries the pair there first.
+	const gateSites = [];
+	if (tplZones && p.zonePlan && !underground && (p.zonePlan.perLevel || []).length > levelIndex + 1) {
+		const links = crossLinks(p.zonePlan, levelIndex).filter(c => c.lo.l === levelIndex);
+		const partners = new Map();
+		for (const c of links) {
+			if (!partners.has(c.hi.i)) partners.set(c.hi.i, []);
+			partners.get(c.hi.i).push(c.lo.i);
+		}
+		const tpl = OBJECT_DEFS.subterraneanGate;
+		for (const c of links) {
+			const ps = partners.get(c.hi.i).map(i => seeds[i]).filter(Boolean);
+			if (!ps.length || !seeds[c.lo.i]) continue;
+			const ax = ps.reduce((s, q) => s + q.x, 0) / ps.length, ay = ps.reduce((s, q) => s + q.y, 0) / ps.length;
+			const cells = [];
+			for (let i = 0; i < zone.length; i++) if (zone[i] === c.lo.i && !(water && water[i])) cells.push(i);
+			cells.sort((a, b) => ((a % W - ax) ** 2 + (((a / W) | 0) - ay) ** 2) - ((b % W - ax) ** 2 + (((b / W) | 0) - ay) ** 2));
+			for (const i of cells) {
+				const x = i % W, y = (i / W) | 0;
+				if (blockingCells(tpl, x, y).some(([a, b]) => a < 3 || b < 3 || a > W - 4 || b > H - 4)) continue;
+				if (!footprintFits(tpl, x, y, levelIndex, W, H, blocked)) continue;
+				if (!entranceOpen(tpl, x, y, levelIndex, W, H, blocked, null)) continue;
+				const walls = blockingCells(tpl, x, y).map(([a, b]) => b * W + a);
+				if (!townGuard.accepts(walls)) continue;
+				holdGateGround(tpl, x, y, levelIndex, W, H, blocked);
+				townGuard.refresh();
+				gateSites.push({ k: c.k, x, y });
+				break;
+			}
+		}
+		if (links.length)
+			console.error(`[gen] level ${levelIndex}: ground held for ${gateSites.length} of ${links.length} gate(s) down`);
 	}
 
 	// Boats and shipyards (waterfill.js, water W2) go in with the towns, so
@@ -3156,7 +3296,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// level map not one of the 55 anchors where a gate footprint still fitted
 	// had open reachable ground beside it, so zero gates were placed and the
 	// entire underground was unreachable.
-	return { zone, classes, biomeTerrain, barriers, roadCells, objects, openings,
+	return { zone, seeds, gateSites, gateSitesHere, classes, biomeTerrain, barriers, roadCells, objects, openings,
 		guards, rng, p, levelIndex, playerStarts, alignPlayers, towns,
 		objectPools, openMask, zoneMeta, zdist, rim, harbours, links, sailLinks,
 		stats: layoutStats(zone, seeds, tplZones, tplConns, unfulfilled, forced, W, H, water, openMask, landCells) };
@@ -3560,9 +3700,19 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	const towns = []; // cross-level sameAsTown registry (instanceNames are global)
 	for (let l = 0; l < levels; l++) {
 		const starts = l === 0 ? playerStarts : [];
+		// A template zone linked to zones on a level already laid out is laid
+		// out over them: the engine's zone placer draws both levels in one
+		// plane, so a link between levels pulls its zones onto the same ground
+		// and its subterranean gate pair (one x,y, both levels) finds a place.
+		// Laid out apart, the zones rarely shared a cell: [HotA] Nostalgia made
+		// 1 gate where the corpus has 21 and monoliths took the rest (47
+		// against 30); Coldshadow's Fantasy 0 against 13 (lens t37L).
+		const anchors = p.zonePlan && l > 0 ? crossLevelAnchors(p.zonePlan, plans, l) : null;
+		const above = l > 0 && plans[l - 1].gateSites && plans[l - 1].gateSites.length ? plans[l - 1].gateSites : null;
 		plans.push(planLevel({
 			W, H, levelIndex: l, playerStarts: starts,
-			alignPlayers: playerStarts, towns, params: p,
+			alignPlayers: playerStarts, towns,
+			params: anchors ? { ...p, layoutAnchors: anchors, ...(above ? { gateSitesAbove: above } : {}) } : p,
 			terrainShortIds, tileIdsByShort, numTiles, blocked,
 			underground: l > 0, objectPools, terrainInfo,
 		}));
@@ -3646,6 +3796,18 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			return -1;
 		};
 		let crossGates = 0, crossPortals = 0;
+		// every held surface site is given back first, a pair or not, so none
+		// stays a blocked footprint with nothing on it
+		const heldPair = new Map();
+		for (const s of plans[0].gateSites || []) {
+			const down = (plans[1].gateSitesHere || []).find(d => d.k === s.k && d.x === s.x && d.y === s.y);
+			releaseGateGround(surfaceTpl, s.x, s.y, 0, W, H, blocked);
+			if (down) {
+				releaseGateGround(underTpl, s.x, s.y, 1, W, H, blocked);
+				heldPair.set(s.k, s.y * W + s.x);
+			}
+		}
+		if (heldPair.size || (plans[0].gateSites || []).length) { conn[0].refresh(); conn[1].refresh(); }
 		for (const c of crossConns) {
 			const lo = c.aRef.l === 0 ? c.aRef : c.bRef;
 			const hi = c.aRef.l === 0 ? c.bRef : c.aRef;
@@ -3657,6 +3819,9 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				const j = (rng() * (i + 1)) | 0;
 				[cand[i], cand[j]] = [cand[j], cand[i]];
 			}
+			// the pair held for this link goes first
+			const held = heldPair.get(p.zonePlan.connections.indexOf(c));
+			if (held !== undefined) cand.unshift(held);
 			const reach = reachNow();
 			let done = false;
 			for (const cell of cand) {

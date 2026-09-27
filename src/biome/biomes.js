@@ -544,6 +544,22 @@ function layoutZoneSeeds(zoneSpecs, conns, W, H, playerStarts, rng, opts = {}) {
 			}
 	}
 
+	// opts.anchors: a point per zone or null, where the zones it links to on a
+	// level already laid out sit (plan.js crossLevelAnchors). The engine places
+	// both levels as one drawing, where a link between levels pulls its zones
+	// together against everything else pushing them about; such a zone starts
+	// on its anchor here and the level's own forces settle it from there. A
+	// spring holding it on the anchor made nearly every link a gate pair; the
+	// start alone lands where the corpus is (the late corpus's four two-level
+	// maps: 70 gates and 78 monoliths against its 68 and 88; with a spring 74
+	// and 76-82; without anchors 2 and 126).
+	const anchors = opts.anchors || null;
+	if (anchors)
+		for (let i = 0; i < n; i++)
+			if (anchors[i] && !pos[i].pin) {
+				pos[i].x = Math.min(W - 4, Math.max(3, anchors[i].x + (rng() - 0.5) * 2 * jit));
+				pos[i].y = Math.min(H - 4, Math.max(3, anchors[i].y + (rng() - 0.5) * 2 * jit));
+			}
 	for (let it = 0, iters = opts.iterations || 90; it < iters; it++) {
 		const fx = new Array(n).fill(0), fy = new Array(n).fill(0);
 		for (let i = 0; i < n; i++) {
