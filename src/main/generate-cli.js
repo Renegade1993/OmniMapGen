@@ -60,6 +60,11 @@ function fail(msg) {
 }
 
 const opt = parseArgs(process.argv.slice(2));
+// The options as received, first in the log (the in-game tab writes this
+// output to extmapgen_log.txt): a bug report then says exactly what the tab
+// asked for, and a test can check every widget against the flag it sent.
+// Not for the two listings, whose output is read whole as JSON or lines.
+if (!opt.listknobs && !opt.listtemplates) console.log('options:', JSON.stringify(opt));
 
 // Where VCMI lives, named by the caller: the MapGen tab passes its own
 // client's folder and user folder. These win over VCMI_ROOT and

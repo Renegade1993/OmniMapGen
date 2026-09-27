@@ -1,6 +1,6 @@
 {
 	"name": "omnimapgen",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"description": "Random map generator for VCMI (Heroes of Might and Magic III): free layouts and RMG templates, reads the install and its mods the way the engine does, writes .vmap",
 	"license": "MIT",
 	"repository": {

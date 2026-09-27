@@ -289,7 +289,8 @@
 			"valueStep": 0.1,
 			"valueDefault": 1,
 			"valueLabel": "value_waterTreasure",
-			"valueDecimals": 1
+			"valueDecimals": 1,
+			"valueSuffix": "x"
 		},
 		{
 			"name": "value_waterTreasure",

@@ -12,7 +12,9 @@
  * except the ones marked `cli`, which are the generator's own flags.
  *
  * Fields: key, page, label, help, min, max, step, and optionally `stops`
- * (named positions on the scale, for a notched control) and `cli`.
+ * (named positions on the scale, for a notched control), `unit` ('x' for a
+ * multiplier, shown as 1.0x) and `cli`. A label fits the page at about 21
+ * characters; a longer one runs under its control.
  */
 'use strict';
 
@@ -71,10 +73,10 @@ const KNOBS = [
 	{ key: 'interconnectPortal', page: 'borders', label: 'Portal share',
 		help: 'Share of the passages that are two-way portals instead of open ground.',
 		min: 0, max: 1, step: 0.02 },
-	{ key: 'openPathNoRoad', page: 'borders', label: 'Open passages without road',
+	{ key: 'openPathNoRoad', page: 'borders', label: 'Passages without road',
 		help: 'Weight of plain open passages among the non-portal ones.',
 		min: 0, max: 1, step: 0.05 },
-	{ key: 'openPathRoad', page: 'borders', label: 'Open passages with road',
+	{ key: 'openPathRoad', page: 'borders', label: 'Passages with road',
 		help: 'Weight of roaded passages among the non-portal ones.',
 		min: 0, max: 1, step: 0.05 },
 	{ key: 'roadNetwork', page: 'borders', label: 'Road network',
@@ -91,24 +93,24 @@ const KNOBS = [
 	{ key: 'artifactRichness', page: 'treasure', label: 'Artifact quality',
 		help: 'Shifts artifacts from treasure and minor toward major and relic.',
 		min: 0, max: 1, step: 0.05 },
-	{ key: 'pickupDensity', page: 'treasure', label: 'Chests, scrolls and campfires',
+	{ key: 'pickupDensity', page: 'treasure', label: 'Chests and campfires',
 		help: 'Multiplier on treasure chests, spell scrolls and campfires.',
-		min: 0, max: 3, step: 0.1 },
+		min: 0, max: 3, step: 0.1, unit: 'x' },
 	{ key: 'resourceDensity', page: 'treasure', label: 'Resource piles',
 		help: 'Multiplier on loose resource piles.',
-		min: 0, max: 3, step: 0.1 },
+		min: 0, max: 3, step: 0.1, unit: 'x' },
 	{ key: 'mineDensity', page: 'treasure', label: 'Mines',
 		help: 'Multiplier on mines beyond each player\'s starting pair.',
-		min: 0, max: 3, step: 0.1 },
+		min: 0, max: 3, step: 0.1, unit: 'x' },
 	{ key: 'starterMines', page: 'treasure', label: 'Starting mines',
 		help: 'A sawmill and an ore pit beside every start.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']] },
 	{ key: 'dwellingDensity', page: 'treasure', label: 'Creature dwellings',
 		help: 'Multiplier on external creature dwellings.',
-		min: 0, max: 3, step: 0.1 },
-	{ key: 'bonusDensity', page: 'treasure', label: 'Shrines and one-visit buildings',
+		min: 0, max: 3, step: 0.1, unit: 'x' },
+	{ key: 'bonusDensity', page: 'treasure', label: 'Shrines and bonuses',
 		help: 'Multiplier on shrines, schools, stat and luck buildings.',
-		min: 0, max: 3, step: 0.1 },
+		min: 0, max: 3, step: 0.1, unit: 'x' },
 
 	// ---- monsters (K, 2026-09-24: a tier control, one stack-size scale that
 	// moves the whole curve, and a guard switch per placement context)
@@ -117,10 +119,10 @@ const KNOBS = [
 		min: -2, max: 2, step: 1, stops: [[-2, 'Very weak'], [-1, 'Weak'], [0, 'Normal'], [1, 'Strong'], [2, 'Very strong']] },
 	{ key: 'stackScale', page: 'monsters', label: 'Stack size',
 		help: 'Creatures per stack. Low-level creatures come in big stacks and high-level ones in small stacks; this moves the whole scale up or down together. At 1.0x the game rolls each creature\'s own usual number.',
-		min: 0.25, max: 3, step: 0.05 },
+		min: 0.25, max: 3, step: 0.05, unit: 'x' },
 	{ key: 'guardDensity', page: 'monsters', label: 'Monster count',
 		help: 'Multiplier on every zone\'s monster budget, guards and roamers together.',
-		min: 0, max: 3, step: 0.1 },
+		min: 0, max: 3, step: 0.1, unit: 'x' },
 	{ key: 'objectGuardShare', page: 'monsters', label: 'Guarding vs roaming',
 		help: 'Share of each zone\'s monsters posted on something worth taking; the rest roam.',
 		min: 0, max: 1, step: 0.05 },
@@ -144,15 +146,15 @@ const KNOBS = [
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']] },
 	{ key: 'lootGuardWeight', page: 'monsters', label: 'Treasure guard pull',
 		help: 'How strongly guards gather on treasure and dwellings compared with the rates measured on your random maps.',
-		min: 0, max: 4, step: 0.1 },
+		min: 0, max: 4, step: 0.1, unit: 'x' },
 	{ key: 'mineGuardWeight', page: 'monsters', label: 'Mine guard pull',
 		help: 'How strongly guards gather on mines compared with the rates measured on your random maps.',
-		min: 0, max: 4, step: 0.1 },
+		min: 0, max: 4, step: 0.1, unit: 'x' },
 
 	// ---- underground
 	{ key: 'subterraneanGateRatio', page: 'underground', label: 'Gates between levels',
 		help: 'How many subterranean gates link the surface and the underground.',
-		min: 0, max: 2, step: 0.1 },
+		min: 0, max: 2, step: 0.1, unit: 'x' },
 	{ key: 'subterraneanNarrow', page: 'underground', label: 'Narrow tunnels',
 		help: 'Share of underground zones carved as narrow tunnels rather than open caverns.',
 		min: 0, max: 1, step: 0.05 },
@@ -163,13 +165,13 @@ const KNOBS = [
 	// ---- scenery
 	{ key: 'decorDensity', page: 'scenery', label: 'Scenery',
 		help: 'Multiplier on scenery inside zones (mountains, trees, rocks). Border scenery follows Border solidity.',
-		min: 0, max: 2, step: 0.1 },
+		min: 0, max: 2, step: 0.1, unit: 'x' },
 	{ key: 'rivers', page: 'scenery', label: 'Rivers', cli: 'rivers',
 		help: 'Rivers across the map.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']], default: 1 },
 	{ key: 'riverAmount', page: 'scenery', label: 'River amount',
 		help: 'Multiplier on how much of the map the rivers run through. 1 is the share measured on real random maps.',
-		min: 0.25, max: 3, step: 0.25, default: 1 },
+		min: 0.25, max: 3, step: 0.25, unit: 'x', default: 1 },
 
 	// ---- map (drawn on the Map page, beside the player counts)
 	{ key: 'teams', page: 'map', label: 'Teams',
@@ -189,7 +191,7 @@ const KNOBS = [
 		min: 0, max: 3, step: 1, stops: [[0, 'None'], [1, 'Starts'], [2, 'Towns'], [3, 'Every zone']] },
 	{ key: 'waterTreasure', page: 'water', label: 'Treasure on the water',
 		help: 'Multiplier on what lies on the water a boat can reach: flotsam, sea chests, survivors, buoys, mermaids and the two water banks.',
-		min: 0, max: 3, step: 0.1 },
+		min: 0, max: 3, step: 0.1, unit: 'x' },
 ];
 
 // defaults come from the generator itself; booleans read as 0/1

@@ -53,7 +53,7 @@
 			"valueDefault": 0.006,
 			"valueLabel": "value_artifactDensity",
 			"valueDisplayScale": 100,
-			"valueDecimals": 0,
+			"valueDecimals": 1,
 			"valueSuffix": "%"
 		},
 		{

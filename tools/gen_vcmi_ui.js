@@ -62,14 +62,16 @@ const LINE_BOTTOM = 540, BUTTON_Y = 548;
 const MAP_DEFAULTS = { size: 108, underground: 0, players: 4, humans: 1, template: '', declareMods: 0 };
 const SIZE_STOPS = [[36, 'S'], [72, 'M'], [108, 'L'], [144, 'XL'], [180, 'H'], [216, 'XH'], [252, 'G']];
 
-// how a value reads on the page
+// how a value reads on the page: every step shows as a change, so a value
+// takes as many decimals as its step has (0.25 steps read 1.25x, not 1.3x)
 function display(k) {
+	const places = step => (String(step).split('.')[1] || '').length;
 	if (k.stops && k.stops.length) return { valueNames: k.stops.map(([v], i) => [v, `vcmi.mapGen.${k.key}.stop${i}`]) };
-	if (k.min >= 0 && k.max <= 1 && k.step < 1) return { valueDisplayScale: 100, valueDecimals: 0, valueSuffix: '%' };
-	if (/Density$|Weight$|Scale$/.test(k.key) && k.key !== 'artifactDensity') return { valueDecimals: k.step < 0.1 ? 2 : 1, valueSuffix: 'x' };
-	if (k.key === 'artifactDensity') return { valueDisplayScale: 1000, valueDecimals: 1, valueSuffix: ' per 1000' };
-	const d = k.step >= 1 ? 0 : Math.min(3, Math.ceil(-Math.log10(k.step)));
-	return { valueDecimals: d };
+	if (k.unit === 'x') return { valueDecimals: Math.max(1, places(k.step)), valueSuffix: 'x' };
+	// Artifacts moves in 0.1% steps and reads 0.6%; shown in whole percents it
+	// read 1% for ten clicks running
+	if (k.min >= 0 && k.max <= 1 && k.step < 1) return { valueDisplayScale: 100, valueDecimals: Math.max(0, places(k.step) - 2), valueSuffix: '%' };
+	return { valueDecimals: Math.min(3, places(k.step)) };
 }
 
 // The base game has no visible help icon anywhere in this tab's real
