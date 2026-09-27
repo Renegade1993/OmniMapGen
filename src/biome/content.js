@@ -95,6 +95,7 @@ const DECOR_TYPE_SET = new Set(DECOR_TYPES);
  */
 const CAVE_CONTENT_SCALE = 18.6 / 24.5;
 const { MINE_SUBTYPE } = require('../rmg/template');
+const { zonePool: pileZonePool, preparePile } = require('../rmg/piles');
 
 /**
  * Options every wandering monster needs.
@@ -164,6 +165,18 @@ const AZURE = GUARD_POOL.find(c => c.id === 'azureDragon') || GUARD_POOL[GUARD_P
 const TPL_PILE_SHARE = Number(process.env.VMAPGEN_TPL_PILE_SHARE) || 0.65;
 const TPL_PILE_SHARE_RICH = Number(process.env.VMAPGEN_TPL_PILE_SHARE_RICH) || 0.40;
 const TPL_RICH_MIN = Number(process.env.VMAPGEN_TPL_RICH_MIN) || 10000;
+// VMAPGEN_TPL_PILE_MODEL=engine: a template zone's piles built as the engine
+// builds them (src/rmg/piles.js) give its chests and its guards (fillBiome);
+// each pile the zone has room for lands at the share of its class. Fitted
+// jointly on the late corpus's guard levels and its maps' chests
+// (.tmp\opus\tmp\pile_fit.js, 2026-09-27): an unguarded pile, small and easy
+// to place, always lands; a guarded one at 0.70, at 0.50 in a band from
+// TPL_RICH_MIN. The fit read guard levels 1-7 at 0.80-1.08 of the corpus and
+// its chests at 0.95, where the rate model's maps hold 0.50.
+const TPL_PILE_MODEL = process.env.VMAPGEN_TPL_PILE_MODEL || 'uniform';
+const TPL_PILE_LAND_OPEN = Number(process.env.VMAPGEN_TPL_PILE_LAND_OPEN) || 1.0;
+const TPL_PILE_LAND_GUARDED = Number(process.env.VMAPGEN_TPL_PILE_LAND_GUARDED) || 0.70;
+const TPL_PILE_LAND_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_RICH) || 0.50;
 /**
  * The treasure piles a template zone lands, band by band, richest first, as
  * TreasurePlacer::createTreasures asks for them: floor(tiles * density / 400)
@@ -1981,6 +1994,51 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// |log ratio| 0.1667 -> 0.1664 and 0.2038 -> 0.1891. Core dwellings read
 	// lower (0.6-0.7x): the corpus's own players started Tower and Dungeon, and
 	// the lens rolls starts at random. VMAPGEN_TPL_DWELL_MODEL=zone is the old.
+	//
+	// First, with VMAPGEN_TPL_PILE_MODEL=engine, the zone's treasure piles as
+	// the engine builds them (TPL_PILE_MODEL above): the pool its piles draw
+	// from (TreasurePlacer::addAllPossibleObjects, with this zone's faction's
+	// dwellings and creature boxes), and band by band, richest first, every pile
+	// the density asks for, spending the pool's zone limits; the ones the zone
+	// has room for land at their class's share. A landed pile's guard is sized
+	// on what the pile is worth; the chests pass below takes their chests.
+	let pileSim = null;
+	if (zoneMeta && zoneMeta.spec && TPL_PILE_MODEL === 'engine' && objectPools.pileCommon) {
+		const bands = zoneMeta.spec.treasure || [];
+		const maxValue = bands.reduce((a, b) => Math.max(a, b.max || 0), 0);
+		const bare = f => String(f || 'neutral').toLowerCase().replace(/^.*:/, '');
+		const faction = zoneMeta.faction || 'neutral';
+		const pool = pileZonePool(objectPools.pileCommon, {
+			maxValue,
+			dwellings: (objectPools.engineDwellings || []).filter(d => d.faction === faction)
+				.map(d => ({ value: d.value, prob: d.prob, fromRmg: d.fromRmg })),
+			creatures: (objectPools.guards || GUARD_POOL).filter(c => bare(c.faction) === faction),
+			nativeZones: zoneMeta.nativeZones || 1, totalZones: zoneMeta.totalZones || 1,
+		}, rng);
+		const gIdx = 1 + (zoneMeta.monsterShift || 0) + Math.max(-2, Math.min(2, Math.round(p.monsterStrength || 0)));
+		const gPool = objectPools.guards ? zoneGuardPool(objectPools.guards, zoneMeta.spec) : undefined;
+		const guarded = zoneMeta.spec.monsters !== 'none';
+		pileSim = { landed: [] };
+		for (const { band, byDensity, want } of templatePiles(bands, cells.length)) {
+			let made = 0, empty = 0;
+			while (made < byDensity && empty < byDensity) {
+				const pile = preparePile(pool, band, rng);
+				if (!pile.objects.length) { empty++; continue; }
+				if (made < want) {
+					const guard = guarded ? engineGuard(pile.value, gIdx, rng, false, gPool) : null;
+					if (guard && gPool) guard.concrete = true;
+					const share = !guard ? TPL_PILE_LAND_OPEN
+						: band.min >= TPL_RICH_MIN ? TPL_PILE_LAND_RICH : TPL_PILE_LAND_GUARDED;
+					if (rng() < share) pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects });
+				}
+				made++;
+			}
+		}
+		if (process.env.VMAPGEN_PILE_TRACE)
+			console.error(`[pile] zone ${zoneMeta.spec.id} engine piles: ${pileSim.landed.length} landed, `
+				+ `${pileSim.landed.filter(x => x.guard).length} guarded, `
+				+ `${pileSim.landed.reduce((a, x) => a + x.objects.filter(o => o.type === 'treasureChest').length, 0)} chests`);
+	}
 	let dwellPicks = null;
 	if (zoneMeta && zoneMeta.spec && process.env.VMAPGEN_TPL_DWELL_MODEL !== 'zone'
 			&& objectPools.engineDwellings && objectPools.engineDwellings.length) {
@@ -2295,12 +2353,30 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const chestRarity = chestPool.reduce((a, e) => a + e.c.rmg.rarity, 0);
 	const chestScale = CHEST_GROWTH && chestPool.length ? CHEST_K * Math.pow(chestRarity / 1000, CHEST_GAMMA) : 1;
 	const chestW = chestPool.reduce((a, e) => a + e.w, 0);
-	for (let i = Math.round(scale * fill.chests * p.pickupDensity * chestScale); i > 0; i--) {
-		if (!chestPool.length) { put('treasureChest', chestTpl, undefined, 'treasureChest'); continue; }
-		let roll = rng() * chestW, pick = chestPool[chestPool.length - 1];
-		for (const e of chestPool) { roll -= e.w; if (roll <= 0) { pick = e; break; } }
+	const putChest = pick => {
+		if (!pick) { put('treasureChest', chestTpl, undefined, 'treasureChest'); return; }
 		const e = put('treasureChest', pick.tpl.raw, pick.c.core ? undefined : emptyRewardable(), pick.c.subtype);
 		if (e && (pick.tpl.mod || pick.c.mod)) e.mod = pick.tpl.mod || pick.c.mod;
+	};
+	if (pileSim) {
+		// the landed piles' own chests, each kind as the pile drew it (a kind
+		// with no art for this ground stands in as core's chest); the player's
+		// lever scales the count
+		const drawn = pileSim.landed.flatMap(pl => pl.objects.filter(o => o.type === 'treasureChest'));
+		const bySubtype = new Map(chestPool.map(e => [e.c.subtype, e]));
+		const want = drawn.length * p.pickupDensity;
+		const n = Math.floor(want) + (rng() < want % 1 ? 1 : 0);
+		for (let i = 0; i < n && drawn.length; i++) {
+			const key = String(drawn[i % drawn.length].key);
+			putChest(bySubtype.get(key.slice(key.lastIndexOf('.') + 1)) || bySubtype.get('treasureChest'));
+		}
+	} else {
+		for (let i = Math.round(scale * fill.chests * p.pickupDensity * chestScale); i > 0; i--) {
+			if (!chestPool.length) { putChest(null); continue; }
+			let roll = rng() * chestW, pick = chestPool[chestPool.length - 1];
+			for (const e of chestPool) { roll -= e.w; if (roll <= 0) { pick = e; break; } }
+			putChest(pick);
+		}
 	}
 	const fireTpl = campfireTemplate();
 	for (let i = Math.round(scale * fill.campfires * p.pickupDensity); i > 0; i--)
@@ -2489,24 +2565,32 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// TPL_PILE_SHARE is what then lands, measured against the corpus with
 		// the fidelity lens.
 		let next = 0;
-		for (const { band: t, count, d, byDensity, byRoom } of templatePiles(bands, cells.length)) {
-			if (process.env.VMAPGEN_PILE_TRACE)
-				console.error(`[pile] zone ${zoneMeta.spec.id} band ${t.min}-${t.max} density ${t.density}: cells ${cells.length}, d ${d.toFixed(1)}, by density ${byDensity}, by room ${byRoom}, placing ${count}`);
-			for (let k = count; k > 0; k--) {
-				const guard = zoneGuard(t.min + Math.floor(rng() * (t.max - t.min + 1)));
-				if (!guard) continue;
-				if (process.env.VMAPGEN_PILE_TRACE) console.error(`[pile]   guard level ${guard.level} strength ${guard.strength}`);
-				let done = false;
-				while (!done && next < byPiles.length) done = postGuard(byPiles[next++], guard);
-				// more guarded piles than objects to stand by: the guard still
-				// stands in the zone
-				if (!done) {
-					const e = put(`randomMonsterLevel${guard.level}`, monsterTpl,
-						{ character: 'hostile', amount: guard.amount });
-					if (e && guard.concrete) e.guardCreature = guard.creature;
-					done = !!e;
+		const postPileGuard = guard => {
+			if (process.env.VMAPGEN_PILE_TRACE) console.error(`[pile]   guard level ${guard.level} strength ${guard.strength}`);
+			let done = false;
+			while (!done && next < byPiles.length) done = postGuard(byPiles[next++], guard);
+			// more guarded piles than objects to stand by: the guard still
+			// stands in the zone
+			if (!done) {
+				const e = put(`randomMonsterLevel${guard.level}`, monsterTpl,
+					{ character: 'hostile', amount: guard.amount });
+				if (e && guard.concrete) e.guardCreature = guard.creature;
+				done = !!e;
+			}
+			if (done) posted++;
+		};
+		if (pileSim) {
+			// the engine's piles (VMAPGEN_TPL_PILE_MODEL=engine, above): each
+			// landed pile's guard, sized on what that pile is worth
+			for (const pl of pileSim.landed) if (pl.guard) postPileGuard(pl.guard);
+		} else {
+			for (const { band: t, count, d, byDensity, byRoom } of templatePiles(bands, cells.length)) {
+				if (process.env.VMAPGEN_PILE_TRACE)
+					console.error(`[pile] zone ${zoneMeta.spec.id} band ${t.min}-${t.max} density ${t.density}: cells ${cells.length}, d ${d.toFixed(1)}, by density ${byDensity}, by room ${byRoom}, placing ${count}`);
+				for (let k = count; k > 0; k--) {
+					const guard = zoneGuard(t.min + Math.floor(rng() * (t.max - t.min + 1)));
+					if (guard) postPileGuard(guard);
 				}
-				if (done) posted++;
 			}
 		}
 	} else {

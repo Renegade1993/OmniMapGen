@@ -1321,7 +1321,10 @@ async function generateMap(params) {
 			waterIslands: !!(waterPlan && waterPlan.islands),
 			layoutOnly: !!process.env.VMAPGEN_PLAN_ONLY },
 		terrainShortIds, tileIdsByShort, numTiles: tiles.length,
-		objectPools: { banks, dwellings, engineDwellings, coreBanks, chests, terrainNames, ...(concreteGuards ? { guards: guardPool(registry) } : {}),
+		// pileCommon: the engine's common treasure pool (src/rmg/piles.js), for
+		// template zones' piles with VMAPGEN_TPL_PILE_MODEL=engine
+		objectPools: { banks, dwellings, engineDwellings, coreBanks, chests, terrainNames,
+			pileCommon: require('../rmg/piles').commonPool(assetIndex.objects, useMods), ...(concreteGuards ? { guards: guardPool(registry) } : {}),
 			...(themeDwellings ? { themeDwellings } : {}),
 			...(themeBanks && themeBanks.pool.length ? { themeBanks } : {}),
 			// a template zone's towns: concrete, of the factions it allows
