@@ -436,7 +436,12 @@ function stringsJson() {
 		'vcmi.mapGen.generate.humans': 'Generating a map for %d human players...',
 		'vcmi.mapGen.generate.failed': 'The map generator failed. See extmapgen_log.txt in the VCMI logs folder.',
 		'vcmi.mapGen.template.hover': 'Template',
-		'vcmi.mapGen.template.choose': 'Templates that take this map size, level count and player count. Free layout is our own zone layout, calibrated on your own random maps.',
+		// the chooser's description line, empty: every template runs at any size,
+		// level count and player count now (the generator accommodates them, K,
+		// 2026-09-27), so the old "templates that take this map size" line was
+		// no longer true, and it overflowed the dialog. MapGenTab shows ours
+		// whenever the key exists, even empty.
+		'vcmi.mapGen.template.choose': '',
 		// K's live test (2026-09-25): with no template chosen, this line read
 		// like the map itself would come out Nostalgia-shaped. It does not;
 		// free layout draws its own random zone graph, and only its loot,

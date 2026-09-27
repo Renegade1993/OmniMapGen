@@ -10,7 +10,7 @@
 	"vcmi.mapGen.generate.humans": "Generating a map for %d human players...",
 	"vcmi.mapGen.generate.failed": "The map generator failed. See extmapgen_log.txt in the VCMI logs folder.",
 	"vcmi.mapGen.template.hover": "Template",
-	"vcmi.mapGen.template.choose": "Templates that take this map size, level count and player count. Free layout is our own zone layout, calibrated on your own random maps.",
+	"vcmi.mapGen.template.choose": "",
 	"vcmi.mapGen.template.none": "No template: free layout, tuned to Nostalgia's numbers",
 	"vcmi.mapGen.template.button": "Choose",
 	"vcmi.mapGen.map.size.hover": "Map size",

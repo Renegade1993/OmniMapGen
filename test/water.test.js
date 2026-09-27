@@ -162,23 +162,29 @@ test('zones on land: each zone one dry piece, water labelled by the nearest land
 // treasure zones then share the surface with its 8 starts and the sea takes
 // their ground. With the underground on, those zones go below and it fits.
 // Runs the real CLI in layout-only mode against the installed template.
-test('template check: Mediterranean on Coldshadow\'s Fantasy needs the underground', { timeout: 240000 }, t => {
+test('template check: Mediterranean on Coldshadow\'s Fantasy needs the underground', { timeout: 360000 }, t => {
 	const { spawnSync } = require('child_process');
 	const { listTemplates } = require('../src/rmg/template');
 	useTestRoots();
 	if (!listTemplates().includes('Coldshadow\'s Fantasy')) { t.skip('template not installed'); return; }
-	const run = under => spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'),
+	const run = (under, strict) => spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'),
 		'--template', 'Coldshadow\'s Fantasy', '--accommodate', 'size,players,humans,underground',
 		'--w', '144', '--h', '144', '--players', '8', '--seed', '7',
 		'--bio.waterCoverage', '0.3', '--bio.waterShape', '3', '--underground', under,
+		...(strict ? ['--strict', '1'] : []),
 		'--out', path.join(testTmp(), 'vmapgen_water_check.vmap')],
 	{ env: genEnv({ VMAPGEN_PLAN_ONLY: '1' }), encoding: 'utf8', timeout: 200000,
 		cwd: path.join(__dirname, '..'), windowsHide: true });
-	const dry = run('0');
-	assert.notStrictEqual(dry.status, 0, 'refused without the underground');
-	assert.match(dry.stderr, /Water does not fit this template: Mediterranean/);
-	assert.match(dry.stderr, /turn the underground on/);
-	const under = run('1');
+	// --strict 1: the old verdict, refused with what would fit
+	const strict = run('0', true);
+	assert.notStrictEqual(strict.status, 0, 'strict: refused without the underground');
+	assert.match(strict.stderr, /Water does not fit this template: Mediterranean/);
+	assert.match(strict.stderr, /turn the underground on/);
+	// never refused (K, 2026-09-27): made with the most of that water that fits
+	const dry = run('0', false);
+	assert.strictEqual(dry.status, 0, `made without the underground: ${dry.stderr.slice(-400)}`);
+	assert.match(dry.stderr, /water accommodation: Mediterranean water at 30% does not fit .*; made with/);
+	const under = run('1', false);
 	assert.strictEqual(under.status, 0, `accepted with the underground: ${under.stderr.slice(-400)}`);
 	assert.match(under.stderr, /water fits the template/);
 });

@@ -12,7 +12,7 @@ const KNOWN = new Set(['w', 'h', 'players', 'out', 'seed', 'threads', 'perode',
 	'nocache', 'declaremods', 'rivers', 'rivershare', 'teams',
 	'template', 'accommodate', 'listtemplates', 'humans', 'render', 'observer',
 	'aionly', 'preset', 'listknobs', 'vcmiroot', 'vcmiuserdir', 'guardtheme',
-	'guardthemeshare', 'theme', 'dwellingthemeshare', 'bankthemeshare']);
+	'guardthemeshare', 'theme', 'dwellingthemeshare', 'bankthemeshare', 'strict', 'factions']);
 
 /**
  * Parse `--key value` pairs, and refuse anything else.
@@ -44,7 +44,8 @@ function fail(msg) {
 	console.error(`generate-cli: ${msg}`);
 	console.error('usage: node src/main/generate-cli.js --w 36 --h 36 --players 2 '
 		+ '--out map.vmap --seed 42 [--underground 1] [--bio.<knob> <float>]');
-	console.error('       --template <rmg preset name|file> [--accommodate size,players,humans,underground]');
+	console.error('       --template <rmg preset name|file|random>: runs at any size, level and player count; '
+		+ '--strict 1 refuses outside its ranges, --accommodate size,players,humans,underground relaxing them');
 	console.error('       --listtemplates 1 prints the presets the install offers');
 	console.error('       --observer <color|1> seals that player underground and '
 		+ 'makes every other slot AI-only (1 means red)');
@@ -175,14 +176,19 @@ async function main() {
 		fail(`--observer ${opt.observer}: this map's colours are `
 			+ COLORS.slice(0, nPlayers).join(', '));
 	let corner = 0;
+	// --factions castle,random,tower,...: each player's own pick in colour order
+	// (the lobby's, when the map is made at Begin), a name to pin or random to
+	// roll; a player with no entry keeps every faction open in the map
+	const picks = opt.factions ? String(opt.factions).split(',').map(s => s.trim()) : [];
 	const players = COLORS.slice(0, nPlayers).map((c, i) => {
 		const faction = 'core:' + ['castle','rampart','tower','inferno',
 			'necropolis','dungeon','stronghold','fortress'][i];
+		const chosenFaction = picks[i] ? picks[i].toLowerCase() : undefined;
 		if (c === observerColor)
 			// a placeholder; generateMap overwrites it with the chamber anchor
 			return { color: c, factions: [faction], townPos: { x: 0, y: 0, l: 1 } };
 		const [cx, cy] = corners[corner++];
-		return { color: c, factions: [faction], townPos: { x: cx, y: cy, l: 0 } };
+		return { color: c, factions: [faction], chosenFaction, townPos: { x: cx, y: cy, l: 0 } };
 	});
 
 	const res = await generateMap({
@@ -219,9 +225,12 @@ async function main() {
 		declareMods: !(opt.declaremods === '0' || opt.declaremods === 'false'),
 		biomes,
 		template,
+		// every template constraint is accommodated unless --strict 1 asks for
+		// the old refusal (then --accommodate names what may still bend)
 		accommodate: opt.accommodate
 			? opt.accommodate.split(',').map(s => s.trim().toLowerCase())
 			: [],
+		strictTemplate: opt.strict === '1' || opt.strict === 'true',
 		humans,
 		// --observer 1: the LAST player slot is sealed in an underground
 		// chamber with no way in or out, the rest become AI-only contestants.

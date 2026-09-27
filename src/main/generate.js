@@ -705,6 +705,14 @@ async function generateMap(params) {
 		const fa = assetIndex.factions.get(f);
 		return fa && fa.nativeTerrain ? String(fa.nativeTerrain) : null;
 	};
+	// a faction a caller names ("castle", "core:castle", a mod's "cove"): its id
+	// among the factions this map may use, or null
+	const resolveFaction = name => {
+		const n = String(name).trim().toLowerCase();
+		const bare = f => f.slice(f.lastIndexOf(':') + 1).toLowerCase();
+		return allFactions.find(f => f.toLowerCase() === n)
+			|| allFactions.find(f => bare(f) === n.slice(n.lastIndexOf(':') + 1)) || null;
+	};
 	const chamber = hasObserver ? observerChamber(params.mapW, params.mapH) : null;
 	const observerAnchor = chamber ? observerTownAnchor(chamber) : null;
 	// A template's player zone decides its start's faction the engine's way
@@ -801,15 +809,30 @@ async function generateMap(params) {
 			: (startCell.get(i) || p.townPos);
 		const given = p.factions && p.factions.length ? p.factions : allFactions;
 		let factions = given, pinned = null;
+		// The player's own pick (p.chosenFaction, --factions: the lobby's at Begin)
+		// is pinned, terrain and all, as the engine pins it; Random ('random') is
+		// rolled and pinned the same way. With no pick at all (the map made before
+		// the lobby's choices) a faction is still rolled for the start's terrain,
+		// but the header offers every faction the zone allows: the start town is
+		// a random town, and the game makes it whatever the player then picks. It
+		// used to offer the rolled one alone, and the lobby could offer nothing
+		// else (K, 2026-09-27: "MY FACTION IS PREDETERMINED").
+		const chosen = p.chosenFaction && p.chosenFaction !== 'random' ? resolveFaction(p.chosenFaction) : null;
+		const settled = !!p.chosenFaction;
+		if (p.chosenFaction && p.chosenFaction !== 'random' && !chosen)
+			console.error(`[gen] factions: ${p.color}'s pick "${p.chosenFaction}" is no faction this install has; rolled instead`);
 		if (isObserver) factions = allFactions;
-		else if (factionAgnostic && ownerZone(i)) {
-			const pick = pickStartFaction(zoneTownTypes(ownerZone(i), factionsForTowns),
-				pos.l > 0, factionRoll(i));
+		else if (chosen) {
+			pinned = chosen;
+			factions = [chosen];
+		} else if (factionAgnostic && ownerZone(i)) {
+			const zoneTypes = zoneTownTypes(ownerZone(i), factionsForTowns);
+			const pick = pickStartFaction(zoneTypes, pos.l > 0, factionRoll(i));
 			pinned = pick ? pick.id : allFactions[(factionRoll(i) * allFactions.length) | 0];
-			factions = [pinned];
+			factions = settled ? [pinned] : (zoneTypes.length ? zoneTypes.map(f => f.id) : allFactions);
 		} else if (factionAgnostic) {
 			pinned = allFactions[(factionRoll(i) * allFactions.length) | 0];
-			factions = [pinned];
+			factions = settled ? [pinned] : allFactions;
 		} else pinned = given.length === 1 ? given[0]
 			: given[(factionRoll(i) * given.length) | 0];
 		return {
@@ -833,8 +856,10 @@ async function generateMap(params) {
 			},
 		};
 	});
+	// the faction each start's terrain follows, and how many the lobby offers
 	console.error('[gen] factions: ' + players
-		.map(p => `${p.color}=${p.factions.join('|')}`).join('  '));
+		.map(p => `${p.color}=${p.pinnedFaction || p.factions.join('|')}`
+			+ (p.factions.length > 1 ? ` (${p.factions.length} to pick from)` : '')).join('  '));
 	// Surface water goes down before anything is planned: it can move a start
 	// inland (a Continental sea takes the corners the starts were pinned to),
 	// and the zones partition only the land it leaves.
@@ -861,37 +886,43 @@ async function generateMap(params) {
 		&& process.env.VMAPGEN_CAVEFIT !== 'off'
 		? makeMaskChecker(viewPatternsEarly, coreTerrain('rock'), [coreTerrain('subterra')])
 		: null;
-	const waterPlan = buildWaterPlan(params.mapW, params.mapH, params.biomes || {},
-		surfaceIdx.map(i => players[i].townPos), params.seed || 1, shoreCheck);
-	if (waterPlan && waterPlan.unfit)
-		console.error(`[gen] water: ${waterPlan.unfit} shore tile(s) no sprite fits`);
 	// where the starts stood before the water moved any (the template check
-	// below lays the dry map out from these)
+	// below lays the dry map out from these, and water it has to make smaller
+	// is laid again from them)
 	const waterOrigins = new Map(surfaceIdx.map(i =>
 		[players[i].color, { x: players[i].townPos.x, y: players[i].townPos.y }]));
-	if (waterPlan) {
+	// the water plan for these settings, the starts moved inland where it covers them
+	const planWater = biomes => {
+		const plan = buildWaterPlan(params.mapW, params.mapH, biomes,
+			surfaceIdx.map(i => ({ ...players[i].townPos, ...waterOrigins.get(players[i].color) })),
+			params.seed || 1, shoreCheck);
+		surfaceIdx.forEach(i => { players[i].townPos = { ...players[i].townPos, ...waterOrigins.get(players[i].color) }; });
+		if (!plan) return null;
+		if (plan.unfit) console.error(`[gen] water: ${plan.unfit} shore tile(s) no sprite fits`);
 		surfaceIdx.forEach((i, k) => {
-			const m = waterPlan.starts[k];
+			const m = plan.starts[k];
 			if (!m.moved) return;
 			console.error(`[gen] water: ${players[i].color}'s start moved inland from `
 				+ `(${players[i].townPos.x},${players[i].townPos.y}) to (${m.x},${m.y})`);
 			players[i].townPos = { ...players[i].townPos, x: m.x, y: m.y };
 		});
-		console.error(`[gen] water: ${waterPlan.shape}, `
-			+ `${(100 * waterPlan.coverage).toFixed(1)}% of the surface`);
+		console.error(`[gen] water: ${plan.shape}, ${(100 * plan.coverage).toFixed(1)}% of the surface`);
 		// the straits between islands are water whatever the amount says
-		const asked = Number((params.biomes || {}).waterCoverage) || 0;
-		if (waterPlan.islands && waterPlan.coverage > asked + 0.03)
-			console.error(`[gen] water: the ${waterPlan.shape} layout needs about `
-				+ `${Math.round(100 * waterPlan.coverage)}% water to part the islands; `
+		const asked = Number(biomes.waterCoverage) || 0;
+		if (plan.islands && plan.coverage > asked + 0.03)
+			console.error(`[gen] water: the ${plan.shape} layout needs about `
+				+ `${Math.round(100 * plan.coverage)}% water to part the islands; `
 				+ `${Math.round(100 * asked)}% was asked for`);
-	}
+		return plan;
+	};
+	let waterPlan = planWater(params.biomes || {});
 	// The observer is not a start the surface planner knows about: it has its
 	// own level and its own town, placed by hand below.
-	const starts = players
+	const makeStarts = () => players
 		.filter((_, i) => i !== observerIndex)
 		.map(p => ({ ...p.townPos, color: p.color,
 			native: nativeOf(p.pinnedFaction) }));
+	let starts = makeStarts();
 
 	// Biome plan drives both the WFC domains and the object layer.
 	// Object pools from the live index: creature banks have no placeholder
@@ -1187,12 +1218,20 @@ async function generateMap(params) {
 	// (minSize/maxSize/players/humans/forcedLevel) fail loudly unless an
 	// accommodation names them.
 	let zonePlan = null;
+	// A template runs at whatever size, level count and player count the player
+	// asked for (K, 2026-09-27: "IT SHOULD ALWAYS ACCOMMODATE THE PLAYER'S
+	// WISHES"): every constraint it names is accommodated and logged, and the
+	// map is made. params.strictTemplate (--strict 1) keeps the old refusal for
+	// tools that want a template only inside its own ranges, relaxed by
+	// params.accommodate alone.
+	const templateAcc = new Set(params.strictTemplate ? (params.accommodate || [])
+		: ['size', 'players', 'humans', 'underground', ...(params.accommodate || [])]);
 	if (params.template) {
 		const tpl = loadTemplate(params.template);
 		const zones = resolveZones(tpl.raw);
 		const req = { w: params.mapW, h: params.mapH, levels: levels.length,
 			players: players.length, humans: params.humans, seed: params.seed || 1 };
-		const acc = new Set(params.accommodate || []);
+		const acc = templateAcc;
 		const { violations, accommodated } = checkConstraints(tpl.raw, zones, req, acc);
 		for (const a of accommodated)
 			console.error(`[gen] template accommodation: ${a}`);
@@ -1276,7 +1315,7 @@ async function generateMap(params) {
 			if (levels.length === 1 && twoLevels) {
 				const plan2 = buildZonePlan(tplRaw, resolveZones(tplRaw),
 					{ w: params.mapW, h: params.mapH, levels: 2, players: players.length, humans: params.humans, seed: params.seed || 1 },
-					new Set(params.accommodate || []));
+					templateAcc);
 				if (plan2.perLevel[1].length && judge(biomeParams, plan2).ok) ok.push('turn the underground on');
 			}
 			const others = [];
@@ -1289,14 +1328,27 @@ async function generateMap(params) {
 					ok.push(`${shapeOf(chosen)} up to ${pct(c / 20)}`);
 					break;
 				}
-			throw new Error(`Water does not fit this template: ${shapeOf(chosen)} water at `
-				+ `${pct(cover)} on ${tplName}${levels.length === 1 && twoLevels ? ' without the underground' : ''}: `
-				+ `${why}. ${ok.length ? 'What fits: ' + ok.join('; ') + '.' : 'Lower the amount of water.'}`);
-		}
-		console.error(`[gen] water fits the template (${SEEDS.length} layout seeds): worst `
-			+ `${verdict.wet.crushed} crushed zone(s) (${verdict.dry.crushed} dry), `
-			+ `${verdict.wet.st.unfulfilled}/${verdict.wet.st.links} links without a border `
-			+ `(${verdict.dry.st.unfulfilled} dry)`);
+			if (params.strictTemplate)
+				throw new Error(`Water does not fit this template: ${shapeOf(chosen)} water at `
+					+ `${pct(cover)} on ${tplName}${levels.length === 1 && twoLevels ? ' without the underground' : ''}: `
+					+ `${why}. ${ok.length ? 'What fits: ' + ok.join('; ') + '.' : 'Lower the amount of water.'}`);
+			// Never refused (K, 2026-09-27): the map is made with the most water of the
+			// chosen layout that fits, found above in 5% steps, or dry when none does,
+			// and the starts are laid again from where they stood before the water
+			let fit = 0;
+			for (let c = Math.round(cover * 20) - 1; c >= 1; c--)
+				if (judge({ ...biomeParams, waterCoverage: c / 20 }, zonePlan).ok) { fit = c / 20; break; }
+			console.error(`[gen] water accommodation: ${shapeOf(chosen)} water at ${pct(cover)} does not fit `
+				+ `${tplName} (${why}); made with ${fit ? pct(fit) : 'none, dry'}`
+				+ `${ok.length ? ' (also fits: ' + ok.join('; ') + ')' : ''}`);
+			biomeParams.waterCoverage = fit;
+			waterPlan = fit ? planWater(biomeParams) : (planWater({ ...biomeParams, waterCoverage: 0 }), null);
+			starts = makeStarts();
+		} else
+			console.error(`[gen] water fits the template (${SEEDS.length} layout seeds): worst `
+				+ `${verdict.wet.crushed} crushed zone(s) (${verdict.dry.crushed} dry), `
+				+ `${verdict.wet.st.unfulfilled}/${verdict.wet.st.links} links without a border `
+				+ `(${verdict.dry.st.unfulfilled} dry)`);
 	}
 	// Concrete guards: a template zone's guards are picked from the creatures it
 	// allows and written as the creatures picked, as the engine writes them
