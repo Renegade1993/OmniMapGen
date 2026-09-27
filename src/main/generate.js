@@ -1151,6 +1151,15 @@ async function generateMap(params) {
 			const o = assetIndex.objects.get(d.id);
 			priced(o, o && o.creature && resolveCreature(d.mod, o.creature), d);
 		}
+		// Core's creatures are priced from the game's own CRTRAITS.TXT, which
+		// lives in the user folder's game data. Without it the core factions
+		// would have no dwellings at all, so the whole map keeps the zone model
+		// (content.js) rather than a half-priced table.
+		if (!h3Traits.size) {
+			engineDwellings.length = 0;
+			console.error('[gen] dwellings: CRTRAITS.TXT not found (no user folder named?), '
+				+ 'template zones use the zone model');
+		}
 	}
 	// A creature theme (--theme): the dwellings whose creatures belong to the
 	// family, core's (the Golem Factory's four golems, the gargoyle parapet)

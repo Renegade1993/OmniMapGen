@@ -213,10 +213,11 @@ const TPL_BANK_P_HIGH = Number(process.env.VMAPGEN_TPL_BANK_P_HIGH) || 0.047;
 // zones (.tmp\opus\bank_bandz_calib.js, 2026-09-26): about 0.12-0.26 a pile in
 // bands under 3000, 0.57 at 3000-6000, 0.66-0.73 in the rich bands.
 const TPL_BANK_K = Number(process.env.VMAPGEN_TPL_BANK_K) || 287;
-// The same for a template zone's dwellings in the engine model
-// (VMAPGEN_TPL_DWELL_MODEL=engine, fillBiome): everything else a pile could
-// take, against the odds of the zone's own dwellings its band admits.
-const TPL_DWELL_K = Number(process.env.VMAPGEN_TPL_DWELL_K) || 4;
+// The same for a template zone's dwellings (fillBiome): everything else a pile
+// could take, against the odds of the zone's own dwellings its band admits.
+// 16 lands the late corpus's count (36.8 a map on its 11 maps against 36.9; K 4
+// and 8 gave 116 and 68; lens t41L).
+const TPL_DWELL_K = Number(process.env.VMAPGEN_TPL_DWELL_K) || 16;
 // Free layout only: the bank and dwelling rates were calibrated while the
 // stranded sweep still dropped everything behind a pickup or a guard (19-31
 // objects a 108x108 map). With that fixed (2026-09-26) the free-layout lens
@@ -1270,6 +1271,9 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// Jebus Cross from about half the corpus's to about all of it; no
 		// other row moved. The engine's own rule (a dwelling joins a pile only
 		// for the zone's town faction) is the structural fix still to come.
+		// the player's own "Creature dwellings" lever, before the loot: the
+		// engine model below takes its richness from the piles themselves
+		p.dwellingLever = p.dwellingDensity;
 		if (process.env.VMAPGEN_TPL_DWELL_LOOT !== '0') p.dwellingDensity *= zoneMeta.loot;
 	}
 	let fill = CLASS_FILL[cls] || CLASS_FILL[BIOME_CLASS.STANDARD];
@@ -1960,17 +1964,25 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// the count nonlinear: the density factor that took the mod pool to the
 	// corpus left core-only maps at 0.69x the corpus's core dwellings
 	// (lens runs T8 and T2, 2026-09-25).
-	// VMAPGEN_TPL_DWELL_MODEL=engine: a template zone's dwellings as the engine's
-	// treasure piles draw them (TreasurePlacer::addDwellings). Only the
-	// dwellings of the zone's own town type compete (neutral creatures' in a
-	// neutral zone), each priced at its rmg value, or its creature's AI value x
-	// growth, times 1 + native zones / all zones + native zones / 2, at its
-	// rarity or 40; one priced by rmg above the zone's richest band is left out.
-	// A pile of a band holds one at Zd / (Zd + TPL_DWELL_K), Zd the odds the
-	// band admits (a pile of desired value D takes D/4 to D, economy.js
-	// bandEligibility), and which one by those odds.
+	// A template zone's dwellings as the engine's treasure piles draw them
+	// (TreasurePlacer::addDwellings). Only the dwellings of the zone's own town
+	// type compete (neutral creatures' in a neutral zone), each priced at its
+	// rmg value, or its creature's AI value x growth, times 1 + native zones /
+	// all zones + native zones / 2, at its rarity or 40; one priced by rmg above
+	// the zone's richest band is left out. A pile of a band holds one at
+	// Zd / (Zd + TPL_DWELL_K), Zd the odds the band admits (a pile of desired
+	// value D takes D/4 to D, economy.js bandEligibility), and which one by
+	// those odds; the player's lever scales the count, a theme (--theme) takes
+	// its share as the other model's draw does.
+	// Two seeds of the 11 late maps (lens t41L and t42L, K 16) against the zone
+	// model it replaces: dwellings a map 36.8 and 38.6 (corpus 36.9, the old
+	// 46.1 and 46.7), the dwellings row's error 0.466 -> 0.218 and 0.462 ->
+	// 0.201, the kind mix 0.570 -> 0.554 and 0.635 -> 0.602, every row's mean
+	// |log ratio| 0.1667 -> 0.1664 and 0.2038 -> 0.1891. Core dwellings read
+	// lower (0.6-0.7x): the corpus's own players started Tower and Dungeon, and
+	// the lens rolls starts at random. VMAPGEN_TPL_DWELL_MODEL=zone is the old.
 	let dwellPicks = null;
-	if (zoneMeta && zoneMeta.spec && process.env.VMAPGEN_TPL_DWELL_MODEL === 'engine'
+	if (zoneMeta && zoneMeta.spec && process.env.VMAPGEN_TPL_DWELL_MODEL !== 'zone'
 			&& objectPools.engineDwellings && objectPools.engineDwellings.length) {
 		const bands = zoneMeta.spec.treasure || [];
 		const maxV = bands.reduce((a, b) => Math.max(a, b.max || 0), 0);
@@ -1983,11 +1995,13 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			const w = own.map(x => x.odds * bandEligibility(x.v, band));
 			const Z = w.reduce((a, b) => a + b, 0);
 			if (!(Z > 0)) continue;
-			const e = count * Z / (Z + TPL_DWELL_K);
+			const e = count * Z / (Z + TPL_DWELL_K) * (p.dwellingLever ?? 1);
 			for (let n = Math.floor(e) + (rng() < e % 1 ? 1 : 0); n > 0; n--) {
 				let r = rng() * Z, k = 0;
 				while (k < w.length - 1 && (r -= w[k]) > 0) k++;
-				dwellPicks.push(own[k].d);
+				const th = objectPools.themeDwellings;
+				dwellPicks.push(th && th.pool.length && rng() < th.share
+					? nearestLevelDwelling(th.pool, own[k].d.level || 1, rng) || own[k].d : own[k].d);
 			}
 		}
 	}
