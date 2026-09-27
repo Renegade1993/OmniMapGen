@@ -742,7 +742,7 @@ async function generateMap(params) {
 			let plan0 = null;
 			try {
 				plan0 = buildZonePlan(tplRawEarly, tplZonesEarly, { w: params.mapW, h: params.mapH,
-					levels: levels.length, players: n, humans: params.humans }, new Set(params.accommodate || []));
+					levels: levels.length, players: n, humans: params.humans, seed: params.seed || 1 }, new Set(params.accommodate || []));
 			} catch { plan0 = null; }
 			if (plan0) {
 				const W = params.mapW, H = params.mapH;
@@ -1150,7 +1150,7 @@ async function generateMap(params) {
 		const tpl = loadTemplate(params.template);
 		const zones = resolveZones(tpl.raw);
 		const req = { w: params.mapW, h: params.mapH, levels: levels.length,
-			players: players.length, humans: params.humans };
+			players: players.length, humans: params.humans, seed: params.seed || 1 };
 		const acc = new Set(params.accommodate || []);
 		const { violations, accommodated } = checkConstraints(tpl.raw, zones, req, acc);
 		for (const a of accommodated)
@@ -1234,7 +1234,7 @@ async function generateMap(params) {
 				.some(code => (parseSizeCode(code) || [0, 1])[1] >= 2);
 			if (levels.length === 1 && twoLevels) {
 				const plan2 = buildZonePlan(tplRaw, resolveZones(tplRaw),
-					{ w: params.mapW, h: params.mapH, levels: 2, players: players.length, humans: params.humans },
+					{ w: params.mapW, h: params.mapH, levels: 2, players: players.length, humans: params.humans, seed: params.seed || 1 },
 					new Set(params.accommodate || []));
 				if (plan2.perLevel[1].length && judge(biomeParams, plan2).ok) ok.push('turn the underground on');
 			}

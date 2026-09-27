@@ -321,23 +321,30 @@ function buildZonePlan(raw, zones, req, accommodations) {
 	if (req.levels > 1) {
 		for (const z of forced) perLevel[1].push(z);
 	}
-	// balance the rest: surface gets the starts, the larger half of remaining
-	// zone mass stays up and the rest goes down when a second level exists
 	const starts = zones.filter(z => z.type === 'playerStart' || z.type === 'cpuStart');
 	const rest = zones.filter(z => !forced.includes(z) && !starts.includes(z));
 	perLevel[0].push(...starts);
-	const surfMass = starts.reduce((s, z) => s + (z.size || 10) ** 2, 0);
 	if (req.levels > 1) {
-		// target roughly half the zone mass per level, mirroring the engine's
-		// per-level size normalization
-		const total = rest.reduce((s, z) => s + (z.size || 10) ** 2, 0)
-			+ surfMass + forced.reduce((s, z) => s + (z.size || 10) ** 2, 0);
-		let down = forced.reduce((s, z) => s + (z.size || 10) ** 2, 0);
-		let up = surfMass;
-		for (const z of [...rest].sort((a, b) => (b.size || 10) - (a.size || 10))) {
-			if (down < up && down + (z.size || 10) ** 2 <= total / 2) {
-				perLevel[1].push(z); down += (z.size || 10) ** 2;
-			} else { perLevel[0].push(z); up += (z.size || 10) ** 2; }
+		// The engine's level assignment (CZonePlacer::prepareZones): the zones in
+		// a random order, each to the level holding fewer zones so far, the
+		// surface on a tie. A start whose faction's native terrain is a surface
+		// one is counted on the surface first; ours all are (the engine also
+		// sends a start of a random faction through the draw, and 76 of the
+		// 208 starts on the corpus's two-level maps are underground; not yet).
+		// This replaced a split by zone mass, largest first, which put 24 of
+		// [HotA] Nostalgia's 32 links between levels where a random draw puts
+		// about half. Seeded by the map, so every plan of one map agrees.
+		let s = ((req.seed || 1) * 2654435761 + 0x9e3779b9) >>> 0;
+		const rnd = () => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+		rnd(); rnd();
+		const order = [...rest];
+		for (let i = order.length - 1; i > 0; i--) {
+			const j = (rnd() * (i + 1)) | 0;
+			[order[i], order[j]] = [order[j], order[i]];
+		}
+		for (const z of order) {
+			const l = perLevel[1].length < perLevel[0].length ? 1 : 0;
+			perLevel[l].push(z);
 		}
 	} else {
 		for (const z of rest) perLevel[0].push(z);
