@@ -246,13 +246,15 @@ async function main() {
 			+ '                          [--node-zip <node-vX-win-x64.zip> --node-sums <SHASUMS256.txt>]');
 		process.exit(1);
 	}
-	const pager = !!opt.pager;
-	const out = path.resolve(opt.out || path.join(ROOT, pager ? 'dist-pager' : 'dist'));
+	// --classic: the pages in stock Heroes III's Random Map Setup look (gen_vcmi_ui.js --classic)
+	const classic = !!opt.classic;
+	const pager = !!opt.pager || classic;
+	const out = path.resolve(opt.out || path.join(ROOT, classic ? 'dist-classic' : pager ? 'dist-pager' : 'dist'));
 	// the pages widget's tab, staged beside the build (never over mod/Content)
 	const pagerStage = path.join(out, 'pager-content');
 	if (pager)
 		require('child_process').execFileSync(process.execPath,
-			[path.join(ROOT, 'tools', 'gen_vcmi_ui.js'), 'build', '--pager', '--out', pagerStage],
+			[path.join(ROOT, 'tools', 'gen_vcmi_ui.js'), 'build', '--pager', ...(classic ? ['--classic'] : []), '--out', pagerStage],
 			{ stdio: 'inherit', windowsHide: true });
 	const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 

@@ -111,6 +111,18 @@ const bankThemeShare = share01('bankthemeshare', 0.3);
 
 const COLORS = ['red', 'blue', 'tan', 'green', 'orange', 'purple', 'teal', 'pink'];
 
+// The game's own Random Map Setup choices (src/main/stockChoices.js): player
+// counts, Random, water content, monster strength and road types, rolled
+// from the map's seed and reported
+const stock = require('./stockChoices');
+const roll = stock.roller(opt.seed);
+const RANDOM_TEMPLATE = stock.isRandomTemplate(opt.template);
+stock.applyWaterContent(biomes, roll, {
+	islandsShape: require('../biome/water').WATER_SHAPES.findIndex(s => s.id === 'islands'),
+	defaultCoverage: KNOBS.find(k => k.key === 'waterCoverage').default || 0.2,
+});
+stock.applyMonsterStrength(biomes, roll);
+
 // The levers the in-game tab passes for three of the generator's own options
 // (src/biome/knobs.js): road type, river amount and teams arrive as
 // --bio.<key> like every other lever; an explicit --road, --rivershare or
@@ -139,7 +151,16 @@ async function main() {
 	}
 	const W = parseInt(opt.w || '64', 10);
 	const H = parseInt(opt.h || '64', 10);
-	const nPlayers = Math.min(parseInt(opt.players || '2', 10), 8);
+	const tplMod = require('../rmg/template');
+	const { nPlayers, humans } = stock.playerCounts({ players: opt.players, humans: opt.humans, compOnly: biomes.compOnly,
+		templatePlayers: opt.template && !RANDOM_TEMPLATE ? tplMod.loadTemplate(opt.template).raw.players : null }, roll);
+	const underground = opt.underground === '1' || opt.underground === 'true';
+	const template = !RANDOM_TEMPLATE ? opt.template : stock.randomTemplate(tplMod.listTemplates(), name => {
+		const tpl = tplMod.loadTemplate(name);
+		const req = { w: W, h: H, levels: underground ? 2 : 1, players: nPlayers, humans, seed: 1 };
+		return !tplMod.checkConstraints(tpl.raw, tplMod.resolveZones(tpl.raw), req, new Set()).violations.length;
+	}, roll);
+	if (roll.rolled.length) console.log('random:', roll.rolled.join(', '));
 	// Player towns pinned to quadrant corners for now.
 	const corners = [[4,4],[W-5,H-5],[4,H-5],[W-5,4],[4,(H/2)|0],[W-5,(H/2)|0],[(W/2)|0,4],[(W/2)|0,H-5]];
 	// --observer red (or --observer 1, which means red, the conventional human
@@ -173,14 +194,14 @@ async function main() {
 		pErode: opt.perode ? parseFloat(opt.perode) : 0.25,
 		density: opt.density ? parseFloat(opt.density) : 0.5,
 		difficulty: opt.difficulty || 'NORMAL',
-		underground: opt.underground === '1' || opt.underground === 'true',
+		underground,
 		factionAgnostic: opt.fixedfactions !== '1',
 		// The VCMI scenario browser lists the header name, so every map
 		// generated as 'OmniGen' shows as one identical entry. Default to
 		// the output file's stem; --name still overrides.
 		name: opt.name
 			|| require('path').parse(opt.out || 'out.vmap').name,
-		roadShortId: opt.road
+		roadShortId: opt.road || stock.roadFromToggles(biomes)
 			|| (biomes.roadType !== undefined ? ROAD_BY_KNOB[Math.max(0, Math.min(2, Math.round(biomes.roadType)))] : 'pc'),
 		noCache: opt.nocache === '1' || opt.nocache === 'true',
 		rivers: !(opt.rivers === '0' || opt.rivers === 'false'),
@@ -197,11 +218,11 @@ async function main() {
 		// out for a map meant to be portable to an unknown install.
 		declareMods: !(opt.declaremods === '0' || opt.declaremods === 'false'),
 		biomes,
-		template: opt.template,
+		template,
 		accommodate: opt.accommodate
 			? opt.accommodate.split(',').map(s => s.trim().toLowerCase())
 			: [],
-		humans: opt.humans ? parseInt(opt.humans, 10) : undefined,
+		humans,
 		// --observer 1: the LAST player slot is sealed in an underground
 		// chamber with no way in or out, the rest become AI-only contestants.
 		observerColor,

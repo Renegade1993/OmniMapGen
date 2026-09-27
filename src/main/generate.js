@@ -1516,7 +1516,9 @@ async function generateMap(params) {
 	// Cobblestone road: measured over 30 corpus maps the road on a real surface
 	// is almost always cobblestone (pc), and it costs 50 movement a tile
 	// against 100 for open ground, where dirt road (pd) costs 75.
-	const roadCode = params.roadShortId || 'pc';
+	// 'none': every road type switched off (stock's three toggles), so the
+	// road cells stay open ground with no road drawn, as the engine leaves them
+	const roadCode = params.roadShortId === 'none' ? null : (params.roadShortId || 'pc');
 	const viewPatterns = loadTerrainViewPatterns(roots.installDir);
 	const terrainProps = new Map();
 	for (const [shortId, t] of assetIndex.terrains)
@@ -1661,7 +1663,7 @@ async function generateMap(params) {
 				const cell = y * lv.width + x;
 				let code = `${shortAt(x, y)}${art.views[cell]}${FLIP_CODES[art.flips[cell]]}`;
 				const r = roadArt.get(cell);
-				if (r) code += `${roadCode}${r.dir}${FLIP_CODES[r.flip]}`;
+				if (r && roadCode) code += `${roadCode}${r.dir}${FLIP_CODES[r.flip]}`;
 				const w = riverArt.get(cell);
 				const wCode = w && terrainOf(shortAt(x, y)).riverCode;
 				if (wCode) code += `${wCode}${w.dir}${FLIP_CODES[w.flip]}`;

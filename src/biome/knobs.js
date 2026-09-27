@@ -176,7 +176,28 @@ const KNOBS = [
 	// ---- map (drawn on the Map page, beside the player counts)
 	{ key: 'teams', page: 'map', label: 'Teams',
 		help: 'Allied teams among the players, dealt out in colour order: red, blue, tan and so on in turn. None is every player for themselves; a count at or above the number of players is the same.',
-		min: 1, max: 4, step: 1, stops: [[1, 'None'], [2, 'Two'], [3, 'Three'], [4, 'Four']], default: 1 },
+		// to seven, as the game's own Random Map Setup offers
+		min: 1, max: 7, step: 1, stops: [[1, 'None'], [2, 'Two'], [3, 'Three'], [4, 'Four'], [5, 'Five'],
+			[6, 'Six'], [7, 'Seven']], default: 1 },
+
+	// ---- the game's own Random Map Setup choices (stock: true), which the
+	// classic tab lays out as that screen does; the released tab has its own
+	// players, road type and water levers instead, and leaves these out
+	{ key: 'compOnly', page: 'map', stock: true, label: 'Computer only players',
+		help: 'Players only the computer can take, beside the human or computer ones. Random rolls a count the template takes.',
+		min: -1, max: 7, step: 1, default: 3 },
+	{ key: 'roadDirt', page: 'map', stock: true, label: 'Dirt road',
+		help: 'Roads may be dirt. The roads are paved with the best type left on, cobblestone first, as the game\'s generator does; with none on there are no roads.',
+		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']], default: 1 },
+	{ key: 'roadGravel', page: 'map', stock: true, label: 'Gravel road',
+		help: 'Roads may be gravel. The roads are paved with the best type left on, cobblestone first, as the game\'s generator does; with none on there are no roads.',
+		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']], default: 1 },
+	{ key: 'roadCobblestone', page: 'map', stock: true, label: 'Cobblestone road',
+		help: 'Roads may be cobblestone. The roads are paved with the best type left on, cobblestone first, as the game\'s generator does; with none on there are no roads.',
+		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']], default: 1 },
+	{ key: 'waterContent', page: 'map', stock: true, label: 'Water content',
+		help: 'None makes a dry map. Normal uses the Water page as set. Islands lays the water out as islands, at the Water page\'s amount. Random rolls one of the three.',
+		min: -1, max: 2, step: 1, stops: [[0, 'None'], [1, 'Normal'], [2, 'Islands'], [-1, 'Random']], default: 1 },
 
 	// ---- water
 	{ key: 'waterCoverage', page: 'water', label: 'Amount of water',

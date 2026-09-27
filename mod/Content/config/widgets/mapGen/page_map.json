@@ -565,7 +565,7 @@
 			},
 			"size": 104,
 			"itemsVisible": 0,
-			"itemsTotal": 3,
+			"itemsTotal": 6,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
@@ -593,6 +593,18 @@
 				[
 					4,
 					"vcmi.mapGen.teams.stop3"
+				],
+				[
+					5,
+					"vcmi.mapGen.teams.stop4"
+				],
+				[
+					6,
+					"vcmi.mapGen.teams.stop5"
+				],
+				[
+					7,
+					"vcmi.mapGen.teams.stop6"
 				]
 			]
 		},

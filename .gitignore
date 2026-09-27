@@ -35,3 +35,4 @@ tools/omni_dashboard_page.html
 # the mod package tools/make_mod.js builds (release asset, not source)
 dist/
 dist-pager/
+dist-classic/
