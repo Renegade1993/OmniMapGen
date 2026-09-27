@@ -441,6 +441,10 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 				index.creatures.set(id, {
 					level: pick(typeof val.level === 'number' ? val.level : undefined, prev && prev.level),
 					aiValue: val.aiValue || (prev && prev.aiValue) || 0,
+					// weekly growth: with the AI value it is what the engine
+					// prices a dwelling at in a treasure pile (TreasurePlacer::
+					// addDwellings); core's come from CRTRAITS.TXT (h3data.js)
+					growth: pick(typeof val.growth === 'number' ? val.growth : undefined, prev && prev.growth),
 					faction: pick(val.faction, prev && prev.faction),
 					// core creatures carry their H3 index; OBJECTS.TXT is keyed by it
 					index: pick(typeof val.index === 'number' ? val.index : undefined, prev && prev.index),

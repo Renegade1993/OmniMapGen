@@ -213,6 +213,10 @@ const TPL_BANK_P_HIGH = Number(process.env.VMAPGEN_TPL_BANK_P_HIGH) || 0.047;
 // zones (.tmp\opus\bank_bandz_calib.js, 2026-09-26): about 0.12-0.26 a pile in
 // bands under 3000, 0.57 at 3000-6000, 0.66-0.73 in the rich bands.
 const TPL_BANK_K = Number(process.env.VMAPGEN_TPL_BANK_K) || 287;
+// The same for a template zone's dwellings in the engine model
+// (VMAPGEN_TPL_DWELL_MODEL=engine, fillBiome): everything else a pile could
+// take, against the odds of the zone's own dwellings its band admits.
+const TPL_DWELL_K = Number(process.env.VMAPGEN_TPL_DWELL_K) || 4;
 // Free layout only: the bank and dwelling rates were calibrated while the
 // stranded sweep still dropped everything behind a pickup or a guard (19-31
 // objects a 108x108 map). With that fixed (2026-09-26) the free-layout lens
@@ -1956,10 +1960,48 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// the count nonlinear: the density factor that took the mod pool to the
 	// corpus left core-only maps at 0.69x the corpus's core dwellings
 	// (lens runs T8 and T2, 2026-09-25).
+	// VMAPGEN_TPL_DWELL_MODEL=engine: a template zone's dwellings as the engine's
+	// treasure piles draw them (TreasurePlacer::addDwellings). Only the
+	// dwellings of the zone's own town type compete (neutral creatures' in a
+	// neutral zone), each priced at its rmg value, or its creature's AI value x
+	// growth, times 1 + native zones / all zones + native zones / 2, at its
+	// rarity or 40; one priced by rmg above the zone's richest band is left out.
+	// A pile of a band holds one at Zd / (Zd + TPL_DWELL_K), Zd the odds the
+	// band admits (a pile of desired value D takes D/4 to D, economy.js
+	// bandEligibility), and which one by those odds.
+	let dwellPicks = null;
+	if (zoneMeta && zoneMeta.spec && process.env.VMAPGEN_TPL_DWELL_MODEL === 'engine'
+			&& objectPools.engineDwellings && objectPools.engineDwellings.length) {
+		const bands = zoneMeta.spec.treasure || [];
+		const maxV = bands.reduce((a, b) => Math.max(a, b.max || 0), 0);
+		const mod = 1 + (zoneMeta.nativeZones || 1) / (zoneMeta.totalZones || 1) + (zoneMeta.nativeZones || 1) / 2;
+		const own = objectPools.engineDwellings
+			.filter(d => d.faction === (zoneMeta.faction || 'neutral') && !(d.fromRmg && d.value > maxV))
+			.map(d => ({ d, v: d.value * mod, odds: d.prob / 100 }));
+		dwellPicks = [];
+		for (const { band, count } of own.length ? templatePiles(bands, cells.length) : []) {
+			const w = own.map(x => x.odds * bandEligibility(x.v, band));
+			const Z = w.reduce((a, b) => a + b, 0);
+			if (!(Z > 0)) continue;
+			const e = count * Z / (Z + TPL_DWELL_K);
+			for (let n = Math.floor(e) + (rng() < e % 1 ? 1 : 0); n > 0; n--) {
+				let r = rng() * Z, k = 0;
+				while (k < w.length - 1 && (r -= w[k]) > 0) k++;
+				dwellPicks.push(own[k].d);
+			}
+		}
+	}
 	const dwellExpect = scale * fill.dwellings * p.dwellingDensity
 		* dwellPoolWeight / CORE_DWELLING_WEIGHT * (zoneMeta ? 1 : FREE_DWELL_SCALE);
-	const dwellCount = Math.floor(dwellExpect) + (rng() < dwellExpect % 1 ? 1 : 0);
+	const dwellCount = dwellPicks ? dwellPicks.length
+		: Math.floor(dwellExpect) + (rng() < dwellExpect % 1 ? 1 : 0);
 	for (let i = dwellCount; i > 0; i--) {
+		if (dwellPicks) {
+			const d = dwellPicks[i - 1];
+			const e = put(d.type, d.tpl, undefined, d.subtype, 40, fitAnchors(d.tpl), true);
+			if (e && d.mod) e.mod = d.mod;
+			continue;
+		}
 		// Corpus maps write resolved dwellings; ours were all the
 		// randomDwelling placeholder, which is why the census reads a single
 		// dwelling subtype where the corpus has seventy. Mostly concrete,

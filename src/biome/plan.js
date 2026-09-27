@@ -1454,7 +1454,18 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// start cell, so it is discounted); mines and monsters pass through with
 	// the engine's names translated in fillBiome; treasure bands become a
 	// loot multiplier against the template's own median zone.
-	const zoneMeta = tplZones && tplZones.map(z => {
+	// each zone's town type as the engine's treasure piles see it: the owner's
+	// faction in a start zone, the rolled one elsewhere, neutral for a zone that
+	// rolled none; and how many zones share it, which prices its dwellings
+	// (TreasurePlacer::addDwellings; counted on this level, the level below
+	// not being rolled yet)
+	const zoneFaction = tplZones ? tplZones.map((z, i) => {
+		const ownerStart = z.owner && playerStarts[z.owner - 1];
+		const tp = objectPools && objectPools.towns;
+		const f = ownerStart && tp && tp.pinned ? tp.pinned.get(ownerStart.color) : zoneTownType[i];
+		return f && f.bare ? f.bare : 'neutral';
+	}) : [];
+	const zoneMeta = tplZones && tplZones.map((z, zi) => {
 		const ownerStart = z.owner && playerStarts[z.owner - 1];
 		const townWishes = [];
 		const pt = z.playerTowns || {}, nt = z.neutralTowns || {};
@@ -1476,6 +1487,9 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			ownerColor: ownerStart ? ownerStart.color : null,
 			// any other zone's rolled town type, which its terrain follows
 			townType: zoneTownType[tplZones.indexOf(z)] || null,
+			faction: zoneFaction[zi],
+			nativeZones: zoneFaction.filter(f => f === zoneFaction[zi]).length,
+			totalZones: (p.zonePlan && p.zonePlan.zones && p.zonePlan.zones.length) || tplZones.length,
 			loot: pileLoot(z),
 			guardScale: MONSTER_BAND[z.monsters || 'normal'] ?? 1,
 			monsterShift: z.monsters === 'weak' ? -1

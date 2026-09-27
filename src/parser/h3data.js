@@ -133,4 +133,25 @@ function h3MonsterTemplates(roots) {
 	return out;
 }
 
-module.exports = { h3MonsterTemplates, lodIndex, lodRead, findResource };
+/**
+ * H3's own creature traits from CRTRAITS.TXT: creature index -> {aiValue,
+ * growth}, the two figures the engine prices a dwelling by in a treasure pile
+ * (TreasurePlacer::addDwellings: AI value x growth). Core's creature configs
+ * leave both out; VCMI reads them from here. Row i (after two header rows) is
+ * the creature with index i. Empty when the data is not found.
+ */
+function h3CreatureTraits(roots) {
+	const out = new Map();
+	const text = findResource(roots, 'Data', DATA_LODS, 'CRTRAITS.TXT');
+	if (!text) return out;
+	const lines = text.toString('latin1').split(/\r?\n/).slice(2);
+	lines.forEach((line, i) => {
+		const f = line.split('\t');
+		if (f.length < 12 || !f[0]) return;
+		const aiValue = parseInt(f[10], 10), growth = parseInt(f[11], 10);
+		if (aiValue > 0 && growth > 0) out.set(i, { aiValue, growth });
+	});
+	return out;
+}
+
+module.exports = { h3MonsterTemplates, h3CreatureTraits, lodIndex, lodRead, findResource };

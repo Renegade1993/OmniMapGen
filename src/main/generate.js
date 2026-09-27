@@ -23,7 +23,7 @@ const { themePool, applyGuardTheme, concretizeGuards, creatureRegistry, guardPoo
 	themeBankPool } = require('../biome/guardCreatures');
 const { DWELLING_POOL, CORE_BANKS, bankRate, chestTemplate, registerTerrainBarriers, clearTerrainBarriers } = require('../biome/economy');
 const TEMPLATE_THEMES = require('../biome/templateThemes.json');
-const { h3MonsterTemplates } = require('../parser/h3data');
+const { h3MonsterTemplates, h3CreatureTraits } = require('../parser/h3data');
 const { townFactions, zoneTownTypes, pickStartFaction } = require('../biome/zoneTowns');
 const { OBJECT_TEMPLATES } = require('../stitch/zones');
 const { serializeVmap, makeHeader, FLIP_CODES } = require('../exporter/vmapWriter');
@@ -430,7 +430,8 @@ function cachedAssetIndex(coreConfigDir, orderedMods, noCache) {
 		//     split across files or patched by another mod)
 		// v24: the obstacle sets (core's biomes.json and the mods'), and every
 		//     template records the mod that brought it
-		.update('v24')
+		// v25: creatures record their weekly growth
+		.update('v25')
 		.update(String(coreConfigDir))
 		.update(dirSignature(coreConfigDir));
 	for (const m of orderedMods || []) {
@@ -1120,6 +1121,35 @@ async function generateMap(params) {
 						weight: 1, tpl: t.raw, mod: scope, creatures: o.creatures || [o.creature] });
 			}
 		}
+	// Every dwelling as the engine's treasure piles see it (TreasurePlacer::
+	// addDwellings): the faction of the creature it produces (a zone takes only
+	// its own town type's), and its price and odds: its rmg value and rarity
+	// when it has them, else its creature's AI value x weekly growth at odds 40.
+	// Core's creatures carry neither figure in their configs; CRTRAITS.TXT does.
+	const h3Traits = h3CreatureTraits([roots.userDir, roots.installDir]);
+	const engineDwellings = [];
+	{
+		const bare = s => String(s || '').slice(String(s || '').lastIndexOf(':') + 1).toLowerCase();
+		const priced = (o, cre, entry) => {
+			if (!o || !cre) return;
+			const h3 = typeof cre.index === 'number' && cre.scope === 'core' ? h3Traits.get(cre.index) : null;
+			const ai = cre.aiValue > 0 ? cre.aiValue : h3 && h3.aiValue;
+			const growth = cre.growth > 0 ? cre.growth : h3 && h3.growth;
+			const rmg = o.rmg && o.rmg.value > 0 ? o.rmg : null;
+			const value = rmg ? rmg.value : ai && growth ? ai * growth : 0;
+			if (!(value > 0)) return;
+			engineDwellings.push({ ...entry, faction: bare(cre.faction) || 'neutral', value,
+				prob: rmg ? (rmg.rarity || 0) : 40, fromRmg: !!rmg });
+		};
+		for (const d of DWELLING_POOL) {
+			const o = assetIndex.objects.get(`core:${d.type}.${d.subtype}`);
+			priced(o, o && o.creature && resolveCreature('core', o.creature), d);
+		}
+		for (const d of dwellings) {
+			const o = assetIndex.objects.get(`${d.mod}:${d.type}.${d.subtype}`);
+			priced(o, o && o.creature && resolveCreature(d.mod, o.creature), d);
+		}
+	}
 	// A creature theme (--theme): the dwellings whose creatures belong to the
 	// family, core's (the Golem Factory's four golems, the gargoyle parapet)
 	// and, on a map that declares its mods, theirs. content.js draws a share
@@ -1280,7 +1310,7 @@ async function generateMap(params) {
 			waterIslands: !!(waterPlan && waterPlan.islands),
 			layoutOnly: !!process.env.VMAPGEN_PLAN_ONLY },
 		terrainShortIds, tileIdsByShort, numTiles: tiles.length,
-		objectPools: { banks, dwellings, coreBanks, chests, terrainNames, ...(concreteGuards ? { guards: guardPool(registry) } : {}),
+		objectPools: { banks, dwellings, engineDwellings, coreBanks, chests, terrainNames, ...(concreteGuards ? { guards: guardPool(registry) } : {}),
 			...(themeDwellings ? { themeDwellings } : {}),
 			...(themeBanks && themeBanks.pool.length ? { themeBanks } : {}),
 			// a template zone's towns: concrete, of the factions it allows
