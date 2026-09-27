@@ -1118,7 +1118,7 @@ async function generateMap(params) {
 				const cre = resolveCreature(scope, o.creature);
 				if (cre && cre.level >= 1)
 					dwellings.push({ type: o.type, subtype: o.subtype, level: cre.level,
-						weight: 1, tpl: t.raw, mod: scope, creatures: o.creatures || [o.creature] });
+						weight: 1, tpl: t.raw, mod: scope, creatures: o.creatures || [o.creature], id });
 			}
 		}
 	// Every dwelling as the engine's treasure piles see it (TreasurePlacer::
@@ -1146,7 +1146,9 @@ async function generateMap(params) {
 			priced(o, o && o.creature && resolveCreature('core', o.creature), d);
 		}
 		for (const d of dwellings) {
-			const o = assetIndex.objects.get(`${d.mod}:${d.type}.${d.subtype}`);
+			// by the index id: a mod may file its dwellings under core's group
+			// ("core:creatureGeneratorCommon"), which an id rebuilt from type misses
+			const o = assetIndex.objects.get(d.id);
 			priced(o, o && o.creature && resolveCreature(d.mod, o.creature), d);
 		}
 	}
