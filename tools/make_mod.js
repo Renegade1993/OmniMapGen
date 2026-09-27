@@ -209,11 +209,16 @@ function main() {
 	const zipPath = path.join(out, `${MOD_ID}.zip`);
 	fs.writeFileSync(zipPath, zip);
 	const sha = crypto.createHash('sha256').update(zip).digest('hex');
-	// the catalog's codeSha256: sha256sum-style lines "<hex>  <path>" for every
-	// file under generator/, sorted, then the SHA-256 of that text
+	// the catalog's codeSha256, computed the way DMB's client checks it
+	// (AddonCode::folderHash): a line "<hex>  <path>\n" for every file under
+	// generator/, in the byte order of the paths, then the SHA-256 of the text.
+	// In the order of the paths: sorting the whole lines orders them by hash
+	// and gives a different value, which 0.2.0's notes first printed.
 	const codeLines = files.filter(f => f.name.startsWith(`${MOD_ID}/generator/`))
-		.map(f => `${crypto.createHash('sha256').update(f.data).digest('hex')}  ${f.name.slice(`${MOD_ID}/generator/`.length)}`).sort();
-	const codeSha = crypto.createHash('sha256').update(codeLines.join('\n') + '\n').digest('hex');
+		.map(f => ({ rel: f.name.slice(`${MOD_ID}/generator/`.length), hex: crypto.createHash('sha256').update(f.data).digest('hex') }))
+		.sort((a, b) => Buffer.compare(Buffer.from(a.rel), Buffer.from(b.rel)))
+		.map(f => `${f.hex}  ${f.rel}\n`);
+	const codeSha = crypto.createHash('sha256').update(codeLines.join('')).digest('hex');
 	console.log(`${MOD_ID} ${pkg.version}: ${files.length} files, ${texts} texts, Node ${nodeDir}`);
 	console.log(`${folder}`);
 	console.log(`${zipPath}: ${zip.length} bytes (${(zip.length / 1048576).toFixed(1)} MB), sha256 ${sha}`);
