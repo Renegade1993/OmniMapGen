@@ -21,7 +21,7 @@ const { clusterTemplate, singleTemplate, wallClusters, clusterSize,
 	DECOR_TYPES, TERRAINS: DECOR_TERRAINS } = require('../src/biome/decor');
 const DECOR_DATA = require('../src/biome/decor.templates.json');
 const { STRUCTURES, STRUCTURE_SUBTYPE, barrierTemplate,
-	CORE_BANKS, bankRate, SPELL_SCROLL, pandoraTemplate, prisonTemplate,
+	CORE_BANKS, bankRate, bandEligibility, bankEligAt, bankBandWeight, SPELL_SCROLL, pandoraTemplate, prisonTemplate,
 	obeliskTemplate, pandoraOptions, prisonOptions, makePrisonHeroPool,
 	SPECIALS, DWELLING_POOL, pickDwelling } = require('../src/biome/economy');
 const { OBJECT_DEFS, openSealedPockets, openSealedByObjects } = require('../src/biome/plan');
@@ -600,6 +600,27 @@ test('a bank weighs its rmg rarity and value, the way the engine draws it', () =
 	const crypt = CORE_BANKS.find(b => b.type === 'crypt');
 	assert.deepStrictEqual(crypt.tpls.flatMap(t => t.terrains).sort(),
 		['dirt', 'grass', 'sand', 'snow', 'swamp']);
+});
+
+test('a treasure band admits a bank worth a quarter of a pile to all of it', () => {
+	// TreasurePlacer::getRandomObject takes objects worth D/4 to D for a pile
+	// of desired value D, D uniform over the band
+	const rich = { min: 45000, max: 75000 }, cheap = { min: 100, max: 3000 };
+	assert.strictEqual(bandEligibility(1500, rich), 0, 'a cheap bank never in a rich band');
+	assert.strictEqual(bandEligibility(30000, cheap), 0, 'a Treasure Cave never in a cheap band');
+	assert.strictEqual(bandEligibility(30000, rich), 1);
+	assert.strictEqual(bandEligibility(3000, { min: 3000, max: 6000 }), 1);
+	assert.ok(Math.abs(bandEligibility(9000, { min: 10000, max: 40000 }) - 26000 / 30000) < 1e-12);
+	assert.strictEqual(bandEligibility(5000, { min: 9700, max: 9700 }), 1, 'a one-value band');
+	assert.strictEqual(bandEligibility(2000, { min: 9700, max: 9700 }), 0);
+	// the corpus average falls as a bank's value climbs past the cheap bands,
+	// so a band's weight (rate / average x admission) favours the rich banks
+	// where they can go at all
+	assert.ok(bankEligAt(2000) > bankEligAt(9000) && bankEligAt(9000) > bankEligAt(30000));
+	const tc = { weight: 7.3, rmg: { value: 30000, rarity: 100 } };
+	const hive = CORE_BANKS.find(b => b.subtype === 'dragonFlyHive');
+	assert.ok(bankBandWeight(tc, rich) > 0 && bankBandWeight(hive, rich) === 0);
+	assert.ok(bankBandWeight(hive, { min: 10000, max: 15000 }) > 0 && bankBandWeight(tc, { min: 10000, max: 15000 }) === 0);
 });
 
 test('DWELLING_POOL is core-only; pickDwelling can still draw a mod entry given one', () => {

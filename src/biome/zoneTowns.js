@@ -34,7 +34,9 @@ function townFactions(factionIds, factions) {
 		const cut = id.lastIndexOf(':');
 		return { id, bare: bare(id), scope: cut > 0 ? id.slice(0, cut) : 'core',
 			preferUnderground: !!f.preferUnderground, townMap: f.townMap || null,
-			townMapCore: f.townMapCore || null, townMapScope: f.townMapScope || null };
+			townMapCore: f.townMapCore || null, townMapScope: f.townMapScope || null,
+			// the terrain a zone of this town type is painted (matchTerrainToTown)
+			native: f.nativeTerrain ? String(f.nativeTerrain) : null };
 	});
 }
 

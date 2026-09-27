@@ -423,7 +423,9 @@ function cachedAssetIndex(coreConfigDir, orderedMods, noCache) {
 		// v22: objects record their rmg value, rarity and limits and their
 		//     templates' allowed terrains; later mods' patches merge into the
 		//     object they name; submods nested at any depth are read
-		.update('v22')
+		// v23: a faction is its records merged in load order (native terrains
+		//     split across files or patched by another mod)
+		.update('v23')
 		.update(String(coreConfigDir))
 		.update(dirSignature(coreConfigDir));
 	for (const m of orderedMods || []) {

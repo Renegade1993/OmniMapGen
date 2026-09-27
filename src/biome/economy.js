@@ -131,6 +131,43 @@ function bankRate(rmg) {
 	return rmg.rarity / 100 * rate;
 }
 
+/**
+ * Inside one treasure band only some banks compete: a pile of desired value D
+ * takes an object worth D/4 to D (TreasurePlacer::getRandomObject), D drawn
+ * uniformly over the band, so a 45000-75000 band holds Treasure Caves and
+ * Dragon Havens and never a Cyclops Stockpile. `bandEligibility` is the share
+ * of the band's piles a bank of value v can enter. BANK_ELIG_AT is that share
+ * averaged over the corpus maps' template bands, weighted the way content.js
+ * spends its bank draws (templatePiles x TPL_BANK_P_LOW/HIGH), so a bank's
+ * weight in a band, bankRate / BANK_ELIG_AT x its eligibility there, averages
+ * back to bankRate over the corpus (.tmp\opus\bank_elig_table.js, 2026-09-26).
+ * Drawing a rich zone's banks from the whole pool had put the late corpus's
+ * seventh commonest bank, the Treasure Cave (30000), at 0.15 of its rate.
+ */
+const BANK_ELIG_AT = [[500, 0.248], [1000, 0.3911], [1500, 0.4509], [2000, 0.4647], [2500, 0.4483],
+	[3000, 0.4019], [3500, 0.3973], [4200, 0.3844], [5000, 0.3577], [6000, 0.3041], [7000, 0.2756],
+	[8000, 0.2307], [9000, 0.1834], [9500, 0.1784], [10500, 0.1658], [12000, 0.1434], [13500, 0.1223],
+	[16000, 0.0888], [20000, 0.0546], [25000, 0.0308], [30000, 0.0144], [40000, 0.0092], [60000, 0.0047]];
+function bankEligAt(v) {
+	const T = BANK_ELIG_AT;
+	if (v <= T[0][0]) return T[0][1];
+	for (let i = 1; i < T.length; i++)
+		if (v <= T[i][0]) return T[i - 1][1] + (T[i][1] - T[i - 1][1]) * (v - T[i - 1][0]) / (T[i][0] - T[i - 1][0]);
+	return T[T.length - 1][1];
+}
+function bandEligibility(v, band) {
+	if (!(v > 0) || !band) return 0;
+	if (band.max <= band.min) return v <= band.min && band.min <= 4 * v ? 1 : 0;
+	const lo = Math.max(band.min, v), hi = Math.min(band.max, 4 * v);
+	return hi > lo ? (hi - lo) / (band.max - band.min) : 0;
+}
+/** A bank's draw weight inside one band: its rate spread over the piles it can enter. */
+function bankBandWeight(b, band) {
+	const v = b.rmg && b.rmg.value;
+	if (!v) return 0;
+	return (b.weight || 0) / bankEligAt(v) * bandEligibility(v, band);
+}
+
 // Core's own rmg entries for its banks (config/objects/creatureBanks.json), what
 // an engine without mods weighs them by. A map that declares its mods takes the
 // install's patched entries from the index instead (HotA puts the Imp Cache at
@@ -613,7 +650,7 @@ const STARTER_MINES = ['sawmill', 'orePit'];
 
 module.exports = {
 	mineTemplate, pileTemplate, chestTemplate, campfireTemplate,
-	CLASS_MINES, STARTER_MINES, MINES_PER_PLAYER, CORE_BANKS, bankRate,
+	CLASS_MINES, STARTER_MINES, MINES_PER_PLAYER, CORE_BANKS, bankRate, bandEligibility, bankBandWeight, bankEligAt,
 	BONUS_POOL, pickBonus,
 	STRUCTURES, STRUCTURE_SUBTYPE, barrierTemplate, SPELL_SCROLL,
 	pandoraTemplate, prisonTemplate, obeliskTemplate,

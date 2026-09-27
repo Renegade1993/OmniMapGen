@@ -28,6 +28,7 @@ const { fitCave } = require('./cavefit');
 const { placeHarbours, fillWater, sailLinksFor } = require('./waterfill');
 const { ZONE_CLASS, MONSTER_BAND, MINE_SUBTYPE, guardToLevel,
 	pileLoot } = require('../rmg/template');
+const { zoneTownTypes } = require('./zoneTowns');
 const { carveBoundaries, placeChokeGuards } = require('./boundaries');
 const { buildRoadNetwork, pruneOrphanRoads } = require('./roadnet');
 const { fillBiome, blockingCells, footprintFits, footprintBlock, entranceOpen,
@@ -159,11 +160,52 @@ function assignTerrains(classes, terrainShortIds, rng, terrainInfo, underground,
 		const n = t && t.name ? String(t.name) : String(id);
 		return n.slice(n.lastIndexOf(':') + 1).toLowerCase();
 	};
+	// A template zone takes its terrain the engine's way
+	// (TerrainPainter::initTerrainType, ZoneOptions::getTerrainTypes): one drawn
+	// evenly from its terrainTypes, or when it lists none from every passable
+	// land terrain the map may use less its bannedTerrains, either level's;
+	// then a terrain its level does not allow becomes dirt on the surface and
+	// subterranean underground. A start zone's town terrain is laid over this
+	// afterwards (matchTerrainToTown, planMap). Class hints drew core terrains,
+	// grass most of all: the late corpus's template maps run grass at 6.3% of
+	// their cells and mod terrains at 18.7%, ours ran 24.7% and 3.7%
+	// (.tmp\opus\terrain_mix.js, lens run t26L, 2026-09-26).
+	const landAll = terrainShortIds.filter(id => {
+		const t = terrainInfo && terrainInfo.get(id);
+		return t && t.moveCost > 0 && (t.allowedLayers || []).length;
+	});
+	const coreNamed = name => {
+		let any = null;
+		for (const [id, t] of terrainInfo || []) {
+			if (t.identifier !== name || !terrainShortIds.includes(id)) continue;
+			if (String(t.name).startsWith('core:')) return id;
+			any = any || id;
+		}
+		return any;
+	};
+	const demote = id => {
+		const t = terrainInfo && terrainInfo.get(id);
+		if (!t || (t.allowedLayers || []).includes(layer)) return id;
+		return coreNamed(underground ? 'subterra' : 'dirt') || id;
+	};
+	const tplTerrain = z => {
+		const names = (z.terrainTypes || []).map(s => String(s).slice(String(s).lastIndexOf(':') + 1).toLowerCase());
+		const banned = new Set((z.bannedTerrains || []).map(s => String(s).slice(String(s).lastIndexOf(':') + 1).toLowerCase()));
+		let from = names.length ? landAll.filter(id => names.includes(nameOf(id)))
+			: landAll.filter(id => !banned.has(nameOf(id)));
+		if (!from.length) from = landAll.length ? landAll : pool;
+		return demote(from[(rng() * from.length) | 0]);
+	};
 	return classes.map((cls, i) => {
-		// a template zone's terrainTypes list is an explicit name set and wins
-		// over the class hint; a name nothing indexed is ignored rather than
+		const zoneRec = terrainPrefs && terrainPrefs[i];
+		// a template zone's own record (planMap passes the zones themselves);
+		// VMAPGEN_TPL_TERRAIN=class keeps the class hints for a measurement run
+		const isZone = zoneRec && typeof zoneRec === 'object' && !Array.isArray(zoneRec);
+		if (isZone && process.env.VMAPGEN_TPL_TERRAIN !== 'class') return tplTerrain(zoneRec);
+		// the class hints: a template's terrainTypes list, an explicit name
+		// set, wins over them; a name nothing indexed is ignored rather than
 		// fatal, since modded terrain lists often name things this install lacks
-		const pref = terrainPrefs && terrainPrefs[i];
+		const pref = isZone ? zoneRec.terrainTypes : zoneRec;
 		const table = underground ? CLASS_TERRAIN_HINT_UNDERGROUND : CLASS_TERRAIN_HINT;
 		const entry = table[cls] || table[BIOME_CLASS.STANDARD];
 		// Entries of [hint, weight] pairs are drawn weighted; a template's
@@ -1271,7 +1313,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	}
 	const biomeTerrain = assignTerrains(classes, terrainShortIds, rng,
 		terrainInfo, underground,
-		tplZones && tplZones.map(z => z.terrainTypes));
+		tplZones || null);
 
 	// A player start takes its rolled faction's native terrain across the
 	// whole home biome - the engine's matchTerrainToTown. A terrain that
@@ -1312,6 +1354,44 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		biomeTerrain[b] = shortId;
 	}
 
+	// Every other template zone rolls its town type first and is painted that
+	// faction's native terrain, as the engine does it (TownPlacer::placeTowns,
+	// then TerrainPainter::initTerrainType under matchTerrainToTown, on by
+	// default): a zone with towns rolls one of the factions it allows, one
+	// without stays neutral one time in four and rolls one otherwise. A neutral
+	// zone, or one with matchTerrainToTown off, keeps the even draw above. The
+	// roll is also the zone's first town (zoneMeta.townType, content.js).
+	const zoneTownType = [];
+	const tp = objectPools && objectPools.towns;
+	if (tplZones && tp && tp.factions && process.env.VMAPGEN_TPL_TERRAIN !== 'class') {
+		const layer = underground ? 'underground' : 'surface';
+		const unscope = s => String(s).slice(String(s).lastIndexOf(':') + 1).toLowerCase();
+		const terrainNamed = name => {
+			let any = null;
+			for (const [id, t] of terrainInfo || []) {
+				if (unscope(t.identifier) !== name || !terrainShortIds.includes(id)) continue;
+				if (String(t.name).startsWith('core:')) return id;
+				any = any || id;
+			}
+			return any;
+		};
+		tplZones.forEach((z, i) => {
+			if (z.owner && playerStarts[z.owner - 1]) return;   // a start: its player's faction
+			const types = zoneTownTypes(z, tp.factions);
+			if (!types.length) return;
+			const nt = z.neutralTowns || {};
+			const towns = (nt.castles || 0) + (nt.towns || 0);
+			const faction = towns || rng() >= 0.25 ? types[(rng() * types.length) | 0] : null;
+			zoneTownType[i] = faction;
+			if (!faction || !faction.native || z.matchTerrainToTown === false || nativeClaims.has(i)) return;
+			let id = terrainNamed(unscope(faction.native));
+			if (!id) return;
+			if (!((terrainInfo.get(id) || {}).allowedLayers || []).includes(layer))
+				id = terrainNamed(underground ? 'subterra' : 'dirt') || id;
+			biomeTerrain[i] = id;
+		});
+	}
+
 	// Per-zone fill overrides for template mode. Town counts come from
 	// playerTowns/neutralTowns (the start castle is already emitted at the
 	// start cell, so it is discounted); mines and monsters pass through with
@@ -1337,6 +1417,8 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			// the player whose start this zone is, whose faction is the zone's
 			// town type
 			ownerColor: ownerStart ? ownerStart.color : null,
+			// any other zone's rolled town type, which its terrain follows
+			townType: zoneTownType[tplZones.indexOf(z)] || null,
 			loot: pileLoot(z),
 			guardScale: MONSTER_BAND[z.monsters || 'normal'] ?? 1,
 			monsterShift: z.monsters === 'weak' ? -1

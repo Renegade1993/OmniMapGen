@@ -258,6 +258,8 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 	// "type.subtype" -> the id of the entry that defined it first (core, or the
 	// mod that added it), which later mods' patches merge into
 	const objectOwners = new Map();
+	// faction id -> its records merged so far (see the faction branch of ingest)
+	const factionAcc = new Map();
 	// an rmg block as AObjectTypeHandler::init reads it: value and rarity
 	// default to 0 (never placed), the limits to none
 	const rmgOf = r => ({ value: Number(r.value) || 0, rarity: Number(r.rarity) || 0,
@@ -455,26 +457,48 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 			// Across the 71 installed VCMI random maps every allowedFactions
 			// entry is a plain `scope:faction` pair, and none of them is
 			// neutral or random.
-			if (val.town && !val.special && val.index !== -1) {
+			//
+			// A faction is every record that names it, merged in load order
+			// (JsonUtils::merge), and only then judged. Mods split one across
+			// files (HotA's Cove sets nativeTerrain in faction.json and its town
+			// in town.json) and patch another mod's (New Pavilion's dunes
+			// submod makes Pavilion native to dunes, a newtown-terrains submod
+			// makes Refugee native to plateau). Judging each record alone kept
+			// the first one with a town and lost six factions' terrains, which
+			// is why no zone of ours was ever plateau (6.3% of the late corpus's
+			// cells) and none dunes by town (2026-09-26). Collected here, the
+			// faction list is built after the last mod (factionsFrom).
+			if (category === 'factions' || val.town) {
 				const id = key.includes(':') ? key : `${scope}:${key}`;
-				// the town's adventure-map sprites by variant (village, fort,
-				// citadel, castle, capitol), laid over the town base in
-				// moddables.json; a mod restyling a faction's town (HotA's new
-				// graphics) overrides them, and the map then needs that mod
-				const tpls = val.town.mapObject && val.town.mapObject.templates;
-				const townMap = tpls && typeof tpls === 'object'
-					? Object.fromEntries(Object.entries(tpls).filter(([, t]) => t && t.animation)
-						.map(([k, t]) => [k, String(t.animation).replace(/\.def$/i, '')]))
-					: null;
-				const prev = index.factions.get(id);
-				if (!prev)
-					index.factions.set(id, { name: val.name || key, nativeTerrain: val.nativeTerrain,
-						// TownPlacer::getRandomTownType prefers these on underground zones
-						preferUnderground: !!val.preferUndergroundPlacement,
-						townMap, townMapCore: scope === 'core' ? townMap : null, townMapScope: scope });
-				else if (townMap && Object.keys(townMap).length)
-					index.factions.set(id, { ...prev, townMap: { ...(prev.townMap || {}), ...townMap },
-						townMapScope: scope });
+				const acc = factionAcc.get(id) || {};
+				if (val.name !== undefined && acc.name === undefined) acc.name = val.name;
+				if (val.nativeTerrain !== undefined) acc.nativeTerrain = val.nativeTerrain;
+				// TownPlacer::getRandomTownType prefers these on underground zones
+				if (val.preferUndergroundPlacement !== undefined)
+					acc.preferUnderground = !!val.preferUndergroundPlacement;
+				if (val.special !== undefined) acc.special = val.special;
+				if (val.index !== undefined) acc.index = val.index;
+				if (val.town) {
+					acc.town = true;
+					// the town's adventure-map sprites by variant (village, fort,
+					// citadel, castle, capitol), laid over the town base in
+					// moddables.json; a mod restyling a faction's town (HotA's new
+					// graphics) overrides them, and the map then needs that mod
+					const tpls = val.town.mapObject && val.town.mapObject.templates;
+					const townMap = tpls && typeof tpls === 'object'
+						? Object.fromEntries(Object.entries(tpls).filter(([, t]) => t && t.animation)
+							.map(([k, t]) => [k, String(t.animation).replace(/\.def$/i, '')]))
+						: null;
+					if (townMap && Object.keys(townMap).length) {
+						if (!acc.townMap) {
+							acc.townMap = townMap;
+							acc.townMapCore = scope === 'core' ? townMap : null;
+						} else acc.townMap = { ...acc.townMap, ...townMap };
+						acc.townMapScope = scope;
+					} else if (!acc.townMapScope) acc.townMapScope = scope;
+				}
+				if (!acc.fallbackName) acc.fallbackName = key;
+				factionAcc.set(id, acc);
 			}
 			// Spells, for the list a town's mage guild draws from (every spell
 			// the engine allows by default: not special, not a creature ability,
@@ -532,6 +556,16 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 	if (parseFailures)
 		console.error(`[gen] ${parseFailures} config file(s) could not be parsed `
 			+ 'and were skipped; the index is incomplete');
+	// the factions with a town, judged on their merged records: the engine's
+	// `town != nullptr && !special` (CTownHandler.cpp:986), index -1 being the
+	// random placeholder
+	for (const [id, f] of factionAcc) {
+		if (!f.town || f.special || f.index === -1) continue;
+		index.factions.set(id, { name: f.name !== undefined ? f.name : f.fallbackName,
+			nativeTerrain: f.nativeTerrain, preferUnderground: !!f.preferUnderground,
+			townMap: f.townMap || null, townMapCore: f.townMapCore || null,
+			townMapScope: f.townMapScope || null });
+	}
 	return index;
 }
 

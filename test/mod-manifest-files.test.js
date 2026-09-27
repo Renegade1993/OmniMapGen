@@ -100,3 +100,33 @@ test('a later mod patches the object an earlier one defined, as the engine merge
 	fs.rmSync(base, { recursive: true, force: true });
 	fs.rmSync(patch, { recursive: true, force: true });
 });
+
+test('a faction is its records merged in load order, across files and mods', () => {
+	// HotA's Cove sets nativeTerrain in faction.json and its town in town.json;
+	// New Pavilion's dunes submod patches Pavilion's native terrain. The engine
+	// merges them all before judging the faction; judging record by record kept
+	// the first one with a town and lost the terrain.
+	const base = fs.mkdtempSync(path.join(testTmp(), 'vmapgen-faction-'));
+	const patch = fs.mkdtempSync(path.join(testTmp(), 'vmapgen-factionpatch-'));
+	fs.mkdirSync(path.join(base, 'Content', 'config'), { recursive: true });
+	fs.writeFileSync(path.join(base, 'Content', 'config', 'town.json'), JSON.stringify({
+		cove: { town: { mapObject: { templates: { village: { animation: 'covevil.def' } } } } } }));
+	fs.writeFileSync(path.join(base, 'Content', 'config', 'faction.json'), JSON.stringify({
+		cove: { nativeTerrain: 'swamp', name: 'Cove' },
+		// a record with no town anywhere is not a faction with a town
+		lonely: { nativeTerrain: 'sand' } }));
+	fs.mkdirSync(path.join(patch, 'Content', 'config'), { recursive: true });
+	fs.writeFileSync(path.join(patch, 'Content', 'config', 'terrain.json'), JSON.stringify({
+		'base:cove': { nativeTerrain: 'dunes' } }));
+	const idx = buildAssetIndex(null, [
+		{ name: 'Base', factions: ['config/town', 'config/faction'], __dir: base, __id: 'base' },
+		{ name: 'Patch', factions: ['config/terrain'], __dir: patch, __id: 'patch' }]);
+	const cove = idx.factions.get('base:cove');
+	assert.ok(cove, 'split across two files, still one faction');
+	assert.strictEqual(cove.nativeTerrain, 'dunes', 'the later mod\'s patch wins');
+	assert.strictEqual(cove.name, 'Cove');
+	assert.deepStrictEqual(cove.townMap, { village: 'covevil' });
+	assert.ok(!idx.factions.has('base:lonely'), 'no town, no faction');
+	fs.rmSync(base, { recursive: true, force: true });
+	fs.rmSync(patch, { recursive: true, force: true });
+});

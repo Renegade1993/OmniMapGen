@@ -20,7 +20,7 @@ const { BIOME_CLASS, BIOME_DEFAULTS } = require('./biomes');
 const { OBJECT_TEMPLATES } = require('../stitch/zones');
 const {
 	mineTemplate, pileTemplate, chestTemplate, campfireTemplate,
-	CLASS_MINES, CORE_BANKS, BONUS_POOL, pickBonus, STRUCTURES, STRUCTURE_SUBTYPE,
+	CLASS_MINES, CORE_BANKS, bankBandWeight, bandEligibility, bankEligAt, BONUS_POOL, pickBonus, STRUCTURES, STRUCTURE_SUBTYPE,
 	SPELL_SCROLL, pandoraTemplate, prisonTemplate, obeliskTemplate,
 	pandoraOptions, prisonOptions, makePrisonHeroPool,
 	UTIL_POOL, pickUtil, DWELLING_POOL, pickDwelling, PILE_KINDS, seerHutOptions,
@@ -33,6 +33,30 @@ const { zoneTownTypes, townTemplate, townMods } = require('./zoneTowns');
 const CORE_BANK_WEIGHT = CORE_BANKS.filter(b => b.type !== 'crypt')
 	.reduce((a, b) => a + (b.weight || 1), 0);
 const CORE_DWELLING_WEIGHT = DWELLING_POOL.reduce((a, d) => a + (d.weight || 1), 0);
+// the richest object a free-layout zone of each class may draw from the bank
+// pool, standing in for a template zone's richest pile (fillBiome, banks)
+const FREE_ZONE_MAX = {
+	[BIOME_CLASS.PLAYER]: 15000, [BIOME_CLASS.LOW_LOOT]: 15000, [BIOME_CLASS.TOWN]: 20000,
+	[BIOME_CLASS.STANDARD]: 30000, [BIOME_CLASS.HIGH_LOOT]: Infinity,
+};
+// ...and the treasure bands a template zone of that kind most often has, for
+// the bank mix (fillBiome): the corpus's commonest start-zone set, its two
+// commonest treasure-zone sets, and its richest common one
+// (.tmp\opus\zone_bands.js, 2026-09-26). Densities weigh the bands as pile
+// counts would.
+const FREE_ZONE_BANDS = (() => {
+	const start = [{ min: 300, max: 3000, density: 9 }, { min: 3000, max: 6000, density: 6 },
+		{ min: 10000, max: 15000, density: 1 }];
+	return {
+		[BIOME_CLASS.PLAYER]: start, [BIOME_CLASS.LOW_LOOT]: start,
+		[BIOME_CLASS.TOWN]: [{ min: 6000, max: 8999, density: 9 }, { min: 10000, max: 17000, density: 9 },
+			{ min: 17000, max: 20000, density: 3 }],
+		[BIOME_CLASS.STANDARD]: [{ min: 10000, max: 15000, density: 9 }, { min: 15000, max: 20000, density: 6 },
+			{ min: 20000, max: 30000, density: 1 }],
+		[BIOME_CLASS.HIGH_LOOT]: [{ min: 3080, max: 12500, density: 4 }, { min: 15000, max: 50000, density: 3 },
+			{ min: 45000, max: 75000, density: 3 }],
+	};
+})();
 const { singleTemplate, dominoTemplate, trominoTemplate, mergedTemplate,
 	packFor, clusterTemplate, DECOR_TYPES,
 	DECOR_BLOCKED_SHARE,
@@ -154,6 +178,18 @@ function templatePiles(bands, cellCount) {
 const TPL_BANK_RICH_MIN = Number(process.env.VMAPGEN_TPL_BANK_RICH_MIN) || 9000;
 const TPL_BANK_P_LOW = Number(process.env.VMAPGEN_TPL_BANK_P_LOW) || 0.107;
 const TPL_BANK_P_HIGH = Number(process.env.VMAPGEN_TPL_BANK_P_HIGH) || 0.047;
+// In the band mode (VMAPGEN_TPL_BANK_MODE=band, fillBiome) a pile holds a bank
+// as the engine's draw gives one: in proportion to the bank weight the band
+// admits (Z, the sum of
+// economy.js bankBandWeight over the zone's pool) against everything else a
+// pile of that value could take, Z / (Z + TPL_BANK_K). A flat per-pile rate
+// with each band's own banks had put the late corpus's banks under 2000 at
+// 2.1x and those over 6000 at 0.5x (lens run t23L): a start zone's cheap bands
+// hold the most piles, and there only the cheap banks compete. K = 287 spends
+// the bank draws the zone-level count did over the late corpus's template
+// zones (.tmp\opus\bank_bandz_calib.js, 2026-09-26): about 0.12-0.26 a pile in
+// bands under 3000, 0.57 at 3000-6000, 0.66-0.73 in the rich bands.
+const TPL_BANK_K = Number(process.env.VMAPGEN_TPL_BANK_K) || 287;
 // Free layout only: the bank and dwelling rates were calibrated while the
 // stranded sweep still dropped everything behind a pickup or a guard (19-31
 // objects a 108x108 map). With that fixed (2026-09-26) the free-layout lens
@@ -1558,7 +1594,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	if (zoneMeta && zoneMeta.towns) {
 		const tp = objectPools && objectPools.towns;
 		const types = tp ? zoneTownTypes(zoneMeta.spec, tp.factions) : [];
-		let zoneType = tp && zoneMeta.ownerColor ? tp.pinned.get(zoneMeta.ownerColor) || null : null;
+		// the owner's faction in a player zone; in any other the type planMap
+		// rolled for it, which its terrain already follows
+		let zoneType = tp && zoneMeta.ownerColor ? tp.pinned.get(zoneMeta.ownerColor) || null
+			: (zoneMeta.townType || null);
 		let inZone = zoneMeta.ownerColor ? 1 : 0;
 		const sameType = !!(zoneMeta.spec && zoneMeta.spec.townsAreSameType);
 		for (const want of zoneMeta.towns) {
@@ -1965,8 +2004,15 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const ground = objectPools.terrainNames && objectPools.terrainNames.get(terrain);
 	const groundName = ground ? ground.name : null;
 	const groundLand = ground ? ground.land : terrain !== 'wt';
+	// A free-layout zone has no treasure bands, so its class stands in for the
+	// richest pile a template zone of that kind has: across the corpus's
+	// templates a start zone's is 15000 (median; 22000 at the 90th percentile),
+	// a treasure zone's 30000 (20000 at the 25th), a junction's 100000
+	// (.tmp\opus\zone_max.js, 2026-09-26). A Treasure Cave (30000) never sits by
+	// a start in the engine; a utopia (10000) can.
 	const zoneMax = zoneMeta && zoneMeta.spec && (zoneMeta.spec.treasure || []).length
-		? Math.max(...zoneMeta.spec.treasure.map(t => t.max || 0)) : Infinity;
+		? Math.max(...zoneMeta.spec.treasure.map(t => t.max || 0))
+		: (FREE_ZONE_MAX[cls] || Infinity);
 	const unscoped = n => String(n).slice(String(n).lastIndexOf(':') + 1).toLowerCase();
 	// the template for this ground: one that names it first, as
 	// getMostSpecificTemplates prefers, else one that takes any land
@@ -1992,15 +2038,20 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			&& (b.rmg.mapLimit === undefined || (mapBanks.get(bankKey(b)) || 0) < b.rmg.mapLimit));
 	// a creature theme (--theme) draws its share from the family's banks
 	const themeBanks = objectPools.themeBanks;
-	const pickBank = () => {
+	// band: a template zone's treasure band, where only the banks its piles can
+	// hold compete (economy.js bankBandWeight); none: the zone's whole pool
+	const pickBank = band => {
 		if (themeBanks && themeBanks.pool.length && rng() < themeBanks.share) {
 			const b = themeBanks.pool[(rng() * themeBanks.pool.length) | 0];
-			const tpl = underLimit(b) && bankTemplate(b);
+			const tpl = underLimit(b) && (!band || bankBandWeight(b, band) > 0)
+				&& (!eligWeight || (eligWeight.get(b) || 0) > 0) && bankTemplate(b);
 			if (tpl) return { b, tpl };
 		}
-		const open = bankPool.filter(e => underLimit(e.b));
-		let roll = rng() * open.reduce((a, e) => a + (e.b.weight || 1), 0);
-		for (const e of open) { roll -= e.b.weight || 1; if (roll <= 0) return e; }
+		const w = e => (band ? bankBandWeight(e.b, band)
+			: eligWeight ? (eligWeight.get(e.b) || 0) : (e.b.weight || 1));
+		const open = bankPool.filter(e => underLimit(e.b) && w(e) > 0);
+		let roll = rng() * open.reduce((a, e) => a + w(e), 0);
+		for (const e of open) { roll -= w(e); if (roll <= 0) return e; }
 		return open[0] || null;
 	};
 	// The count grows with the pool, as in the engine, where every bank type
@@ -2009,19 +2060,64 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// With a mod pool the count used to stay put and the mod banks only
 	// displaced core ones: 0.51 of the corpus's banks with this install's
 	// mods declared (fidelity lens run T4, 2026-09-25).
-	let bankCount;
+	// A template zone's bank count comes from its piles (TPL_BANK_P_LOW/HIGH,
+	// calibrated), and its mix from the banks its piles can hold: each bank's
+	// rate scaled by how often this zone's bands admit its value against the
+	// corpus average (economy.js bandEligibility, BANK_ELIG_AT). A cheap bank
+	// never lands in a zone of 45000-75000 piles and a Treasure Cave never in a
+	// start zone, where a zone-wide draw ran the Treasure Cave at 0.15 of the
+	// late corpus (lens run t21). VMAPGEN_TPL_BANK_MODE=zone draws from the whole
+	// pool; =band draws band by band at Z / (Z + TPL_BANK_K) a pile, which lands
+	// the right Treasure Caves but 1.26x the banks, rising with value (t24L).
+	const bankDraws = [];
+	const tplMode = process.env.VMAPGEN_TPL_BANK_MODE || 'elig';
+	let eligWeight = null;
+	const bandP = band => (band.min < TPL_BANK_RICH_MIN ? TPL_BANK_P_LOW : TPL_BANK_P_HIGH);
+	// each bank's weight in a zone with these piles ([{ band, count }]): its rate
+	// times how often these bands admit its value, against the corpus average,
+	// both weighted as BANK_ELIG_AT is (pile count x the band's bank rate)
+	const mixByAdmission = piles => {
+		const spend = piles.reduce((a, { band, count }) => a + count * bandP(band), 0);
+		const m = new Map();
+		for (const { b } of bankPool) {
+			const v = b.rmg && b.rmg.value;
+			if (!v || !spend) { m.set(b, b.weight || 1); continue; }
+			const here = piles.reduce((a, { band, count }) => a + count * bandP(band) * bandEligibility(v, band), 0) / spend;
+			m.set(b, (b.weight || 0) * here / bankEligAt(v));
+		}
+		return m;
+	};
 	if (zoneMeta && zoneMeta.spec && process.env.VMAPGEN_TPL_BANK_PILES !== '0') {
+		const piles = templatePiles(zoneMeta.spec.treasure, cells.length);
 		let expect = 0;
-		for (const { band, count } of templatePiles(zoneMeta.spec.treasure, cells.length))
-			expect += count * (band.min < TPL_BANK_RICH_MIN ? TPL_BANK_P_LOW : TPL_BANK_P_HIGH);
-		expect *= bankWeight / CORE_BANK_WEIGHT;
-		bankCount = Math.floor(expect) + (rng() < expect % 1 ? 1 : 0);
-	} else
-		bankCount = Math.round(scale * fill.banks * bankWeight / CORE_BANK_WEIGHT
-			* (zoneMeta ? 1 : FREE_BANK_SCALE));
-	for (let i = bankCount; i > 0 && bankPool.length; i--) {
-		const pick = pickBank();
-		if (!pick) break;
+		for (const { band, count } of piles) {
+			if (tplMode !== 'band') {
+				expect += count * bandP(band) * bankWeight / CORE_BANK_WEIGHT;
+				continue;
+			}
+			const Z = bankPool.reduce((a, x) => a + bankBandWeight(x.b, band), 0);
+			const e = count * Z / (Z + TPL_BANK_K);
+			for (let n = Math.floor(e) + (rng() < e % 1 ? 1 : 0); n > 0; n--) bankDraws.push(band);
+		}
+		if (tplMode !== 'band')
+			for (let n = Math.floor(expect) + (rng() < expect % 1 ? 1 : 0); n > 0; n--) bankDraws.push(null);
+		if (tplMode === 'elig') eligWeight = mixByAdmission(piles);
+	} else {
+		for (let n = Math.round(scale * fill.banks * bankWeight / CORE_BANK_WEIGHT
+			* (zoneMeta ? 1 : FREE_BANK_SCALE)); n > 0; n--) bankDraws.push(null);
+		// VMAPGEN_FREE_BANK_BANDS=1 mixes a free-layout zone's banks by the bands
+		// its class stands in for (FREE_ZONE_BANDS). Off: the free layout puts
+		// most of its banks in standard zones, which those bands make rich, and
+		// the late corpus's banks under 2000 fell to 0.25 and those of 6001-12000
+		// rose to 1.87 (lens run f26L, 2026-09-26); the zone-wide draw lands 1.03
+		// with every value within 11% but the top (f22)
+		if (!zoneMeta && FREE_ZONE_BANDS[cls] && process.env.VMAPGEN_FREE_BANK_BANDS === '1')
+			eligWeight = mixByAdmission(FREE_ZONE_BANDS[cls].map(band => ({ band, count: band.density })));
+	}
+	const bankCount = bankDraws.length;
+	for (const band of bankPool.length ? bankDraws : []) {
+		const pick = pickBank(band);
+		if (!pick) continue;
 		const b = pick.b;
 		const e = put(b.type || 'creatureBank', pick.tpl.raw, b.rewardable ? emptyRewardable() : undefined,
 			b.subtype, 40, fitAnchors(pick.tpl.raw), true);
