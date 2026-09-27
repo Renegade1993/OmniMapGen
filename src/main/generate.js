@@ -23,7 +23,8 @@ const { themePool, applyGuardTheme, concretizeGuards, creatureRegistry, guardPoo
 	themeBankPool } = require('../biome/guardCreatures');
 const { DWELLING_POOL, CORE_BANKS, bankRate, chestTemplate, registerTerrainBarriers, clearTerrainBarriers } = require('../biome/economy');
 const TEMPLATE_THEMES = require('../biome/templateThemes.json');
-const { h3MonsterTemplates, h3CreatureTraits } = require('../parser/h3data');
+const { h3ArtifactTemplates, h3MonsterTemplates, h3CreatureTraits } = require('../parser/h3data');
+const { giveArtifactsTheirArt } = require('./artifactArt');
 const { townFactions, zoneTownTypes, pickStartFaction } = require('../biome/zoneTowns');
 const { OBJECT_TEMPLATES } = require('../stitch/zones');
 const { serializeVmap, makeHeader, FLIP_CODES } = require('../exporter/vmapWriter');
@@ -431,7 +432,8 @@ function cachedAssetIndex(coreConfigDir, orderedMods, noCache) {
 		// v24: the obstacle sets (core's biomes.json and the mods'), and every
 		//     template records the mod that brought it
 		// v25: creatures record their weekly growth
-		.update('v25')
+		// v26: artifacts record their H3 number and a mod's own map art
+		.update('v26')
 		.update(String(coreConfigDir))
 		.update(dirSignature(coreConfigDir));
 	for (const m of orderedMods || []) {
@@ -1495,6 +1497,15 @@ async function generateMap(params) {
 			if (own && own.type === o.type && own.subtype !== o.subtype) { o.subtype = own.subtype; fixed++; }
 		}
 		if (fixed) console.error(`[gen] WARNING: ${fixed} scenery piece(s) carried another subtype than their art's object; corrected`);
+	}
+
+	// A concrete artifact wears its own art, not the random artifact's "ART"
+	// token the fill wrote (artifactArt.js; K's Helm of the Alabaster Unicorn)
+	if (objects.some(o => o.type === 'artifact')) {
+		const { fixed, rolled } = giveArtifactsTheirArt(objects, assetIndex.artifacts,
+			h3ArtifactTemplates([roots.userDir, roots.installDir]));
+		if (rolled)
+			console.error(`[gen] ${rolled} of ${fixed + rolled} artifact(s) have no art of their own; written as random artifacts`);
 	}
 
 	const h3 = (params.guardTheme || picked.size)

@@ -92,11 +92,16 @@ function findResource(roots, looseDirName, lods, name) {
 const tileChar = t => (t.blocked ? (t.visitable ? 'A' : 'B') : 'V');
 
 /**
- * The H3 monster templates from OBJECTS.TXT: creature index -> template
- * {animation, mask, visitableFrom}, as the engine would write it into a map.
+ * The H3 templates OBJECTS.TXT gives one object class: subtype -> template
+ * {animation, mask, visitableFrom}, the first line of a subtype being its
+ * default, as the engine would write it into a map. Creatures, heroes,
+ * artifacts and resources (the file's own type column, 2 to 5) are visitable
+ * from every side, the top included; the rest from the front and the sides
+ * (ObjectTemplate::readTxt, isOnVisitableFromTopList). fromTop settles it for
+ * a class that is always one of those whatever a row's type column says.
  * Returns an empty map when the data is not found.
  */
-function h3MonsterTemplates(roots) {
+function h3ObjectTemplates(roots, classId, fromTop = null) {
 	const out = new Map();
 	const text = findResource(roots, 'Data', DATA_LODS, 'OBJECTS.TXT');
 	if (!text) return out;
@@ -106,8 +111,8 @@ function h3MonsterTemplates(roots) {
 	for (let i = 1; i <= total && i < lines.length; i++) {
 		const s = lines[i].trim().split(' ');
 		if (s.length < 9) continue;
-		const id = parseInt(s[5], 10), subid = parseInt(s[6], 10);
-		if (id !== 54 || out.has(subid)) continue;   // monsters; the first template is the default
+		const id = parseInt(s[5], 10), subid = parseInt(s[6], 10), type = parseInt(s[7], 10);
+		if (id !== classId || out.has(subid)) continue;
 		const anim = s[0].replace(/\.def$/i, '');
 		const block = s[1], visit = s[2];
 		// ObjectTemplate::readTxt: an 8x6 grid in file order, then readMsk
@@ -127,10 +132,21 @@ function h3MonsterTemplates(roots) {
 			for (let c = 0; c < w; c++) line += tileChar(tile(h - 1 - r, w - 1 - c));
 			mask.push(line);
 		}
-		// creatures are visitable from every side, the top included
-		out.set(subid, { animation: anim, mask, visitableFrom: ['+++', '+-+', '+++'] });
+		const top = fromTop !== null ? fromTop : type >= 2 && type <= 5;
+		out.set(subid, { animation: anim, mask,
+			visitableFrom: top ? ['+++', '+-+', '+++'] : ['---', '+-+', '+++'] });
 	}
 	return out;
+}
+
+/** The H3 monster templates from OBJECTS.TXT (object 54): creature index -> template. */
+function h3MonsterTemplates(roots) {
+	return h3ObjectTemplates(roots, 54, true);
+}
+
+/** The H3 artifact templates from OBJECTS.TXT (object 5): artifact number -> template. */
+function h3ArtifactTemplates(roots) {
+	return h3ObjectTemplates(roots, 5, true);
 }
 
 /**
@@ -154,4 +170,4 @@ function h3CreatureTraits(roots) {
 	return out;
 }
 
-module.exports = { h3MonsterTemplates, h3CreatureTraits, lodIndex, lodRead, findResource };
+module.exports = { h3ObjectTemplates, h3MonsterTemplates, h3ArtifactTemplates, h3CreatureTraits, lodIndex, lodRead, findResource };

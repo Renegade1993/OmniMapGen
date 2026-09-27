@@ -551,7 +551,12 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 				const id = key.includes(':') ? key : `${scope}:${key}`;
 				const prev = index[category].get(id);
 				index[category].set(id, { ...(prev || {}),
-					waterOnly: val.onlyOnWaterMap !== undefined ? !!val.onlyOnWaterMap : !!(prev && prev.waterOnly) });
+					waterOnly: val.onlyOnWaterMap !== undefined ? !!val.onlyOnWaterMap : !!(prev && prev.waterOnly),
+					// a core artifact's H3 number, which keys its map art in
+					// OBJECTS.TXT (object 5); a mod's own art, when it names one
+					...(category === 'artifacts' && typeof val.index === 'number' ? { h3Index: val.index } : {}),
+					...(category === 'artifacts' && val.graphics && typeof val.graphics.map === 'string'
+						? { mapArt: val.graphics.map } : {}) });
 			}
 		}
 	};
