@@ -9,7 +9,7 @@
  * (ModDescription.cpp:58-63), so a switched-off parent takes its children with
  * it. Our predicate used to take the first flag whose key prefixed the
  * submod's path and to treat every unlisted submod as on (2026-09-26, checked
- * against K's playset, "! LLM Files\Reference\2026-07-12-Friend-Group-Playset.json").
+ * against a real mod preset).
  */
 'use strict';
 

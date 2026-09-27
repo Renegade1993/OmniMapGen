@@ -981,7 +981,7 @@ async function generateMap(params) {
 	// entry is a pile object of its own (TreasurePlacer::addCommonObjects),
 	// drawn by rarity. Core's chest is always there; a map that declares its
 	// mods adds theirs (The Great Expansion's spell stones, two treasure piles
-	// and lost wagon on K's playset, the corpus's commonest treasure since
+	// and lost wagon in the reference mod set, the corpus's commonest treasure since
 	// April), each with the templates its mod gives it and that mod declared,
 	// and core's with a mod's art for that mod's terrain. content.js sizes the
 	// count by the pool's rarity.
@@ -1207,7 +1207,7 @@ async function generateMap(params) {
 			+ `(${themeDwellings.pool.map(d => d.subtype).join(', ') || 'none'}), share ${themeDwellings.share}`);
 	// and the creature banks guarded by the family or paying out in it (none in
 	// core; HotA's experimental shop and The Great Expansion's sculptor's
-	// monument on K's playset), a smaller share because there are so few kinds
+	// monument in the reference mod set), a smaller share because there are so few kinds
 	const themeBanks = params.guardTheme
 		? themeBankPool(params.guardTheme, coreBanks, banks, assetIndex.objects,
 			Number.isFinite(params.bankThemeShare) ? params.bankThemeShare : 0.3)
