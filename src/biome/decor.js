@@ -163,7 +163,7 @@ function clusterTemplate(terrain, rng) {
 	if (!pick) return null;
 	const tpl = { animation: pick.animation, mask: pick.mask };
 	if (pick.visitableFrom) tpl.visitableFrom = pick.visitableFrom;
-	return { type: pick.type, subtype: 'object', tpl };
+	return { type: pick.type, subtype: pick.subtype || 'object', tpl };
 }
 
 /**
@@ -191,7 +191,7 @@ function wallClusters(terrain, rng, n = 6, minCells = 0) {
 	return picked.map(e => {
 		const tpl = { animation: e.animation, mask: e.mask };
 		if (e.visitableFrom) tpl.visitableFrom = e.visitableFrom;
-		return { type: e.type, subtype: 'object', tpl, cells: e.cells };
+		return { type: e.type, subtype: e.subtype || 'object', tpl, cells: e.cells };
 	});
 }
 
@@ -222,7 +222,7 @@ function dominoTemplate(terrain, rng) {
 	pick.mask.forEach((row, i) => String(row).split('').forEach((ch, j) => {
 		if ('BHAT'.includes(ch) && j > rj) { rj = j; ri = i; }
 	}));
-	return { type: pick.type, subtype: 'object',
+	return { type: pick.type, subtype: pick.subtype || 'object',
 		tpl: { animation: pick.animation, mask: pick.mask },
 		anchorDx: w - 1 - rj, anchorDy: h - 1 - ri };
 }
@@ -254,7 +254,7 @@ function trominoTemplate(terrain, rng) {
 	pick.mask.forEach((row, i) => String(row).split('').forEach((ch, j) => {
 		if ('BHAT'.includes(ch) && j > rj) { rj = j; ri = i; }
 	}));
-	return { type: pick.type, subtype: 'object',
+	return { type: pick.type, subtype: pick.subtype || 'object',
 		tpl: { animation: pick.animation, mask: pick.mask },
 		anchorDx: w - 1 - rj, anchorDy: h - 1 - ri };
 }
@@ -286,7 +286,7 @@ function mergedTemplate(terrain, rng) {
 	pick.mask.forEach((row, i) => String(row).split('').forEach((ch, j) => {
 		if ('BHAT'.includes(ch)) cells.push([j, i, String(row).length]);
 	}));
-	return { type: pick.type, subtype: 'object',
+	return { type: pick.type, subtype: pick.subtype || 'object',
 		tpl: { animation: pick.animation, mask: pick.mask }, cells };
 }
 
@@ -294,7 +294,7 @@ function mergedTemplate(terrain, rng) {
 function singleTemplate(terrain, rng) {
 	const pick = weightedPick(DATA.single[terrain], rng);
 	if (!pick) return null;
-	return { type: pick.type, subtype: 'object',
+	return { type: pick.type, subtype: pick.subtype || 'object',
 		tpl: { animation: pick.animation, mask: pick.mask } };
 }
 
@@ -338,11 +338,49 @@ const DECOR_TYPES = [...new Set(
 	[...Object.values(DATA.clusters), ...Object.values(DATA.single)]
 		.flat().map(e => e.type))].sort();
 
+// the terrains the harvest covers; a mod terrain gets its pools at run time
+const CORE_TERRAINS = Object.keys(DATA.clusters);
+const registered = new Set();
+
+/**
+ * Scenery for a terrain the harvest has none for: the obstacles its mods
+ * bring (generate.js reads them out of the asset index), as the engine's
+ * ObstaclePlacer takes every obstacle whose template allows the ground. Without
+ * them a mod terrain got no packs, no wall pieces and no clusters, and its
+ * zones came out strewn with the same four one-cell dirt ornaments (flowers,
+ * shrub and rock at 16, 5 and 3 times the corpus's rate), where the corpus's
+ * mod terrains carry 94-100% their mods' own art at core terrains' density
+ * (2026-09-26). `clusters` and `single` take the harvested entries' shape
+ * ({ type, subtype, animation, mask, weight, cells }); `packs`, when given,
+ * the packs' ({ size, cells, objects }). A terrain the harvest covers keeps its
+ * own pools and packs; clearTerrainDecor undoes every registration, so one
+ * map's install cannot leak into the next map made in the same process.
+ */
+function registerTerrainDecor(terrain, { clusters = [], single = [], packs = [] } = {}) {
+	if (CORE_TERRAINS.includes(terrain)) return false;
+	DATA.clusters[terrain] = clusters;
+	DATA.single[terrain] = single;
+	if (!PACKS[terrain] || registered.has(terrain)) PACKS[terrain] = packs;
+	registered.add(terrain);
+	return true;
+}
+function clearTerrainDecor() {
+	for (const t of registered) {
+		delete DATA.clusters[t];
+		delete DATA.single[t];
+	}
+	// packs the harvest had for a terrain (wasteland) stay; the rest go
+	for (const t of registered) if (!HARVESTED_PACK_TERRAINS.has(t)) delete PACKS[t];
+	registered.clear();
+}
+const HARVESTED_PACK_TERRAINS = new Set(Object.keys(PACKS));
+
 module.exports = {
 	clusterTemplate, singleTemplate, dominoTemplate, trominoTemplate,
 	mergedTemplate,
 	wallClusters, clusterSize, packFor,
+	registerTerrainDecor, clearTerrainDecor,
 	DECOR_BLOCKED_SHARE_UNDERGROUND,
 	DECOR_BLOCKED_SHARE, DECOR_TYPES,
-	TERRAINS: Object.keys(DATA.clusters),
+	TERRAINS: CORE_TERRAINS,
 };

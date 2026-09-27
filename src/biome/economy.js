@@ -277,11 +277,21 @@ const STRUCTURE_SUBTYPE = { ...DATA.structureSubtype };
  * and a border underground gets subterranean rock.
  */
 function barrierTemplate(terrain, rng) {
-	const pool = DATA.barriers[terrain] || DATA.barrierDefault;
+	const pool = (TERRAIN_BARRIERS.get(terrain)) || DATA.barriers[terrain] || DATA.barrierDefault;
 	const pick = pool[((rng ? rng() : 0) * pool.length) | 0] || pool[0];
-	return { type: pick.type, subtype: 'object',
-		tpl: { animation: pick.animation, mask: ['B'] } };
+	return { type: pick.type, subtype: pick.subtype || 'object',
+		tpl: { animation: pick.animation, mask: pick.mask || ['B'] } };
 }
+// one-cell barriers for a mod terrain, from its mods' obstacles (generate.js,
+// with decor.js registerTerrainDecor); the harvest's dirt set was every mod
+// terrain's until 2026-09-26
+const TERRAIN_BARRIERS = new Map();
+function registerTerrainBarriers(terrain, list) {
+	if (DATA.barriers[terrain] || !list || !list.length) return false;
+	TERRAIN_BARRIERS.set(terrain, list);
+	return true;
+}
+function clearTerrainBarriers() { TERRAIN_BARRIERS.clear(); }
 
 /**
  * The utility long tail: one-visit buildings, quest huts, markets, camps and
@@ -652,7 +662,7 @@ module.exports = {
 	mineTemplate, pileTemplate, chestTemplate, campfireTemplate,
 	CLASS_MINES, STARTER_MINES, MINES_PER_PLAYER, CORE_BANKS, bankRate, bandEligibility, bankBandWeight, bankEligAt,
 	BONUS_POOL, pickBonus,
-	STRUCTURES, STRUCTURE_SUBTYPE, barrierTemplate, SPELL_SCROLL,
+	STRUCTURES, STRUCTURE_SUBTYPE, barrierTemplate, registerTerrainBarriers, clearTerrainBarriers, SPELL_SCROLL,
 	pandoraTemplate, prisonTemplate, obeliskTemplate,
 	pandoraOptions, prisonOptions, makePrisonHeroPool, SPECIALS,
 	UTIL_POOL, pickUtil, DWELLING_POOL, pickDwelling, PILE_KINDS,

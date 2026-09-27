@@ -16,9 +16,11 @@ const { BitSet } = require('../wfc/bitset');
 const { computeTaccl } = require('../stitch/taccl');
 const { mergeChunks, mergeChunksAsync } = require('../stitch/poms');
 const { planMap, chooseTemplateLayout } = require('../biome/plan');
+const { registerTerrainDecor, clearTerrainDecor, TERRAINS: DECOR_TERRAINS } = require('../biome/decor');
+const { blockingCells } = require('../biome/content');
 const { themePool, applyGuardTheme, concretizeGuards, creatureRegistry, guardPool, themeDwellingPool,
 	themeBankPool } = require('../biome/guardCreatures');
-const { DWELLING_POOL, CORE_BANKS, bankRate, chestTemplate } = require('../biome/economy');
+const { DWELLING_POOL, CORE_BANKS, bankRate, chestTemplate, registerTerrainBarriers, clearTerrainBarriers } = require('../biome/economy');
 const TEMPLATE_THEMES = require('../biome/templateThemes.json');
 const { h3MonsterTemplates } = require('../parser/h3data');
 const { townFactions, zoneTownTypes, pickStartFaction } = require('../biome/zoneTowns');
@@ -961,6 +963,61 @@ async function generateMap(params) {
 					chests.push({ type: 'treasureChest', subtype: o.subtype, rmg: o.rmg, tpls, mod: id.split(':')[0] });
 			}
 	}
+	// Scenery for the mod terrains, from the obstacles their mods bring
+	// (decor.js registerTerrainDecor): every static object's template that
+	// names the terrain, taken from the mod entry that brings it, so its mod is
+	// known and declared (terrainDecorMods, read when the header is built).
+	// Each type draws as often as any other, a big one (mountain, trees) at
+	// full weight and a one-cell ornament at a sixth, across its templates;
+	// the pieces of four cells or more also stand alone as packs for the early
+	// pack pass. Core terrains keep their harvested pools.
+	clearTerrainDecor();
+	clearTerrainBarriers();
+	const terrainDecorMods = new Map();
+	if (useMods) {
+		const unscopeName = s => String(s).slice(String(s).lastIndexOf(':') + 1).toLowerCase();
+		for (const [shortId, t] of assetIndex.terrains) {
+			if (DECOR_TERRAINS.includes(shortId) || !(t.moveCost > 0) || !(t.allowedLayers || []).length) continue;
+			const name = unscopeName(t.identifier);
+			const byType = new Map();
+			for (const [id, o] of assetIndex.objects) {
+				if (o.handler !== 'static' || String(id).startsWith('core:')) continue;
+				const mod = id.split(':')[0];
+				for (const tp of o.templates || []) {
+					if (!tp.allowedTerrains || !tp.allowedTerrains.some(x => unscopeName(x) === name)) continue;
+					if (!tp.raw || !tp.raw.animation || !Array.isArray(tp.raw.mask) || !tp.raw.mask.length) continue;
+					// blocking cells in the engine's alphabet (B, H, A, T); the
+					// index's footprint counts V, the drawn-only cells, as well
+					const cells = blockingCells({ animation: tp.raw.animation, mask: tp.raw.mask }, 0, 0).length;
+					if (!cells) continue;
+					const animation = String(tp.raw.animation).replace(/\.def$/i, '');
+					const e = { type: o.type, subtype: o.subtype, animation, mask: tp.raw.mask, cells, mod };
+					if (!byType.has(o.type)) byType.set(o.type, []);
+					byType.get(o.type).push(e);
+				}
+			}
+			const clusters = [], single = [];
+			for (const list of byType.values()) {
+				const mean = list.reduce((a, e) => a + e.cells, 0) / list.length;
+				const w = Math.min(1, mean / 6) / list.length;
+				for (const e of list) {
+					(e.cells > 1 ? clusters : single).push({ ...e, weight: w });
+					terrainDecorMods.set(e.animation, e.mod);
+				}
+			}
+			if (!clusters.length && !single.length) continue;
+			const packs = clusters.filter(e => e.cells >= 4).map(e => {
+				const tpl = { animation: e.animation, mask: e.mask };
+				return { size: e.cells, cells: blockingCells(tpl, 0, 0).map(([x, y]) => [x, y]),
+					objects: [{ type: e.type, subtype: e.subtype, animation: e.animation, mask: e.mask, dx: 0, dy: 0 }] };
+			});
+			registerTerrainDecor(shortId, { clusters, single, packs });
+			registerTerrainBarriers(shortId, single.map(e => ({ type: e.type, subtype: e.subtype,
+				animation: e.animation, mask: e.mask })));
+		}
+		console.error(`[gen] mod terrain scenery: ${[...new Set(terrainDecorMods.values())].length} mod(s), `
+			+ `${terrainDecorMods.size} template(s)`);
+	}
 	// the ground a zone stands on, by the short id content.js knows it by: the
 	// name a template's allowedTerrains uses, and whether an "any land"
 	// template may stand there (TerrainType::isLand and isPassable)
@@ -1255,6 +1312,9 @@ async function generateMap(params) {
 	for (const plan of plans)
 		for (const o of plan.objects) {
 			if (o.mod) { for (const m of [].concat(o.mod)) usedMods.add(m); delete o.mod; }
+			// scenery drawn from a mod terrain's own obstacles needs that mod
+			else if (o.template && terrainDecorMods.has(o.template.animation))
+				usedMods.add(terrainDecorMods.get(o.template.animation));
 			if (o.guardCreature) { picked.set(o, o.guardCreature); delete o.guardCreature; }
 			objects.push(o);
 		}
