@@ -32,11 +32,12 @@ const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..');
 const { PAGES, KNOBS } = require(path.join(ROOT, 'src/biome/knobs'));
 const PRESETS = require(path.join(ROOT, 'src/biome/presets.json'));
-// --pager: the layout for a DMB framework with a generic "pages" widget (K,
-// 2026-09-26: arrows either side of the title page through the screens, as
-// stock H3's Random Map Setup does, in place of the page button grid). The
-// widget's contract is proposed to DMB Dev and not built yet, so this writes
-// to --out (default .tmp/pager) and never over the released layout.
+// --pager: the layout for DMB's "pages" widget (K, 2026-09-26: arrows either
+// side of the title page through the screens, as stock H3's Random Map Setup
+// does, in place of the page button grid). The widget is DMB's addon API level
+// 2 (docs/modders/DMB_UI_Modding.md), which no DMB release carries yet, so
+// this writes to --out (default .tmp/pager) and never over the released
+// layout; make_mod.js --pager packages it.
 const PAGER = process.argv.includes('--pager');
 const outArg = process.argv.indexOf('--out');
 const STAGE = PAGER ? path.resolve(outArg > 0 ? process.argv[outArg + 1] : path.join(ROOT, '.tmp', 'pager'))
@@ -218,7 +219,8 @@ function tabJson() {
 	for (const k of KNOBS) params[k.key] = k.default;
 	return {
 		library: ['config/widgets/commonPrimitives.json'],
-		pages: ALL_PAGES.map(p => `config/widgets/mapGen/page_${p.id}.json`),
+		// the page list the page buttons show; the pages widget carries its own
+		...(PAGER ? {} : { pages: ALL_PAGES.map(p => `config/widgets/mapGen/page_${p.id}.json`) }),
 		// the preset Defaults returns to, which the client no longer assumes
 		defaults: { params, map: MAP_DEFAULTS, preset: 'nostalgia' },
 		items: [
@@ -228,8 +230,9 @@ function tabJson() {
 			// 2026-09-26). The frame's own art is what should show there.
 			{ name: 'background', type: 'picture', image: 'AdventureOptionsBackgroundClear', position: { x: 0, y: 6 } },
 			// the pager: each screen's name between the stock arrows, which step
-			// through the screens (the proposed generic "pages" widget, id
-			// "mapGen", so another mod can add a screen of its own)
+			// through the screens (DMB's "pages" widget; named "pages" so
+			// MapGenTab drives it, id "mapGen" so another mod's tabPages can add
+			// a screen of its own)
 			...(PAGER ? [
 				{ name: 'pages', type: 'pages', id: 'mapGen', position: { x: 0, y: 0 },
 					pages: ALL_PAGES.map(p => ({ layout: `config/widgets/mapGen/page_${p.id}.json`,

@@ -11,8 +11,14 @@
  * repository keeps it (mod.json, the tab files, the templates, generate.cmd);
  * this adds the generator's src and the Node runtime.
  *
- *   node tools/make_mod.js [--install [<user folder>]] [--trust-unlisted] [--out dist]
+ *   node tools/make_mod.js [--install [<user folder>]] [--trust-unlisted] [--out dist] [--pager]
  *                          [--node-zip <node-vX-win-x64.zip> --node-sums <SHASUMS256.txt>]
+ *
+ * --pager builds the tab on DMB's "pages" widget (gen_vcmi_ui.js --pager)
+ * and names DMB's addon API level 2 in mod.json ("dmb": { "api": 2 }), into
+ * dist-pager unless --out says otherwise. No DMB release carries level 2 yet,
+ * and the DMB releases before it cannot refuse the mod, so that build stays
+ * off the catalog and out of anyone's DMB until one does.
  *
  * The Node runtime is the official Windows build (NODE_VERSION), checked
  * against nodejs.org's SHASUMS256.txt before node.exe and its LICENSE are taken
@@ -236,11 +242,18 @@ function writeZip(entries, when) {
 async function main() {
 	const opt = args(process.argv.slice(2));
 	if (!opt['node-zip'] !== !opt['node-sums'] || opt.out === true) {
-		console.error('usage: node tools/make_mod.js [--install [<user folder>]] [--trust-unlisted] [--out dist]\n'
+		console.error('usage: node tools/make_mod.js [--install [<user folder>]] [--trust-unlisted] [--out dist] [--pager]\n'
 			+ '                          [--node-zip <node-vX-win-x64.zip> --node-sums <SHASUMS256.txt>]');
 		process.exit(1);
 	}
-	const out = path.resolve(opt.out || path.join(ROOT, 'dist'));
+	const pager = !!opt.pager;
+	const out = path.resolve(opt.out || path.join(ROOT, pager ? 'dist-pager' : 'dist'));
+	// the pages widget's tab, staged beside the build (never over mod/Content)
+	const pagerStage = path.join(out, 'pager-content');
+	if (pager)
+		require('child_process').execFileSync(process.execPath,
+			[path.join(ROOT, 'tools', 'gen_vcmi_ui.js'), 'build', '--pager', '--out', pagerStage],
+			{ stdio: 'inherit', windowsHide: true });
 	const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 
 	// the Node runtime, only as nodejs.org published it
@@ -263,7 +276,13 @@ async function main() {
 
 	// mod/mod.json is the one copy: the mod catalog reads it from the
 	// repository, and the release carries it unchanged
-	const modJson = fs.readFileSync(path.join(ROOT, 'mod', 'mod.json'));
+	let modJson = fs.readFileSync(path.join(ROOT, 'mod', 'mod.json'));
+	// --pager: the one addition, in the file's own layout
+	if (pager) {
+		const text = modJson.toString('utf8');
+		if (!/\n\t"mapGenerator" :/.test(text)) throw new Error('mod/mod.json: no "mapGenerator" line to put "dmb" before');
+		modJson = Buffer.from(text.replace(/\n\t"mapGenerator" :/, '\n\t"dmb" : { "api" : 2 },\n\t"mapGenerator" :'), 'utf8');
+	}
 	const manifest = JSON.parse(modJson.toString('utf8'));
 	if (manifest.version !== pkg.version)
 		throw new Error(`mod/mod.json says ${manifest.version}, package.json ${pkg.version}: bump both together`);
@@ -275,12 +294,18 @@ async function main() {
 	// texts from tools/gen_vcmi_ui.js, the templates, generate.cmd), batch
 	// files with the line endings cmd.exe reads
 	const skeleton = path.join(ROOT, 'mod');
+	// with --pager the tab's layout and texts come from the stage instead
+	const staged = rel => pager && (rel.startsWith('Content/config/widgets/mapGen/')
+		|| rel === 'Content/config/omnimapgen/english.json');
 	for (const f of walk(skeleton).sort()) {
 		const rel = path.relative(skeleton, f).split(path.sep).join('/');
-		if (rel === 'mod.json') continue;
+		if (rel === 'mod.json' || staged(rel)) continue;
 		const data = fs.readFileSync(f);
 		add(rel, /\.cmd$/i.test(rel) ? data.toString('utf8').replace(/\r?\n/g, '\r\n') : data);
 	}
+	if (pager)
+		for (const f of walk(pagerStage).sort())
+			add(`Content/${path.relative(pagerStage, f).split(path.sep).join('/')}`, fs.readFileSync(f));
 	const texts = Object.keys(JSON.parse(fs.readFileSync(path.join(skeleton, 'Content', 'config', 'omnimapgen', 'english.json'), 'utf8'))).length;
 
 	// the generator and the runtime it runs on
