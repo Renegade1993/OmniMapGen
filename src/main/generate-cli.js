@@ -106,6 +106,18 @@ const bankThemeShare = share01('bankthemeshare', 0.3);
 
 const COLORS = ['red', 'blue', 'tan', 'green', 'orange', 'purple', 'teal', 'pink'];
 
+// The levers the in-game tab passes for three of the generator's own options
+// (src/biome/knobs.js): road type, river amount and teams arrive as
+// --bio.<key> like every other lever; an explicit --road, --rivershare or
+// --teams still wins.
+const ROAD_BY_KNOB = ['pd', 'pg', 'pc'];   // dirt, gravel, cobblestone (config/roads.json)
+const RIVER_SHARE = 0.018;                  // the share rivers run through at amount 1
+function teamsFromCount(count, nPlayers) {
+	const t = Math.round(count);
+	if (!(t >= 2) || t >= nPlayers) return undefined;   // everyone for themselves
+	return Array.from({ length: t }, (_, k) => COLORS.slice(0, nPlayers).filter((_, i) => i % t === k));
+}
+
 async function main() {
 	if (opt.listtemplates) {
 		console.log(listTemplates().join('\n'));
@@ -163,10 +175,12 @@ async function main() {
 		// the output file's stem; --name still overrides.
 		name: opt.name
 			|| require('path').parse(opt.out || 'out.vmap').name,
-		roadShortId: opt.road || 'pc',
+		roadShortId: opt.road
+			|| (biomes.roadType !== undefined ? ROAD_BY_KNOB[Math.max(0, Math.min(2, Math.round(biomes.roadType)))] : 'pc'),
 		noCache: opt.nocache === '1' || opt.nocache === 'true',
 		rivers: !(opt.rivers === '0' || opt.rivers === 'false'),
-		riverShare: opt.rivershare ? parseFloat(opt.rivershare) : undefined,
+		riverShare: opt.rivershare ? parseFloat(opt.rivershare)
+			: biomes.riverAmount !== undefined ? RIVER_SHARE * biomes.riverAmount : undefined,
 		// header.mods records what a map REQUIRES, and the game refuses to
 		// load a map whose requirements are missing, so this does make a map
 		// unopenable by anyone whose mod set differs - correct behavior for a
@@ -192,7 +206,7 @@ async function main() {
 		// --teams "red,tan;blue,green" -> [["red","tan"],["blue","green"]]
 		teams: opt.teams
 			? opt.teams.split(';').map(g => g.split(',').map(s => s.trim()))
-			: undefined,
+			: biomes.teams !== undefined ? teamsFromCount(biomes.teams, nPlayers) : undefined,
 		guardTheme,
 		guardThemeShare,
 		dwellingThemeShare,

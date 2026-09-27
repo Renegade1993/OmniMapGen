@@ -112,18 +112,19 @@ const slider = (id, setting, y, min, step, total, def, fmt) => [
 		text: '', position: { x: X_VALUE, y: y + 5 } },
 ];
 
+// one lever's row: "?" help, label, and a checkbox for an on/off lever or a
+// settings-bound slider for the rest
+function knobRow(k, y) {
+	const setting = `persistent:mapGen/params/${k.key}`;
+	if (k.stops && k.stops.length === 2 && k.min === 0 && k.max === 1)
+		return [helpButton(k.key, y), rowLabel(k.key, y), checkbox(k.key, setting, y, k.default)];
+	return [helpButton(k.key, y), rowLabel(k.key, y),
+		...slider(k.key, setting, y, k.min, k.step, Math.round((k.max - k.min) / k.step), k.default, display(k))];
+}
+
 function pageJson(page) {
 	const items = [];
-	KNOBS.filter(k => k.page === page.id).forEach((k, i) => {
-		const y = ROW0 + i * ROW_H;
-		items.push(helpButton(k.key, y), rowLabel(k.key, y));
-		const setting = `persistent:mapGen/params/${k.key}`;
-		if (k.stops && k.stops.length === 2 && k.min === 0 && k.max === 1) {
-			items.push(checkbox(k.key, setting, y, k.default));
-			return;
-		}
-		items.push(...slider(k.key, setting, y, k.min, k.step, Math.round((k.max - k.min) / k.step), k.default, display(k)));
-	});
+	KNOBS.filter(k => k.page === page.id).forEach((k, i) => items.push(...knobRow(k, ROW0 + i * ROW_H)));
 	return { library: ['config/widgets/commonPrimitives.json'], items };
 }
 
@@ -178,6 +179,14 @@ function mapPageJson() {
 	// filled from settings by MapGenTab after the page is built
 	items.push({ name: 'labelTemplateName', type: 'label', font: 'small', alignment: 'left',
 		color: 'white', text: '', position: { x: X_LABEL, y: y + 3 } });
+	// the levers that belong with the map's players (teams), as ordinary
+	// levers: the tab passes every mapGen.params entry as --bio.<key>
+	y += ROW_H + 4;
+	for (const k of KNOBS.filter(kn => kn.page === 'map')) {
+		items.push(...knobRow(k, y));
+		y += ROW_H;
+	}
+	if (y > LINE_BOTTOM) throw new Error(`the Map page runs to ${y}, past the line at ${LINE_BOTTOM}`);
 	return { library: ['config/widgets/commonPrimitives.json'], items };
 }
 

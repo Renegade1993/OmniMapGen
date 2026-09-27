@@ -387,6 +387,82 @@
 				"hover": "vcmi.mapGen.roadNetwork.hover",
 				"help": "vcmi.mapGen.roadNetwork.help"
 			}
+		},
+		{
+			"name": "help_roadType",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 346,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.roadType.hover",
+				"help": "vcmi.mapGen.roadType.help"
+			}
+		},
+		{
+			"name": "label_roadType",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.roadType.hover",
+			"position": {
+				"x": 58,
+				"y": 351
+			}
+		},
+		{
+			"name": "slider_roadType",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 350
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 2,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/roadType",
+			"valueMin": 0,
+			"valueStep": 1,
+			"valueDefault": 2,
+			"valueLabel": "value_roadType",
+			"valueNames": [
+				[
+					0,
+					"vcmi.mapGen.roadType.stop0"
+				],
+				[
+					1,
+					"vcmi.mapGen.roadType.stop1"
+				],
+				[
+					2,
+					"vcmi.mapGen.roadType.stop2"
+				]
+			]
+		},
+		{
+			"name": "value_roadType",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 351
+			}
 		}
 	]
 }

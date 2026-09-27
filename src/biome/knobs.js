@@ -80,6 +80,9 @@ const KNOBS = [
 	{ key: 'roadNetwork', page: 'borders', label: 'Road network',
 		help: 'Roads linking every town. Off leaves only the roads through passages.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']] },
+	{ key: 'roadType', page: 'borders', label: 'Road type',
+		help: 'What the roads are paved with. A hero moves along cobblestone for half the cost of open ground, along gravel for 65 and along dirt for 75 of every 100. Real random maps pave almost every road with cobblestone.',
+		min: 0, max: 2, step: 1, stops: [[0, 'Dirt'], [1, 'Gravel'], [2, 'Cobblestone']], default: 2 },
 
 	// ---- treasure
 	{ key: 'artifactDensity', page: 'treasure', label: 'Artifacts',
@@ -164,6 +167,14 @@ const KNOBS = [
 	{ key: 'rivers', page: 'scenery', label: 'Rivers', cli: 'rivers',
 		help: 'Rivers across the map.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']], default: 1 },
+	{ key: 'riverAmount', page: 'scenery', label: 'River amount',
+		help: 'Multiplier on how much of the map the rivers run through. 1 is the share measured on real random maps.',
+		min: 0.25, max: 3, step: 0.25, default: 1 },
+
+	// ---- map (drawn on the Map page, beside the player counts)
+	{ key: 'teams', page: 'map', label: 'Teams',
+		help: 'Allied teams among the players, dealt out in colour order: red, blue, tan and so on in turn. None is every player for themselves; a count at or above the number of players is the same.',
+		min: 1, max: 4, step: 1, stops: [[1, 'None'], [2, 'Two'], [3, 'Three'], [4, 'Four']], default: 1 },
 
 	// ---- water
 	{ key: 'waterCoverage', page: 'water', label: 'Amount of water',

@@ -527,6 +527,86 @@
 				"x": 58,
 				"y": 423
 			}
+		},
+		{
+			"name": "help_teams",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 454,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.teams.hover",
+				"help": "vcmi.mapGen.teams.help"
+			}
+		},
+		{
+			"name": "label_teams",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.teams.hover",
+			"position": {
+				"x": 58,
+				"y": 459
+			}
+		},
+		{
+			"name": "slider_teams",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 458
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 3,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/teams",
+			"valueMin": 1,
+			"valueStep": 1,
+			"valueDefault": 1,
+			"valueLabel": "value_teams",
+			"valueNames": [
+				[
+					1,
+					"vcmi.mapGen.teams.stop0"
+				],
+				[
+					2,
+					"vcmi.mapGen.teams.stop1"
+				],
+				[
+					3,
+					"vcmi.mapGen.teams.stop2"
+				],
+				[
+					4,
+					"vcmi.mapGen.teams.stop3"
+				]
+			]
+		},
+		{
+			"name": "value_teams",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 459
+			}
 		}
 	]
 }

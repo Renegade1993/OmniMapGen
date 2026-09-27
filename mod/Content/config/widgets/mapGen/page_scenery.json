@@ -107,6 +107,69 @@
 				"hover": "vcmi.mapGen.rivers.hover",
 				"help": "vcmi.mapGen.rivers.help"
 			}
+		},
+		{
+			"name": "help_riverAmount",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 14,
+				"y": 226,
+				"w": 188,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.riverAmount.hover",
+				"help": "vcmi.mapGen.riverAmount.help"
+			}
+		},
+		{
+			"name": "label_riverAmount",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.riverAmount.hover",
+			"position": {
+				"x": 58,
+				"y": 231
+			}
+		},
+		{
+			"name": "slider_riverAmount",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 202,
+				"y": 230
+			},
+			"size": 120,
+			"itemsVisible": 0,
+			"itemsTotal": 11,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 128,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/riverAmount",
+			"valueMin": 0.25,
+			"valueStep": 0.25,
+			"valueDefault": 1,
+			"valueLabel": "value_riverAmount",
+			"valueDecimals": 1
+		},
+		{
+			"name": "value_riverAmount",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 328,
+				"y": 231
+			}
 		}
 	]
 }
