@@ -367,13 +367,65 @@ function buildZonePlan(raw, zones, req, accommodations) {
 		type: ['guarded', 'fictive', 'repulsive', 'wide', 'forcePortal'].includes(c.type) ? c.type : 'guarded',
 		wide: c.type === 'wide',
 		road: c.road === 'true' ? true : c.road === 'false' ? false : null,
-	})).map(c => ({ ...c, aRef: indexOf.get(c.a), bRef: indexOf.get(c.b) }));
+	})).map(c => ({ ...c, roadOption: c.road, aRef: indexOf.get(c.a), bRef: indexOf.get(c.b) }));
+
+	resolveRoadOptions(zones, connections, req.seed || 1);
 
 	// the median zone's treasure mass is the unit loot multipliers compare to
 	const masses = zones.map(zoneTreasureMass).sort((a, b) => a - b);
 	const medianMass = masses.length ? masses[masses.length >> 1] : 0;
 
 	return { zones, perLevel, connections, indexOf, medianMass };
+}
+
+/**
+ * The links a template leaves to chance get their road the engine's way
+ * (CRoadRandomizer.cpp), on the whole map at once: the links set to road join
+ * their zones first; then the random ones, shuffled, take a road only where
+ * they join two groups of zones not yet joined and at least one of them has a
+ * town, a spanning tree over the towns; and a townless zone left with a single
+ * road loses it, again and again, so no road runs into a zone to end there.
+ * A coin per link used to decide, which left roads ending in townless zones
+ * (K, 2026-09-27: "tails going nowhere"). A wide link never has a road
+ * (CZonePlacer::RemoveRoadsForWideConnections, run before the draw). Every
+ * other link takes part whatever its type, as in the engine, which does not
+ * look at the type: a portal link with a road gets one to each monolith, and a
+ * fictive or repulsive link can take a road that nothing then draws
+ * (ConnectionsPlacer.cpp:208), joining its zones' groups all the same. A zone
+ * has a town when its template counts one (playerTowns or neutralTowns): a
+ * start zone that lists none does not, though its player's town stands there.
+ * Sets each connection's road to true or false.
+ */
+function resolveRoadOptions(zones, connections, seed) {
+	for (const c of connections) if (c.type === 'wide') c.road = false;
+	const count = o => (o && typeof o === 'object' ? (Number(o.towns) || 0) + (Number(o.castles) || 0) : 0);
+	const withTown = new Set(zones.filter(z => count(z.playerTowns) + count(z.neutralTowns) > 0).map(z => z.id));
+	const random = connections.filter(c => c.road === null);
+	if (!withTown.size) { for (const c of random) c.road = false; return; }
+	const parent = new Map(zones.map(z => [z.id, z.id]));
+	const town = new Map(zones.map(z => [z.id, withTown.has(z.id)]));
+	const find = x => { while (parent.get(x) !== x) { parent.set(x, parent.get(parent.get(x))); x = parent.get(x); } return x; };
+	const join = (a, b) => { const ra = find(a), rb = find(b); if (ra === rb) return false; parent.set(ra, rb); town.set(rb, town.get(ra) || town.get(rb)); return true; };
+	for (const c of connections) if (c.road === true && parent.has(c.a) && parent.has(c.b)) join(c.a, c.b);
+	let s = ((seed * 2246822519) ^ 0x51ed27f) >>> 0 || 1;
+	const rnd = () => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+	rnd(); rnd();
+	for (let i = random.length - 1; i > 0; i--) {
+		const j = (rnd() * (i + 1)) | 0;
+		[random[i], random[j]] = [random[j], random[i]];
+	}
+	for (const c of random) {
+		const ra = parent.has(c.a) ? find(c.a) : null, rb = parent.has(c.b) ? find(c.b) : null;
+		c.road = ra !== null && rb !== null && ra !== rb && (town.get(ra) || town.get(rb)) ? join(c.a, c.b) : false;
+	}
+	for (let changed = true; changed;) {
+		changed = false;
+		for (const z of zones) {
+			if (withTown.has(z.id)) continue;
+			const roads = connections.filter(c => c.road === true && (c.a === z.id || c.b === z.id));
+			if (roads.length === 1) { roads[0].road = false; changed = true; }
+		}
+	}
 }
 
 /**

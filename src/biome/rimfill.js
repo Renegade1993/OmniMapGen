@@ -167,6 +167,9 @@ function fillRimRows(plan, W, H, l, blocked, rng, objectEntry, isScenery) {
 				}
 	}
 
+	// the roads: laid before the fill (roadplan.js), never covered by the rows
+	for (const c of plan.roadCells || []) keep[c] = 1;
+
 	// Every object's ways in. RESERVED and APPROACH did their job during the
 	// fill; the engine's pass blocks such ground too and only a hero's way in
 	// has to survive, so an approach cell may go while every object it serves

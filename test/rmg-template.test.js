@@ -105,7 +105,10 @@ test('buildZonePlan parses connections and splits levels', () => {
 	assert.strictEqual(plan.perLevel[0].filter(z => z.forcedLevel === 'underground').length, 0);
 	assert.strictEqual(plan.perLevel[1].some(z => z.id === 4), true);
 	const c = plan.connections.find(c => c.a === 1 && c.b === 3);
-	assert.strictEqual(c.road, true);
+	assert.strictEqual(c.roadOption, true, 'the template\'s own option');
+	// a wide link never has a road, however the template set it
+	// (CZonePlacer::RemoveRoadsForWideConnections)
+	assert.strictEqual(c.road, false);
 	assert.strictEqual(c.wide, true);
 	assert.strictEqual(c.guard, 3000);
 	// same-level refs carry biome indices; cross-level ones are still present
@@ -212,4 +215,53 @@ test('template guards follow the engine: pile threshold, strength and creature b
 	assert.ok(levels(45000, 1, true).every(l => l >= 4), 'a 45000 link draws level 4-7');
 	const g = engineGuard(10000, 1, rng);
 	assert.ok(g.amount >= 1 && g.strength > 0);
+});
+
+test('random road options: a spanning tree over the town zones, no road ending in a townless zone', () => {
+	// starts 1 and 2 each linked to a hub 3 and to each other; a townless leaf 4 off the hub
+	const raw = { connections: [
+		{ a: '1', b: '3', guard: 1000 }, { a: '2', b: '3', guard: 1000 },
+		{ a: '1', b: '2', guard: 1000 }, { a: '3', b: '4', guard: 1000 }], zones: {} };
+	const zones = [
+		{ id: 1, type: 'playerStart', owner: 1, size: 20, playerTowns: { castles: 1 } },
+		{ id: 2, type: 'playerStart', owner: 2, size: 20, playerTowns: { castles: 1 } },
+		{ id: 3, type: 'treasure', size: 20 }, { id: 4, type: 'treasure', size: 10 }];
+	for (let seed = 1; seed <= 20; seed++) {
+		const plan = buildZonePlan(raw, zones, { w: 72, h: 72, levels: 1, players: 2, seed }, new Set());
+		const road = (a, b) => plan.connections.find(c => c.a === a && c.b === b).road;
+		assert.strictEqual(road(3, 4), false, 'the townless leaf gets no road');
+		// the two starts are joined, either directly or through the hub, with no cycle
+		const on = [road(1, 3), road(2, 3), road(1, 2)].filter(Boolean).length;
+		assert.ok(road(1, 2) || (road(1, 3) && road(2, 3)), `seed ${seed}: starts joined`);
+		assert.ok(on <= 2, `seed ${seed}: a tree, ${on} roads among three zones`);
+		if (!road(1, 2)) assert.ok(road(1, 3) && road(2, 3));
+		else assert.ok(!road(1, 3) && !road(2, 3), `seed ${seed}: the hub, townless, keeps no single road`);
+	}
+});
+
+test('random road options follow the engine on link types and town zones', () => {
+	const castle = { castles: 1 };
+	const plan = (connections, zones, seed = 1) =>
+		buildZonePlan({ connections, zones: {} }, zones, { w: 72, h: 72, levels: 1, players: 2, seed }, new Set());
+	const road = (p, a, b, type) => p.connections.find(c => c.a === a && c.b === b && (!type || c.type === type)).road;
+	// a start zone that lists no playerTowns is not a town zone: its one road,
+	// though it joins a town, is a loose end and goes
+	const bare = plan([{ a: '1', b: '2', guard: 1000 }], [
+		{ id: 1, type: 'playerStart', owner: 1, size: 20 },
+		{ id: 2, type: 'playerStart', owner: 2, size: 20, playerTowns: castle }]);
+	assert.strictEqual(road(bare, 1, 2), false);
+	const towns = [{ id: 1, type: 'playerStart', owner: 1, size: 20, playerTowns: castle },
+		{ id: 2, type: 'playerStart', owner: 2, size: 20, playerTowns: castle }];
+	// a portal link takes part in the draw like any other
+	assert.strictEqual(road(plan([{ a: '1', b: '2', guard: 1000, type: 'forcePortal' }], towns), 1, 2), true);
+	// so does a fictive one, which the engine then never draws: it takes the
+	// road from the guarded link beside it on some seeds
+	const outcomes = new Set();
+	for (let seed = 1; seed <= 20; seed++) {
+		const p = plan([{ a: '1', b: '2', guard: 1000, type: 'fictive' }, { a: '1', b: '2', guard: 1000 }], towns, seed);
+		const fictive = road(p, 1, 2, 'fictive'), guarded = road(p, 1, 2, 'guarded');
+		assert.ok(fictive !== guarded, `seed ${seed}: one road between two zones`);
+		outcomes.add(fictive ? 'fictive' : 'guarded');
+	}
+	assert.deepStrictEqual([...outcomes].sort(), ['fictive', 'guarded']);
 });

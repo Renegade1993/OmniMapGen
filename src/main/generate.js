@@ -1385,6 +1385,12 @@ async function generateMap(params) {
 					[p.color, factionsForTowns.find(f => f.id === p.pinnedFaction)]).filter(([, f]) => f)) } } : {}) },
 		terrainInfo: assetIndex.terrains,
 	});
+	// A template start's town moves to its zone's centre in the plan, where the
+	// engine puts it (plan.js); the header's main town follows it there.
+	for (const s of starts) {
+		const pl = players.find(q => q.color === s.color);
+		if (pl && (pl.townPos.x !== s.x || pl.townPos.y !== s.y)) pl.townPos = { ...pl.townPos, x: s.x, y: s.y };
+	}
 	if (hasObserver) {
 		// Rock is excluded from the tile dictionary on purpose, so the chamber
 		// floor is named here the same way the rock filler is named below: by

@@ -30,7 +30,8 @@ const { ZONE_CLASS, MONSTER_BAND, MINE_SUBTYPE, guardToLevel,
 	pileLoot } = require('../rmg/template');
 const { zoneTownTypes } = require('./zoneTowns');
 const { carveBoundaries, placeChokeGuards } = require('./boundaries');
-const { buildRoadNetwork, pruneOrphanRoads } = require('./roadnet');
+const { buildRoadNetwork, pruneOrphanRoads, approach: roadApproach } = require('./roadnet');
+const { planRoads, pruneTails } = require('./roadplan');
 const { fillBiome, blockingCells, footprintFits, footprintBlock, entranceOpen,
 	visitableCells, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED,
 	RESERVED, APPROACH, markApproach, allowedDirs, REMOVABLE_TYPES,
@@ -1290,6 +1291,59 @@ function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = 
 	return { ...best, links: wantedLinks.size, tries };
 }
 
+/**
+ * Whether a town anchored at (x, y) stands wholly in zone b: every cell it
+ * blocks and the ground before its gate inside the zone and off the zone's
+ * walls (barriers), two cells clear of the map's edge, on free ground, with
+ * its gate open. The engine's own test is the same in substance: the object
+ * inside the zone's free area, its way in overlapping it
+ * (ObjectManager::findPlaceForObject).
+ */
+function townFitsZone(zone, b, x, y, W, H, levelIndex, blocked, barriers) {
+	const tpl = OBJECT_TEMPLATES.randomTown;
+	const inZone = c => zone[c] === b && !(barriers && barriers.has(c));
+	if (blockingCells(tpl, x, y).some(([a, b2]) => a < 2 || b2 < 2 || a > W - 3 || b2 > H - 3
+		|| !inZone(b2 * W + a))) return false;
+	for (const [vx, vy] of visitableCells(tpl, x, y))
+		for (const [dx, dy] of allowedDirs(tpl)) {
+			const nx = vx + dx, ny = vy + dy;
+			if (nx < 0 || ny < 0 || nx >= W || ny >= H || !inZone(ny * W + nx)) return false;
+		}
+	return footprintFits(tpl, x, y, levelIndex, W, H, blocked)
+		&& entranceOpen(tpl, x, y, levelIndex, W, H, blocked, null);
+}
+
+/** Zone b's cells (off the water) in order of their town gate's distance from the zone's centre of mass. */
+function cellsByCentre(zone, b, W, H, water) {
+	const cells = [];
+	let sx = 0, sy = 0;
+	for (let c = 0; c < W * H; c++) {
+		if (zone[c] !== b || (water && water[c])) continue;
+		cells.push(c);
+		sx += c % W;
+		sy += (c / W) | 0;
+	}
+	if (!cells.length) return cells;
+	const cx = sx / cells.length, cy = sy / cells.length;
+	const [gx, gy] = visitableCells(OBJECT_TEMPLATES.randomTown, 0, 0)[0] || [0, 0];
+	const d = c => (c % W + gx - cx) ** 2 + (((c / W) | 0) + gy - cy) ** 2;
+	return cells.sort((p, q) => d(p) - d(q) || p - q);
+}
+
+/**
+ * Where the engine puts a zone's first town (TownPlacer::placeMainTown): its
+ * gate on the cell nearest the centre of mass of the zone's ground, the
+ * zone's position once the zones are laid (Zone::moveToCenterOfMass).
+ * Returns {x, y}, or null when a town fits nowhere in the zone.
+ */
+function townNearCentre(zone, b, W, H, levelIndex, blocked, water, barriers) {
+	for (const c of cellsByCentre(zone, b, W, H, water)) {
+		const x = c % W, y = (c / W) | 0;
+		if (townFitsZone(zone, b, x, y, W, H, levelIndex, blocked, barriers)) return { x, y };
+	}
+	return null;
+}
+
 function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	params, terrainShortIds, tileIdsByShort, numTiles, blocked, underground,
 	objectPools, terrainInfo }) {
@@ -1709,7 +1763,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			if (!cellsA || !cellsA.length || !cellsB || !cellsB.length) continue;
 			openings.push({ a: c.a, b: c.b, kind: 'portal', hole: [],
 				portalA: nearSeed(cellsA, c.a), portalB: nearSeed(cellsB, c.b),
-				inner: [], tplGuard: c.guard || 0 });
+				inner: [], tplGuard: c.guard || 0, road: c.road === true });
 			const zid = i => (tplZones && tplZones[i] && tplZones[i].id) || i;
 			if (c.type === 'forcePortal')
 				console.error(`[gen] level ${levelIndex}: template link ${zid(c.a)}-${zid(c.b)} is a portal pair by the template`);
@@ -1729,6 +1783,26 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	for (const o of openings)
 		for (const c of o.hole.concat(o.inner || []))
 			if (!guardCells.has(c)) reserveCell(blocked, levelIndex, W, H, c);
+
+	// A template start's town stands at its zone's centre, where the engine
+	// puts it: once the zones are laid each one's position moves to the centre
+	// of mass of its ground (Zone::moveToCenterOfMass, CZonePlacer.cpp:1017) and
+	// the main town goes on the cell nearest it (TownPlacer::placeMainTown). The
+	// start cell only seeds the zone. Standing on it, a corner seed put the town
+	// in its zone's corner against the map's edge, with the zone's other towns
+	// beside it and its roads a fraction of the engine's (Jebus Cross 108: 356
+	// road tiles against the corpus's 613). VMAPGEN_START_CENTRE=0 keeps the cell.
+	if (tplZones && tplZones.length && process.env.VMAPGEN_START_CENTRE !== '0')
+		tplZones.forEach((z, b) => {
+			const s = (z.type === 'playerStart' || z.type === 'cpuStart') && z.owner && playerStarts[z.owner - 1];
+			if (!s) return;
+			const at = townNearCentre(zone, b, W, H, levelIndex, blocked, water, barriers);
+			if (!at || (at.x === s.x && at.y === s.y)) return;
+			console.error(`[gen] level ${levelIndex}: ${s.color || 'a player'}'s town to its zone's centre, `
+				+ `(${s.x},${s.y}) -> (${at.x},${at.y})`);
+			s.x = at.x;
+			s.y = at.y;
+		});
 
 	// Player starts claim their footprints FIRST so barriers, guards and
 	// portals placed later route around them. owner on the randomTown makes
@@ -1900,10 +1974,20 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// three of its nine neutral towns a map for want of room. The engine
 	// places a zone's towns before anything else in it (TownPlacer), so their
 	// ground is held here: the footprint (as OCCUPIED) and the apron before the
-	// gate (RESERVED), nearest the zone's seed, so every later pass routes around it.
-	// The fill puts the town on the held spot (content.js, zoneMeta.townSpots).
+	// gate (RESERVED), so every later pass routes around it. The fill puts the
+	// town on the held spot (content.js, zoneMeta.townSpots).
+	// Where they go is the engine's rule too: a zone's first town nearest its
+	// centre (TownPlacer::placeMainTown; a start zone's first is its player's),
+	// and each town after it on the ground farthest from everything the zone
+	// holds by then, its towns and the guards in its doorways
+	// (ObjectManager::createRequiredObjects, OptimizeType::DISTANCE). All of
+	// them used to go nearest the zone's seed, which in a start zone is the
+	// start itself: Jebus Cross put a player's two extra towns against their own,
+	// where the engine spreads them to the zone's far corners.
+	// VMAPGEN_TOWN_SPREAD=0 keeps the seed order.
 	if (tplZones && zoneMeta) {
 		const townTpl = OBJECT_TEMPLATES.randomTown;
+		const spread = process.env.VMAPGEN_TOWN_SPREAD !== '0';
 		zoneMeta.forEach((meta, b) => {
 			const want = meta && meta.towns ? meta.towns.length : 0;
 			if (!want) return;
@@ -1911,35 +1995,65 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			const cells = [];
 			for (let i = 0; i < zone.length; i++) if (zone[i] === b) cells.push(i);
 			const sd = seeds[b];
-			cells.sort((p2, q) => ((p2 % W - sd.x) ** 2 + (((p2 / W) | 0) - sd.y) ** 2)
+			const bySeed = cells.slice().sort((p2, q) => ((p2 % W - sd.x) ** 2 + (((p2 / W) | 0) - sd.y) ** 2)
 				- ((q % W - sd.x) ** 2 + (((q / W) | 0) - sd.y) ** 2));
-			for (const i of cells) {
-				if (meta.townSpots.length >= want) break;
-				const x = i % W, y = (i / W) | 0;
-				// the same distance rule as the neutral towns above, except in a
-				// player's own zone, whose extra towns are that player's
-				if (!meta.ownerColor && playerStarts.some(s =>
-					Math.max(Math.abs(s.x - x), Math.abs(s.y - y)) < 12)) continue;
-				// two cells clear of the map edge: the engine puts a town at its
-				// zone's centre, and one held against the edge let later walls
-				// close a pocket behind it, which the pocket pass then opened by
-				// removing the town (2SM4d seed 101)
-				if (blockingCells(townTpl, x, y).some(([a, b2]) => a < 2 || b2 < 2 || a > W - 3 || b2 > H - 3)) continue;
-				if (!footprintFits(townTpl, x, y, levelIndex, W, H, blocked)) continue;
-				if (!entranceOpen(townTpl, x, y, levelIndex, W, H, blocked, null)) continue;
-				const walls = blockingCells(townTpl, x, y).map(([a, b2]) => b2 * W + a);
-				if (!townGuard.accepts(walls)) continue;
-				// the footprint as OCCUPIED, which it will be: every pass keeps off
-				// that (the map-edge rim fill covered a merely RESERVED footprint)
-				for (const c of walls) blocked[levelIndex * W * H + c] |= OCCUPIED;
-				townGuard.refresh();
-				for (const [vx, vy] of visitableCells(townTpl, x, y))
-					for (const [dx, dy] of allowedDirs(townTpl)) {
-						const nx = vx + dx, ny = vy + dy;
-						if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
-						reserveCell(blocked, levelIndex, W, H, ny * W + nx);
+			// what the zone's later towns keep away from
+			const held = [];
+			for (const s of playerStarts)
+				if (zone[s.y * W + s.x] === b)
+					for (const [a, b2] of blockingCells(townTpl, s.x, s.y)) held.push(b2 * W + a);
+			for (const o of openings)
+				if (o.a === b || o.b === b) held.push(...o.hole);
+			const hasStart = playerStarts.some(s => zone[s.y * W + s.x] === b);
+			const order = () => {
+				if (!spread) return bySeed;
+				if (!hasStart && !meta.townSpots.length) return cellsByCentre(zone, b, W, H, water);
+				const far = new Map();
+				for (const c of cells) {
+					const x = c % W, y = (c / W) | 0;
+					let m = Infinity;
+					for (const h of held) {
+						const d = (h % W - x) ** 2 + (((h / W) | 0) - y) ** 2;
+						if (d < m) m = d;
 					}
-				meta.townSpots.push(i);
+					far.set(c, m);
+				}
+				return cells.slice().sort((p2, q) => far.get(q) - far.get(p2) || p2 - q);
+			};
+			while (meta.townSpots.length < want) {
+				let spot = -1;
+				for (const i of order()) {
+					const x = i % W, y = (i / W) | 0;
+					// the same distance rule as the neutral towns above, except in a
+					// player's own zone, whose extra towns are that player's
+					if (!meta.ownerColor && playerStarts.some(s =>
+						Math.max(Math.abs(s.x - x), Math.abs(s.y - y)) < 12)) continue;
+					// two cells clear of the map edge: one held against the edge let
+					// later walls close a pocket behind it, which the pocket pass then
+					// opened by removing the town (2SM4d seed 101). Spread to the
+					// zone's edges, a town also keeps inside the zone and off its walls.
+					if (spread ? !townFitsZone(zone, b, x, y, W, H, levelIndex, blocked, barriers)
+						: blockingCells(townTpl, x, y).some(([a, b2]) => a < 2 || b2 < 2 || a > W - 3 || b2 > H - 3)
+							|| !footprintFits(townTpl, x, y, levelIndex, W, H, blocked)
+							|| !entranceOpen(townTpl, x, y, levelIndex, W, H, blocked, null)) continue;
+					const walls = blockingCells(townTpl, x, y).map(([a, b2]) => b2 * W + a);
+					if (!townGuard.accepts(walls)) continue;
+					// the footprint as OCCUPIED, which it will be: every pass keeps off
+					// that (the map-edge rim fill covered a merely RESERVED footprint)
+					for (const c of walls) blocked[levelIndex * W * H + c] |= OCCUPIED;
+					townGuard.refresh();
+					for (const [vx, vy] of visitableCells(townTpl, x, y))
+						for (const [dx, dy] of allowedDirs(townTpl)) {
+							const nx = vx + dx, ny = vy + dy;
+							if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+							reserveCell(blocked, levelIndex, W, H, ny * W + nx);
+						}
+					held.push(...walls);
+					spot = i;
+					break;
+				}
+				if (spot < 0) break;
+				meta.townSpots.push(spot);
 			}
 			if (meta.townSpots.length < want)
 				console.error(`[gen] level ${levelIndex}: zone ${meta.spec && meta.spec.id} holds ground for `
@@ -2104,10 +2218,49 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			portalGuard(B[0], B[1], o.a);
 		}
 		links.push([openBeside(monoTpl, A[0], A[1]), openBeside(monoTpl, B[0], B[1])]);
+		// a link with a road has one to each monolith (ConnectionsPlacer::
+		// placeMonolithConnection: both are road nodes); roadplan.js lays them
+		if (o.road) o.roadNodes = [[o.a, openBeside(monoTpl, A[0], A[1])], [o.b, openBeside(monoTpl, B[0], B[1])]];
 	}
 	const portalLinks = openings.filter(o => o.kind === 'portal').length;
 	if (portalLinks)
 		console.error(`[gen] level ${levelIndex}: ${links.length} of ${portalLinks} portal link(s) placed`);
+
+	// Roads first (K, 2026-09-27: "roads be build off splines early on, not to
+	// be broken up by things placed around them"), in the engine's order: its
+	// RoadPlacer runs once a zone's towns, links and monoliths stand and before
+	// any treasure or obstacle. So they go down here, on the engine's model
+	// (roadplan.js), before the zone walls become objects and before the
+	// ridges, and every later pass builds around the reserved road. Laid after
+	// the ridges, a road found its zone cut into pockets a hero crosses
+	// diagonally and a four-connected road cannot (Jebus Cross 108 s5001: one
+	// zone roadless). The held gate sites of links with a road are nodes too.
+	// VMAPGEN_ROADS=late keeps the old order, roads routed after the fill.
+	const roadCells = new Set();
+	if (process.env.VMAPGEN_ROADS !== 'late') {
+		const roadTowns = towns.filter(t => (t.l || 0) === levelIndex && t.gates);
+		(zoneMeta || []).forEach(meta => {
+			for (const i of (meta && meta.townSpots) || []) {
+				const x = i % W, y = (i / W) | 0;
+				roadTowns.push({ x, y, l: levelIndex, gates: visitableCells(OBJECT_TEMPLATES.randomTown, x, y) });
+			}
+		});
+		const gateNodes = [];
+		for (const [sites, tpl] of [[gateSites, OBJECT_DEFS.subterraneanGate],
+			[gateSitesHere, OBJECT_DEFS.subterraneanGateUnder]])
+			for (const s of sites) {
+				const c = p.zonePlan && p.zonePlan.connections[s.k];
+				if (c && c.road === true) gateNodes.push(approachCells(tpl, s.x, s.y, levelIndex, W, H, blocked));
+			}
+		const r = planRoads({ plan: { zone, openings, roadCells, roadNodes: gateNodes, p }, towns: roadTowns,
+			W, H, blocked, l: levelIndex, approach: t => roadApproach(t, W, H, blocked, levelIndex),
+			// a wall cell held clear (a doorway's side, a town's apron) never
+			// takes a wall object (footprintFits vetoes RESERVED), so a road may
+			avoid: c => barriers.has(c) && !(blocked[levelIndex * W * H + c] & RESERVED) });
+		if (r.cells)
+			console.error(`[gen] level ${levelIndex}: roads first, ${r.cells} cells in ${r.zones} zone(s)`
+				+ (r.failed ? `, ${r.failed} node(s) no road reached` : ''));
+	}
 
 	// Island maps (water W3): a boat is the way between islands. A harbour's
 	// boarding ground links to every shore of the water it sails, so the
@@ -3290,7 +3443,6 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		footprintBlock(OBJECT_TEMPLATES.randomMonster, x, y, levelIndex, W, H, blocked);
 		markApproach(OBJECT_TEMPLATES.randomMonster, x, y, levelIndex, W, H, blocked);
 	}
-	const roadCells = new Set();
 	for (const o of openings)
 		if (o.kind === 'openRoad') for (const c of o.hole) roadCells.add(c);
 
@@ -3863,6 +4015,10 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 					// reachable through the gate, wherever it sits
 					(plans[l].entrances = plans[l].entrances || [])
 						.push(...approachCells(tpl, x, y, l, W, H, blocked));
+					// a link with a road has one to the gate on each level
+					// (ConnectionsPlacer.cpp: placeObject(gate, ..., allowRoad))
+					if (c.road === true)
+						(plans[l].roadNodes = plans[l].roadNodes || []).push(approachCells(tpl, x, y, l, W, H, blocked));
 					// the visitable cell itself is where the hero lands;
 					// sweepStranded seeds standable ground from it
 					(plans[l].arrivals = plans[l].arrivals || [])
@@ -3911,6 +4067,11 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				.push(...visitableCells(tpl, bx, by)
 					.filter(([a, b]) => a >= 0 && b >= 0 && a < W && b < H)
 					.map(([a, b]) => b * W + a));
+			// a link with a road has one to each monolith, as a gate's has
+			if (c.road === true) {
+				(plans[0].roadNodes = plans[0].roadNodes || []).push(approachCells(tpl, ax, ay, 0, W, H, blocked));
+				(plans[1].roadNodes = plans[1].roadNodes || []).push(approachCells(tpl, bx, by, 1, W, H, blocked));
+			}
 			crossPortals++;
 		}
 		if (crossConns.length)
@@ -4021,6 +4182,22 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			console.error(`[gen] ${placed} subterranean gate pair(s) placed`);
 	}
 
+	// The roads went down in planLevel, before the walls and ridges. The gates
+	// and monoliths of links with a road that landed here rather than on a
+	// held site join them now, over whatever ground is left (roadplan.js).
+	const roadsFirst = process.env.VMAPGEN_ROADS !== 'late';
+	if (roadsFirst)
+		for (let l = 0; l < levels; l++) {
+			if (!(plans[l].roadNodes || []).length) continue;
+			const r = planRoads({ plan: { zone: plans[l].zone, openings: [], roadCells: plans[l].roadCells,
+				roadNodes: plans[l].roadNodes, p: plans[l].p }, towns: [],
+				W, H, blocked, l, approach: t => roadApproach(t, W, H, blocked, l) });
+			if (r.cells)
+				console.error(`[gen] level ${l}: gates and monoliths placed late joined the roads, `
+					+ `${r.cells} cells in ${r.zones} zone(s)`
+					+ (r.failed ? `, ${r.failed} node(s) no road reached` : ''));
+		}
+
 	// Content fill runs last, after the gates have claimed their ground.
 	for (const plan of plans) fillLevel(plan, W, H, blocked);
 
@@ -4051,13 +4228,39 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		const before = plans[l].roadCells.size;
 		// roadNetwork 0 (player lever): no town-linking net; roads cut through
 		// zone openings (openPathRoad) stay
-		const added = p.roadNetwork === 0 ? 0
+		// With roads first, a template's roads are the engine's alone: its towns
+		// joined through the links its road options give (CRoadRandomizer), and a
+		// link without a road, or a portal, leaves the towns it parts unjoined by
+		// road, as in the engine. Routing them together after the fill is what
+		// ran roads round objects and along the map's edge.
+		const templateRoads = roadsFirst && (plans[l].zoneMeta || []).some(m => m && m.spec);
+		const added = p.roadNetwork === 0 || (templateRoads && here.length > 1) ? 0
 			: buildRoadNetwork(here, plans[l].roadCells, W, H, blocked, l);
 		const orphans = pruneOrphanRoads(plans[l].roadCells, W, H);
-		if (added || orphans)
+		// Road ends that lead to nothing go (K: "tails going nowhere"), back to
+		// the last junction, unless they end at a town, a mine or a passage
+		// between levels: an opening's road patch the network passed by, a spur
+		// the late network left.
+		let tails = 0;
+		if (roadsFirst) {
+			const dest = new Set();
+			const near = (vx, vy, r) => {
+				for (let dy = -r; dy <= r; dy++)
+					for (let dx = -r; dx <= r; dx++) {
+						const x = vx + dx, y = vy + dy;
+						if (x >= 0 && y >= 0 && x < W && y < H) dest.add(y * W + x);
+					}
+			};
+			for (const t of here) for (const [gx, gy] of t.gates || []) near(gx, gy, 3);
+			for (const o of plans[l].objects)
+				if ((o.l || 0) === l && o.template && /^(mine|subterraneanGate|monolith)/.test(o.type))
+					for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) near(vx, vy, 1);
+			tails = pruneTails(plans[l].roadCells, dest, W, H);
+		}
+		if (added || orphans || tails)
 			console.error(`[gen] level ${l}: ${plans[l].roadCells.size} road cells `
-				+ `(${before} from openings, +${added} from the town net) `
-				+ `linking ${here.length} place(s), ${orphans} orphan tile(s) dropped`);
+				+ `(${before} before the town net, +${added} from it) `
+				+ `linking ${here.length} place(s), ${orphans} orphan tile(s) and ${tails} tail tile(s) dropped`);
 	}
 	// Item 21: the rows just inside each zone's rim and along the map edge,
 	// blocked the way the engine's post-object pass blocks them (rimfill.js).

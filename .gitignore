@@ -32,6 +32,10 @@ retired/
 tools/omni_dashboard.js
 tools/omni_dashboard_page.html
 
+# the lane's own notes (K's decisions, the development log): the team's, not the repository's
+# (a leading ! would negate the line, so it is escaped)
+\! LLM Files/
+
 # the mod package tools/make_mod.js builds (release asset, not source)
 dist/
 dist-pager/
