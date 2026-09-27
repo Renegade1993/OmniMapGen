@@ -35,29 +35,29 @@ const PRESETS = require(path.join(ROOT, 'src/biome/presets.json'));
 const STAGE = path.join(ROOT, 'mod', 'Content');
 
 // The tab fills the lobby's left panel the way VCMI's own Extra Options tab
-// does: clear background art from (0,6), titles centred on x 222 as the stock
-// tabs centre theirs, content between x 20 and 386 (the info card covers the
-// rest of the panel; InfoCard::InfoCard() sets pos.x += 393, so 386 leaves a
-// real margin rather than sitting flush against it). The map page comes
-// first, then the lever groups.
+// does: AdventureOptionsBackgroundClear from (0,6), titles centred on x 222 as
+// the stock tabs centre theirs. The map page comes first, then the lever
+// groups.
 //
-// K's live test (2026-09-25) found the panel's content sitting closer to its
-// own left frame than the stock Random Map tab's does. The two tabs share
-// one background position (0,6) but not one background IMAGE (RANMAPBK vs
-// AdventureOptionsBackgroundClear), and the two arts do not bake in the same
-// amount of frame before their usable interior starts, so identical
-// coordinates read as "hugging the edge" against one and not the other.
-// X_HELP and BTN_X0 moved right a little (14->20, 22->28) to compensate;
-// this is a visual match made without being able to render the tab and see
-// it (the standing constraint against launching a windowed client), so it
-// is a considered nudge, not a measured fix the way the overlap below is.
+// Everything sits inside the frame that background bakes in (ADVOPTBK,
+// measured on the art, 2026-09-26): a title box whose bottom border is at y
+// 83-84 on screen, and below it a box whose top line is at y 89-90, with
+// light frame lines at x 53 and 389; its interior is x 55-388, y 91-572. K
+// saw the page buttons out of line with it: they began at x 28, across the
+// left frame line, their first row lay across the title box's border, the
+// separator lines ran from x 14 through the frame, and a strip of another
+// texture drawn at x 378-388 left a seam down the right side. Now the eight
+// page buttons are a block centred on the title (56-387), the bottom buttons
+// share its edges, the lines span the interior, and the strip is gone.
 const ALL_PAGES = [{ id: 'map', label: 'Map' }, ...PAGES];
-const PER_ROW = 4, BTN_W = 80, BTN_GAP = 8, BTN_X0 = 28, BTN_Y0 = 80, BTN_ROW = 36;
+const PER_ROW = 4, BTN_W = 80, BTN_GAP = 4, BTN_X0 = 56, BTN_Y0 = 96, BTN_ROW = 26;
 const BTN_ROWS = Math.ceil(ALL_PAGES.length / PER_ROW);
 const ROW0 = BTN_Y0 + BTN_ROWS * BTN_ROW + 14, ROW_H = 30;
-// values get 84 px to the panel's inner edge (392): Mediterranean, the longest name a
+// the interior of the background's frame, which lines and hover areas span
+const X_IN = 55, W_IN = 334;
+// values get 80 px to the frame (388): Mediterranean, the longest name a
 // value shows, is 13 characters at about 6 px each; labels keep 140 px (22)
-const X_HELP = 20, X_LABEL = 58, X_CTRL = 198, SLIDER_W = 104, X_VALUE = 308;
+const X_LABEL = 58, X_CTRL = 198, SLIDER_W = 104, X_VALUE = 308;
 const LINE_BOTTOM = 540, BUTTON_Y = 548;
 
 // the map settings the tab owns, and where they start
@@ -99,7 +99,7 @@ function display(k) {
 // real per-button help already. 22 clears the label's own text (drawn at
 // y+5 in a small font) with margin and stays clear of that group.
 const helpButton = (id, y) => ({
-	name: `help_${id}`, type: 'hoverHelp', rect: { x: 14, y, w: X_CTRL - 14, h: 22 },
+	name: `help_${id}`, type: 'hoverHelp', rect: { x: X_IN, y, w: X_CTRL - X_IN, h: 22 },
 	help: { hover: `vcmi.mapGen.${id}.hover`, help: `vcmi.mapGen.${id}.help` },
 });
 const rowLabel = (id, y) => ({ name: `label_${id}`, type: 'label', font: 'small', alignment: 'left',
@@ -210,27 +210,19 @@ function tabJson() {
 		// the preset Defaults returns to, which the client no longer assumes
 		defaults: { params, map: MAP_DEFAULTS, preset: 'nostalgia' },
 		items: [
+			// No texture strip over it: VCMI's own tabs draw DIBOXBCK at x 391-473,
+			// which covered the info card's text (K, 2026-09-25); narrowed to
+			// 378-388 it only drew a seam down the frame's interior (K,
+			// 2026-09-26). The frame's own art is what should show there.
 			{ name: 'background', type: 'picture', image: 'AdventureOptionsBackgroundClear', position: { x: 0, y: 6 } },
-			// K's live test (2026-09-25) found this painting over the first
-			// several characters of every line in the neighbouring info card:
-			// InfoCard::InfoCard() sets pos.x += 393, and this rect's old
-			// width (391 to 473) reached 80px past that into the card's own
-			// content. AdventureOptionsBackgroundClear is generated at
-			// Point(575, 585) (AssetGenerator::createAdventureOptionsCleanBackground),
-			// far wider than this ~390px-wide panel, and this texture exists
-			// to cover the sliver of it that would otherwise show past our
-			// own content; it never needed to reach anywhere near the card.
-			// Narrowed to stop at 388, five pixels clear of the card's 393.
-			{ name: 'textureCampaignOverdraw', type: 'texture', color: 'blue', image: 'DIBOXBCK',
-				rect: { x: 378, y: 14, w: 10, h: 569 } },
 			{ name: 'labelTitle', type: 'label', font: 'big', alignment: 'center', color: 'yellow',
 				text: 'vcmi.lobby.mapGen.hover', position: { x: 222, y: 36 } },
 			{ name: 'labelSubTitle', type: 'label', font: 'small', alignment: 'center', color: 'white',
 				text: 'vcmi.mapGen.tab.subtitle', position: { x: 222, y: 60 } },
 			{ name: 'pageButtons', type: 'toggleGroup', position: { x: 0, y: 0 }, items: buttons,
 				callback: 'activateMapGenPage' },
-			{ name: 'lineTop', type: 'horizontalLine', rect: { x: 14, y: ROW0 - 12, w: 372, h: 3 } },
-			{ name: 'lineBottom', type: 'horizontalLine', rect: { x: 14, y: LINE_BOTTOM, w: 372, h: 3 } },
+			{ name: 'lineTop', type: 'horizontalLine', rect: { x: X_IN, y: ROW0 - 12, w: W_IN, h: 3 } },
+			{ name: 'lineBottom', type: 'horizontalLine', rect: { x: X_IN, y: LINE_BOTTOM, w: W_IN, h: 3 } },
 			{ name: 'defaultsButton', type: 'button', image: 'MapGenButton80',
 				position: { x: BTN_X0, y: BUTTON_Y },
 				help: { hover: 'vcmi.mapGen.defaults.hover', help: 'vcmi.mapGen.defaults.help' },

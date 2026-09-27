@@ -7,9 +7,9 @@
 			"name": "help_artifactDensity",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 166,
-				"w": 184,
+				"x": 55,
+				"y": 162,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -26,7 +26,7 @@
 			"text": "vcmi.mapGen.artifactDensity.hover",
 			"position": {
 				"x": 58,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
@@ -36,7 +36,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 170
+				"y": 166
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -65,16 +65,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
 			"name": "help_artifactRichness",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 196,
-				"w": 184,
+				"x": 55,
+				"y": 192,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -91,7 +91,7 @@
 			"text": "vcmi.mapGen.artifactRichness.hover",
 			"position": {
 				"x": 58,
-				"y": 201
+				"y": 197
 			}
 		},
 		{
@@ -101,7 +101,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 200
+				"y": 196
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -130,16 +130,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 201
+				"y": 197
 			}
 		},
 		{
 			"name": "help_pickupDensity",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 226,
-				"w": 184,
+				"x": 55,
+				"y": 222,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -156,7 +156,7 @@
 			"text": "vcmi.mapGen.pickupDensity.hover",
 			"position": {
 				"x": 58,
-				"y": 231
+				"y": 227
 			}
 		},
 		{
@@ -166,7 +166,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 230
+				"y": 226
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -194,16 +194,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 231
+				"y": 227
 			}
 		},
 		{
 			"name": "help_resourceDensity",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 256,
-				"w": 184,
+				"x": 55,
+				"y": 252,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -220,7 +220,7 @@
 			"text": "vcmi.mapGen.resourceDensity.hover",
 			"position": {
 				"x": 58,
-				"y": 261
+				"y": 257
 			}
 		},
 		{
@@ -230,7 +230,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 260
+				"y": 256
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -258,16 +258,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 261
+				"y": 257
 			}
 		},
 		{
 			"name": "help_mineDensity",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 286,
-				"w": 184,
+				"x": 55,
+				"y": 282,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -284,7 +284,7 @@
 			"text": "vcmi.mapGen.mineDensity.hover",
 			"position": {
 				"x": 58,
-				"y": 291
+				"y": 287
 			}
 		},
 		{
@@ -294,7 +294,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 290
+				"y": 286
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -322,16 +322,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 291
+				"y": 287
 			}
 		},
 		{
 			"name": "help_starterMines",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 316,
-				"w": 184,
+				"x": 55,
+				"y": 312,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -348,7 +348,7 @@
 			"text": "vcmi.mapGen.starterMines.hover",
 			"position": {
 				"x": 58,
-				"y": 321
+				"y": 317
 			}
 		},
 		{
@@ -357,7 +357,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 315
+				"y": 311
 			},
 			"setting": "persistent:mapGen/params/starterMines",
 			"selected": true,
@@ -370,9 +370,9 @@
 			"name": "help_dwellingDensity",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 346,
-				"w": 184,
+				"x": 55,
+				"y": 342,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -389,7 +389,7 @@
 			"text": "vcmi.mapGen.dwellingDensity.hover",
 			"position": {
 				"x": 58,
-				"y": 351
+				"y": 347
 			}
 		},
 		{
@@ -399,7 +399,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 350
+				"y": 346
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -427,16 +427,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 351
+				"y": 347
 			}
 		},
 		{
 			"name": "help_bonusDensity",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 376,
-				"w": 184,
+				"x": 55,
+				"y": 372,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -453,7 +453,7 @@
 			"text": "vcmi.mapGen.bonusDensity.hover",
 			"position": {
 				"x": 58,
-				"y": 381
+				"y": 377
 			}
 		},
 		{
@@ -463,7 +463,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 380
+				"y": 376
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -491,7 +491,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 381
+				"y": 377
 			}
 		}
 	]

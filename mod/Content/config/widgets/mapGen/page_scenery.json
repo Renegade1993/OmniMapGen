@@ -7,9 +7,9 @@
 			"name": "help_decorDensity",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 166,
-				"w": 184,
+				"x": 55,
+				"y": 162,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -26,7 +26,7 @@
 			"text": "vcmi.mapGen.decorDensity.hover",
 			"position": {
 				"x": 58,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
@@ -36,7 +36,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 170
+				"y": 166
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -64,16 +64,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
 			"name": "help_rivers",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 196,
-				"w": 184,
+				"x": 55,
+				"y": 192,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -90,7 +90,7 @@
 			"text": "vcmi.mapGen.rivers.hover",
 			"position": {
 				"x": 58,
-				"y": 201
+				"y": 197
 			}
 		},
 		{
@@ -99,7 +99,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 195
+				"y": 191
 			},
 			"setting": "persistent:mapGen/params/rivers",
 			"selected": true,
@@ -112,9 +112,9 @@
 			"name": "help_riverAmount",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 226,
-				"w": 184,
+				"x": 55,
+				"y": 222,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -131,7 +131,7 @@
 			"text": "vcmi.mapGen.riverAmount.hover",
 			"position": {
 				"x": 58,
-				"y": 231
+				"y": 227
 			}
 		},
 		{
@@ -141,7 +141,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 230
+				"y": 226
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -169,7 +169,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 231
+				"y": 227
 			}
 		}
 	]

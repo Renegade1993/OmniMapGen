@@ -7,9 +7,9 @@
 			"name": "help_borderSolidity",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 166,
-				"w": 184,
+				"x": 55,
+				"y": 162,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -26,7 +26,7 @@
 			"text": "vcmi.mapGen.borderSolidity.hover",
 			"position": {
 				"x": 58,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
@@ -36,7 +36,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 170
+				"y": 166
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -84,16 +84,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
 			"name": "help_interconnectivity",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 196,
-				"w": 184,
+				"x": 55,
+				"y": 192,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -110,7 +110,7 @@
 			"text": "vcmi.mapGen.interconnectivity.hover",
 			"position": {
 				"x": 58,
-				"y": 201
+				"y": 197
 			}
 		},
 		{
@@ -120,7 +120,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 200
+				"y": 196
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -149,16 +149,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 201
+				"y": 197
 			}
 		},
 		{
 			"name": "help_interconnectPortal",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 226,
-				"w": 184,
+				"x": 55,
+				"y": 222,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -175,7 +175,7 @@
 			"text": "vcmi.mapGen.interconnectPortal.hover",
 			"position": {
 				"x": 58,
-				"y": 231
+				"y": 227
 			}
 		},
 		{
@@ -185,7 +185,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 230
+				"y": 226
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -214,16 +214,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 231
+				"y": 227
 			}
 		},
 		{
 			"name": "help_openPathNoRoad",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 256,
-				"w": 184,
+				"x": 55,
+				"y": 252,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -240,7 +240,7 @@
 			"text": "vcmi.mapGen.openPathNoRoad.hover",
 			"position": {
 				"x": 58,
-				"y": 261
+				"y": 257
 			}
 		},
 		{
@@ -250,7 +250,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 260
+				"y": 256
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -279,16 +279,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 261
+				"y": 257
 			}
 		},
 		{
 			"name": "help_openPathRoad",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 286,
-				"w": 184,
+				"x": 55,
+				"y": 282,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -305,7 +305,7 @@
 			"text": "vcmi.mapGen.openPathRoad.hover",
 			"position": {
 				"x": 58,
-				"y": 291
+				"y": 287
 			}
 		},
 		{
@@ -315,7 +315,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 290
+				"y": 286
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -344,16 +344,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 291
+				"y": 287
 			}
 		},
 		{
 			"name": "help_roadNetwork",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 316,
-				"w": 184,
+				"x": 55,
+				"y": 312,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -370,7 +370,7 @@
 			"text": "vcmi.mapGen.roadNetwork.hover",
 			"position": {
 				"x": 58,
-				"y": 321
+				"y": 317
 			}
 		},
 		{
@@ -379,7 +379,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 315
+				"y": 311
 			},
 			"setting": "persistent:mapGen/params/roadNetwork",
 			"selected": true,
@@ -392,9 +392,9 @@
 			"name": "help_roadType",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 346,
-				"w": 184,
+				"x": 55,
+				"y": 342,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -411,7 +411,7 @@
 			"text": "vcmi.mapGen.roadType.hover",
 			"position": {
 				"x": 58,
-				"y": 351
+				"y": 347
 			}
 		},
 		{
@@ -421,7 +421,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 350
+				"y": 346
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -461,7 +461,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 351
+				"y": 347
 			}
 		}
 	]

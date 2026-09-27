@@ -7,9 +7,9 @@
 			"name": "help_monsterStrength",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 166,
-				"w": 184,
+				"x": 55,
+				"y": 162,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -26,7 +26,7 @@
 			"text": "vcmi.mapGen.monsterStrength.hover",
 			"position": {
 				"x": 58,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
@@ -36,7 +36,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 170
+				"y": 166
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -84,16 +84,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
 			"name": "help_stackScale",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 196,
-				"w": 184,
+				"x": 55,
+				"y": 192,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -110,7 +110,7 @@
 			"text": "vcmi.mapGen.stackScale.hover",
 			"position": {
 				"x": 58,
-				"y": 201
+				"y": 197
 			}
 		},
 		{
@@ -120,7 +120,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 200
+				"y": 196
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -148,16 +148,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 201
+				"y": 197
 			}
 		},
 		{
 			"name": "help_guardDensity",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 226,
-				"w": 184,
+				"x": 55,
+				"y": 222,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -174,7 +174,7 @@
 			"text": "vcmi.mapGen.guardDensity.hover",
 			"position": {
 				"x": 58,
-				"y": 231
+				"y": 227
 			}
 		},
 		{
@@ -184,7 +184,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 230
+				"y": 226
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -212,16 +212,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 231
+				"y": 227
 			}
 		},
 		{
 			"name": "help_objectGuardShare",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 256,
-				"w": 184,
+				"x": 55,
+				"y": 252,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -238,7 +238,7 @@
 			"text": "vcmi.mapGen.objectGuardShare.hover",
 			"position": {
 				"x": 58,
-				"y": 261
+				"y": 257
 			}
 		},
 		{
@@ -248,7 +248,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 260
+				"y": 256
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -277,16 +277,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 261
+				"y": 257
 			}
 		},
 		{
 			"name": "help_guardTreasure",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 286,
-				"w": 184,
+				"x": 55,
+				"y": 282,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -303,7 +303,7 @@
 			"text": "vcmi.mapGen.guardTreasure.hover",
 			"position": {
 				"x": 58,
-				"y": 291
+				"y": 287
 			}
 		},
 		{
@@ -312,7 +312,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 285
+				"y": 281
 			},
 			"setting": "persistent:mapGen/params/guardTreasure",
 			"selected": true,
@@ -325,9 +325,9 @@
 			"name": "help_guardMines",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 316,
-				"w": 184,
+				"x": 55,
+				"y": 312,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -344,7 +344,7 @@
 			"text": "vcmi.mapGen.guardMines.hover",
 			"position": {
 				"x": 58,
-				"y": 321
+				"y": 317
 			}
 		},
 		{
@@ -353,7 +353,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 315
+				"y": 311
 			},
 			"setting": "persistent:mapGen/params/guardMines",
 			"selected": true,
@@ -366,9 +366,9 @@
 			"name": "help_guardDwellings",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 346,
-				"w": 184,
+				"x": 55,
+				"y": 342,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -385,7 +385,7 @@
 			"text": "vcmi.mapGen.guardDwellings.hover",
 			"position": {
 				"x": 58,
-				"y": 351
+				"y": 347
 			}
 		},
 		{
@@ -394,7 +394,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 345
+				"y": 341
 			},
 			"setting": "persistent:mapGen/params/guardDwellings",
 			"selected": true,
@@ -407,9 +407,9 @@
 			"name": "help_guardBottlenecks",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 376,
-				"w": 184,
+				"x": 55,
+				"y": 372,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -426,7 +426,7 @@
 			"text": "vcmi.mapGen.guardBottlenecks.hover",
 			"position": {
 				"x": 58,
-				"y": 381
+				"y": 377
 			}
 		},
 		{
@@ -435,7 +435,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 375
+				"y": 371
 			},
 			"setting": "persistent:mapGen/params/guardBottlenecks",
 			"selected": true,
@@ -448,9 +448,9 @@
 			"name": "help_chokeGuardRatio",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 406,
-				"w": 184,
+				"x": 55,
+				"y": 402,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -467,7 +467,7 @@
 			"text": "vcmi.mapGen.chokeGuardRatio.hover",
 			"position": {
 				"x": 58,
-				"y": 411
+				"y": 407
 			}
 		},
 		{
@@ -477,7 +477,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 410
+				"y": 406
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -506,16 +506,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 411
+				"y": 407
 			}
 		},
 		{
 			"name": "help_guardPortals",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 436,
-				"w": 184,
+				"x": 55,
+				"y": 432,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -532,7 +532,7 @@
 			"text": "vcmi.mapGen.guardPortals.hover",
 			"position": {
 				"x": 58,
-				"y": 441
+				"y": 437
 			}
 		},
 		{
@@ -541,7 +541,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 435
+				"y": 431
 			},
 			"setting": "persistent:mapGen/params/guardPortals",
 			"selected": false,
@@ -554,9 +554,9 @@
 			"name": "help_lootGuardWeight",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 466,
-				"w": 184,
+				"x": 55,
+				"y": 462,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -573,7 +573,7 @@
 			"text": "vcmi.mapGen.lootGuardWeight.hover",
 			"position": {
 				"x": 58,
-				"y": 471
+				"y": 467
 			}
 		},
 		{
@@ -583,7 +583,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 470
+				"y": 466
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -611,16 +611,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 471
+				"y": 467
 			}
 		},
 		{
 			"name": "help_mineGuardWeight",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 496,
-				"w": 184,
+				"x": 55,
+				"y": 492,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -637,7 +637,7 @@
 			"text": "vcmi.mapGen.mineGuardWeight.hover",
 			"position": {
 				"x": 58,
-				"y": 501
+				"y": 497
 			}
 		},
 		{
@@ -647,7 +647,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 500
+				"y": 496
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -675,7 +675,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 501
+				"y": 497
 			}
 		}
 	]

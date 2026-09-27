@@ -7,9 +7,9 @@
 			"name": "help_map.size",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 166,
-				"w": 184,
+				"x": 55,
+				"y": 162,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -26,7 +26,7 @@
 			"text": "vcmi.mapGen.map.size.hover",
 			"position": {
 				"x": 58,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
@@ -36,7 +36,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 170
+				"y": 166
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -92,16 +92,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
 			"name": "help_map.underground",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 196,
-				"w": 184,
+				"x": 55,
+				"y": 192,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -118,7 +118,7 @@
 			"text": "vcmi.mapGen.map.underground.hover",
 			"position": {
 				"x": 58,
-				"y": 201
+				"y": 197
 			}
 		},
 		{
@@ -127,7 +127,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 195
+				"y": 191
 			},
 			"setting": "persistent:mapGen/map/underground",
 			"selected": false,
@@ -140,9 +140,9 @@
 			"name": "help_map.declareMods",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 226,
-				"w": 184,
+				"x": 55,
+				"y": 222,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -159,7 +159,7 @@
 			"text": "vcmi.mapGen.map.declareMods.hover",
 			"position": {
 				"x": 58,
-				"y": 231
+				"y": 227
 			}
 		},
 		{
@@ -168,7 +168,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 225
+				"y": 221
 			},
 			"setting": "persistent:mapGen/map/declareMods",
 			"selected": false,
@@ -181,9 +181,9 @@
 			"name": "help_map.players",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 256,
-				"w": 184,
+				"x": 55,
+				"y": 252,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -200,7 +200,7 @@
 			"text": "vcmi.mapGen.map.players.hover",
 			"position": {
 				"x": 58,
-				"y": 261
+				"y": 257
 			}
 		},
 		{
@@ -208,7 +208,7 @@
 			"type": "toggleGroup",
 			"position": {
 				"x": 58,
-				"y": 280
+				"y": 276
 			},
 			"setting": "persistent:mapGen/map/players",
 			"values": [
@@ -319,9 +319,9 @@
 			"name": "help_map.humans",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 320,
-				"w": 184,
+				"x": 55,
+				"y": 316,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -338,7 +338,7 @@
 			"text": "vcmi.mapGen.map.humans.hover",
 			"position": {
 				"x": 58,
-				"y": 325
+				"y": 321
 			}
 		},
 		{
@@ -346,7 +346,7 @@
 			"type": "toggleGroup",
 			"position": {
 				"x": 58,
-				"y": 344
+				"y": 340
 			},
 			"setting": "persistent:mapGen/map/humans",
 			"values": [
@@ -471,9 +471,9 @@
 			"name": "help_map.template",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 388,
-				"w": 184,
+				"x": 55,
+				"y": 384,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -490,7 +490,7 @@
 			"text": "vcmi.mapGen.map.template.hover",
 			"position": {
 				"x": 58,
-				"y": 393
+				"y": 389
 			}
 		},
 		{
@@ -499,7 +499,7 @@
 			"image": "MapGenButton80",
 			"position": {
 				"x": 198,
-				"y": 384
+				"y": 380
 			},
 			"callback": "chooseMapGenTemplate",
 			"help": {
@@ -525,16 +525,16 @@
 			"text": "",
 			"position": {
 				"x": 58,
-				"y": 423
+				"y": 419
 			}
 		},
 		{
 			"name": "help_teams",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 454,
-				"w": 184,
+				"x": 55,
+				"y": 450,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -551,7 +551,7 @@
 			"text": "vcmi.mapGen.teams.hover",
 			"position": {
 				"x": 58,
-				"y": 459
+				"y": 455
 			}
 		},
 		{
@@ -561,7 +561,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 458
+				"y": 454
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -605,7 +605,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 459
+				"y": 455
 			}
 		}
 	]

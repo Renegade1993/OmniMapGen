@@ -80,18 +80,6 @@
 			}
 		},
 		{
-			"name": "textureCampaignOverdraw",
-			"type": "texture",
-			"color": "blue",
-			"image": "DIBOXBCK",
-			"rect": {
-				"x": 378,
-				"y": 14,
-				"w": 10,
-				"h": 569
-			}
-		},
-		{
 			"name": "labelTitle",
 			"type": "label",
 			"font": "big",
@@ -128,8 +116,8 @@
 					"type": "toggleButton",
 					"image": "MapGenButton80",
 					"position": {
-						"x": 28,
-						"y": 80
+						"x": 56,
+						"y": 96
 					},
 					"help": {
 						"hover": "vcmi.mapGen.page.map.hover",
@@ -150,8 +138,8 @@
 					"type": "toggleButton",
 					"image": "MapGenButton80",
 					"position": {
-						"x": 116,
-						"y": 80
+						"x": 140,
+						"y": 96
 					},
 					"help": {
 						"hover": "vcmi.mapGen.page.zones.hover",
@@ -172,8 +160,8 @@
 					"type": "toggleButton",
 					"image": "MapGenButton80",
 					"position": {
-						"x": 204,
-						"y": 80
+						"x": 224,
+						"y": 96
 					},
 					"help": {
 						"hover": "vcmi.mapGen.page.borders.hover",
@@ -194,8 +182,8 @@
 					"type": "toggleButton",
 					"image": "MapGenButton80",
 					"position": {
-						"x": 292,
-						"y": 80
+						"x": 308,
+						"y": 96
 					},
 					"help": {
 						"hover": "vcmi.mapGen.page.treasure.hover",
@@ -216,8 +204,8 @@
 					"type": "toggleButton",
 					"image": "MapGenButton80",
 					"position": {
-						"x": 28,
-						"y": 116
+						"x": 56,
+						"y": 122
 					},
 					"help": {
 						"hover": "vcmi.mapGen.page.monsters.hover",
@@ -238,8 +226,8 @@
 					"type": "toggleButton",
 					"image": "MapGenButton80",
 					"position": {
-						"x": 116,
-						"y": 116
+						"x": 140,
+						"y": 122
 					},
 					"help": {
 						"hover": "vcmi.mapGen.page.underground.hover",
@@ -260,8 +248,8 @@
 					"type": "toggleButton",
 					"image": "MapGenButton80",
 					"position": {
-						"x": 204,
-						"y": 116
+						"x": 224,
+						"y": 122
 					},
 					"help": {
 						"hover": "vcmi.mapGen.page.scenery.hover",
@@ -282,8 +270,8 @@
 					"type": "toggleButton",
 					"image": "MapGenButton80",
 					"position": {
-						"x": 292,
-						"y": 116
+						"x": 308,
+						"y": 122
 					},
 					"help": {
 						"hover": "vcmi.mapGen.page.water.hover",
@@ -306,9 +294,9 @@
 			"name": "lineTop",
 			"type": "horizontalLine",
 			"rect": {
-				"x": 14,
-				"y": 154,
-				"w": 372,
+				"x": 55,
+				"y": 150,
+				"w": 334,
 				"h": 3
 			}
 		},
@@ -316,9 +304,9 @@
 			"name": "lineBottom",
 			"type": "horizontalLine",
 			"rect": {
-				"x": 14,
+				"x": 55,
 				"y": 540,
-				"w": 372,
+				"w": 334,
 				"h": 3
 			}
 		},
@@ -327,7 +315,7 @@
 			"type": "button",
 			"image": "MapGenButton80",
 			"position": {
-				"x": 28,
+				"x": 56,
 				"y": 548
 			},
 			"help": {

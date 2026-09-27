@@ -7,9 +7,9 @@
 			"name": "help_zoneCells",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 166,
-				"w": 184,
+				"x": 55,
+				"y": 162,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -26,7 +26,7 @@
 			"text": "vcmi.mapGen.zoneCells.hover",
 			"position": {
 				"x": 58,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
@@ -36,7 +36,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 170
+				"y": 166
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -63,16 +63,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 171
+				"y": 167
 			}
 		},
 		{
 			"name": "help_zoneCap",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 196,
-				"w": 184,
+				"x": 55,
+				"y": 192,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -89,7 +89,7 @@
 			"text": "vcmi.mapGen.zoneCap.hover",
 			"position": {
 				"x": 58,
-				"y": 201
+				"y": 197
 			}
 		},
 		{
@@ -99,7 +99,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 200
+				"y": 196
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -126,16 +126,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 201
+				"y": 197
 			}
 		},
 		{
 			"name": "help_highLootRatio",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 226,
-				"w": 184,
+				"x": 55,
+				"y": 222,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -152,7 +152,7 @@
 			"text": "vcmi.mapGen.highLootRatio.hover",
 			"position": {
 				"x": 58,
-				"y": 231
+				"y": 227
 			}
 		},
 		{
@@ -162,7 +162,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 230
+				"y": 226
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -191,16 +191,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 231
+				"y": 227
 			}
 		},
 		{
 			"name": "help_townRatio",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 256,
-				"w": 184,
+				"x": 55,
+				"y": 252,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -217,7 +217,7 @@
 			"text": "vcmi.mapGen.townRatio.hover",
 			"position": {
 				"x": 58,
-				"y": 261
+				"y": 257
 			}
 		},
 		{
@@ -227,7 +227,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 260
+				"y": 256
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -256,16 +256,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 261
+				"y": 257
 			}
 		},
 		{
 			"name": "help_lowLootRatio",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 286,
-				"w": 184,
+				"x": 55,
+				"y": 282,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -282,7 +282,7 @@
 			"text": "vcmi.mapGen.lowLootRatio.hover",
 			"position": {
 				"x": 58,
-				"y": 291
+				"y": 287
 			}
 		},
 		{
@@ -292,7 +292,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 290
+				"y": 286
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -321,16 +321,16 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 291
+				"y": 287
 			}
 		},
 		{
 			"name": "help_biomeWobble",
 			"type": "hoverHelp",
 			"rect": {
-				"x": 14,
-				"y": 316,
-				"w": 184,
+				"x": 55,
+				"y": 312,
+				"w": 143,
 				"h": 22
 			},
 			"help": {
@@ -347,7 +347,7 @@
 			"text": "vcmi.mapGen.biomeWobble.hover",
 			"position": {
 				"x": 58,
-				"y": 321
+				"y": 317
 			}
 		},
 		{
@@ -357,7 +357,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 320
+				"y": 316
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -384,7 +384,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 321
+				"y": 317
 			}
 		}
 	]
