@@ -11,13 +11,24 @@
  * repository keeps it (mod.json, the tab files, the templates, generate.cmd);
  * this adds the generator's src and the Node runtime.
  *
- *   node tools/make_mod.js --node-zip <node-vX-win-x64.zip> --node-sums <SHASUMS256.txt> [--out dist]
+ *   node tools/make_mod.js [--install [<user folder>]] [--trust-unlisted] [--out dist]
+ *                          [--node-zip <node-vX-win-x64.zip> --node-sums <SHASUMS256.txt>]
  *
- * The Node runtime is the official Windows build, checked against nodejs.org's
- * SHASUMS256.txt before node.exe and its LICENSE are taken out of the zip; a
- * mismatch stops the build. Writes <out>/omnimapgen/ (the mod folder, for a
- * local install) and <out>/omnimapgen.zip (the release asset), and prints the
- * zip's size and SHA-256 for the mod catalog.
+ * The Node runtime is the official Windows build (NODE_VERSION), checked
+ * against nodejs.org's SHASUMS256.txt before node.exe and its LICENSE are taken
+ * out of the zip; a mismatch stops the build. Without --node-zip it comes from
+ * <out>/node-cache, downloaded from nodejs.org the first time. Writes
+ * <out>/omnimapgen/ (the mod folder) and <out>/omnimapgen.zip (the release
+ * asset), and prints the zip's size and SHA-256 and the codeSha256 the mod
+ * catalog pins.
+ *
+ * --install puts the built mod straight into a user folder's Mods and enables
+ * it in the active preset of its config/modSettings.json, as the launcher does
+ * for a mod it installs: a developer's build is ready at the next start. With
+ * no folder named, DMB's own (Documents\My Games\DMB). DMB runs a mod's code
+ * only when its catalog pins that code; a build of your own is pinned by no
+ * catalog, and --trust-unlisted sets DMB's developer switch for that
+ * (settings.json "mods": { "allowUnlistedCode": true }).
  */
 'use strict';
 
@@ -28,16 +39,100 @@ const crypto = require('crypto');
 
 const ROOT = path.join(__dirname, '..');
 const MOD_ID = 'omnimapgen';
+// the runtime DMB's contract names (official win-x64 build, checked by hash)
+const NODE_VERSION = 'v24.21.0';
 
 // The mod brings every text of the tab, the nine the client's framework also
 // has (the lobby button, the template picker, the generate states) among them:
 // a mod's translation replaces base's wording, so these say OmniMapGen's own
 // things (the free layout's calibration) where the client says generic ones.
 
+// --name value pairs; a flag followed by another flag (or by nothing) is true
 function args(argv) {
 	const o = {};
-	for (let i = 0; i < argv.length; i += 2) o[argv[i].replace(/^--/, '')] = argv[i + 1];
+	for (let i = 0; i < argv.length; i++) {
+		const name = argv[i].replace(/^--/, '');
+		if (i + 1 < argv.length && !argv[i + 1].startsWith('--')) o[name] = argv[++i];
+		else o[name] = true;
+	}
 	return o;
+}
+
+// VCMI writes // comments into its JSON files: drop each // and the rest of
+// its line, unless it stands inside a string
+function stripComments(text) {
+	return text.replace(/^((?:[^"\n/]|"(?:[^"\\\n]|\\.)*"|\/(?!\/))*)\/\/.*$/gm, '$1');
+}
+
+/** The Node runtime's zip and nodejs.org's SHASUMS256.txt, fetched once into <out>/node-cache. */
+async function nodeRuntime(out) {
+	const cache = path.join(out, 'node-cache');
+	const zip = path.join(cache, `node-${NODE_VERSION}-win-x64.zip`);
+	const sums = path.join(cache, `node-${NODE_VERSION}-SHASUMS256.txt`);
+	fs.mkdirSync(cache, { recursive: true });
+	for (const [file, url] of [[sums, `https://nodejs.org/dist/${NODE_VERSION}/SHASUMS256.txt`],
+		[zip, `https://nodejs.org/dist/${NODE_VERSION}/node-${NODE_VERSION}-win-x64.zip`]]) {
+		if (fs.existsSync(file)) continue;
+		console.log(`downloading ${url}`);
+		const res = await fetch(url);
+		if (!res.ok) throw new Error(`${url}: ${res.status}`);
+		fs.writeFileSync(`${file}.part`, Buffer.from(await res.arrayBuffer()));
+		fs.renameSync(`${file}.part`, file);
+	}
+	return { zip, sums };
+}
+
+/** DMB's user folder: Documents\My Games\DMB, Documents as Windows has it (it may be moved). */
+function dmbUserDir() {
+	const { spawnSync } = require('child_process');
+	const r = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+		"[Environment]::GetFolderPath('MyDocuments')"], { encoding: 'utf8', windowsHide: true, timeout: 30000 });
+	const docs = (r.stdout || '').trim();
+	if (r.status !== 0 || !docs) throw new Error('could not find the Documents folder: name the user folder, --install <folder>');
+	return path.join(docs, 'My Games', 'DMB');
+}
+
+/** Read, change and write back one of VCMI's JSON files (comments and all are rewritten plain). */
+function editVcmiJson(file, change) {
+	const data = fs.existsSync(file) ? JSON.parse(stripComments(fs.readFileSync(file, 'utf8').replace(/^﻿/, ''))) : {};
+	if (change(data) !== false) fs.writeFileSync(file, JSON.stringify(data, null, '\t') + '\n');
+}
+
+/** The built mod into <userDir>\Mods, enabled in the active preset; the code switch on request. */
+function install(folder, userDir, codeSha, trustUnlisted) {
+	const target = path.join(userDir, 'Mods', MOD_ID);
+	fs.mkdirSync(path.dirname(target), { recursive: true });
+	fs.rmSync(target, { recursive: true, force: true });
+	fs.cpSync(folder, target, { recursive: true });
+	console.log(`installed ${target}`);
+	const modSettings = path.join(userDir, 'config', 'modSettings.json');
+	if (!fs.existsSync(modSettings)) {
+		console.log(`  ${modSettings} does not exist yet: start the game once, then run this again (or enable ${MOD_ID} in the launcher)`);
+	} else {
+		editVcmiJson(modSettings, s => {
+			const preset = s.presets && s.presets[s.activePreset];
+			if (!preset) throw new Error(`${modSettings}: no active preset`);
+			preset.mods = preset.mods || [];
+			if (preset.mods.includes(MOD_ID)) { console.log(`  enabled already (preset ${s.activePreset})`); return false; }
+			preset.mods.push(MOD_ID);
+			console.log(`  enabled in preset ${s.activePreset}`);
+		});
+	}
+	// will DMB run this build's code? Only if its catalog pins it, or with the developer switch
+	const pinsFile = path.join(userDir, 'cache', 'downloads', 'dmbCodePins.json');
+	let pinned = false;
+	try {
+		const pin = JSON.parse(fs.readFileSync(pinsFile, 'utf8'))[MOD_ID];
+		pinned = [].concat(pin || []).some(p => String(p).toLowerCase() === codeSha);
+	} catch (e) { /* no catalog downloaded yet */ }
+	const settingsFile = path.join(userDir, 'config', 'settings.json');
+	if (pinned) console.log('  DMB\'s mod catalog pins this code: it runs as installed');
+	else if (trustUnlisted) {
+		editVcmiJson(settingsFile, s => { s.mods = s.mods || {}; s.mods.allowUnlistedCode = true; });
+		console.log(`  no catalog pins this build: DMB's developer switch set (${settingsFile}, mods.allowUnlistedCode)`);
+	} else console.log('  no catalog pins this build\'s code, so DMB will refuse to run it: add --trust-unlisted to set '
+		+ 'DMB\'s developer switch (settings.json "mods": { "allowUnlistedCode": true })');
+	console.log('  start (or restart) the game to load it');
 }
 
 function walk(dir) {
@@ -138,21 +233,24 @@ function writeZip(entries, when) {
 	return Buffer.concat([...chunks, cd, eocd]);
 }
 
-function main() {
+async function main() {
 	const opt = args(process.argv.slice(2));
-	if (!opt['node-zip'] || !opt['node-sums']) {
-		console.error('usage: node tools/make_mod.js --node-zip <node-vX-win-x64.zip> --node-sums <SHASUMS256.txt> [--out dist]');
+	if (!opt['node-zip'] !== !opt['node-sums'] || opt.out === true) {
+		console.error('usage: node tools/make_mod.js [--install [<user folder>]] [--trust-unlisted] [--out dist]\n'
+			+ '                          [--node-zip <node-vX-win-x64.zip> --node-sums <SHASUMS256.txt>]');
 		process.exit(1);
 	}
 	const out = path.resolve(opt.out || path.join(ROOT, 'dist'));
 	const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 
 	// the Node runtime, only as nodejs.org published it
-	const nodeZip = fs.readFileSync(opt['node-zip']);
-	const zipName = path.basename(opt['node-zip']);
-	const sums = fs.readFileSync(opt['node-sums'], 'utf8').split(/\r?\n/)
+	const runtime = opt['node-zip'] ? { zip: opt['node-zip'], sums: opt['node-sums'] } : await nodeRuntime(out);
+	const nodeZip = fs.readFileSync(runtime.zip);
+	// the name nodejs.org gives the zip, which SHASUMS256.txt lists
+	const zipName = opt['node-zip'] ? path.basename(runtime.zip) : `node-${NODE_VERSION}-win-x64.zip`;
+	const sums = fs.readFileSync(runtime.sums, 'utf8').split(/\r?\n/)
 		.map(l => l.trim().split(/\s+/)).filter(p => p.length === 2 && p[1] === zipName);
-	if (sums.length !== 1) throw new Error(`${zipName}: no single entry in ${opt['node-sums']}`);
+	if (sums.length !== 1) throw new Error(`${zipName}: no single entry in ${runtime.sums}`);
 	const got = crypto.createHash('sha256').update(nodeZip).digest('hex');
 	if (got !== sums[0][0]) throw new Error(`${zipName}: SHA-256 ${got} does not match SHASUMS256.txt's ${sums[0][0]}`);
 	const nodeDir = zipName.replace(/\.zip$/i, '');
@@ -223,6 +321,7 @@ function main() {
 	console.log(`${folder}`);
 	console.log(`${zipPath}: ${zip.length} bytes (${(zip.length / 1048576).toFixed(1)} MB), sha256 ${sha}`);
 	console.log(`codeSha256 (generator/, ${codeLines.length} files): ${codeSha}`);
+	if (opt.install) install(folder, opt.install === true ? dmbUserDir() : path.resolve(opt.install), codeSha, !!opt['trust-unlisted']);
 }
 
-main();
+main().catch(e => { console.error(`make_mod: ${e.message}`); process.exit(1); });

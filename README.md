@@ -26,9 +26,14 @@ enable it in the launcher. A single-player lobby then shows a MapGen button besi
 and Generate map makes a map with the tab's settings and selects it. The mod carries its own
 Node runtime; nothing else needs installing.
 
-To build the mod from this repository: `node tools/make_mod.js --node-zip <node-vX-win-x64.zip>
---node-sums <SHASUMS256.txt>` with the official Node build and nodejs.org's checksum list; the
-mod lands in `dist/`.
+To build the mod from this repository and play it straight away: `node tools/make_mod.js
+--install --trust-unlisted`. It builds the mod into `dist/` (the official Node runtime is
+downloaded once and checked against nodejs.org's checksum list), copies it into the `Mods` folder
+of DMB's user folder (`Documents\My Games\DMB`; name another with `--install <folder>`), and
+enables it. DMB runs a mod's code only when its mod catalog pins that code, and a build of your
+own is pinned by no catalog: `--trust-unlisted` turns on DMB's developer switch for it
+(`"mods": { "allowUnlistedCode": true }` in the user folder's `config/settings.json`). Plain
+`node tools/make_mod.js` only builds.
 
 ## Running it from the command line
 
