@@ -11,7 +11,7 @@
  * repository keeps it (mod.json, the tab files, the templates, generate.cmd);
  * this adds the generator's src and the Node runtime.
  *
- *   node tools/make_mod.js [--install [<user folder>]] [--trust-unlisted] [--out dist] [--pager]
+ *   node tools/make_mod.js [--install [<user folder>]] [--trust-unlisted] [--out dist] [--pager] [--classic] [--atbegin]
  *                          [--node-zip <node-vX-win-x64.zip> --node-sums <SHASUMS256.txt>]
  *
  * --pager builds the tab on DMB's "pages" widget (gen_vcmi_ui.js --pager)
@@ -19,6 +19,13 @@
  * dist-pager unless --out says otherwise. No DMB release carries level 2 yet,
  * and the DMB releases before it cannot refuse the mod, so that build stays
  * off the catalog and out of anyone's DMB until one does.
+ *
+ * --atbegin (implies --pager; with --classic too) has the game make the map
+ * when the host presses Begin, from the tab's settings and every player's
+ * town, as stock's random map is made: mapGenerator "atBegin", DMB's addon API
+ * level 3, the mode named "Omni Map Gen" (K's name), and no Generate button
+ * (gen_vcmi_ui.js --atbegin). Into dist-atbegin or dist-classic-atbegin, off
+ * the catalog until a DMB release carries level 3.
  *
  * The Node runtime is the official Windows build (NODE_VERSION), checked
  * against nodejs.org's SHASUMS256.txt before node.exe and its LICENSE are taken
@@ -242,19 +249,23 @@ function writeZip(entries, when) {
 async function main() {
 	const opt = args(process.argv.slice(2));
 	if (!opt['node-zip'] !== !opt['node-sums'] || opt.out === true) {
-		console.error('usage: node tools/make_mod.js [--install [<user folder>]] [--trust-unlisted] [--out dist] [--pager]\n'
+		console.error('usage: node tools/make_mod.js [--install [<user folder>]] [--trust-unlisted] [--out dist] [--pager] [--classic] [--atbegin]\n'
 			+ '                          [--node-zip <node-vX-win-x64.zip> --node-sums <SHASUMS256.txt>]');
 		process.exit(1);
 	}
 	// --classic: the pages in stock Heroes III's Random Map Setup look (gen_vcmi_ui.js --classic)
 	const classic = !!opt.classic;
-	const pager = !!opt.pager || classic;
-	const out = path.resolve(opt.out || path.join(ROOT, classic ? 'dist-classic' : pager ? 'dist-pager' : 'dist'));
+	const atBegin = !!opt.atbegin;
+	const pager = !!opt.pager || classic || atBegin;
+	// dist, dist-pager, dist-classic, dist-atbegin, dist-classic-atbegin
+	const out = path.resolve(opt.out || path.join(ROOT, (classic ? 'dist-classic' : pager && !atBegin ? 'dist-pager' : 'dist')
+		+ (atBegin ? '-atbegin' : '')));
 	// the pages widget's tab, staged beside the build (never over mod/Content)
 	const pagerStage = path.join(out, 'pager-content');
 	if (pager)
 		require('child_process').execFileSync(process.execPath,
-			[path.join(ROOT, 'tools', 'gen_vcmi_ui.js'), 'build', '--pager', ...(classic ? ['--classic'] : []), '--out', pagerStage],
+			[path.join(ROOT, 'tools', 'gen_vcmi_ui.js'), 'build', '--pager', ...(classic ? ['--classic'] : []),
+				...(atBegin ? ['--atbegin'] : []), '--out', pagerStage],
 			{ stdio: 'inherit', windowsHide: true });
 	const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 
@@ -279,12 +290,7 @@ async function main() {
 	// mod/mod.json is the one copy: the mod catalog reads it from the
 	// repository, and the release carries it unchanged
 	let modJson = fs.readFileSync(path.join(ROOT, 'mod', 'mod.json'));
-	// --pager: the one addition, in the file's own layout
-	if (pager) {
-		const text = modJson.toString('utf8');
-		if (!/\n\t"mapGenerator" :/.test(text)) throw new Error('mod/mod.json: no "mapGenerator" line to put "dmb" before');
-		modJson = Buffer.from(text.replace(/\n\t"mapGenerator" :/, '\n\t"dmb" : { "api" : 2 },\n\t"mapGenerator" :'), 'utf8');
-	}
+	if (pager) modJson = Buffer.from(buildModJson(modJson.toString('utf8'), { pager, atBegin }), 'utf8');
 	const manifest = JSON.parse(modJson.toString('utf8'));
 	if (manifest.version !== pkg.version)
 		throw new Error(`mod/mod.json says ${manifest.version}, package.json ${pkg.version}: bump both together`);
@@ -351,4 +357,24 @@ async function main() {
 	if (opt.install) install(folder, opt.install === true ? dmbUserDir() : path.resolve(opt.install), codeSha, !!opt['trust-unlisted']);
 }
 
-main().catch(e => { console.error(`make_mod: ${e.message}`); process.exit(1); });
+/**
+ * mod/mod.json as a build carries it, edited in the file's own text so the
+ * rest of its layout stays as the repository keeps it: unchanged for the
+ * released layout; with pages, DMB's addon API level named (2, or 3 at
+ * Begin); at Begin, the generator run when the host presses Begin, under K's
+ * name for the mode.
+ */
+function buildModJson(text, { pager, atBegin }) {
+	if (!pager) return text;
+	if (!/\n\t"mapGenerator" :/.test(text)) throw new Error('mod/mod.json: no "mapGenerator" line to put "dmb" before');
+	text = text.replace(/\n\t"mapGenerator" :/, `\n\t"dmb" : { "api" : ${atBegin ? 3 : 2} },\n\t"mapGenerator" :`);
+	if (atBegin) {
+		if (!/\n\t\t"name" : "[^"]*",/.test(text)) throw new Error('mod/mod.json: no mapGenerator "name" line');
+		text = text.replace(/\n\t\t"name" : "[^"]*",/, '\n\t\t"name" : "Omni Map Gen",\n\t\t"atBegin" : true,');
+	}
+	return text;
+}
+
+module.exports = { buildModJson };
+
+if (require.main === module) main().catch(e => { console.error(`make_mod: ${e.message}`); process.exit(1); });

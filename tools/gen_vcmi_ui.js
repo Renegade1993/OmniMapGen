@@ -41,10 +41,19 @@ const PRESETS = require(path.join(ROOT, 'src/biome/presets.json'));
 // --classic: the same pages in stock Heroes III's Random Map Setup look (K,
 // 2026-09-26), on its own background with DMB's blank stock buttons; implies
 // --pager, and writes to --out (default .tmp/classic).
+// --atbegin: the map is made when the game begins, as stock's random map is
+// (DMB's addon API level 3: mapGenerator "atBegin"): the host presses Begin,
+// every player's town reaches the generator, and the finished map goes to
+// every player (K, 2026-09-27: "set the map settings, set your town, begin
+// game, generate the map"). So the tab has no Generate button, and the mode
+// is "Omni Map Gen", K's name for it. Implies --pager; with --classic too,
+// Defaults takes the whole gold bar.
 const CLASSIC = process.argv.includes('--classic');
-const PAGER = CLASSIC || process.argv.includes('--pager');
+const AT_BEGIN = process.argv.includes('--atbegin');
+const PAGER = CLASSIC || AT_BEGIN || process.argv.includes('--pager');
 const outArg = process.argv.indexOf('--out');
-const STAGE = PAGER ? path.resolve(outArg > 0 ? process.argv[outArg + 1] : path.join(ROOT, '.tmp', CLASSIC ? 'classic' : 'pager'))
+const STAGE = PAGER ? path.resolve(outArg > 0 ? process.argv[outArg + 1]
+	: path.join(ROOT, '.tmp', CLASSIC ? 'classic' : AT_BEGIN ? 'atbegin' : 'pager'))
 	: path.join(ROOT, 'mod', 'Content');
 
 // The tab fills the lobby's left panel the way VCMI's own Extra Options tab
@@ -391,16 +400,19 @@ function tabJson() {
 			// classic: the stock tab's gold bar (RANSHOW's place, 54,535), as two
 			// halves of DMB's blank one, lettered black as RANSHOW is
 			...(CLASSIC ? [
-				{ name: 'defaultsButton', type: 'button', image: 'RanShowButton166', position: { x: 54, y: 535 },
+				{ name: 'defaultsButton', type: 'button', image: AT_BEGIN ? 'RanShowButton337' : 'RanShowButton166',
+					position: { x: 54, y: 535 },
 					help: { hover: 'vcmi.mapGen.defaults.hover', help: 'vcmi.mapGen.defaults.help' },
 					callback: 'resetMapGenDefaults',
 					items: [{ type: 'label', font: 'big', alignment: 'center', color: [0, 0, 0, 255],
 						text: 'vcmi.mapGen.defaults.hover' }] },
+				// at Begin the game makes the map: no Generate
+				...(AT_BEGIN ? [] : [
 				{ name: 'generateButton', type: 'button', image: 'RanShowButton166', position: { x: 225, y: 535 },
 					help: { hover: 'vcmi.mapGen.generate.hover', help: 'vcmi.mapGen.generate.help' },
 					callback: 'generateMapGenMap',
 					items: [{ type: 'label', font: 'big', alignment: 'center', color: [0, 0, 0, 255],
-						text: 'vcmi.mapGen.generate.hover' }] },
+						text: 'vcmi.mapGen.generate.hover' }] }]),
 			] : [
 			{ name: 'lineBottom', type: 'horizontalLine', rect: { x: X_IN, y: LINE_BOTTOM, w: W_IN, h: 3 } },
 			{ name: 'defaultsButton', type: 'button', image: 'MapGenButton80',
@@ -409,12 +421,13 @@ function tabJson() {
 				callback: 'resetMapGenDefaults',
 				items: [{ type: 'label', font: 'small', alignment: 'center', color: 'yellow',
 					text: 'vcmi.mapGen.defaults.hover' }] },
+			...(AT_BEGIN ? [] : [
 			{ name: 'generateButton', type: 'button', image: 'MapGenButton190',
 				position: { x: X_CTRL, y: BUTTON_Y },
 				help: { hover: 'vcmi.mapGen.generate.hover', help: 'vcmi.mapGen.generate.help' },
 				callback: 'generateMapGenMap',
 				items: [{ type: 'label', font: 'medium', alignment: 'center', color: 'yellow',
-					text: 'vcmi.mapGen.generate.hover' }] },
+					text: 'vcmi.mapGen.generate.hover' }] }]),
 			]),
 		],
 	};
@@ -422,8 +435,10 @@ function tabJson() {
 
 function stringsJson() {
 	const s = {
-		'vcmi.lobby.mapGen.hover': 'MapGen',
-		'vcmi.lobby.mapGen.help': '{MapGen}\n\nOur own random map generator with every one of its settings: the map, zones, borders, treasure, monsters, underground, scenery and water. Generate makes a map and selects it in the scenario list.',
+		'vcmi.lobby.mapGen.hover': AT_BEGIN ? 'Omni Map Gen' : 'MapGen',
+		'vcmi.lobby.mapGen.help': AT_BEGIN
+			? '{Omni Map Gen}\n\nOur own random map generator with every one of its settings: the map, zones, borders, treasure, monsters, underground, scenery and water. The map is made when the game begins, from these settings and the town each player picks.'
+			: '{MapGen}\n\nOur own random map generator with every one of its settings: the map, zones, borders, treasure, monsters, underground, scenery and water. Generate makes a map and selects it in the scenario list.',
 		'vcmi.mapGen.tab.subtitle': 'Every setting of our own map generator',
 		'vcmi.mapGen.defaults.hover': 'Defaults',
 		'vcmi.mapGen.defaults.help': `{Defaults}\n\nPuts every setting back to the ${PRESETS.nostalgia.label} defaults. ${PRESETS.nostalgia.help}`,

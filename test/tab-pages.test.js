@@ -99,6 +99,33 @@ test('--classic: the stock background, the rows inside its bands, every text the
 	assert.ok(map.some(i => i.callback === 'chooseMapGenTemplate'), 'the template chooser');
 });
 
+test('--atbegin: the game makes the map at Begin, so no Generate button, and the mode is "Omni Map Gen"', () => {
+	for (const classic of [false, true]) {
+		const stage = fs.mkdtempSync(path.join(testTmp(), 'vmapgen-atbegin-'));
+		execFileSync(process.execPath, [TOOL, 'build', '--atbegin', ...(classic ? ['--classic'] : []), '--out', stage],
+			{ windowsHide: true });
+		const tab = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'widgets', 'mapGen', 'mapGenTab.json'), 'utf8'));
+		const texts = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'omnimapgen', 'english.json'), 'utf8'));
+		assert.ok(tab.items.some(w => w.type === 'pages' && w.name === 'pages'), 'on the pages widget');
+		assert.ok(!tab.items.some(w => w.callback === 'generateMapGenMap'), 'no Generate button');
+		const defaults = tab.items.find(w => w.callback === 'resetMapGenDefaults');
+		assert.ok(defaults, 'Defaults stays');
+		if (classic) assert.strictEqual(defaults.image, 'RanShowButton337', 'Defaults takes the whole gold bar');
+		assert.strictEqual(texts['vcmi.lobby.mapGen.hover'], 'Omni Map Gen');
+		assert.match(texts['vcmi.lobby.mapGen.help'], /when the game begins/);
+	}
+	// the manifest a build carries: level 3, atBegin, K's name; the pages build level 2, the released one untouched
+	const { buildModJson } = require('../tools/make_mod');
+	const text = fs.readFileSync(path.join(ROOT, 'mod', 'mod.json'), 'utf8');
+	const atBegin = JSON.parse(buildModJson(text, { pager: true, atBegin: true }));
+	assert.deepStrictEqual(atBegin.dmb, { api: 3 });
+	assert.strictEqual(atBegin.mapGenerator.atBegin, true);
+	assert.strictEqual(atBegin.mapGenerator.name, 'Omni Map Gen');
+	assert.strictEqual(atBegin.mapGenerator.command, JSON.parse(text).mapGenerator.command);
+	assert.deepStrictEqual(JSON.parse(buildModJson(text, { pager: true, atBegin: false })).dmb, { api: 2 });
+	assert.strictEqual(buildModJson(text, { pager: false, atBegin: false }), text);
+});
+
 test('the released layout keeps its page buttons and asks for no addon API level', () => {
 	const tab = JSON.parse(fs.readFileSync(path.join(ROOT, 'mod', 'Content', 'config', 'widgets', 'mapGen', 'mapGenTab.json'), 'utf8'));
 	assert.ok(Array.isArray(tab.pages) && tab.pages.length >= 2);
