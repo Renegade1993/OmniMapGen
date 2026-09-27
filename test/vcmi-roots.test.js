@@ -67,6 +67,22 @@ test('a named install and user folder come back exactly as named', () => {
 	assert.ok(isMapGenInstall(install));
 });
 
+test('an install whose mod schema has the map generator framework counts, without the tab configs', () => {
+	// once the MapGen tab became a mod, the client keeps only the framework:
+	// its mod schema knows "mapGenerator", and the tab's configs come with the mod
+	const framework = fs.mkdtempSync(path.join(testTmp(), 'vmapgen-framework-'));
+	fs.mkdirSync(path.join(framework, 'config', 'schemas'), { recursive: true });
+	fs.writeFileSync(path.join(framework, 'config', 'schemas', 'mod.json'),
+		JSON.stringify({ properties: { name: {}, mapGenerator: { type: 'object' } } }));
+	assert.ok(isMapGenInstall(framework));
+	const stock = fs.mkdtempSync(path.join(testTmp(), 'vmapgen-stockschema-'));
+	fs.mkdirSync(path.join(stock, 'config', 'schemas'), { recursive: true });
+	fs.writeFileSync(path.join(stock, 'config', 'schemas', 'mod.json'), JSON.stringify({ properties: { name: {} } }));
+	assert.ok(!isMapGenInstall(stock));
+	fs.rmSync(framework, { recursive: true, force: true });
+	fs.rmSync(stock, { recursive: true, force: true });
+});
+
 test('a named install without the MapGen tab is refused, never swapped for another', () => {
 	const stock = tmpInstall(false);
 	assert.throws(() => withEnv({ VCMI_ROOT: stock, VCMI_USER_DIR: undefined }, () => locateVcmiRoots()),

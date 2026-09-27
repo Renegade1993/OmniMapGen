@@ -17,7 +17,20 @@ generates two ways:
 Its output is measured against maps VCMI's own generator made with the same templates, sizes and
 mods: towns, mines, guards by level, treasure, creature banks and dwellings per map.
 
-## Running it
+## Installing it in the game
+
+OmniMapGen is a VCMI mod. It needs a client with the map generator framework, which Dead Man's
+Boots (DMB) has. Install and enable it from DMB's launcher like any other mod, or unzip
+`omnimapgen.zip` from the latest release into the `Mods` folder of your game's user folder and
+enable it in the launcher. A single-player lobby then shows a MapGen button beside Random Map,
+and Generate map makes a map with the tab's settings and selects it. The mod carries its own
+Node runtime; nothing else needs installing.
+
+To build the mod from this repository: `node tools/make_mod.js --node-zip <node-vX-win-x64.zip>
+--node-sums <SHASUMS256.txt>` with the official Node build and nodejs.org's checksum list; the
+mod lands in `dist/`.
+
+## Running it from the command line
 
 Node 24 or newer; no packages are needed.
 
@@ -29,7 +42,8 @@ user folder, `--underground 1` for a second level. `--listtemplates 1` lists wha
 offers and `--listknobs 1` the settings. The generator never guesses where VCMI lives: name the
 install and user folder, or set `VCMI_ROOT` and `VCMI_USER_DIR`.
 
-In DMB the MapGen tab runs it for you (`mapgen\generate.cmd` beside the client).
+The installed mod's `generator` folder holds the same program: `generate.cmd` runs it on the
+bundled Node.
 
 ## Tests
 
@@ -50,7 +64,8 @@ The suite generates against a VCMI source tree with the MapGen tab, `..\VCMI\sou
 | `src/exporter` | the `.vmap` writer |
 | `src/preview` | a PNG preview of a map, and a `.vmap` reader |
 | `ui` | the MapGen tab's widget and settings configs |
-| `tools` | builds the tab's configs from the generator's settings; a settings fuzzer; an extractor for the game's own object templates |
+| `mod` | the mod's manifest, `mod.json` |
+| `tools` | packages the mod (`make_mod.js`); builds the tab's configs from the generator's settings; a settings fuzzer; an extractor for the game's own object templates |
 
 ## License
 

@@ -21,9 +21,9 @@ const path = require('path');
  * the dev machine the first one was the owner's own, off-limits install
  * (2026-09-25).
  *
- * A named install must also carry the MapGen tab (config/widgets/mapGen),
- * which only a client the tab runs in has, so a stock VCMI install is refused
- * even when named outright. A named folder that fails a check throws: a
+ * A named install must also be one whose client runs map generators
+ * (isMapGenInstall), so a stock VCMI install is refused even when named
+ * outright. A named folder that fails a check throws: a
  * mistake stops the run instead of quietly reading somewhere else. Anything
  * not named stays null.
  */
@@ -34,15 +34,26 @@ function locateVcmiRoots(explicit = {}) {
 		throw new Error(`VCMI install "${installDir}" is not a folder`);
 	if (installDir && !isMapGenInstall(installDir))
 		throw new Error(`"${installDir}" is not a VCMI install with the MapGen tab `
-			+ '(no config/widgets/mapGen); the generator only reads the install it runs in');
+			+ '(no map generator framework in config/schemas/mod.json, no config/widgets/mapGen); '
+			+ 'the generator only reads the install it runs in');
 	if (userDir && !safeIsDir(userDir))
 		throw new Error(`VCMI user folder "${userDir}" is not a folder`);
 	return { installDir, userDir };
 }
 
-/** A VCMI install that carries the MapGen tab's widget configs. */
+/**
+ * A VCMI install whose client runs map generators: its mod schema knows the
+ * map generator framework's "mapGenerator" key (config/schemas/mod.json, DMB
+ * once the MapGen tab became a mod, 2026-09-26), or it still carries the tab's
+ * own widget configs from before that. A stock VCMI install has neither.
+ */
 function isMapGenInstall(dir) {
-	return safeIsDir(path.join(dir, 'config', 'widgets', 'mapGen'));
+	if (safeIsDir(path.join(dir, 'config', 'widgets', 'mapGen'))) return true;
+	try {
+		return /"mapGenerator"\s*:/.test(fs.readFileSync(path.join(dir, 'config', 'schemas', 'mod.json'), 'utf8'));
+	} catch {
+		return false;
+	}
 }
 
 function safeIsDir(p) {

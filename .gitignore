@@ -31,3 +31,6 @@ retired/
 # kept in the project folder
 tools/omni_dashboard.js
 tools/omni_dashboard_page.html
+
+# the mod package tools/make_mod.js builds (release asset, not source)
+dist/
