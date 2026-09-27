@@ -32,7 +32,15 @@ const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..');
 const { PAGES, KNOBS } = require(path.join(ROOT, 'src/biome/knobs'));
 const PRESETS = require(path.join(ROOT, 'src/biome/presets.json'));
-const STAGE = path.join(ROOT, 'mod', 'Content');
+// --pager: the layout for a DMB framework with a generic "pages" widget (K,
+// 2026-09-26: arrows either side of the title page through the screens, as
+// stock H3's Random Map Setup does, in place of the page button grid). The
+// widget's contract is proposed to DMB Dev and not built yet, so this writes
+// to --out (default .tmp/pager) and never over the released layout.
+const PAGER = process.argv.includes('--pager');
+const outArg = process.argv.indexOf('--out');
+const STAGE = PAGER ? path.resolve(outArg > 0 ? process.argv[outArg + 1] : path.join(ROOT, '.tmp', 'pager'))
+	: path.join(ROOT, 'mod', 'Content');
 
 // The tab fills the lobby's left panel the way VCMI's own Extra Options tab
 // does: AdventureOptionsBackgroundClear from (0,6), titles centred on x 222 as
@@ -52,7 +60,11 @@ const STAGE = path.join(ROOT, 'mod', 'Content');
 const ALL_PAGES = [{ id: 'map', label: 'Map' }, ...PAGES];
 const PER_ROW = 4, BTN_W = 80, BTN_GAP = 4, BTN_X0 = 56, BTN_Y0 = 96, BTN_ROW = 26;
 const BTN_ROWS = Math.ceil(ALL_PAGES.length / PER_ROW);
-const ROW0 = BTN_Y0 + BTN_ROWS * BTN_ROW + 14, ROW_H = 30;
+// with the pager the rows start just inside the lower box (its top line at y 89-90)
+const ROW0 = PAGER ? 104 : BTN_Y0 + BTN_ROWS * BTN_ROW + 14, ROW_H = 30;
+// the stock left/right arrows (SCNRBLF / SCNRBRT, 16 px) either side of the
+// title at (222,36), symmetric inside the title box (x 55-388)
+const ARROW_Y = 28, ARROW_L = 66, ARROW_R = 362;
 // the interior of the background's frame, which lines and hover areas span
 const X_IN = 55, W_IN = 334;
 // values get 80 px to the frame (388): Mediterranean, the longest name a
@@ -215,13 +227,28 @@ function tabJson() {
 			// 378-388 it only drew a seam down the frame's interior (K,
 			// 2026-09-26). The frame's own art is what should show there.
 			{ name: 'background', type: 'picture', image: 'AdventureOptionsBackgroundClear', position: { x: 0, y: 6 } },
-			{ name: 'labelTitle', type: 'label', font: 'big', alignment: 'center', color: 'yellow',
-				text: 'vcmi.lobby.mapGen.hover', position: { x: 222, y: 36 } },
-			{ name: 'labelSubTitle', type: 'label', font: 'small', alignment: 'center', color: 'white',
-				text: 'vcmi.mapGen.tab.subtitle', position: { x: 222, y: 60 } },
-			{ name: 'pageButtons', type: 'toggleGroup', position: { x: 0, y: 0 }, items: buttons,
-				callback: 'activateMapGenPage' },
-			{ name: 'lineTop', type: 'horizontalLine', rect: { x: X_IN, y: ROW0 - 12, w: W_IN, h: 3 } },
+			// the pager: each screen's name between the stock arrows, which step
+			// through the screens (the proposed generic "pages" widget, id
+			// "mapGen", so another mod can add a screen of its own)
+			...(PAGER ? [
+				{ name: 'pages', type: 'pages', id: 'mapGen', position: { x: 0, y: 0 },
+					pages: ALL_PAGES.map(p => ({ layout: `config/widgets/mapGen/page_${p.id}.json`,
+						title: `vcmi.mapGen.page.${p.id}.hover` })),
+					title: { font: 'big', color: 'yellow', alignment: 'center', position: { x: 222, y: 36 } },
+					previous: { image: 'SCNRBLF', position: { x: ARROW_L, y: ARROW_Y } },
+					next: { image: 'SCNRBRT', position: { x: ARROW_R, y: ARROW_Y } },
+					remember: 'persistent:mapGen/lastPage' },
+				{ name: 'labelSubTitle', type: 'label', font: 'small', alignment: 'center', color: 'white',
+					text: 'vcmi.mapGen.tab.subtitle', position: { x: 222, y: 60 } },
+			] : [
+				{ name: 'labelTitle', type: 'label', font: 'big', alignment: 'center', color: 'yellow',
+					text: 'vcmi.lobby.mapGen.hover', position: { x: 222, y: 36 } },
+				{ name: 'labelSubTitle', type: 'label', font: 'small', alignment: 'center', color: 'white',
+					text: 'vcmi.mapGen.tab.subtitle', position: { x: 222, y: 60 } },
+				{ name: 'pageButtons', type: 'toggleGroup', position: { x: 0, y: 0 }, items: buttons,
+					callback: 'activateMapGenPage' },
+				{ name: 'lineTop', type: 'horizontalLine', rect: { x: X_IN, y: ROW0 - 12, w: W_IN, h: 3 } },
+			]),
 			{ name: 'lineBottom', type: 'horizontalLine', rect: { x: X_IN, y: LINE_BOTTOM, w: W_IN, h: 3 } },
 			{ name: 'defaultsButton', type: 'button', image: 'MapGenButton80',
 				position: { x: BTN_X0, y: BUTTON_Y },
