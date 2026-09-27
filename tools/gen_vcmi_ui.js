@@ -276,8 +276,11 @@ function stringsJson() {
 		'vcmi.mapGen.generate.hover': 'Generate map',
 		'vcmi.mapGen.generate.help': '{Generate map}\n\nMakes a map from these settings and selects it in the scenario list. Settings are saved as you change them.',
 		'vcmi.mapGen.generate.running': 'Generating a map...',
+		// DMB rc.2: in a network lobby with more players than the tab's Human
+		// players, the framework gives each lobby player a human seat and shows
+		// this instead of generate.running (one %d, the number of human seats)
+		'vcmi.mapGen.generate.humans': 'Generating a map for %d human players...',
 		'vcmi.mapGen.generate.failed': 'The map generator failed. See extmapgen_log.txt in the VCMI logs folder.',
-		'vcmi.mapGen.generate.notConfigured': 'No map generator is configured. Set mapGen.externalGenerator in settings.json.',
 		'vcmi.mapGen.template.hover': 'Template',
 		'vcmi.mapGen.template.choose': 'Templates that take this map size, level count and player count. Free layout is our own zone layout, calibrated on your own random maps.',
 		// K's live test (2026-09-25): with no template chosen, this line read
