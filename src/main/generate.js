@@ -1372,6 +1372,28 @@ async function generateMap(params) {
 			if (o.guardCreature) { picked.set(o, o.guardCreature); delete o.guardCreature; }
 			objects.push(o);
 		}
+	// Every piece of scenery goes out as the object its art belongs to. A mod's
+	// obstacle is usually a subtype of its own (HotA's spruces::spruces), and a
+	// call site that let it default to "object" wrote spruces::object, which the
+	// engine cannot resolve, so it refuses the whole map (0.2.1, with mod content
+	// on, on any map with a mod terrain's scenery). The same type with another
+	// subtype is corrected here from the template's own object, and counted: a
+	// non-zero count means a call site still drops it.
+	{
+		const artOf = new Map();
+		for (const [, o] of assetIndex.objects) {
+			if (o.handler !== 'static') continue;
+			for (const t of o.templates || [])
+				if (t.raw && t.raw.animation)
+					artOf.set(String(t.raw.animation).replace(/\.def$/i, '').toLowerCase(), o);
+		}
+		let fixed = 0;
+		for (const o of objects) {
+			const own = o.template && artOf.get(String(o.template.animation).toLowerCase());
+			if (own && own.type === o.type && own.subtype !== o.subtype) { o.subtype = own.subtype; fixed++; }
+		}
+		if (fixed) console.error(`[gen] WARNING: ${fixed} scenery piece(s) carried another subtype than their art's object; corrected`);
+	}
 
 	const h3 = (params.guardTheme || picked.size)
 		? h3MonsterTemplates([roots.userDir, roots.installDir]) : null;

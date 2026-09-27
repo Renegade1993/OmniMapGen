@@ -284,7 +284,7 @@ function fillRimRows(plan, W, H, l, blocked, rng, objectEntry, isScenery) {
 						cells.push(py * W + px);
 					}
 					if (ok && lawful(cells))
-						return { cells, ax, ay, type: e.type, tpl: { animation: e.animation, mask: e.mask } };
+						return { cells, ax, ay, type: e.type, subtype: e.subtype, tpl: { animation: e.animation, mask: e.mask } };
 				}
 			}
 		}
@@ -297,7 +297,7 @@ function fillRimRows(plan, W, H, l, blocked, rng, objectEntry, isScenery) {
 		const ax = x - bx, ay = y - by;
 		// art may hang off the top or left edge; the anchor may not leave the map
 		if (ax >= W || ay >= H) { why.art++; return null; }
-		return { cells: [c], ax, ay, type: s.type, tpl: s.tpl };
+		return { cells: [c], ax, ay, type: s.type, subtype: s.subtype, tpl: s.tpl };
 	};
 
 	// farthest from the free ground first; a random order among equals
@@ -320,7 +320,8 @@ function fillRimRows(plan, W, H, l, blocked, rng, objectEntry, isScenery) {
 				for (const i of owners.get(k) || []) open[i]--;
 				for (const i of rowsOf[k]) have[i]++;
 			}
-			plan.objects.push(objectEntry(piece.type, piece.ax, piece.ay, l, piece.tpl, 'object'));
+			// a mod's piece keeps its own subtype (the engine refuses "spruces::object")
+			plan.objects.push(objectEntry(piece.type, piece.ax, piece.ay, l, piece.tpl, piece.subtype || 'object'));
 			placed++;
 			total += piece.cells.length;
 		}

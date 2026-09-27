@@ -2107,7 +2107,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 					if (!footprintFits(pc.tpl, x, y, levelIndex, W, H, blocked))
 						continue;
 					objects.push(objectEntry(pc.type, x, y, levelIndex,
-						pc.tpl, 'object'));
+						pc.tpl, pc.subtype || 'object'));
 					footprintBlock(pc.tpl, x, y, levelIndex, W, H, blocked);
 					for (const k of pown) wallLeft.delete(k);
 					paired = true;
@@ -2191,8 +2191,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			for (const o of pack.objects) {
 				const tpl = { animation: o.animation, mask: o.mask };
 				if (o.visitableFrom) tpl.visitableFrom = o.visitableFrom;
+				// this file's objectEntry takes the subtype sixth (content.js's
+				// takes options first): with `undefined` here every mod pack piece
+				// went out as "<type>::object", which the engine refuses
 				objects.push(objectEntry(o.type, x + o.dx, y + o.dy,
-					levelIndex, tpl, undefined, o.subtype || 'object'));
+					levelIndex, tpl, o.subtype || 'object'));
 				footprintBlock(tpl, x + o.dx, y + o.dy, levelIndex, W, H, blocked);
 			}
 			if (packGuard) packGuard.refresh();
@@ -4017,7 +4020,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 						}
 					}
 					if (!ok) continue;
-					o.template = m.tpl; o.x = ax; o.y = ay; o.type = m.type;
+					o.template = m.tpl; o.x = ax; o.y = ay; o.type = m.type; o.subtype = m.subtype || 'object';
 					done = true; merged++;
 					break;
 				}
