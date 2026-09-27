@@ -205,4 +205,4 @@ function pruneOrphanRoads(roadCells, W, H) {
 	return dropped;
 }
 
-module.exports = { buildRoadNetwork, pruneOrphanRoads, route, approach };
+module.exports = { buildRoadNetwork, pruneOrphanRoads, route, approach, addElbows, DIRS4, DIRS8 };

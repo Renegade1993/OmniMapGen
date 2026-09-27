@@ -31,7 +31,7 @@ const { ZONE_CLASS, MONSTER_BAND, MINE_SUBTYPE, guardToLevel,
 const { zoneTownTypes } = require('./zoneTowns');
 const { carveBoundaries, placeChokeGuards } = require('./boundaries');
 const { buildRoadNetwork, pruneOrphanRoads, approach: roadApproach } = require('./roadnet');
-const { planRoads, pruneTails } = require('./roadplan');
+const { planRoads, joinFailed, pruneTails } = require('./roadplan');
 const { fillBiome, blockingCells, footprintFits, footprintBlock, entranceOpen,
 	visitableCells, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED,
 	RESERVED, APPROACH, markApproach, allowedDirs, REMOVABLE_TYPES,
@@ -2237,6 +2237,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// zone roadless). The held gate sites of links with a road are nodes too.
 	// VMAPGEN_ROADS=late keeps the old order, roads routed after the fill.
 	const roadCells = new Set();
+	const roadFailed = [];
 	if (process.env.VMAPGEN_ROADS !== 'late') {
 		const roadTowns = towns.filter(t => (t.l || 0) === levelIndex && t.gates);
 		(zoneMeta || []).forEach(meta => {
@@ -2245,6 +2246,62 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				roadTowns.push({ x, y, l: levelIndex, gates: visitableCells(OBJECT_TEMPLATES.randomTown, x, y) });
 			}
 		});
+		// The free layout links its towns the engine's way too (CRoadRandomizer):
+		// the roaded passages the player's levers drew join their zones first;
+		// then the other open passages, shuffled, take a road where they join
+		// two groups of zones not yet joined, one of them holding a town; and a
+		// townless zone left with one road that way loses it. The roads then go
+		// down here with the rest, before anything is built. The town net used
+		// to be routed after the fill, around whatever stood there (K: "broken
+		// up by things placed around them"). Road network Off keeps only the
+		// passages' own roads.
+		if (!tplZones && p.roadNetwork !== 0) {
+			const holding = new Set(roadTowns.map(t => zone[t.y * W + t.x]));
+			const doors = openings.filter(o => o.kind === 'openRoad' || o.kind === 'openNoRoad');
+			const parent = new Map(), town = new Map();
+			for (const o of doors) for (const z of [o.a, o.b])
+				if (!parent.has(z)) { parent.set(z, z); town.set(z, holding.has(z)); }
+			const find = z => { while (parent.get(z) !== z) { parent.set(z, parent.get(parent.get(z))); z = parent.get(z); } return z; };
+			const join = (a, b) => { const ra = find(a), rb = find(b); parent.set(ra, rb); town.set(rb, town.get(ra) || town.get(rb)); };
+			for (const o of doors) if (o.kind === 'openRoad' && find(o.a) !== find(o.b)) join(o.a, o.b);
+			// its own stream, so the rest of the map draws what it drew before
+			const trng = xorshift((((params.seed || 1) ^ 0x70ad5) + levelIndex * 131) >>> 0);
+			const rest = doors.filter(o => o.kind === 'openNoRoad');
+			for (let i = rest.length - 1; i > 0; i--) {
+				const j = (trng() * (i + 1)) | 0;
+				[rest[i], rest[j]] = [rest[j], rest[i]];
+			}
+			const linked = new Set();
+			for (const o of rest) {
+				const ra = find(o.a), rb = find(o.b);
+				if (ra === rb || !(town.get(ra) || town.get(rb))) continue;
+				join(o.a, o.b);
+				o.kind = 'openRoad';
+				linked.add(o);
+			}
+			// the engine trims every road, the levers' own included: a passage's
+			// road into a townless zone it leaves by no other road is a tail
+			let trimmed = 0;
+			for (let changed = true; changed;) {
+				changed = false;
+				for (const z of parent.keys()) {
+					if (holding.has(z)) continue;
+					const roads = doors.filter(o => o.kind === 'openRoad' && (o.a === z || o.b === z));
+					if (roads.length !== 1) continue;
+					roads[0].kind = 'openNoRoad';
+					if (!linked.delete(roads[0])) trimmed++;
+					changed = true;
+				}
+			}
+			if (linked.size || trimmed)
+				console.error(`[gen] level ${levelIndex}: the towns linked through ${linked.size} more roaded passage(s), `
+					+ `${trimmed} passage road(s) leading nowhere dropped`);
+			if (process.env.VMAPGEN_ROAD_TRACE)
+				for (const z of [...holding].sort((a, b) => a - b))
+					console.error(`[roads] level ${levelIndex}: town zone ${z}: doors `
+						+ doors.filter(o => o.a === z || o.b === z).map(o => `${o.a}-${o.b}:${o.kind}`).join(' ')
+						+ `; portals ${openings.filter(o => o.kind === 'portal' && (o.a === z || o.b === z)).length}`);
+		}
 		const gateNodes = [];
 		for (const [sites, tpl] of [[gateSites, OBJECT_DEFS.subterraneanGate],
 			[gateSitesHere, OBJECT_DEFS.subterraneanGateUnder]])
@@ -2257,9 +2314,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			// a wall cell held clear (a doorway's side, a town's apron) never
 			// takes a wall object (footprintFits vetoes RESERVED), so a road may
 			avoid: c => barriers.has(c) && !(blocked[levelIndex * W * H + c] & RESERVED) });
+		// what could not be reached yet is joined after the fill (planMap)
+		roadFailed.push(...r.failedNodes);
 		if (r.cells)
 			console.error(`[gen] level ${levelIndex}: roads first, ${r.cells} cells in ${r.zones} zone(s)`
-				+ (r.failed ? `, ${r.failed} node(s) no road reached` : ''));
+				+ (r.failed ? `, ${r.failed} node(s) left for after the fill` : ''));
 	}
 
 	// Island maps (water W3): a boat is the way between islands. A harbour's
@@ -3462,7 +3521,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// level map not one of the 55 anchors where a gate footprint still fitted
 	// had open reachable ground beside it, so zero gates were placed and the
 	// entire underground was unreachable.
-	return { zone, seeds, gateSites, gateSitesHere, classes, biomeTerrain, barriers, roadCells, objects, openings,
+	return { zone, seeds, gateSites, gateSitesHere, classes, biomeTerrain, barriers, roadCells, roadFailed, objects, openings,
 		guards, rng, p, levelIndex, playerStarts, alignPlayers, towns,
 		objectPools, openMask, zoneMeta, zdist, rim, harbours, links, sailLinks,
 		stats: layoutStats(zone, seeds, tplZones, tplConns, unfulfilled, forced, W, H, water, openMask, landCells) };
@@ -4192,6 +4251,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = planRoads({ plan: { zone: plans[l].zone, openings: [], roadCells: plans[l].roadCells,
 				roadNodes: plans[l].roadNodes, p: plans[l].p }, towns: [],
 				W, H, blocked, l, approach: t => roadApproach(t, W, H, blocked, l) });
+			(plans[l].roadFailed = plans[l].roadFailed || []).push(...r.failedNodes);
 			if (r.cells)
 				console.error(`[gen] level ${l}: gates and monoliths placed late joined the roads, `
 					+ `${r.cells} cells in ${r.zones} zone(s)`
@@ -4228,14 +4288,19 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		const before = plans[l].roadCells.size;
 		// roadNetwork 0 (player lever): no town-linking net; roads cut through
 		// zone openings (openPathRoad) stay
-		// With roads first, a template's roads are the engine's alone: its towns
-		// joined through the links its road options give (CRoadRandomizer), and a
-		// link without a road, or a portal, leaves the towns it parts unjoined by
+		// With roads first, a template's roads are the engine's alone: towns
+		// joined through the links that carry a road (CRoadRandomizer), and a
+		// link without one, or a portal, leaves the towns it parts unjoined by
 		// road, as in the engine. Routing them together after the fill is what
-		// ran roads round objects and along the map's edge.
+		// ran roads round objects and along the map's edge. The free layout's
+		// towns were linked first where its passages allow (planLevel); a start
+		// whose only passage leads into a dead end, or out by portal, would be
+		// left with no road at all, so its town net still runs, riding the roads
+		// already laid. A lone town still gets its road to the mines here.
 		const templateRoads = roadsFirst && (plans[l].zoneMeta || []).some(m => m && m.spec);
-		const added = p.roadNetwork === 0 || (templateRoads && here.length > 1) ? 0
-			: buildRoadNetwork(here, plans[l].roadCells, W, H, blocked, l);
+		const added = (roadsFirst ? joinFailed(plans[l].roadFailed, plans[l].roadCells, plans[l].zone, W, H, blocked, l) : 0)
+			+ (p.roadNetwork === 0 || (templateRoads && towns.filter(t => (t.l || 0) === l && t.gates).length > 1) ? 0
+				: buildRoadNetwork(here, plans[l].roadCells, W, H, blocked, l));
 		const orphans = pruneOrphanRoads(plans[l].roadCells, W, H);
 		// Road ends that lead to nothing go (K: "tails going nowhere"), back to
 		// the last junction, unless they end at a town, a mine or a passage

@@ -21,6 +21,7 @@
 'use strict';
 
 const { OCCUPIED, RESERVED } = require('./content');
+const { route, addElbows, DIRS4: R4, DIRS8: R8 } = require('./roadnet');
 
 const DIRS4 = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 
@@ -151,7 +152,8 @@ function cheapestPath(from, to, W, H, open, cost) {
  * cells no road may take (the zone walls before they are objects). A zone
  * that already has roads (plan.roadCells) keeps them, and its new nodes join
  * them. Adds to plan.roadCells, reserves every road cell in `blocked`, and
- * returns { zones, cells, failed }.
+ * returns { zones, cells, failed, failedNodes: [{z, cells}] } (joinFailed
+ * takes those after the fill).
  */
 function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null }) {
 	const zone = plan.zone;
@@ -212,6 +214,7 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null }) {
 	const costs = roadCosts(zone, W, H, plan.p && plan.p.water);
 	const cost = c => costs[c];
 	let zonesRoaded = 0, failed = 0;
+	const failedNodes = [];
 	const laid = new Set();
 	const had = new Map();
 	for (const c of plan.roadCells || []) {
@@ -231,6 +234,7 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null }) {
 			const path = cheapestPath(roads, cells, W, H, inZone, cost);
 			if (!path) {
 				failed++;
+				failedNodes.push({ z, cells });
 				if (process.env.VMAPGEN_ROAD_TRACE) {
 					console.error(`[roads] level ${l}: zone ${z}: no way from the roads to the node at `
 						+ cells.slice(0, 3).map(c => `(${c % W},${(c / W) | 0})`).join(' '));
@@ -262,7 +266,35 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null }) {
 		plan.roadCells.add(c);
 		blocked[base + c] |= RESERVED;
 	}
-	return { zones: zonesRoaded, cells: laid.size, failed };
+	return { zones: zonesRoaded, cells: laid.size, failed, failedNodes };
+}
+
+/**
+ * After the fill, the nodes planRoads could not reach join the roads of their
+ * own zone, routed around what now stands: four ways first, then eight with
+ * the elbows filled, as the town net was (roadnet.js). They are a town whose
+ * gate faced a wall a later pass opened, or a pocket its zone reached only by
+ * a diagonal step, which heroes take and a four-connected road cannot. A node
+ * already on a road, or in a zone with none, is left alone. Returns the cells
+ * added to roadCells.
+ */
+function joinFailed(failedNodes, roadCells, zone, W, H, blocked, l) {
+	const base = l * W * H;
+	let added = 0;
+	for (const { z, cells } of failedNodes || []) {
+		const side = cells.filter(c => !(blocked[base + c] & OCCUPIED));
+		if (!side.length || side.some(c => roadCells.has(c))) continue;
+		const targets = new Set([...roadCells].filter(c => zone[c] === z));
+		if (!targets.size) continue;
+		let path = route(side, targets, W, H, blocked, l, roadCells, R4);
+		if (!path) {
+			path = route(side, targets, W, H, blocked, l, roadCells, R8);
+			if (path) path = addElbows(path, W, H, blocked, l);
+		}
+		if (!path) continue;
+		for (const c of path) if (!roadCells.has(c)) { roadCells.add(c); added++; }
+	}
+	return added;
 }
 
 /**
@@ -297,4 +329,4 @@ function pruneTails(roadCells, destinations, W, H) {
 	return dropped;
 }
 
-module.exports = { planRoads, pruneTails, roadCosts, cheapestPath };
+module.exports = { planRoads, joinFailed, pruneTails, roadCosts, cheapestPath };
