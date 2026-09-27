@@ -63,8 +63,7 @@ The suite generates against a VCMI source tree with the MapGen tab, `..\VCMI\sou
 | `src/wfc`, `src/stitch` | the terrain solver and chunk stitching |
 | `src/exporter` | the `.vmap` writer |
 | `src/preview` | a PNG preview of a map, and a `.vmap` reader |
-| `ui` | the MapGen tab's widget and settings configs |
-| `mod` | the mod's manifest, `mod.json` |
+| `mod` | the mod as it installs, less the generator's code and Node: `mod.json`, the tab's pages and texts (`Content/config`, written by `tools/gen_vcmi_ui.js`), three templates of its own, `generator/generate.cmd` |
 | `tools` | packages the mod (`make_mod.js`); builds the tab's configs from the generator's settings; a settings fuzzer; an extractor for the game's own object templates |
 
 ## License

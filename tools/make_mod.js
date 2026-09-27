@@ -7,7 +7,9 @@
  * tab for as long as the mod is enabled. The mod carries everything the tab
  * needs: its layout (the eight page files), its texts, and the generator with
  * the Node runtime it runs on. mod.json's "mapGenerator" names the program the
- * tab starts, relative to the mod's own folder; mod/mod.json is its only copy.
+ * tab starts, relative to the mod's own folder. mod/ is the skeleton as the
+ * repository keeps it (mod.json, the tab files, the templates, generate.cmd);
+ * this adds the generator's src and the Node runtime.
  *
  *   node tools/make_mod.js --node-zip <node-vX-win-x64.zip> --node-sums <SHASUMS256.txt> [--out dist]
  *
@@ -171,21 +173,27 @@ function main() {
 		throw new Error('mod/mod.json declares no mapGenerator command');
 	add('mod.json', modJson);
 
-	// the tab: its layout and its texts
-	const widgets = path.join(ROOT, 'ui', 'vcmi', 'config', 'widgets', 'mapGen');
-	for (const f of fs.readdirSync(widgets).filter(f => f.endsWith('.json')).sort())
-		add(`Content/config/widgets/mapGen/${f}`, fs.readFileSync(path.join(widgets, f)));
-	const strings = JSON.parse(fs.readFileSync(path.join(ROOT, 'ui', 'vcmi', 'strings.json'), 'utf8'));
-	const own = strings;
-	add('Content/config/omnimapgen/english.json', JSON.stringify(own, null, '\t') + '\n');
+	// the mod skeleton as the repository keeps it (mod/: the tab's layout and
+	// texts from tools/gen_vcmi_ui.js, the templates, generate.cmd), batch
+	// files with the line endings cmd.exe reads
+	const skeleton = path.join(ROOT, 'mod');
+	for (const f of walk(skeleton).sort()) {
+		const rel = path.relative(skeleton, f).split(path.sep).join('/');
+		if (rel === 'mod.json') continue;
+		const data = fs.readFileSync(f);
+		add(rel, /\.cmd$/i.test(rel) ? data.toString('utf8').replace(/\r?\n/g, '\r\n') : data);
+	}
+	const texts = Object.keys(JSON.parse(fs.readFileSync(path.join(skeleton, 'Content', 'config', 'omnimapgen', 'english.json'), 'utf8'))).length;
 
 	// the generator and the runtime it runs on
-	add('generator/generate.cmd', '@"%~dp0node\\node.exe" "%~dp0src\\main\\generate-cli.js" %*\r\n');
 	add('generator/node/node.exe', nodeExe);
 	add('generator/node/LICENSE', nodeLicense);
 	for (const f of walk(path.join(ROOT, 'src')).sort())
 		add(`generator/src/${path.relative(path.join(ROOT, 'src'), f).split(path.sep).join('/')}`, fs.readFileSync(f));
-	add('generator/package.json', fs.readFileSync(path.join(ROOT, 'package.json')));
+	// generator/ holds exactly what runs, as DMB's mod packer lays it out
+	// (generate.cmd, src, LICENSE, node): the client hashes that folder before
+	// every run against the catalog's pin, so both packers must agree on it
+	add('generator/LICENSE', fs.readFileSync(path.join(ROOT, 'LICENSE')));
 	add('LICENSE', fs.readFileSync(path.join(ROOT, 'LICENSE')));
 	add('README.md', fs.readFileSync(path.join(ROOT, 'README.md')));
 
@@ -201,9 +209,15 @@ function main() {
 	const zipPath = path.join(out, `${MOD_ID}.zip`);
 	fs.writeFileSync(zipPath, zip);
 	const sha = crypto.createHash('sha256').update(zip).digest('hex');
-	console.log(`${MOD_ID} ${pkg.version}: ${files.length} files, ${Object.keys(own).length} texts, Node ${nodeDir}`);
+	// the catalog's codeSha256: sha256sum-style lines "<hex>  <path>" for every
+	// file under generator/, sorted, then the SHA-256 of that text
+	const codeLines = files.filter(f => f.name.startsWith(`${MOD_ID}/generator/`))
+		.map(f => `${crypto.createHash('sha256').update(f.data).digest('hex')}  ${f.name.slice(`${MOD_ID}/generator/`.length)}`).sort();
+	const codeSha = crypto.createHash('sha256').update(codeLines.join('\n') + '\n').digest('hex');
+	console.log(`${MOD_ID} ${pkg.version}: ${files.length} files, ${texts} texts, Node ${nodeDir}`);
 	console.log(`${folder}`);
 	console.log(`${zipPath}: ${zip.length} bytes (${(zip.length / 1048576).toFixed(1)} MB), sha256 ${sha}`);
+	console.log(`codeSha256 (generator/, ${codeLines.length} files): ${codeSha}`);
 }
 
 main();

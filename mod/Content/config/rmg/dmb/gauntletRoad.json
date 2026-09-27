@@ -1,0 +1,124 @@
+{
+	// DMB original, MapGen Opus, 2026-09-26, for K to play and keep or cull.
+	// A two-player tug of war: one road from start to start through a skirmish
+	// zone on each side and a rich middle, every stage a harder guard than the
+	// last. Off the road, dead-end pockets hold the best treasure behind the
+	// strongest guards, so a player can race down the road or clear pockets and
+	// arrive stronger. No portals: every link joins two zones that touch.
+	"Gauntlet Road" :
+	{
+		"minSize" : "m", "maxSize" : "l+u",
+		"players" : "2",
+		"zones" :
+		{
+			"1" :
+			{
+				"type" : "playerStart",
+				"size" : 16,
+				"owner" : 1,
+				"monsters" : "normal",
+				"playerTowns" : { "castles" : 1 },
+				"mines" : { "wood" : 1, "ore" : 1, "crystal" : 1 },
+				"treasure" :
+				[
+					{ "min" : 500, "max" : 3000, "density" : 12 },
+					{ "min" : 3000, "max" : 6000, "density" : 6 }
+				]
+			},
+			"2" :
+			{
+				"type" : "playerStart",
+				"size" : 16,
+				"owner" : 2,
+				"monsters" : "normal",
+				"playerTowns" : { "castles" : 1 },
+				"minesLikeZone" : 1,
+				"treasureLikeZone" : 1
+			},
+			"3" :
+			{
+				"type" : "treasure",
+				"size" : 14,
+				"monsters" : "normal",
+				"neutralTowns" : { "towns" : 1 },
+				"mines" : { "gold" : 1, "gems" : 1, "sulfur" : 1 },
+				"treasure" :
+				[
+					{ "min" : 3000, "max" : 9000, "density" : 8 },
+					{ "min" : 9000, "max" : 15000, "density" : 2 }
+				]
+			},
+			"4" :
+			{
+				"type" : "treasure",
+				"size" : 14,
+				"monsters" : "normal",
+				"neutralTowns" : { "towns" : 1 },
+				"minesLikeZone" : 3,
+				"treasureLikeZone" : 3
+			},
+			"5" :
+			{
+				"type" : "treasure",
+				"size" : 20,
+				"monsters" : "strong",
+				"neutralTowns" : { "castles" : 1 },
+				"mines" : { "gold" : 2, "mercury" : 1 },
+				"treasure" :
+				[
+					{ "min" : 9000, "max" : 20000, "density" : 6 },
+					{ "min" : 20000, "max" : 35000, "density" : 2 }
+				]
+			},
+			"6" :
+			{
+				"type" : "treasure",
+				"size" : 8,
+				"monsters" : "strong",
+				"mines" : { "gold" : 1 },
+				"treasure" :
+				[
+					{ "min" : 12000, "max" : 25000, "density" : 6 }
+				]
+			},
+			"7" :
+			{
+				"type" : "treasure",
+				"size" : 8,
+				"monsters" : "strong",
+				"minesLikeZone" : 6,
+				"treasureLikeZone" : 6
+			},
+			"8" :
+			{
+				"type" : "treasure",
+				"size" : 8,
+				"monsters" : "strong",
+				"mines" : { "crystal" : 1, "gems" : 1 },
+				"treasure" :
+				[
+					{ "min" : 20000, "max" : 40000, "density" : 4 }
+				]
+			},
+			"9" :
+			{
+				"type" : "treasure",
+				"size" : 8,
+				"monsters" : "strong",
+				"minesLikeZone" : 8,
+				"treasureLikeZone" : 8
+			}
+		},
+		"connections" :
+		[
+			{ "a" : "1", "b" : "3", "guard" : 4000, "road" : "true" },
+			{ "a" : "3", "b" : "5", "guard" : 12000, "road" : "true" },
+			{ "a" : "5", "b" : "4", "guard" : 12000, "road" : "true" },
+			{ "a" : "4", "b" : "2", "guard" : 4000, "road" : "true" },
+			{ "a" : "3", "b" : "6", "guard" : 14000 },
+			{ "a" : "4", "b" : "7", "guard" : 14000 },
+			{ "a" : "5", "b" : "8", "guard" : 25000 },
+			{ "a" : "5", "b" : "9", "guard" : 25000 }
+		]
+	}
+}

@@ -63,7 +63,8 @@
 			"humans": 1,
 			"template": "",
 			"declareMods": 0
-		}
+		},
+		"preset": "nostalgia"
 	},
 	"items": [
 		{

@@ -1,0 +1,136 @@
+{
+	// DMB original, MapGen Opus, 2026-09-26, for K to play and keep or cull.
+	// Four corner starts, a ring of four quarries rich in mines between
+	// neighbours, and the Foundry in the middle: a Tower castle (Golem Factory
+	// country), rich treasure and strong guards. Every link joins two zones that
+	// touch, so the map needs no portals. DMB's generator adds golem-family
+	// guards, dwellings and banks to this template by itself (templateThemes.json).
+	"Golem Foundry" :
+	{
+		"minSize" : "m", "maxSize" : "xl",
+		"players" : "2-4",
+		"zones" :
+		{
+			"1" :
+			{
+				"type" : "playerStart",
+				"size" : 14,
+				"owner" : 1,
+				"monsters" : "normal",
+				"playerTowns" : { "castles" : 1 },
+				"mines" : { "wood" : 1, "ore" : 1, "mercury" : 1 },
+				"treasure" :
+				[
+					{ "min" : 500, "max" : 3000, "density" : 12 },
+					{ "min" : 3000, "max" : 6000, "density" : 6 },
+					{ "min" : 6000, "max" : 9000, "density" : 1 }
+				]
+			},
+			"2" :
+			{
+				"type" : "playerStart",
+				"size" : 14,
+				"owner" : 2,
+				"monsters" : "normal",
+				"playerTowns" : { "castles" : 1 },
+				"minesLikeZone" : 1,
+				"treasureLikeZone" : 1
+			},
+			"3" :
+			{
+				"type" : "playerStart",
+				"size" : 14,
+				"owner" : 3,
+				"monsters" : "normal",
+				"playerTowns" : { "castles" : 1 },
+				"minesLikeZone" : 1,
+				"treasureLikeZone" : 1
+			},
+			"4" :
+			{
+				"type" : "playerStart",
+				"size" : 14,
+				"owner" : 4,
+				"monsters" : "normal",
+				"playerTowns" : { "castles" : 1 },
+				"minesLikeZone" : 1,
+				"treasureLikeZone" : 1
+			},
+			"5" :
+			{
+				"type" : "treasure",
+				"size" : 10,
+				"monsters" : "normal",
+				"matchTerrainToTown" : false,
+				"terrainTypes" : [ "rough", "dirt" ],
+				"mines" : { "crystal" : 1, "gems" : 1, "sulfur" : 1, "gold" : 1 },
+				"treasure" :
+				[
+					{ "min" : 3000, "max" : 9000, "density" : 8 },
+					{ "min" : 9000, "max" : 15000, "density" : 3 }
+				]
+			},
+			"6" :
+			{
+				"type" : "treasure",
+				"size" : 10,
+				"monsters" : "normal",
+				"matchTerrainToTown" : false,
+				"terrainTypeLikeZone" : 5,
+				"minesLikeZone" : 5,
+				"treasureLikeZone" : 5
+			},
+			"7" :
+			{
+				"type" : "treasure",
+				"size" : 10,
+				"monsters" : "normal",
+				"matchTerrainToTown" : false,
+				"terrainTypeLikeZone" : 5,
+				"minesLikeZone" : 5,
+				"treasureLikeZone" : 5
+			},
+			"8" :
+			{
+				"type" : "treasure",
+				"size" : 10,
+				"monsters" : "normal",
+				"matchTerrainToTown" : false,
+				"terrainTypeLikeZone" : 5,
+				"minesLikeZone" : 5,
+				"treasureLikeZone" : 5
+			},
+			"9" :
+			{
+				"type" : "treasure",
+				"size" : 24,
+				"monsters" : "strong",
+				"neutralTowns" : { "castles" : 1 },
+				"allowedTowns" : [ "tower" ],
+				"matchTerrainToTown" : false,
+				"terrainTypes" : [ "snow", "dirt" ],
+				"mines" : { "gold" : 2, "gems" : 1 },
+				"treasure" :
+				[
+					{ "min" : 9000, "max" : 20000, "density" : 8 },
+					{ "min" : 20000, "max" : 40000, "density" : 3 }
+				]
+			}
+		},
+		"connections" :
+		[
+			{ "a" : "1", "b" : "5", "guard" : 5000 },
+			{ "a" : "2", "b" : "5", "guard" : 5000 },
+			{ "a" : "2", "b" : "6", "guard" : 5000 },
+			{ "a" : "3", "b" : "6", "guard" : 5000 },
+			{ "a" : "3", "b" : "7", "guard" : 5000 },
+			{ "a" : "4", "b" : "7", "guard" : 5000 },
+			{ "a" : "4", "b" : "8", "guard" : 5000 },
+			{ "a" : "1", "b" : "8", "guard" : 5000 },
+			{ "a" : "5", "b" : "9", "guard" : 16000 },
+			{ "a" : "6", "b" : "9", "guard" : 16000 },
+			{ "a" : "7", "b" : "9", "guard" : 16000 },
+			{ "a" : "8", "b" : "9", "guard" : 16000 }
+		]
+	}
+}

@@ -1,7 +1,7 @@
 {
 	"name" : "OmniMapGen",
-	"description" : "Random maps made in the lobby: free layouts and every random map template the game offers, with the active mods' towns, creatures, banks and dwellings placed the way the game's own generator places them. Adds the MapGen tab beside Random Map in a single-player lobby. Needs a client with the map generator framework (DMB).",
-	"version" : "0.1.0",
+	"description" : "Random maps made in the lobby: free layouts and every random map template the game offers, with the active mods' towns, creatures, banks and dwellings placed the way the game's own generator places them. Adds the MapGen tab beside Random Map in a single-player lobby, and three templates of its own. Needs a client with the map generator framework (DMB).",
+	"version" : "0.2.0",
 	"author" : "Renegade1993",
 	"contact" : "https://github.com/Renegade1993/OmniMapGen",
 	"licenseName" : "MIT",
@@ -10,7 +10,14 @@
 	"compatibility" : { "min" : "1.7.0" },
 	"language" : "english",
 	"translations" : [ "config/omnimapgen/english.json" ],
+	"templates" : [
+		"config/rmg/dmb/gauntletRoad.json",
+		"config/rmg/dmb/golemFoundry.json",
+		"config/rmg/dmb/threeCrowns.json"
+	],
 	"mapGenerator" : {
-		"command" : { "windows" : "generator/generate.cmd" }
+		"name" : "MapGen",
+		"command" : "generator/generate.cmd",
+		"tab" : "config/widgets/mapGen/mapGenTab.json"
 	}
 }

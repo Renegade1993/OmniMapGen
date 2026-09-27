@@ -2,14 +2,13 @@
  * gen_vcmi_ui.js - build the in-game MapGen tab from the generator's own
  * lever list (src/biome/knobs.js), queue item 25.
  *
- *   node tools/gen_vcmi_ui.js build            writes ui/vcmi/ (staging, reviewable)
- *   node tools/gen_vcmi_ui.js install <src>    copies ui/vcmi/ into a VCMI source
- *                                              tree and patches its settings schema
- *                                              and English strings
+ *   node tools/gen_vcmi_ui.js build            writes the mod's tab files into mod/Content/
  *
- * The MapGen tab (client/lobby/MapGenTab.cpp) is a third map-selection tab in
- * the lobby, a peer of Scenarios and Random Map with its own lobby button; the
- * stock Random Map tab is left as shipped. What this produces:
+ * The MapGen tab is a third map-selection tab in the lobby, a peer of
+ * Scenarios and Random Map with its own lobby button; the stock Random Map tab
+ * is left as shipped. The client's map generator framework draws it while
+ * this mod is enabled (mod/mod.json "mapGenerator"), from the files this
+ * writes into the mod:
  *   config/widgets/mapGen/mapGenTab.json   the tab: page buttons, Defaults,
  *                                          Generate, the page list, defaults
  *   config/widgets/mapGen/page_map.json    map size, underground, players,
@@ -17,17 +16,15 @@
  *   config/widgets/mapGen/page_<id>.json   one page per lever group: "?" help
  *                                          button, label, settings-bound slider
  *                                          or checkbox, value
- *   schema.mapGen.json                     the settings.json schema section
- *   strings.json                           vcmi.mapGen.* and vcmi.lobby.mapGen.*
+ *   config/omnimapgen/english.json         vcmi.mapGen.* and vcmi.lobby.mapGen.*
  *
  * Widgets are settings-bound (client patch in InterfaceObjectConfigurable):
  * "setting": "persistent:mapGen/params/<lever>" or ".../map/<key>", which is
  * persistentStorage.json, and the tab's Generate forwards every mapGen.params
- * value to the generator as --bio.<lever>. The settings.json schema section
- * carries only the generator command (default: the packaged mapgen\generate.cmd
- * beside the client, or the install argument). Rebuild and reinstall whenever knobs.js or a default
- * changes, so the game never carries a stale default: every one of them
- * comes from BIOME_DEFAULTS through here.
+ * value to the generator as --bio.<lever>. Nothing goes into settings.json:
+ * the command comes from the mod. Rebuild whenever knobs.js or a default
+ * changes, so the mod never carries a stale default: every one of them comes
+ * from BIOME_DEFAULTS through here.
  */
 'use strict';
 
@@ -35,7 +32,7 @@ const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..');
 const { PAGES, KNOBS } = require(path.join(ROOT, 'src/biome/knobs'));
 const PRESETS = require(path.join(ROOT, 'src/biome/presets.json'));
-const STAGE = path.join(ROOT, 'ui', 'vcmi');
+const STAGE = path.join(ROOT, 'mod', 'Content');
 
 // The tab fills the lobby's left panel the way VCMI's own Extra Options tab
 // does: clear background art from (0,6), titles centred on x 222 as the stock
@@ -197,7 +194,8 @@ function tabJson() {
 	return {
 		library: ['config/widgets/commonPrimitives.json'],
 		pages: ALL_PAGES.map(p => `config/widgets/mapGen/page_${p.id}.json`),
-		defaults: { params, map: MAP_DEFAULTS },
+		// the preset Defaults returns to, which the client no longer assumes
+		defaults: { params, map: MAP_DEFAULTS, preset: 'nostalgia' },
 		items: [
 			{ name: 'background', type: 'picture', image: 'AdventureOptionsBackgroundClear', position: { x: 0, y: 6 } },
 			// K's live test (2026-09-25) found this painting over the first
@@ -233,25 +231,6 @@ function tabJson() {
 				items: [{ type: 'label', font: 'medium', alignment: 'center', color: 'yellow',
 					text: 'vcmi.mapGen.generate.hover' }] },
 		],
-	};
-}
-
-// The settings.json section holds only the command the Generate button runs,
-// with the packaged generator as its default: DMB ships it as
-// mapgen\generate.cmd beside the client, and the tab resolves a relative path
-// in the client's binary folder (MapGenTab::generate). The tab's own state
-// (levers, map settings, preset, last page) lives in persistentStorage.json:
-// settings.json is shared with any official client using the same user
-// folder, and that client's schema erases a mapGen section it has never
-// heard of.
-const DEFAULT_GENERATOR = 'mapgen\\generate.cmd';
-function schemaJson(generator = DEFAULT_GENERATOR) {
-	return {
-		type: 'object', additionalProperties: false, default: {},
-		required: ['externalGenerator'],
-		properties: {
-			externalGenerator: { type: 'string', default: generator },
-		},
 	};
 }
 
@@ -312,77 +291,11 @@ function build() {
 	write('config/widgets/mapGen/mapGenTab.json', tabJson());
 	write('config/widgets/mapGen/page_map.json', mapPageJson());
 	for (const p of PAGES) write(`config/widgets/mapGen/page_${p.id}.json`, pageJson(p));
-	write('schema.mapGen.json', schemaJson());
-	write('strings.json', stringsJson());
+	fs.mkdirSync(path.join(STAGE, 'config/omnimapgen'), { recursive: true });
+	write('config/omnimapgen/english.json', stringsJson());
 	console.log(`built ${ALL_PAGES.length} pages, ${KNOBS.length} levers into ${STAGE}`);
 }
 
-// ---- install into a VCMI source tree -------------------------------------
-
-const MARK = 'VCMIMapGen settings UI (generated by VCMIMapGen/tools/gen_vcmi_ui.js)';
-
-function install(src, generator) {
-	build();
-	const nl = s => (s.includes('\r\n') ? '\r\n' : '\n');
-	// 1. widget files, replacing whatever an earlier layout left there
-	const wdst = path.join(src, 'config/widgets/mapGen');
-	fs.mkdirSync(wdst, { recursive: true });
-	for (const f of fs.readdirSync(wdst)) fs.unlinkSync(path.join(wdst, f));
-	for (const f of fs.readdirSync(path.join(STAGE, 'config/widgets/mapGen')))
-		fs.copyFileSync(path.join(STAGE, 'config/widgets/mapGen', f), path.join(wdst, f));
-
-	// 2. settings schema: replace the whole "mapGen" property (it has a known
-	//    shape: the Generate-button patch declared it with externalGenerator)
-	const schemaPath = path.join(src, 'config/schemas/settings.json');
-	let schema = fs.readFileSync(schemaPath, 'utf8');
-	const NL = nl(schema);
-	const start = '\t\t"mapGen" : {';
-	const a = schema.indexOf(start);
-	if (a < 0) throw new Error('settings schema has no "mapGen" section to replace');
-	// the section ends at the first line that closes it at the same depth
-	const closeRe = new RegExp(`${NL.replace(/\r/g, '\\r').replace(/\n/g, '\\n')}\\t\\t\\}`, 'g');
-	closeRe.lastIndex = a;
-	const m = closeRe.exec(schema);
-	if (!m) throw new Error('could not find the end of the "mapGen" schema section');
-	const body = JSON.stringify(generator === undefined ? schemaJson() : schemaJson(generator), null, '\t').split('\n')
-		.map((line, i) => (i === 0 ? line : '\t\t' + line)).join(NL);
-	schema = schema.slice(0, a) + `\t\t// ${MARK}${NL}\t\t"mapGen" : ` + body + schema.slice(m.index + m[0].length);
-	// drop a marker line left by an earlier install, so reinstalling is clean
-	schema = schema.replace(new RegExp(`(\\t\\t// ${MARK.replace(/[()/.]/g, '\\$&')}${NL.replace(/\r/g, '\\r').replace(/\n/g, '\\n')}){2,}`), `\t\t// ${MARK}${NL}`);
-	fs.writeFileSync(schemaPath, schema);
-
-	// 3. English strings: remove our previous keys (the earlier window's
-	//    Random Map tab button strings included), then add the current set.
-	//    Other lanes' strings in the same file are left alone.
-	const strPath = path.join(src, 'Mods/vcmi/Content/config/translations/english.json');
-	let text = fs.readFileSync(strPath, 'utf8');
-	const SNL = nl(text);
-	const ours = stringsJson();
-	const lines = text.split(SNL).filter(l =>
-		!/^\s*"vcmi\.(mapGen\.|lobby\.mapGen\.|randomMapTab\.mapGenSettings\.)/.test(l));
-	text = lines.join(SNL);
-	// The usual anchor is a string the old Random Map "Generate" button left
-	// behind; a tree that never carried that button (a fresh install, or one
-	// built from a clean base for packaging) has no such line, so fall back
-	// to right after the file's opening brace, which always exists.
-	const anchor = '"vcmi.randomMapTab.externalGen.hover"';
-	const at = text.indexOf(anchor);
-	const indent = '\t';
-	const add = Object.entries(ours).map(([k, v]) => `${indent}${JSON.stringify(k)} : ${JSON.stringify(v)},`).join(SNL) + SNL;
-	if (at < 0) {
-		const brace = text.indexOf('{');
-		if (brace < 0) throw new Error('english.json is not a JSON object');
-		const lineStart = text.indexOf(SNL, brace) + SNL.length;
-		text = text.slice(0, lineStart) + add + text.slice(lineStart);
-	} else {
-		const lineStart = text.lastIndexOf(SNL, at) + SNL.length;
-		text = text.slice(0, lineStart) + add + text.slice(lineStart);
-	}
-	fs.writeFileSync(strPath, text);
-	console.log(`installed into ${src}: MapGen tab widgets, settings schema, ${Object.keys(ours).length} strings`);
-}
-
-const [cmd, arg, gen] = process.argv.slice(2);
+const [cmd] = process.argv.slice(2);
 if (cmd === 'build') build();
-else if (cmd === 'install' && arg) install(arg, gen);
-else { console.error('usage: node tools/gen_vcmi_ui.js build | install <vcmi source dir> [generator command]'); process.exit(2); }
+else { console.error('usage: node tools/gen_vcmi_ui.js build'); process.exit(2); }

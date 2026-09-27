@@ -434,14 +434,18 @@ function cachedAssetIndex(coreConfigDir, orderedMods, noCache) {
 	}
 	const key = h.digest('hex').slice(0, 16);
 	// Where the cache may live, first match wins: VMAPGEN_CACHE_DIR; the VCMI
-	// user folder the client passes; the generator's own cache folder. A
-	// packaged generator sits in the install folder, which may not be writable
-	// (Program Files) and, in a per-user install, would keep the cache after an
-	// uninstall; the user folder is where VCMI keeps its own caches. The
-	// generator's folder serves runs that name no user folder (the tests).
+	// user folder the client passes; the generator's own cache folder. The
+	// user folder is where VCMI keeps its own caches. The generator's folder
+	// serves runs that name no user folder (the tests), except when the
+	// generator is a mod's (a mod.json beside its folder): the client runs a
+	// mod's program only while its files hash to the value the mod catalog
+	// pins, so the mod's folder is never written, and a run naming no user
+	// folder there builds its index without keeping it.
+	const generatorRoot = path.join(__dirname, '..', '..');
+	const inMod = fs.existsSync(path.join(generatorRoot, '..', 'mod.json'));
 	const cacheDirs = [process.env.VMAPGEN_CACHE_DIR,
 		process.env.VCMI_USER_DIR && path.join(process.env.VCMI_USER_DIR, 'cache', 'mapgen'),
-		path.join(__dirname, '..', '..', 'cache')].filter(Boolean);
+		!inMod && path.join(generatorRoot, 'cache')].filter(Boolean);
 	const cacheName = `assetIndex-${key}.json`;
 	const cacheFile = cacheDirs.map(d => path.join(d, cacheName)).find(f => fs.existsSync(f));
 	if (!noCache && cacheFile) {
