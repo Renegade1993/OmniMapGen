@@ -22,7 +22,9 @@ const { BIOME_DEFAULTS } = require('./biomes');
 const { WATER_SHAPES, MAX_COVERAGE } = require('./water');
 
 const PAGES = [
-	{ id: 'zones', label: 'Zones' },
+	// "Biomes" is K's word for what the generator calls zones (2026-09-27: every
+	// "zone" a player reads); the ids and setting keys stay, so saved settings hold
+	{ id: 'zones', label: 'Biomes' },
 	{ id: 'borders', label: 'Borders' },
 	{ id: 'treasure', label: 'Treasure' },
 	{ id: 'monsters', label: 'Monsters' },
@@ -33,8 +35,8 @@ const PAGES = [
 
 const KNOBS = [
 	// ---- zones
-	{ key: 'zoneCells', page: 'zones', label: 'Zone size',
-		help: 'Map cells per zone. Larger zones mean fewer, bigger areas to fight over.',
+	{ key: 'zoneCells', page: 'zones', label: 'Biome size',
+		help: 'Map cells per biome. Larger biomes mean fewer, bigger areas to fight over.',
 		min: 150, max: 1500, step: 50 },
 	// K, 2026-09-25, on the old flat 12-zone default binding on every map
 	// bigger than about 72x72 at the default zone size: "bigger means
@@ -44,31 +46,32 @@ const KNOBS = [
 	// default (300) sits above what any map wants at the default zone size
 	// (400) so it stays out of the way unless someone deliberately pulls it
 	// down to make a few large, simple zones on purpose.
-	{ key: 'zoneCap', page: 'zones', label: 'Most zones per level',
-		help: 'Upper limit on zones per level, player starts included. Zone size decides how many zones a map naturally wants; this only matters if you pull it below that to force fewer, bigger zones.',
+	{ key: 'zoneCap', page: 'zones', label: 'Most biomes per level',
+		help: 'Upper limit on biomes per level, player starts included. Biome size decides how many biomes a map naturally wants; this only matters if you pull it below that to force fewer, bigger biomes.',
 		min: 4, max: 450, step: 1 },
-	{ key: 'highLootRatio', page: 'zones', label: 'Treasure zones',
-		help: 'Share of the non-start zones that are rich, heavily guarded treasure zones.',
+	{ key: 'highLootRatio', page: 'zones', label: 'Treasure biomes',
+		help: 'Share of the non-start biomes that are rich, heavily guarded treasure biomes.',
 		min: 0, max: 1, step: 0.05 },
-	{ key: 'townRatio', page: 'zones', label: 'Neutral town zones',
-		help: 'Share of the non-start zones built around a neutral town. Large maps add more towns by area.',
+	{ key: 'townRatio', page: 'zones', label: 'Neutral town biomes',
+		help: 'Share of the non-start biomes built around a neutral town. Large maps add more towns by area.',
 		min: 0, max: 1, step: 0.05 },
-	{ key: 'lowLootRatio', page: 'zones', label: 'Open low-loot zones',
-		help: 'Share of the non-start zones that are open ground with resource generators and weaker loot.',
+	{ key: 'lowLootRatio', page: 'zones', label: 'Open low-loot biomes',
+		help: 'Share of the non-start biomes that are open ground with resource generators and weaker loot.',
 		min: 0, max: 1, step: 0.05 },
-	{ key: 'biomeWobble', page: 'zones', label: 'Border wobble',
-		help: 'How much zone borders bend. 0 gives straight lines.',
-		min: 0, max: 1.5, step: 0.05 },
 
 	// ---- borders and links
 	{ key: 'borderSolidity', page: 'borders', label: 'Border solidity',
-		help: 'How zones are walled off: solid rims with thick lobes, a plain band, porous thin walls, or no border scenery at all.',
+		help: 'How biomes are walled off: solid rims with thick lobes, a plain band, porous thin walls, or no border scenery at all.',
 		min: 0, max: 1, step: 0.05,
 		// stops sit on the generator's own thresholds (biomes.js rimModeOf,
 		// rimLobeScale, bordersOff) so the label names the mode you get
 		stops: [[0, 'None'], [0.25, 'Porous'], [0.5, 'Band'], [0.75, 'Mixed'], [1, 'Solid']] },
-	{ key: 'interconnectivity', page: 'borders', label: 'Zone connections',
-		help: 'How many neighbouring zones get a passage between them.',
+	// on the Borders page, with its tooltip in K's words (2026-09-27)
+	{ key: 'biomeWobble', page: 'borders', label: 'Border wobble',
+		help: 'How much biome borders bend. 0 gives straight lines.',
+		min: 0, max: 1.5, step: 0.05 },
+	{ key: 'interconnectivity', page: 'borders', label: 'Biome connections',
+		help: 'How many neighbouring biomes get a passage between them.',
 		min: 0, max: 1, step: 0.05 },
 	{ key: 'interconnectPortal', page: 'borders', label: 'Portal share',
 		help: 'Share of the passages that are two-way portals instead of open ground.',
@@ -79,7 +82,7 @@ const KNOBS = [
 	{ key: 'openPathRoad', page: 'borders', label: 'Passages with road',
 		help: 'Weight of roaded passages among the non-portal ones.',
 		min: 0, max: 1, step: 0.05 },
-	{ key: 'roadNetwork', page: 'borders', label: 'Road network',
+	{ key: 'roadNetwork', page: 'borders', label: 'Build Road Network',
 		help: 'Roads linking every town. Off leaves only the roads through passages.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']] },
 	{ key: 'roadType', page: 'borders', label: 'Road type',
@@ -121,10 +124,10 @@ const KNOBS = [
 		help: 'Creatures per stack. Low-level creatures come in big stacks and high-level ones in small stacks; this moves the whole scale up or down together. At 1.0x the game rolls each creature\'s own usual number.',
 		min: 0.25, max: 3, step: 0.05, unit: 'x' },
 	{ key: 'guardDensity', page: 'monsters', label: 'Monster count',
-		help: 'Multiplier on every zone\'s monster budget, guards and roamers together.',
+		help: 'Multiplier on every biome\'s monster budget, guards and roamers together.',
 		min: 0, max: 3, step: 0.1, unit: 'x' },
 	{ key: 'objectGuardShare', page: 'monsters', label: 'Guarding vs roaming',
-		help: 'Share of each zone\'s monsters posted on something worth taking; the rest roam.',
+		help: 'Share of each biome\'s monsters posted on something worth taking; the rest roam.',
 		min: 0, max: 1, step: 0.05 },
 	{ key: 'guardTreasure', page: 'monsters', label: 'Guards on treasure',
 		help: 'Monsters standing on artifacts, chests, Pandora\'s boxes, prisons, banks and other treasure. Off leaves treasure unguarded; those monsters roam instead.',
@@ -136,13 +139,13 @@ const KNOBS = [
 		help: 'Monsters standing on creature dwellings.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']] },
 	{ key: 'guardBottlenecks', page: 'monsters', label: 'Guards at bottlenecks',
-		help: 'Monsters standing in the passages between zones.',
+		help: 'Monsters standing in the passages between biomes.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']] },
 	{ key: 'chokeGuardRatio', page: 'monsters', label: 'Bottleneck guard share',
-		help: 'Share of zone passages with a monster standing in them, when bottleneck guards are on.',
+		help: 'Share of biome passages with a monster standing in them, when bottleneck guards are on.',
 		min: 0, max: 1, step: 0.05 },
 	{ key: 'guardPortals', page: 'monsters', label: 'Guards at portals',
-		help: 'A monster in front of each two-way monolith that links two zones.',
+		help: 'A monster in front of each two-way monolith that links two biomes.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']] },
 	{ key: 'lootGuardWeight', page: 'monsters', label: 'Treasure guard pull',
 		help: 'How strongly guards gather on treasure and dwellings compared with the rates measured on your random maps.',
@@ -156,7 +159,7 @@ const KNOBS = [
 		help: 'How many subterranean gates link the surface and the underground.',
 		min: 0, max: 2, step: 0.1, unit: 'x' },
 	{ key: 'subterraneanNarrow', page: 'underground', label: 'Narrow tunnels',
-		help: 'Share of underground zones carved as narrow tunnels rather than open caverns.',
+		help: 'Share of underground biomes carved as narrow tunnels rather than open caverns.',
 		min: 0, max: 1, step: 0.05 },
 	{ key: 'subterraneanOpen', page: 'underground', label: 'Open cave floor',
 		help: 'Share of the underground left walkable.',
@@ -164,7 +167,7 @@ const KNOBS = [
 
 	// ---- scenery
 	{ key: 'decorDensity', page: 'scenery', label: 'Scenery',
-		help: 'Multiplier on scenery inside zones (mountains, trees, rocks). Border scenery follows Border solidity.',
+		help: 'Multiplier on scenery inside biomes (mountains, trees, rocks). Border scenery follows Border solidity.',
 		min: 0, max: 2, step: 0.1, unit: 'x' },
 	{ key: 'rivers', page: 'scenery', label: 'Rivers', cli: 'rivers',
 		help: 'Rivers across the map.',
@@ -201,17 +204,22 @@ const KNOBS = [
 
 	// ---- water
 	{ key: 'waterCoverage', page: 'water', label: 'Amount of water',
-		help: 'Share of the surface under water. 0 is a dry map. The land left over is shared out among the zones.',
+		help: 'Share of the surface under water. 0 is a dry map. The land left over is shared out among the biomes.',
 		min: 0, max: MAX_COVERAGE, step: 0.05 },
 	{ key: 'waterShape', page: 'water', label: 'Water layout',
 		help: 'Where the water goes. ' + WATER_SHAPES.map(s => `${s.label}: ${s.help}`).join(' '),
 		min: 0, max: WATER_SHAPES.length - 1, step: 1,
 		stops: WATER_SHAPES.map((s, i) => [i, s.label]) },
 	{ key: 'waterAccess', page: 'water', label: 'Harbours',
-		help: 'Where heroes can take to the water. Starts: a shipyard at each player start on the shore. Towns: a shipyard in every zone with a town on the shore, as the game\'s own generator does. Every zone: a boat in every other zone on the shore as well. Lakes under 25 cells get none. On Islands and Archipelago every player still gets a shipyard and a boat at the start, whatever this says.',
-		min: 0, max: 3, step: 1, stops: [[0, 'None'], [1, 'Starts'], [2, 'Towns'], [3, 'Every zone']] },
+		help: 'Where heroes can take to the water. Starts: a shipyard at each player start on the shore. Towns: a shipyard in every biome with a town on the shore, as the game\'s own generator does. Every biome: a boat in every other biome on the shore as well. Lakes under 25 cells get none. On Islands and Archipelago every player still gets a shipyard and a boat at the start, whatever this says.',
+		min: 0, max: 3, step: 1, stops: [[0, 'None'], [1, 'Starts'], [2, 'Towns'], [3, 'Every biome']] },
 	{ key: 'waterTreasure', page: 'water', label: 'Treasure on the water',
-		help: 'Multiplier on what lies on the water a boat can reach: flotsam, sea chests, survivors, buoys, mermaids and the two water banks.',
+		help: 'Multiplier on what lies on the water a boat can reach: flotsam, sea chests, survivors and the two water banks, the shipwreck and the derelict ship.',
+		min: 0, max: 3, step: 0.1, unit: 'x' },
+	// K (2026-09-27): a density lever for the buildings on the water, as the
+	// land's biomes have theirs
+	{ key: 'waterBuildings', page: 'water', label: 'Buildings on the water',
+		help: 'Multiplier on the sites a boat can visit: mermaids and buoys for luck and morale, sirens, and whirlpools, which come in pairs and throw a ship from one to the other.',
 		min: 0, max: 3, step: 0.1, unit: 'x' },
 ];
 

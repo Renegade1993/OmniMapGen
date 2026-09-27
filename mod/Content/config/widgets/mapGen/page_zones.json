@@ -323,69 +323,6 @@
 				"x": 308,
 				"y": 287
 			}
-		},
-		{
-			"name": "help_biomeWobble",
-			"type": "hoverHelp",
-			"rect": {
-				"x": 55,
-				"y": 312,
-				"w": 143,
-				"h": 22
-			},
-			"help": {
-				"hover": "vcmi.mapGen.biomeWobble.hover",
-				"help": "vcmi.mapGen.biomeWobble.help"
-			}
-		},
-		{
-			"name": "label_biomeWobble",
-			"type": "label",
-			"font": "small",
-			"alignment": "left",
-			"color": "yellow",
-			"text": "vcmi.mapGen.biomeWobble.hover",
-			"position": {
-				"x": 58,
-				"y": 317
-			}
-		},
-		{
-			"name": "slider_biomeWobble",
-			"type": "slider",
-			"orientation": "horizontal",
-			"style": "brown",
-			"position": {
-				"x": 198,
-				"y": 316
-			},
-			"size": 104,
-			"itemsVisible": 0,
-			"itemsTotal": 30,
-			"scrollBounds": {
-				"x": -4,
-				"y": -6,
-				"w": 112,
-				"h": 26
-			},
-			"setting": "persistent:mapGen/params/biomeWobble",
-			"valueMin": 0,
-			"valueStep": 0.05,
-			"valueDefault": 0.6,
-			"valueLabel": "value_biomeWobble",
-			"valueDecimals": 2
-		},
-		{
-			"name": "value_biomeWobble",
-			"type": "label",
-			"font": "small",
-			"alignment": "left",
-			"color": "white",
-			"text": "",
-			"position": {
-				"x": 308,
-				"y": 317
-			}
 		}
 	]
 }

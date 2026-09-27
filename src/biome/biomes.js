@@ -142,9 +142,12 @@ const BIOME_DEFAULTS = {
 	waterShape: 0,
 	// Harbours (waterfill.js): 0 none, 1 shipyards at player starts, 2 in
 	// every town zone on the shore (the engine's rule), 3 also a boat in every
-	// other shore zone. waterTreasure multiplies what lies on the water.
+	// other shore zone. waterTreasure multiplies what lies on the water,
+	// waterBuildings the sites a boat visits (mermaids, buoys, sirens,
+	// whirlpools), as the land's own levers split pickups from buildings.
 	waterAccess: 2,
 	waterTreasure: 1,
+	waterBuildings: 1,
 };
 
 /**
@@ -190,6 +193,28 @@ function valueNoise(seed, cellSize) {
 		const c = hash(ix, iy + 1), d = hash(ix + 1, iy + 1);
 		const top = a + (b - a) * tx, bot = c + (d - c) * tx;
 		return top + (bot - top) * ty;          // 0..1
+	};
+}
+
+/**
+ * The border noise's two cell sizes, coarse and fine. They grew with the map,
+ * (W + H) / 10 and (W + H) / 28, which suits zones that grow with it; a free
+ * layout's zones keep one size (Biome size), so on a giant map a border saw
+ * less than half a coarse wave and ran straight, and the minimap read as
+ * facets (K, 2026-09-27, a 252x252: "geodesic"). Each is capped at what the
+ * zones' own spacing gives: about 20 cells between free-layout seeds, waves
+ * of 22 and 8, which is where the two rules agree, at 108x108. So nothing
+ * changes up to that size, and above it the bends keep the zones' scale.
+ * VMAPGEN_WOBBLE_SCALE=map keeps the map-sized waves, for measuring.
+ */
+function wobbleWaves(W, H, zones, land = W * H) {
+	const bySize = { coarse: Math.round((W + H) / 10), fine: Math.round((W + H) / 28) };
+	const spacing = Math.sqrt(land / Math.max(1, zones));
+	const byZone = process.env.VMAPGEN_WOBBLE_SCALE === 'map' ? bySize
+		: { coarse: Math.round(1.1 * spacing), fine: Math.round(0.4 * spacing) };
+	return {
+		coarse: Math.max(4, Math.min(bySize.coarse, byZone.coarse)),
+		fine: Math.max(3, Math.min(bySize.fine, byZone.fine)),
 	};
 }
 
@@ -260,14 +285,15 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 	// runs a single octave leaves between bends. The fine octave stays
 	// coherent noise, not salt - a speckled border is worse than a straight
 	// one because the terrain art has no edge sprite for a one-cell corner.
+	let land = W * H;
+	if (water) for (let c = 0; c < W * H; c++) if (water[c]) land--;
+	const waves = wobbleWaves(W, H, seeds.length, land);
 	const noise = amp > 0
 		? seeds.map((_, i) => ({
-			coarse: valueNoise(((rng() * 1e9) | 0) + i * 7919,
-				Math.max(4, Math.round((W + H) / 10))),
+			coarse: valueNoise(((rng() * 1e9) | 0) + i * 7919, waves.coarse),
 			// VMAPGEN_EDGE=off drops the fine octave for A/B measurement
 			fine: process.env.VMAPGEN_EDGE === 'off' ? null
-				: valueNoise(((rng() * 1e9) | 0) + i * 15485863 + 3247,
-					Math.max(3, Math.round((W + H) / 28))),
+				: valueNoise(((rng() * 1e9) | 0) + i * 15485863 + 3247, waves.fine),
 		}))
 		: null;
 
@@ -330,13 +356,12 @@ function nearestLand(W, H, water, x, y) {
 function partitionSeeded(W, H, seeds, weights, rng, params) {
 	const p = { ...BIOME_DEFAULTS, ...params };
 	const amp = p.biomeWobble;
+	const waves = wobbleWaves(W, H, seeds.length);
 	const noise = amp > 0
 		? seeds.map((_, i) => ({
-			coarse: valueNoise(((rng() * 1e9) | 0) + i * 7919,
-				Math.max(4, Math.round((W + H) / 10))),
+			coarse: valueNoise(((rng() * 1e9) | 0) + i * 7919, waves.coarse),
 			fine: process.env.VMAPGEN_EDGE === 'off' ? null
-				: valueNoise(((rng() * 1e9) | 0) + i * 15485863 + 3247,
-					Math.max(3, Math.round((W + H) / 28))),
+				: valueNoise(((rng() * 1e9) | 0) + i * 15485863 + 3247, waves.fine),
 		}))
 		: null;
 	const zone = new Int16Array(W * H).fill(-1);
@@ -865,7 +890,7 @@ function ensureConnected(edges, connections, seedCount, params, rng) {
 	return opened;
 }
 
-module.exports = { BIOME_CLASS, BIOME_DEFAULTS, partitionBiomes, partitionSeeded,
+module.exports = { BIOME_CLASS, BIOME_DEFAULTS, partitionBiomes, partitionSeeded, wobbleWaves,
 	layoutZoneSeeds, symmetricEigen, spectralCoords, fitSimilarity, assignClasses, zoneDistances, physZoneDistances,
 	biomeEdges, assignConnections, ensureConnected, valueNoise,
 	rimModeOf, rimLobeScale, bordersOff, nearestLand,

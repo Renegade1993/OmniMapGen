@@ -506,6 +506,27 @@
 			]
 		},
 		{
+			"kind": "sirens",
+			"id": 92,
+			"subid": 0,
+			"template": {
+				"animation": "AVXsirn0",
+				"editorAnimation": "",
+				"mask": [
+					"VVVV",
+					"VBAB"
+				],
+				"visitableFrom": [
+					"---",
+					"+-+",
+					"+++"
+				]
+			},
+			"allowedTerrains": [
+				"water"
+			]
+		},
+		{
 			"kind": "whirlpool",
 			"id": 111,
 			"subid": 0,

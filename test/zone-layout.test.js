@@ -13,7 +13,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
-const { symmetricEigen, spectralCoords, fitSimilarity } = require('../src/biome/biomes');
+const { symmetricEigen, spectralCoords, fitSimilarity, wobbleWaves } = require('../src/biome/biomes');
 
 const laplacian = (n, edges) => {
 	const L = Array.from({ length: n }, () => new Array(n).fill(0));
@@ -128,4 +128,16 @@ test('a start zone keeps its share beside a big centre (Jebus Cross 108 for two)
 		if (t === 'playerStart') assert.ok(plan.zoneLand[i] >= 1000, `start zone ${i + 1}: ${plan.zoneLand[i]} cells`);
 	});
 	assert.ok(plan.zoneLand[4] < 0.5 * plan.landCells, `the centre holds ${plan.zoneLand[4]} of ${plan.landCells}`);
+});
+
+test('border wobble bends at the zones\' own scale: nothing changes up to 108x108, a giant free layout keeps its bends', () => {
+	// the old waves, (W + H) / 10 and / 28, at every size a free layout runs at
+	// the default Biome size (400 cells a zone) up to 108x108
+	for (const [n, zones] of [[36, 4], [72, 13], [108, 29]])
+		assert.deepStrictEqual(wobbleWaves(n, n, zones), { coarse: Math.max(4, Math.round(n / 5)), fine: Math.max(3, Math.round(n / 14)) });
+	// 252x252 free: 159 zones about 20 cells apart keep waves of 22 and 8, where
+	// the map's own size gave 50 and 18 (a border saw half a wave: facets)
+	assert.deepStrictEqual(wobbleWaves(252, 252, 159), { coarse: 22, fine: 8 });
+	// a template's few big zones on the same map keep the map-sized waves
+	assert.deepStrictEqual(wobbleWaves(252, 252, 5), { coarse: 50, fine: 18 });
 });

@@ -45,7 +45,7 @@ function readLod(file) {
 const WANTED = {
 	8: 'boat', 87: 'shipyard', 29: 'flotsam', 82: 'seaChest', 86: 'shipwreckSurvivor',
 	59: 'oceanBottle', 11: 'buoy', 111: 'whirlpool', 24: 'derelictShip', 85: 'shipwreck',
-	52: 'mermaids', 42: 'lighthouse',
+	52: 'mermaids', 42: 'lighthouse', 92: 'sirens',
 };
 // visitable from the top row too (ObjectTemplate::isOnVisitableFromTopList)
 const FROM_TOP = new Set([29, 82, 86, 11, 59, 8, 111, 33, 219, 81, 12, 9, 212, 215, 22]);

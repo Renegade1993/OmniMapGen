@@ -19,8 +19,8 @@
 			"highLootRatio": 0.15,
 			"townRatio": 0.1,
 			"lowLootRatio": 0.25,
-			"biomeWobble": 0.6,
 			"borderSolidity": 1,
+			"biomeWobble": 0.6,
 			"interconnectivity": 0.6,
 			"interconnectPortal": 0.2,
 			"openPathNoRoad": 0.55,
@@ -57,7 +57,8 @@
 			"waterCoverage": 0,
 			"waterShape": 0,
 			"waterAccess": 2,
-			"waterTreasure": 1
+			"waterTreasure": 1,
+			"waterBuildings": 1
 		},
 		"map": {
 			"size": 108,

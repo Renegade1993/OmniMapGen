@@ -96,6 +96,31 @@ test('water objects sit on the lake and a boat from the harbour reaches every on
 	}
 });
 
+test('Buildings on the water: mermaids, buoys, sirens and whirlpools, the whirlpools in pairs', () => {
+	const { W, H, water, zone, blocked } = world();
+	const base = [];
+	const harbours = placeHarbours({ W, H, l: 0, water, zone, blocked, rng: xorshift(5),
+		p: { waterAccess: 3 }, objects: base, towns: [{ x: 6, y: 20, l: 0 }], playerStarts: [], objectEntry: entry });
+	const BUILDINGS = ['mermaids', 'buoy', 'sirens', 'whirlpool'];
+	for (const [mult, seed] of [[0, 11], [30, 11], [30, 12], [30, 13]]) {
+		const objects = base.slice();
+		fillWater({ W, H, l: 0, water, harbours, rng: xorshift(seed),
+			p: { waterTreasure: 0, waterBuildings: mult }, objects, objectEntry: entry });
+		const added = objects.slice(base.length);
+		const count = t => added.filter(o => o.type === t).length;
+		if (!mult) {
+			assert.strictEqual(BUILDINGS.reduce((s, t) => s + count(t), 0), 0, 'the lever at 0 places none');
+			continue;
+		}
+		assert.ok(count('sirens') >= 1 && count('buoy') >= 1, `seed ${seed}: sirens and buoys`);
+		assert.strictEqual(count('whirlpool') % 2, 0, `seed ${seed}: whirlpools in pairs`);
+		// the engine's names: sirens and whirlpool are one object each, subtype "object"
+		for (const o of added.filter(o => o.type === 'sirens' || o.type === 'whirlpool'))
+			assert.strictEqual(o.subtype, 'object');
+		assert.ok(!added.some(o => /flotsam|seaChest|shipwreck|derelictShip/.test(o.type)), 'treasure follows its own lever');
+	}
+});
+
 test('no harbours with waterAccess 0, and nothing on the water without one', () => {
 	const { W, H, water, zone, blocked } = world();
 	const objects = [];

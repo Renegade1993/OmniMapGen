@@ -303,6 +303,70 @@
 				"x": 308,
 				"y": 257
 			}
+		},
+		{
+			"name": "help_waterBuildings",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 55,
+				"y": 282,
+				"w": 143,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.waterBuildings.hover",
+				"help": "vcmi.mapGen.waterBuildings.help"
+			}
+		},
+		{
+			"name": "label_waterBuildings",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.waterBuildings.hover",
+			"position": {
+				"x": 58,
+				"y": 287
+			}
+		},
+		{
+			"name": "slider_waterBuildings",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 198,
+				"y": 286
+			},
+			"size": 104,
+			"itemsVisible": 0,
+			"itemsTotal": 30,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 112,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/waterBuildings",
+			"valueMin": 0,
+			"valueStep": 0.1,
+			"valueDefault": 1,
+			"valueLabel": "value_waterBuildings",
+			"valueDecimals": 1,
+			"valueSuffix": "x"
+		},
+		{
+			"name": "value_waterBuildings",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 308,
+				"y": 287
+			}
 		}
 	]
 }

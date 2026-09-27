@@ -122,6 +122,13 @@ const TITLE_Y = CLASSIC ? 32 : 36;
 // the map settings the tab owns, and where they start
 const MAP_DEFAULTS = { size: 108, underground: 0, players: 4, humans: 1, template: '', declareMods: 0 };
 const SIZE_STOPS = [[36, 'S'], [72, 'M'], [108, 'L'], [144, 'XL'], [180, 'H'], [216, 'XH'], [252, 'G']];
+// Each size's tooltip gives a scale a player can feel (K, 2026-09-27): a new
+// hero's days to cross the map corner to corner over open grass with nothing
+// in the way. A diagonal step there costs 141 (CPathfinder.cpp: the step's 100
+// times the square root of 2), and a hero whose slowest creature has speed 4
+// moves 1560 a day (config/gameConfig.json, movementPointsLand).
+const SIZE_NAMES = { S: 'Small', M: 'Medium', L: 'Large', XL: 'Extra large', H: 'Huge', XH: 'Extra huge', G: 'Giant' };
+const crossingDays = v => Math.round(141 * (v - 1) / 1560);
 
 // how a value reads on the page: every step shows as a change, so a value
 // takes as many decimals as its step has (0.25 steps read 1.25x, not 1.3x)
@@ -221,13 +228,13 @@ function classicMapPageJson() {
 	// a row of choices, settings-bound: items[i] stores values[i]; stock's
 	// word buttons wear the gold frame when chosen (imageOrder), RANRAND and
 	// the number buttons draw their own
-	const group = (name, pos, setting, values, def, imageOf, xs, words, font) => ({
+	const group = (name, pos, setting, values, def, imageOf, xs, words, font, helpOf) => ({
 		name, type: 'toggleGroup', position: pos, setting, values, selected: Math.max(0, values.indexOf(def)),
 		items: values.map((v, i) => {
 			const image = imageOf(v, i);
 			return { index: i, type: 'toggleButton', image,
 				...(/^(RANNUM|RANRAND)/.test(image) ? {} : { imageOrder: [0, 1, 1, 3] }),
-				position: { x: xs[i], y: 0 }, help: help(name.replace(/^group_/, '')),
+				position: { x: xs[i], y: 0 }, help: help(helpOf ? helpOf(i) : name.replace(/^group_/, '')),
 				...(words && words[i] ? { items: word(words[i], font) } : {}) };
 		}),
 	});
@@ -244,8 +251,10 @@ function classicMapPageJson() {
 			setting: 'persistent:mapGen/map/template', emptyText: 'vcmi.mapGen.template.noneShort',
 			position: { x: 262, y: 66 } });
 	// the size row, 37 px apart from x 54, and the two-level toggle last in it (x 350)
+	// each size its own tooltip, with the days a new hero takes to cross it
 	items.push(group('group_map.size', { x: 54, y: 81 }, 'persistent:mapGen/map/size', SIZE_STOPS.map(([v]) => v),
-		MAP_DEFAULTS.size, (v, i) => EXTRAS_ART.sizes[i], SIZE_STOPS.map((_, i) => i * 37)),
+		MAP_DEFAULTS.size, (v, i) => EXTRAS_ART.sizes[i], SIZE_STOPS.map((_, i) => i * 37),
+		undefined, undefined, i => `map.size.s${i}`),
 		{ name: 'check_map.underground', type: 'toggleButton', image: EXTRAS_ART.twoLevels, imageOrder: [0, 1, 1, 3],
 			position: { x: 350, y: 81 }, setting: 'persistent:mapGen/map/underground',
 			selected: !!MAP_DEFAULTS.underground, help: help('map.underground') });
@@ -290,6 +299,18 @@ function classicMapPageJson() {
 function mapPageJson() {
 	const items = [];
 	let y = ROW0;
+	// the template first, where stock's Random Map Setup has it (K, 2026-09-27)
+	items.push(helpButton('map.template', y), rowLabel('map.template', y),
+		{ name: 'buttonChooseTemplate', type: 'button', image: 'MapGenButton80',
+			position: { x: X_CTRL, y: y - 4 }, callback: 'chooseMapGenTemplate',
+			help: { hover: 'vcmi.mapGen.map.template.hover', help: 'vcmi.mapGen.map.template.help' },
+			items: [{ type: 'label', font: 'small', alignment: 'center', color: 'yellow',
+				text: 'vcmi.mapGen.template.button' }] });
+	y += ROW_H + 2;
+	// filled from settings by MapGenTab after the page is built
+	items.push({ name: 'labelTemplateName', type: 'label', font: 'small', alignment: 'left',
+		color: 'white', text: '', position: { x: X_LABEL, y: y + 3 } });
+	y += ROW_H + 4;
 	items.push(helpButton('map.size', y), rowLabel('map.size', y),
 		...slider('map.size', 'persistent:mapGen/map/size', y, 36, 36, 6, MAP_DEFAULTS.size,
 			{ valueNames: SIZE_STOPS.map(([v], i) => [v, `vcmi.mapGen.map.size.stop${i}`]) }));
@@ -326,20 +347,9 @@ function mapPageJson() {
 	items.push(helpButton('map.humans', y), rowLabel('map.humans', y));
 	y += 24;
 	items.push(numbers('map.humans', 1, MAP_DEFAULTS.humans, y));
-	y += 44;
-	items.push(helpButton('map.template', y), rowLabel('map.template', y),
-		{ name: 'buttonChooseTemplate', type: 'button', image: 'MapGenButton80',
-			position: { x: X_CTRL, y: y - 4 }, callback: 'chooseMapGenTemplate',
-			help: { hover: 'vcmi.mapGen.map.template.hover', help: 'vcmi.mapGen.map.template.help' },
-			items: [{ type: 'label', font: 'small', alignment: 'center', color: 'yellow',
-				text: 'vcmi.mapGen.template.button' }] });
-	y += ROW_H + 2;
-	// filled from settings by MapGenTab after the page is built
-	items.push({ name: 'labelTemplateName', type: 'label', font: 'small', alignment: 'left',
-		color: 'white', text: '', position: { x: X_LABEL, y: y + 3 } });
 	// the levers that belong with the map's players (teams), as ordinary
 	// levers: the tab passes every mapGen.params entry as --bio.<key>
-	y += ROW_H + 4;
+	y += 44;
 	// (not the stock choices, which only the classic Map page lays out)
 	for (const k of KNOBS.filter(kn => kn.page === 'map' && !kn.stock)) {
 		items.push(...knobRow(k, y));
@@ -437,8 +447,8 @@ function stringsJson() {
 	const s = {
 		'vcmi.lobby.mapGen.hover': AT_BEGIN ? 'Omni Map Gen' : 'MapGen',
 		'vcmi.lobby.mapGen.help': AT_BEGIN
-			? '{Omni Map Gen}\n\nOur own random map generator with every one of its settings: the map, zones, borders, treasure, monsters, underground, scenery and water. The map is made when the game begins, from these settings and the town each player picks.'
-			: '{MapGen}\n\nOur own random map generator with every one of its settings: the map, zones, borders, treasure, monsters, underground, scenery and water. Generate makes a map and selects it in the scenario list.',
+			? '{Omni Map Gen}\n\nOur own random map generator with every one of its settings: the map, biomes, borders, treasure, monsters, underground, scenery and water. The map is made when the game begins, from these settings and the town each player picks.'
+			: '{MapGen}\n\nOur own random map generator with every one of its settings: the map, biomes, borders, treasure, monsters, underground, scenery and water. Generate makes a map and selects it in the scenario list.',
 		'vcmi.mapGen.tab.subtitle': 'Every setting of our own map generator',
 		'vcmi.mapGen.defaults.hover': 'Defaults',
 		'vcmi.mapGen.defaults.help': `{Defaults}\n\nPuts every setting back to the ${PRESETS.nostalgia.label} defaults. ${PRESETS.nostalgia.help}`,
@@ -467,7 +477,8 @@ function stringsJson() {
 		'vcmi.mapGen.template.none': 'No template: free layout, tuned to Nostalgia\'s numbers',
 		'vcmi.mapGen.template.button': 'Choose',
 		'vcmi.mapGen.map.size.hover': 'Map size',
-		'vcmi.mapGen.map.size.help': '{Map size}\n\nS 36, M 72, L 108, XL 144, H 180, XH 216 or G 252 cells a side.',
+		'vcmi.mapGen.map.size.help': '{Map size}\n\nS 36, M 72, L 108, XL 144, H 180, XH 216 or G 252 cells a side. A new hero crosses one corner to corner in about '
+			+ SIZE_STOPS.map(([v]) => crossingDays(v)).join(', ').replace(/, (\d+)$/, ' or $1') + ' days, over open grass with nothing in the way.',
 		'vcmi.mapGen.map.underground.hover': 'Underground',
 		'vcmi.mapGen.map.underground.help': '{Underground}\n\nA second, underground level linked to the surface by subterranean gates.',
 		'vcmi.mapGen.map.declareMods.hover': 'Use mod content',
@@ -477,7 +488,7 @@ function stringsJson() {
 		'vcmi.mapGen.map.humans.hover': 'Human players',
 		'vcmi.mapGen.map.humans.help': '{Human players}\n\nHow many of those seats a human can take. The rest are computer players.',
 		'vcmi.mapGen.map.template.hover': 'Template',
-		'vcmi.mapGen.map.template.help': '{Template}\n\nThe zone layout. Free layout is our own, calibrated on your own random maps; the game\'s templates (Jebus Cross, Coldshadow\'s Fantasy and the rest) lay the zones out their way, with the settings on the other pages still applied.',
+		'vcmi.mapGen.map.template.help': '{Template}\n\nThe biome layout. Free layout is our own, calibrated on your own random maps; the game\'s templates (Jebus Cross, Coldshadow\'s Fantasy and the rest) lay the biomes out their way, with the settings on the other pages still applied.',
 	};
 	if (CLASSIC) {
 		// the classic Map page names its bands as the game's Random Map Setup does
@@ -495,7 +506,13 @@ function stringsJson() {
 	}
 	// after the lever texts below: the classic band says what stock's does
 	const classicLabels = CLASSIC ? { 'vcmi.mapGen.monsterStrength.hover': 'Monster strength' } : {};
-	SIZE_STOPS.forEach(([, name], i) => { s[`vcmi.mapGen.map.size.stop${i}`] = name; });
+	SIZE_STOPS.forEach(([v, name], i) => {
+		s[`vcmi.mapGen.map.size.stop${i}`] = name;
+		s[`vcmi.mapGen.map.size.s${i}.hover`] = `${SIZE_NAMES[name]}, ${v}x${v}`;
+		s[`vcmi.mapGen.map.size.s${i}.help`] = `{${SIZE_NAMES[name]}, ${v}x${v}}\n\nA new hero crosses it corner to corner `
+			+ `in about ${crossingDays(v)} days over open grass, with nothing in the way. A cobblestone road halves that; `
+			+ 'rough ground, sand, snow and swamp stretch it.';
+	});
 	for (const p of ALL_PAGES) {
 		s[`vcmi.mapGen.page.${p.id}.hover`] = p.label;
 		s[`vcmi.mapGen.page.${p.id}.help`] = `{${p.label}}\n\nShow the ${p.label.toLowerCase()} settings.`;

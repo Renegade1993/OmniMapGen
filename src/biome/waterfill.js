@@ -29,17 +29,23 @@ const SCENERY_TYPE = { 125: 'kelp', 147: 'rock', 161: 'reef' };
 const identity = t => {
 	if (t.kind === 'boat') return ['boat', BOAT_SUBTYPES[t.subid] || 'boatCastle'];
 	if (t.kind === 'waterScenery') return [SCENERY_TYPE[t.id], 'object'];
-	if (['shipyard', 'whirlpool', 'oceanBottle'].includes(t.kind)) return [t.kind, 'object'];
+	if (['shipyard', 'whirlpool', 'oceanBottle', 'sirens'].includes(t.kind)) return [t.kind, 'object'];
 	return [t.kind, t.kind];
 };
 const templatesOf = kind => WT.filter(t => t.kind === kind);
 
-// per 1000 cells of sailable water; waterTreasure scales them. The corpus
-// has no water to measure, so these follow the engine's water zones in
-// spirit: a scatter of pickups, a few one-visit sites, rare banks.
+// per 1000 cells of sailable water; waterTreasure scales the treasure and
+// waterBuildings the sites a boat visits. The corpus has no water to measure,
+// so these follow the engine's water zones in spirit: a scatter of pickups, a
+// few one-visit sites, rare banks. Sirens and whirlpools are the engine's own
+// water objects (its water zone draws them into its treasure piles); a
+// whirlpool throws a ship to another, so they go down in pairs.
 const TREASURE_RATES = [
-	['flotsam', 2.2], ['seaChest', 1.8], ['shipwreckSurvivor', 0.6], ['buoy', 0.6],
-	['mermaids', 0.4], ['derelictShip', 0.35], ['shipwreck', 0.35],
+	['flotsam', 2.2], ['seaChest', 1.8], ['shipwreckSurvivor', 0.6],
+	['derelictShip', 0.35], ['shipwreck', 0.35],
+];
+const BUILDING_RATES = [
+	['buoy', 0.6], ['mermaids', 0.4], ['sirens', 0.3], ['whirlpool', 0.3],
 ];
 const SCENERY_RATE = { kelp: 5, blocking: 4 };
 const MIN_BODY = 25;
@@ -280,6 +286,7 @@ function fillWater(ctx) {
 	const { W, H, l, water, harbours, rng, p, objects, objectEntry } = ctx;
 	if (!water || !harbours || !harbours.length) return 0;
 	const mult = Number.isFinite(p.waterTreasure) ? p.waterTreasure : 1;
+	const bmult = Number.isFinite(p.waterBuildings) ? p.waterBuildings : 1;
 	// the water layer: land and everything already on the water is taken
 	const wb = new Uint8Array(W * H);
 	for (let c = 0; c < W * H; c++) if (!water[c]) wb[c] = OCCUPIED;
@@ -299,6 +306,7 @@ function fillWater(ctx) {
 	}
 	const { id, bodies } = waterBodies(water, W, H);
 	let placed = 0;
+	const whirlpools = [];
 	for (const b of [...new Set(harbours.map(h => h.body))].sort((a, c) => a - c)) {
 		const seed = harbours.find(h => h.body === b).cell;
 		// what a boat can reach, kept in one piece as things are placed
@@ -310,6 +318,13 @@ function fillWater(ctx) {
 		for (const [kind, rate] of TREASURE_RATES) {
 			const n = area * rate * mult;
 			const k = Math.floor(n) + (rng() < n - Math.floor(n) ? 1 : 0);
+			for (let i = 0; i < k; i++) wanted.push(kind);
+		}
+		for (const [kind, rate] of BUILDING_RATES) {
+			const n = area * rate * bmult;
+			let k = Math.floor(n) + (rng() < n - Math.floor(n) ? 1 : 0);
+			// a lone whirlpool leads nowhere: an odd count takes its partner
+			if (kind === 'whirlpool') k += k % 2;
 			for (let i = 0; i < k; i++) wanted.push(kind);
 		}
 		const kelp = Math.round(area * SCENERY_RATE.kelp), rocks = Math.round(area * SCENERY_RATE.blocking);
@@ -364,6 +379,7 @@ function fillWater(ctx) {
 				}
 				const [type, subtype] = identity(entry);
 				objects.push(objectEntry(type, x, y, l, tpl, subtype));
+				if (type === 'whirlpool') whirlpools.push(objects[objects.length - 1]);
 				footprintBlock(tpl, x, y, 0, W, H, wb);
 				if (walls.length) guard.refresh();
 				else
@@ -383,6 +399,12 @@ function fillWater(ctx) {
 				break;
 			}
 		}
+	}
+	// whirlpools throw a ship to one another, any body of water to any other:
+	// one whose partner found no room would lead nowhere, so it goes too
+	if (whirlpools.length % 2) {
+		objects.splice(objects.indexOf(whirlpools.pop()), 1);
+		placed--;
 	}
 	if (placed) console.error(`[gen] level ${l}: ${placed} object(s) on the water`);
 	return placed;

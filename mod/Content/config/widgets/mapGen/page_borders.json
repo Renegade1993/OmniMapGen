@@ -88,11 +88,74 @@
 			}
 		},
 		{
-			"name": "help_interconnectivity",
+			"name": "help_biomeWobble",
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
 				"y": 192,
+				"w": 143,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.biomeWobble.hover",
+				"help": "vcmi.mapGen.biomeWobble.help"
+			}
+		},
+		{
+			"name": "label_biomeWobble",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.biomeWobble.hover",
+			"position": {
+				"x": 58,
+				"y": 197
+			}
+		},
+		{
+			"name": "slider_biomeWobble",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 198,
+				"y": 196
+			},
+			"size": 104,
+			"itemsVisible": 0,
+			"itemsTotal": 30,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 112,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/biomeWobble",
+			"valueMin": 0,
+			"valueStep": 0.05,
+			"valueDefault": 0.6,
+			"valueLabel": "value_biomeWobble",
+			"valueDecimals": 2
+		},
+		{
+			"name": "value_biomeWobble",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 308,
+				"y": 197
+			}
+		},
+		{
+			"name": "help_interconnectivity",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 55,
+				"y": 222,
 				"w": 143,
 				"h": 22
 			},
@@ -110,7 +173,7 @@
 			"text": "vcmi.mapGen.interconnectivity.hover",
 			"position": {
 				"x": 58,
-				"y": 197
+				"y": 227
 			}
 		},
 		{
@@ -120,7 +183,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 196
+				"y": 226
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -149,7 +212,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 197
+				"y": 227
 			}
 		},
 		{
@@ -157,7 +220,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 222,
+				"y": 252,
 				"w": 143,
 				"h": 22
 			},
@@ -175,7 +238,7 @@
 			"text": "vcmi.mapGen.interconnectPortal.hover",
 			"position": {
 				"x": 58,
-				"y": 227
+				"y": 257
 			}
 		},
 		{
@@ -185,7 +248,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 226
+				"y": 256
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -214,7 +277,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 227
+				"y": 257
 			}
 		},
 		{
@@ -222,7 +285,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 252,
+				"y": 282,
 				"w": 143,
 				"h": 22
 			},
@@ -240,7 +303,7 @@
 			"text": "vcmi.mapGen.openPathNoRoad.hover",
 			"position": {
 				"x": 58,
-				"y": 257
+				"y": 287
 			}
 		},
 		{
@@ -250,7 +313,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 256
+				"y": 286
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -279,7 +342,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 257
+				"y": 287
 			}
 		},
 		{
@@ -287,7 +350,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 282,
+				"y": 312,
 				"w": 143,
 				"h": 22
 			},
@@ -305,7 +368,7 @@
 			"text": "vcmi.mapGen.openPathRoad.hover",
 			"position": {
 				"x": 58,
-				"y": 287
+				"y": 317
 			}
 		},
 		{
@@ -315,7 +378,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 286
+				"y": 316
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -344,7 +407,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 287
+				"y": 317
 			}
 		},
 		{
@@ -352,7 +415,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 312,
+				"y": 342,
 				"w": 143,
 				"h": 22
 			},
@@ -370,7 +433,7 @@
 			"text": "vcmi.mapGen.roadNetwork.hover",
 			"position": {
 				"x": 58,
-				"y": 317
+				"y": 347
 			}
 		},
 		{
@@ -379,7 +442,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 311
+				"y": 341
 			},
 			"setting": "persistent:mapGen/params/roadNetwork",
 			"selected": true,
@@ -393,7 +456,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 342,
+				"y": 372,
 				"w": 143,
 				"h": 22
 			},
@@ -411,7 +474,7 @@
 			"text": "vcmi.mapGen.roadType.hover",
 			"position": {
 				"x": 58,
-				"y": 347
+				"y": 377
 			}
 		},
 		{
@@ -421,7 +484,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 346
+				"y": 376
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -461,7 +524,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 347
+				"y": 377
 			}
 		}
 	]
