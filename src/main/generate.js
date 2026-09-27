@@ -18,7 +18,7 @@ const { mergeChunks, mergeChunksAsync } = require('../stitch/poms');
 const { planMap, chooseTemplateLayout } = require('../biome/plan');
 const { themePool, applyGuardTheme, concretizeGuards, creatureRegistry, guardPool, themeDwellingPool,
 	themeBankPool } = require('../biome/guardCreatures');
-const { DWELLING_POOL, CORE_BANKS, bankRate } = require('../biome/economy');
+const { DWELLING_POOL, CORE_BANKS, bankRate, chestTemplate } = require('../biome/economy');
 const TEMPLATE_THEMES = require('../biome/templateThemes.json');
 const { h3MonsterTemplates } = require('../parser/h3data');
 const { townFactions, zoneTownTypes, pickStartFaction } = require('../biome/zoneTowns');
@@ -932,6 +932,31 @@ async function generateMap(params) {
 		return { ...b, ...(tpls ? { tpls } : {}),
 			...(o && b.type !== 'dragonUtopia' ? { rmg: o.rmg, weight: bankRate(o.rmg) } : {}) };
 	}).filter(b => b.weight > 0);
+	// Treasure chests the engine's way: every treasureChest subtype with an rmg
+	// entry is a pile object of its own (TreasurePlacer::addCommonObjects),
+	// drawn by rarity. Core's chest is always there; a map that declares its
+	// mods adds theirs (The Great Expansion's spell stones, two treasure piles
+	// and lost wagon on K's playset, the corpus's commonest treasure since
+	// April), each with the templates its mod gives it and that mod declared,
+	// and core's with a mod's art for that mod's terrain. content.js sizes the
+	// count by the pool's rarity.
+	const chests = [];
+	{
+		const coreKey = 'core:treasureChest.treasureChest';
+		const core = assetIndex.objects.get(coreKey);
+		chests.push({ type: 'treasureChest', subtype: 'treasureChest', core: true,
+			rmg: useMods && core && core.rmg ? core.rmg : { value: 1500, rarity: 1000 },
+			tpls: [{ raw: chestTemplate(), terrains: null },
+				...(useMods ? (patchTpls.get(coreKey) || []) : [])] });
+		if (useMods)
+			for (const [id, o] of assetIndex.objects) {
+				if (o.type !== 'treasureChest' || String(id).startsWith('core:') || o.overrides) continue;
+				if (!o.rmg || !(o.rmg.value > 0) || !(o.rmg.rarity > 0)) continue;
+				const tpls = placeables(o).map(x => ({ raw: x.raw, terrains: x.allowedTerrains || null }));
+				if (tpls.length)
+					chests.push({ type: 'treasureChest', subtype: o.subtype, rmg: o.rmg, tpls, mod: id.split(':')[0] });
+			}
+	}
 	// the ground a zone stands on, by the short id content.js knows it by: the
 	// name a template's allowedTerrains uses, and whether an "any land"
 	// template may stand there (TerrainType::isLand and isPassable)
@@ -1046,7 +1071,7 @@ async function generateMap(params) {
 			params: { ...biomeParams, seed, zonePlan: plan, waterMask: mask, layoutOnly: true,
 				waterIslands: islands },
 			terrainShortIds, tileIdsByShort, numTiles: tiles.length,
-			objectPools: { banks, dwellings, coreBanks, terrainNames }, terrainInfo: assetIndex.terrains,
+			objectPools: { banks, dwellings, coreBanks, chests, terrainNames }, terrainInfo: assetIndex.terrains,
 		}).plans[0].stats;
 		const figures = st => {
 			const tot = st.sizes.reduce((a, v) => a + v * v, 0) || 1;
@@ -1141,7 +1166,7 @@ async function generateMap(params) {
 			waterIslands: !!(waterPlan && waterPlan.islands),
 			layoutOnly: !!process.env.VMAPGEN_PLAN_ONLY },
 		terrainShortIds, tileIdsByShort, numTiles: tiles.length,
-		objectPools: { banks, dwellings, coreBanks, terrainNames, ...(concreteGuards ? { guards: guardPool(registry) } : {}),
+		objectPools: { banks, dwellings, coreBanks, chests, terrainNames, ...(concreteGuards ? { guards: guardPool(registry) } : {}),
 			...(themeDwellings ? { themeDwellings } : {}),
 			...(themeBanks && themeBanks.pool.length ? { themeBanks } : {}),
 			// a template zone's towns: concrete, of the factions it allows

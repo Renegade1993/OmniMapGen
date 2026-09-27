@@ -27,14 +27,10 @@ const crypto = require('crypto');
 const ROOT = path.join(__dirname, '..');
 const MOD_ID = 'omnimapgen';
 
-// The texts the client's map generator framework owns (the lobby button, the
-// template picker, the generate states); the mod brings every other one.
-const FRAMEWORK_KEYS = new Set([
-	'vcmi.lobby.mapGen.hover', 'vcmi.lobby.mapGen.help',
-	'vcmi.mapGen.generate.hover', 'vcmi.mapGen.generate.running', 'vcmi.mapGen.generate.failed',
-	'vcmi.mapGen.generate.notConfigured',
-	'vcmi.mapGen.template.none', 'vcmi.mapGen.template.hover', 'vcmi.mapGen.template.choose',
-]);
+// The mod brings every text of the tab, the nine the client's framework also
+// has (the lobby button, the template picker, the generate states) among them:
+// a mod's translation replaces base's wording, so these say OmniMapGen's own
+// things (the free layout's calibration) where the client says generic ones.
 
 function args(argv) {
 	const o = {};
@@ -180,7 +176,7 @@ function main() {
 	for (const f of fs.readdirSync(widgets).filter(f => f.endsWith('.json')).sort())
 		add(`Content/config/widgets/mapGen/${f}`, fs.readFileSync(path.join(widgets, f)));
 	const strings = JSON.parse(fs.readFileSync(path.join(ROOT, 'ui', 'vcmi', 'strings.json'), 'utf8'));
-	const own = Object.fromEntries(Object.entries(strings).filter(([k]) => !FRAMEWORK_KEYS.has(k)));
+	const own = strings;
 	add('Content/config/omnimapgen/english.json', JSON.stringify(own, null, '\t') + '\n');
 
 	// the generator and the runtime it runs on

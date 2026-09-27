@@ -33,6 +33,29 @@ const { zoneTownTypes, townTemplate, townMods } = require('./zoneTowns');
 const CORE_BANK_WEIGHT = CORE_BANKS.filter(b => b.type !== 'crypt')
 	.reduce((a, b) => a + (b.weight || 1), 0);
 const CORE_DWELLING_WEIGHT = DWELLING_POOL.reduce((a, d) => a + (d.weight || 1), 0);
+// Treasure chests grow with the chest pool: the corpus ran 4.68 chests per
+// 1000 cells with core's chest alone (before April), 11.15 with two more
+// types (April-August) and 13.68 with four (since August 26th), rarity 1000
+// each but the lost wagon's 100 (.tmp\opus\chest_eras.js, 2026-09-26). Count
+// = fill.chests x CHEST_K x (pool rarity / 1000)^CHEST_GAMMA fits all three
+// on average, but not template by template: the late corpus's chests per
+// chest-eligible pile run from 0.92 (Jebus Cross, where our count already
+// matches) to 3.98 (Headquarters), because a rich pile's tail fills with
+// cheap objects too (.tmp\opus\chest_calib.js). Off unless
+// VMAPGEN_CHEST_GROWTH=1 until a pile simulation sizes chests per template;
+// the pool still sets the mix.
+const CHEST_GROWTH = process.env.VMAPGEN_CHEST_GROWTH === '1';
+const CHEST_K = Number(process.env.VMAPGEN_CHEST_K) || 0.63;
+const CHEST_GAMMA = Number(process.env.VMAPGEN_CHEST_GAMMA) || 0.77;
+// a chest's draw per 1000 rarity against its value, from the late corpus:
+// spell stones (1000) 4.57 per 1000 cells, the treasure piles (1500) 2.98,
+// the lost wagon (1881) 1.6 per 1000 rarity; 1 at 1500
+function chestValueRate(v) {
+	if (!(v > 1000)) return 1.53;
+	if (v <= 1500) return 1.53 - 0.53 * (v - 1000) / 500;
+	if (v <= 1900) return 1 - 0.46 * (v - 1500) / 400;
+	return 0.54 * Math.pow(1900 / v, 2.7);
+}
 // the richest object a free-layout zone of each class may draw from the bank
 // pool, standing in for a template zone's richest pile (fillBiome, banks)
 const FREE_ZONE_MAX = {
@@ -2200,9 +2223,29 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		} else
 			put('randomResource', pileTpl, undefined, 'randomResource');
 	}
+	// Treasure chests: every chest subtype the map may use (generate.js
+	// objectPools.chests) that has a template for this ground, drawn by rarity
+	// and value; the late corpus splits its chests 22% core, 33% spell stones,
+	// 22% each treasure pile and 1% lost wagon, which these weights give. The
+	// count stays the calibrated one (CHEST_GROWTH, above).
+	// A mod chest is written with the empty rewardable options the corpus
+	// gives every chest, so the engine rolls its reward from its own config.
 	const chestTpl = chestTemplate();
-	for (let i = Math.round(scale * fill.chests * p.pickupDensity); i > 0; i--)
-		put('treasureChest', chestTpl, undefined, 'treasureChest');
+	const chestPool = [];
+	for (const c of objectPools.chests || []) {
+		const tpl = bankTemplate(c);
+		if (tpl) chestPool.push({ c, tpl, w: (c.rmg.rarity / 1000) * chestValueRate(c.rmg.value) });
+	}
+	const chestRarity = chestPool.reduce((a, e) => a + e.c.rmg.rarity, 0);
+	const chestScale = CHEST_GROWTH && chestPool.length ? CHEST_K * Math.pow(chestRarity / 1000, CHEST_GAMMA) : 1;
+	const chestW = chestPool.reduce((a, e) => a + e.w, 0);
+	for (let i = Math.round(scale * fill.chests * p.pickupDensity * chestScale); i > 0; i--) {
+		if (!chestPool.length) { put('treasureChest', chestTpl, undefined, 'treasureChest'); continue; }
+		let roll = rng() * chestW, pick = chestPool[chestPool.length - 1];
+		for (const e of chestPool) { roll -= e.w; if (roll <= 0) { pick = e; break; } }
+		const e = put('treasureChest', pick.tpl.raw, pick.c.core ? undefined : emptyRewardable(), pick.c.subtype);
+		if (e && (pick.tpl.mod || pick.c.mod)) e.mod = pick.tpl.mod || pick.c.mod;
+	}
 	const fireTpl = campfireTemplate();
 	for (let i = Math.round(scale * fill.campfires * p.pickupDensity); i > 0; i--)
 		put('campfire', fireTpl, undefined, 'campfire');
