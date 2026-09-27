@@ -17,6 +17,7 @@ const { computeTaccl } = require('../stitch/taccl');
 const { mergeChunks, mergeChunksAsync } = require('../stitch/poms');
 const { planMap, chooseTemplateLayout } = require('../biome/plan');
 const { registerTerrainDecor, clearTerrainDecor, TERRAINS: DECOR_TERRAINS } = require('../biome/decor');
+const { registerModSet, clearModSets, coreSetTemplates } = require('../biome/retile');
 const { blockingCells } = require('../biome/content');
 const { themePool, applyGuardTheme, concretizeGuards, creatureRegistry, guardPool, themeDwellingPool,
 	themeBankPool } = require('../biome/guardCreatures');
@@ -427,7 +428,9 @@ function cachedAssetIndex(coreConfigDir, orderedMods, noCache) {
 		//     object they name; submods nested at any depth are read
 		// v23: a faction is its records merged in load order (native terrains
 		//     split across files or patched by another mod)
-		.update('v23')
+		// v24: the obstacle sets (core's biomes.json and the mods'), and every
+		//     template records the mod that brought it
+		.update('v24')
 		.update(String(coreConfigDir))
 		.update(dirSignature(coreConfigDir));
 	for (const m of orderedMods || []) {
@@ -468,6 +471,7 @@ function cachedAssetIndex(coreConfigDir, orderedMods, noCache) {
 				spells: new Map(j.spells || []),
 				skills: new Map(j.skills || []),
 				heroes: new Map(j.heroes || []),
+				obstacleSets: j.obstacleSets || [],
 			};
 		} catch { /* fall through to rebuild */ }
 	}
@@ -482,6 +486,7 @@ function cachedAssetIndex(coreConfigDir, orderedMods, noCache) {
 		spells: [...index.spells],
 		skills: [...index.skills],
 		heroes: [...index.heroes],
+		obstacleSets: index.obstacleSets,
 	});
 	// best-effort: the first folder that takes the write keeps it
 	for (const dir of cacheDirs) {
@@ -1018,6 +1023,54 @@ async function generateMap(params) {
 		console.error(`[gen] mod terrain scenery: ${[...new Set(terrainDecorMods.values())].length} mod(s), `
 			+ `${terrainDecorMods.size} template(s)`);
 	}
+	// The mods' own obstacle sets (retile.js registerModSet). A zone's scenery
+	// ends up as the art of the sets it draws, as the engine's prepareBiome
+	// draws them (the retile pass), and mods add sets for core terrains as well
+	// as their own: HotA's palms and dunes on sand, glaciers on snow. Our core
+	// terrains had core art only, where the corpus's are 7-47% mods' art; with
+	// this install's sets the engine's draw predicts those shares within a few
+	// points (sand 44% against 47%, swamp 40 against 39). A set's template names
+	// resolve as the engine resolves them (the set's own mod first, then core's,
+	// then any other), H3's own through the core sets' snapshot, and every mod
+	// piece is declared with its mod.
+	clearModSets();
+	if (useMods && (assetIndex.obstacleSets || []).length) {
+		const lc = s => String(s).toLowerCase().replace(/\.def$/, '');
+		const unscoped = s => lc(s).slice(lc(s).lastIndexOf(':') + 1);
+		const byName = new Map();
+		for (const [, o] of assetIndex.objects) {
+			if (o.handler !== 'static') continue;
+			for (const tp of o.templates || []) {
+				if (!tp.name || !tp.raw || !tp.raw.animation || !Array.isArray(tp.raw.mask) || !tp.raw.mask.length) continue;
+				const scope = tp.scope || 'core';
+				if (!byName.has(lc(tp.name))) byName.set(lc(tp.name), new Map());
+				byName.get(lc(tp.name)).set(scope, { type: o.type, subtype: o.subtype, scope,
+					animation: String(tp.raw.animation).replace(/\.def$/i, ''), mask: tp.raw.mask });
+			}
+		}
+		const h3 = coreSetTemplates();
+		const shortOf = new Map([...assetIndex.terrains].map(([s, t]) => [unscoped(t.identifier || ''), s]));
+		let sets = 0, pieces = 0;
+		const from = new Set();
+		for (const set of assetIndex.obstacleSets) {
+			if (set.scope === 'core') continue;   // core's are in the snapshot
+			const templates = [];
+			for (const raw of set.templates) {
+				const scoped = byName.get(unscoped(raw));
+				const t = scoped && (scoped.get(set.scope) || scoped.get('core') || scoped.values().next().value);
+				if (t) {
+					templates.push(t);
+					if (t.scope !== 'core') terrainDecorMods.set(t.animation, t.scope);
+				} else if (h3.has(unscoped(raw))) templates.push(h3.get(unscoped(raw)));
+			}
+			const terrains = set.terrains.map(n => shortOf.get(n)).filter(Boolean);
+			if (!templates.length || !terrains.length) continue;
+			for (const short of terrains)
+				registerModSet(short, set.type, { name: `${set.scope}:${set.name}`, factions: set.factions, templates });
+			sets++; pieces += templates.length; from.add(set.scope);
+		}
+		console.error(`[gen] mod obstacle sets: ${sets} from ${from.size} mod(s), ${pieces} template(s)`);
+	}
 	// the ground a zone stands on, by the short id content.js knows it by: the
 	// name a template's allowedTerrains uses, and whether an "any land"
 	// template may stand there (TerrainType::isLand and isPassable)
@@ -1312,7 +1365,8 @@ async function generateMap(params) {
 	for (const plan of plans)
 		for (const o of plan.objects) {
 			if (o.mod) { for (const m of [].concat(o.mod)) usedMods.add(m); delete o.mod; }
-			// scenery drawn from a mod terrain's own obstacles needs that mod
+			// scenery drawn from a mod's obstacles (a mod terrain's own, or a
+			// mod's obstacle sets through the retile pass) needs that mod
 			else if (o.template && terrainDecorMods.has(o.template.animation))
 				usedMods.add(terrainDecorMods.get(o.template.animation));
 			if (o.guardCreature) { picked.set(o, o.guardCreature); delete o.guardCreature; }

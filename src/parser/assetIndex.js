@@ -248,6 +248,22 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 		spells: new Map(),     // scopedId -> {type, special, waterOnly}
 		skills: new Map(),     // scopedId -> {waterOnly}
 		heroes: new Map(),     // scopedId -> {waterOnly}
+		// the engine's obstacle sets ("biomes": config/biomes.json and every
+		// mod's), in load order: {scope, name, type, terrains, level,
+		// factions, alignments, templates (the names templates register under)}
+		obstacleSets: [],
+	};
+	const readBiomes = (scope, json) => {
+		for (const [name, e] of Object.entries(json || {})) {
+			if (!e || typeof e !== 'object' || !e.biome || !e.biome.objectType) continue;
+			const unscoped = s => { const v = String(s).toLowerCase(); return v.slice(v.lastIndexOf(':') + 1); };
+			index.obstacleSets.push({ scope, name, type: String(e.biome.objectType),
+				terrains: [].concat(e.biome.terrain || []).map(unscoped),
+				level: e.biome.level ? String(e.biome.level) : null,
+				factions: [].concat(e.biome.faction || []).map(String),
+				alignments: [].concat(e.biome.alignment || []).map(String),
+				templates: (Array.isArray(e.templates) ? e.templates : []).map(String) });
+		}
 	};
 	// object type -> handler, from the groups that define one; what a mod's
 	// types-only extension of that type inherits
@@ -329,7 +345,10 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 					const templates = [];
 					for (const [tplName, rawTpl] of Object.entries(sub.templates || {})) {
 						const tpl = inherit(rawTpl, sub.base);
-						templates.push({ name: tplName, ...templateFootprint(tpl),
+						// scope: the mod that brought it, also when it joins an
+						// object another defined (HotA's cactus art on core:cactus),
+						// which is the mod a map using it has to declare
+						templates.push({ name: tplName, scope, ...templateFootprint(tpl),
 							// the terrains it may stand on; none listed is any land
 							// (ObjectTemplate::readJson, canBePlacedAt)
 							...(Array.isArray(tpl.allowedTerrains)
@@ -544,6 +563,7 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 			// except the two categories core keeps in one top-level file
 			const top = { 'artifacts.json': 'artifacts', 'skills.json': 'skills' }[rel[0]];
 			if (json) ingest('core', json, f, rel.length > 1 ? rel[0] : (top || null));
+			if (json && rel.length === 1 && rel[0].toLowerCase() === 'biomes.json') readBiomes('core', json);
 		}
 	}
 
@@ -551,6 +571,7 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 	for (const m of orderedMods || []) {
 		for (const { name, json, category } of modConfigPayloads(m.__dir, m)) {
 			ingest(m.__id, json, name, category);
+			if (category === 'biomes') readBiomes(m.__id, json);
 		}
 	}
 	if (parseFailures)

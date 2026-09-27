@@ -58,6 +58,8 @@ function sizeGroups(templates, dedupe = true) {
 		const offs = blockedOffsets(mask);
 		if (!offs.length) continue;
 		const e = { type: t.type, animation: t.animation, mask, offs };
+		// a mod's obstacle can be a subtype of its own (core's are all "object")
+		if (t.subtype && t.subtype !== 'object') e.subtype = t.subtype;
 		if (!bySize.has(offs.length)) bySize.set(offs.length, []);
 		bySize.get(offs.length).push(e);
 	}
@@ -135,7 +137,7 @@ function retile({ W, H, allowed, region, groupsFor, rng }) {
 			cells.push(c);
 		}
 		placed.push({ x: ax, y: ay, type: e.type, animation: e.animation,
-			mask: e.mask, cells });
+			mask: e.mask, cells, ...(e.subtype ? { subtype: e.subtype } : {}) });
 	}
 	return { placed, uncovered };
 }
@@ -147,6 +149,40 @@ function retile({ W, H, allowed, region, groupsFor, rng }) {
  */
 let SETS = {};
 try { SETS = require('./decor.sets.json').sets || {}; } catch (e) { SETS = {}; }
+
+/*
+ * The mods' own obstacle sets, added for each map from the asset index
+ * (generate.js): a mod declares them in its "biomes" files exactly as core
+ * does in config/biomes.json, for core terrains (HotA's palms and dunes on
+ * sand, glaciers on snow) and for its own. The engine keeps one list per
+ * object type, core's sets first and then each mod's in load order, and a
+ * zone draws from them all alike. Same shape as SETS; cleared before each map
+ * so one install's sets never reach a map made for another in this process.
+ */
+let MOD_SETS = {};
+function registerModSet(terrain, objectType, set) {
+	const byType = MOD_SETS[terrain] || (MOD_SETS[terrain] = {});
+	(byType[objectType] || (byType[objectType] = [])).push(set);
+}
+function clearModSets() { MOD_SETS = {}; }
+/** H3's own obstacle templates by def name (lowercase), from the core sets' snapshot: what a mod's set may name. */
+function coreSetTemplates() {
+	const out = new Map();
+	for (const byType of Object.values(SETS))
+		for (const list of Object.values(byType))
+			for (const s of list)
+				for (const t of s.templates || [])
+					if (!out.has(t.animation.toLowerCase())) out.set(t.animation.toLowerCase(), t);
+	return out;
+}
+function setsFor(terrain) {
+	const core = SETS[terrain], mods = MOD_SETS[terrain];
+	if (!mods) return core;
+	const out = {};
+	for (const t of new Set([...Object.keys(core || {}), ...Object.keys(mods)]))
+		out[t] = [...((core && core[t]) || []), ...(mods[t] || [])];
+	return out;
+}
 
 const nextInt = (lo, hi, rng) => lo + ((rng() * (hi - lo + 1)) | 0);   // inclusive, as vstd::RNG
 const nextItem = (arr, rng) => arr[(rng() * arr.length) | 0];
@@ -164,7 +200,7 @@ const nextItem = (arr, rng) => arr[(rng() * arr.length) | 0];
  * zones carry no faction outside the player starts.
  */
 function zoneTemplates(terrain, rng) {
-	const S = SETS[terrain];
+	const S = setsFor(terrain);
 	if (!S) return [];
 	const open = list => (list || []).filter(s => !s.factions || !s.factions.length);
 	const chosen = [];
@@ -235,9 +271,10 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 	const kept = unc.size ? scenery.filter(o => blockingCells(o.template, o.x, o.y)
 		.some(([x, y]) => x >= 0 && y >= 0 && x < W && y < H && unc.has(y * W + x))) : [];
 	const placed = r.placed.map(p =>
-		entry(p.type, p.x, p.y, l, { animation: p.animation, mask: p.mask }));
+		entry(p.type, p.x, p.y, l, { animation: p.animation, mask: p.mask }, p.subtype || 'object'));
 	return { objects: [...rest, ...kept, ...placed], before: scenery.length,
 		after: kept.length + placed.length, kept: kept.length };
 }
 
-module.exports = { retile, retileLevel, zoneTemplates, sizeGroups, blockedOffsets };
+module.exports = { retile, retileLevel, zoneTemplates, sizeGroups, blockedOffsets,
+	registerModSet, clearModSets, coreSetTemplates };
