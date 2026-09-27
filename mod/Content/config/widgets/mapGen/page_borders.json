@@ -9,7 +9,7 @@
 			"rect": {
 				"x": 14,
 				"y": 166,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -35,16 +35,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 170
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/borderSolidity",
@@ -83,7 +83,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 171
 			}
 		},
@@ -93,7 +93,7 @@
 			"rect": {
 				"x": 14,
 				"y": 196,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -119,16 +119,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 200
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/interconnectivity",
@@ -148,7 +148,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 201
 			}
 		},
@@ -158,7 +158,7 @@
 			"rect": {
 				"x": 14,
 				"y": 226,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -184,16 +184,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 230
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 50,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/interconnectPortal",
@@ -213,7 +213,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 231
 			}
 		},
@@ -223,7 +223,7 @@
 			"rect": {
 				"x": 14,
 				"y": 256,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -249,16 +249,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 260
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/openPathNoRoad",
@@ -278,7 +278,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 261
 			}
 		},
@@ -288,7 +288,7 @@
 			"rect": {
 				"x": 14,
 				"y": 286,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -314,16 +314,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 290
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/openPathRoad",
@@ -343,7 +343,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 291
 			}
 		},
@@ -353,7 +353,7 @@
 			"rect": {
 				"x": 14,
 				"y": 316,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -378,7 +378,7 @@
 			"type": "toggleButton",
 			"image": "lobby/checkbox",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 315
 			},
 			"setting": "persistent:mapGen/params/roadNetwork",
@@ -394,7 +394,7 @@
 			"rect": {
 				"x": 14,
 				"y": 346,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -420,16 +420,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 350
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 2,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/roadType",
@@ -460,7 +460,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 351
 			}
 		}

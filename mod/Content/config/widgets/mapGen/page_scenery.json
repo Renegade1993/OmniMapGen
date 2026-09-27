@@ -9,7 +9,7 @@
 			"rect": {
 				"x": 14,
 				"y": 166,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -35,16 +35,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 170
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/decorDensity",
@@ -63,7 +63,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 171
 			}
 		},
@@ -73,7 +73,7 @@
 			"rect": {
 				"x": 14,
 				"y": 196,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -98,7 +98,7 @@
 			"type": "toggleButton",
 			"image": "lobby/checkbox",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 195
 			},
 			"setting": "persistent:mapGen/params/rivers",
@@ -114,7 +114,7 @@
 			"rect": {
 				"x": 14,
 				"y": 226,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -140,16 +140,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 230
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 11,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/riverAmount",
@@ -168,7 +168,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 231
 			}
 		}

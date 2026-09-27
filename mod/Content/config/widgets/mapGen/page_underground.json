@@ -9,7 +9,7 @@
 			"rect": {
 				"x": 14,
 				"y": 166,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -35,16 +35,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 170
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/subterraneanGateRatio",
@@ -63,7 +63,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 171
 			}
 		},
@@ -73,7 +73,7 @@
 			"rect": {
 				"x": 14,
 				"y": 196,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -99,16 +99,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 200
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/subterraneanNarrow",
@@ -128,7 +128,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 201
 			}
 		},
@@ -138,7 +138,7 @@
 			"rect": {
 				"x": 14,
 				"y": 226,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -164,16 +164,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 230
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 14,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/subterraneanOpen",
@@ -193,7 +193,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 231
 			}
 		}

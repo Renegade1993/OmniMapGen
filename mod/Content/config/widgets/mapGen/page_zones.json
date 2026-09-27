@@ -9,7 +9,7 @@
 			"rect": {
 				"x": 14,
 				"y": 166,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -35,16 +35,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 170
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 27,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/zoneCells",
@@ -62,7 +62,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 171
 			}
 		},
@@ -72,7 +72,7 @@
 			"rect": {
 				"x": 14,
 				"y": 196,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -98,16 +98,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 200
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 446,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/zoneCap",
@@ -125,7 +125,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 201
 			}
 		},
@@ -135,7 +135,7 @@
 			"rect": {
 				"x": 14,
 				"y": 226,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -161,16 +161,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 230
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/highLootRatio",
@@ -190,7 +190,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 231
 			}
 		},
@@ -200,7 +200,7 @@
 			"rect": {
 				"x": 14,
 				"y": 256,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -226,16 +226,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 260
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/townRatio",
@@ -255,7 +255,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 261
 			}
 		},
@@ -265,7 +265,7 @@
 			"rect": {
 				"x": 14,
 				"y": 286,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -291,16 +291,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 290
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/lowLootRatio",
@@ -320,7 +320,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 291
 			}
 		},
@@ -330,7 +330,7 @@
 			"rect": {
 				"x": 14,
 				"y": 316,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -356,16 +356,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 320
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 30,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/biomeWobble",
@@ -383,7 +383,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 321
 			}
 		}

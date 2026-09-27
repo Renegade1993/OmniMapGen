@@ -9,7 +9,7 @@
 			"rect": {
 				"x": 14,
 				"y": 166,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -35,16 +35,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 170
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 6,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/map/size",
@@ -91,7 +91,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 171
 			}
 		},
@@ -101,7 +101,7 @@
 			"rect": {
 				"x": 14,
 				"y": 196,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -126,7 +126,7 @@
 			"type": "toggleButton",
 			"image": "lobby/checkbox",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 195
 			},
 			"setting": "persistent:mapGen/map/underground",
@@ -142,7 +142,7 @@
 			"rect": {
 				"x": 14,
 				"y": 226,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -167,7 +167,7 @@
 			"type": "toggleButton",
 			"image": "lobby/checkbox",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 225
 			},
 			"setting": "persistent:mapGen/map/declareMods",
@@ -183,7 +183,7 @@
 			"rect": {
 				"x": 14,
 				"y": 256,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -321,7 +321,7 @@
 			"rect": {
 				"x": 14,
 				"y": 320,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -473,7 +473,7 @@
 			"rect": {
 				"x": 14,
 				"y": 388,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -498,7 +498,7 @@
 			"type": "button",
 			"image": "MapGenButton80",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 384
 			},
 			"callback": "chooseMapGenTemplate",
@@ -534,7 +534,7 @@
 			"rect": {
 				"x": 14,
 				"y": 454,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -560,16 +560,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 458
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 3,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/teams",
@@ -604,7 +604,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 459
 			}
 		}

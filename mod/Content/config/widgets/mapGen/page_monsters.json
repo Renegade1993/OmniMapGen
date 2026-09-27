@@ -9,7 +9,7 @@
 			"rect": {
 				"x": 14,
 				"y": 166,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -35,16 +35,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 170
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 4,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/monsterStrength",
@@ -83,7 +83,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 171
 			}
 		},
@@ -93,7 +93,7 @@
 			"rect": {
 				"x": 14,
 				"y": 196,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -119,16 +119,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 200
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 55,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/stackScale",
@@ -147,7 +147,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 201
 			}
 		},
@@ -157,7 +157,7 @@
 			"rect": {
 				"x": 14,
 				"y": 226,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -183,16 +183,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 230
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 30,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/guardDensity",
@@ -211,7 +211,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 231
 			}
 		},
@@ -221,7 +221,7 @@
 			"rect": {
 				"x": 14,
 				"y": 256,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -247,16 +247,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 260
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/objectGuardShare",
@@ -276,7 +276,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 261
 			}
 		},
@@ -286,7 +286,7 @@
 			"rect": {
 				"x": 14,
 				"y": 286,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -311,7 +311,7 @@
 			"type": "toggleButton",
 			"image": "lobby/checkbox",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 285
 			},
 			"setting": "persistent:mapGen/params/guardTreasure",
@@ -327,7 +327,7 @@
 			"rect": {
 				"x": 14,
 				"y": 316,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -352,7 +352,7 @@
 			"type": "toggleButton",
 			"image": "lobby/checkbox",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 315
 			},
 			"setting": "persistent:mapGen/params/guardMines",
@@ -368,7 +368,7 @@
 			"rect": {
 				"x": 14,
 				"y": 346,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -393,7 +393,7 @@
 			"type": "toggleButton",
 			"image": "lobby/checkbox",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 345
 			},
 			"setting": "persistent:mapGen/params/guardDwellings",
@@ -409,7 +409,7 @@
 			"rect": {
 				"x": 14,
 				"y": 376,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -434,7 +434,7 @@
 			"type": "toggleButton",
 			"image": "lobby/checkbox",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 375
 			},
 			"setting": "persistent:mapGen/params/guardBottlenecks",
@@ -450,7 +450,7 @@
 			"rect": {
 				"x": 14,
 				"y": 406,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -476,16 +476,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 410
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 20,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/chokeGuardRatio",
@@ -505,7 +505,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 411
 			}
 		},
@@ -515,7 +515,7 @@
 			"rect": {
 				"x": 14,
 				"y": 436,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -540,7 +540,7 @@
 			"type": "toggleButton",
 			"image": "lobby/checkbox",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 435
 			},
 			"setting": "persistent:mapGen/params/guardPortals",
@@ -556,7 +556,7 @@
 			"rect": {
 				"x": 14,
 				"y": 466,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -582,16 +582,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 470
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 40,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/lootGuardWeight",
@@ -610,7 +610,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 471
 			}
 		},
@@ -620,7 +620,7 @@
 			"rect": {
 				"x": 14,
 				"y": 496,
-				"w": 188,
+				"w": 184,
 				"h": 22
 			},
 			"help": {
@@ -646,16 +646,16 @@
 			"orientation": "horizontal",
 			"style": "brown",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 500
 			},
-			"size": 120,
+			"size": 104,
 			"itemsVisible": 0,
 			"itemsTotal": 40,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
-				"w": 128,
+				"w": 112,
 				"h": 26
 			},
 			"setting": "persistent:mapGen/params/mineGuardWeight",
@@ -674,7 +674,7 @@
 			"color": "white",
 			"text": "",
 			"position": {
-				"x": 328,
+				"x": 308,
 				"y": 501
 			}
 		}

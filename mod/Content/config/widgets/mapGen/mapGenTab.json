@@ -350,7 +350,7 @@
 			"type": "button",
 			"image": "MapGenButton190",
 			"position": {
-				"x": 202,
+				"x": 198,
 				"y": 548
 			},
 			"help": {

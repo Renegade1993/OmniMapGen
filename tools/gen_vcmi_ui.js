@@ -55,7 +55,9 @@ const ALL_PAGES = [{ id: 'map', label: 'Map' }, ...PAGES];
 const PER_ROW = 4, BTN_W = 80, BTN_GAP = 8, BTN_X0 = 28, BTN_Y0 = 80, BTN_ROW = 36;
 const BTN_ROWS = Math.ceil(ALL_PAGES.length / PER_ROW);
 const ROW0 = BTN_Y0 + BTN_ROWS * BTN_ROW + 14, ROW_H = 30;
-const X_HELP = 20, X_LABEL = 58, X_CTRL = 202, SLIDER_W = 120, X_VALUE = 328;
+// values get 84 px to the panel's inner edge (392): Mediterranean, the longest name a
+// value shows, is 13 characters at about 6 px each; labels keep 140 px (22)
+const X_HELP = 20, X_LABEL = 58, X_CTRL = 198, SLIDER_W = 104, X_VALUE = 308;
 const LINE_BOTTOM = 540, BUTTON_Y = 548;
 
 // the map settings the tab owns, and where they start
