@@ -20,16 +20,25 @@
  * route may pass a niche and a second guard, as a link guard behind a
  * treasure guard does.
  *
- * A gate dearer than GATE_SLACK times the median start's gate has every guard
- * on its route cut to that. A start whose home holds under HOME_SHARE of the
- * median home is boxed in: its route is cut to the cheapest start's gate, so it
- * leaves early. A start with no guarded way out (a boat its only road) is left
- * as it is.
+ * A gate dearer than GATE_SLACK times the median gate has every guard on its
+ * route cut to that. A start whose home holds under HOME_SHARE of the median
+ * home is boxed in: its route is cut to the cheapest start's gate, so it
+ * leaves early. A gate cheaper than the median over GATE_SLACK is raised to
+ * that: every guard under it on the route, and the start measured again, until
+ * its way out costs that much (a start that leaves easily is as far from even
+ * as one that is shut in; on free 72x72 two-level seed 5 one start's way out
+ * cost 525 where the others' cost 2,100 to 2,990). A start with no guarded way
+ * out (a boat its only road) is left as it is. The median of an even count is
+ * the mean of the middle two: with the upper one, two starts were never cut,
+ * the dearer being the median itself.
  */
 'use strict';
 
 const GATE_SLACK = 1.5;
 const HOME_SHARE = 0.5;
+// how often a start's way out is raised and measured again, as each raise can
+// leave the next cheapest route the way out
+const RAISE_ROUNDS = 8;
 // open ground past a guard that makes it a way out, not a niche it guards
 const LEADS_TO = 30;
 
@@ -198,7 +207,7 @@ function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, 
 	opens.forEach((o, k) => { for (const r of o.regions) { if (!meets.has(r)) meets.set(r, []); meets.get(r).push(k); } });
 	const value = monsters.map(o => strengthOf(o));
 
-	const measured = starts.map(s => {
+	const measure = s => {
 		const from = (s.from || []).map(c => (s.l || 0) * N + c).filter(c => c >= 0 && c < ALL && !walls[c]);
 		const homes = new Set(from.map(region).filter(r => r >= 0));
 		// the start's own zone: its town's (the gate's ground), on its level
@@ -268,8 +277,12 @@ function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, 
 				+ (gate ? `way out past ${gate.route.map(k => `${monsters[k].subtype || monsters[k].type} (${fights[k].x},${fights[k].y}) ${Math.round(value[k])}`).join(', ')}`
 					: 'no guarded way out'));
 		return { start: s, home, gate };
-	});
-	const median = xs => { const v = xs.slice().sort((a, b) => a - b); return v.length ? v[v.length >> 1] : 0; };
+	};
+	const measured = starts.map(measure);
+	const median = xs => {
+		const v = xs.slice().sort((a, b) => a - b), h = v.length >> 1;
+		return !v.length ? 0 : v.length % 2 ? v[h] : (v[h - 1] + v[h]) / 2;
+	};
 	const gates = measured.filter(m => m.gate).map(m => m.gate.value);
 	const medGate = median(gates), minGate = gates.length ? Math.min(...gates) : 0;
 	const medHome = median(measured.map(m => m.home));
@@ -287,8 +300,25 @@ function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, 
 		cuts.push({ color: m.start.color, from: m.gate.value, to: target, boxed });
 		m.cut = target;
 	}
+	// and a way out that costs too little raised to the floor
+	const floor = medGate / GATE_SLACK;
+	for (const m of measured) {
+		if (!m.gate || measured.length < 2 || m.cut || m.gate.value >= floor) continue;
+		const from = m.gate.value;
+		for (let round = 0; round < RAISE_ROUNDS && m.gate && m.gate.value < floor; round++) {
+			for (const k of m.gate.route) {
+				if (value[k] >= floor) continue;
+				setStrength(monsters[k], floor);
+				value[k] = floor;
+			}
+			m.gate = measure(m.start).gate;
+		}
+		cuts.push({ color: m.start.color, from, to: floor, raised: true });
+		m.raised = floor;
+	}
 	return {
-		starts: measured.map(m => ({ color: m.start.color, home: m.home, gate: m.gate ? m.gate.value : null, cut: m.cut || null })),
+		starts: measured.map(m => ({ color: m.start.color, home: m.home, gate: m.gate ? m.gate.value : null,
+			cut: m.cut || null, raised: m.raised || null })),
 		cuts,
 	};
 }

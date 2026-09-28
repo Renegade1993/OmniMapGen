@@ -1708,7 +1708,8 @@ async function generateMap(params) {
 			} });
 		if (starts.length > 1)
 			console.error('[gen] start fairness: ' + fair.starts.map(s => `${s.color} home ${s.home}, gate `
-				+ (s.gate === null ? 'none' : Math.round(s.gate)) + (s.cut ? ` cut to ${Math.round(s.cut)}` : '')).join('; '));
+				+ (s.gate === null ? 'none' : Math.round(s.gate)) + (s.cut ? ` cut to ${Math.round(s.cut)}` : '')
+				+ (s.raised ? ` raised to ${Math.round(s.raised)}` : '')).join('; '));
 	}
 
 	// Every town lists the spells its mage guild may offer. The engine reads

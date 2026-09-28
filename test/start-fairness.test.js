@@ -86,3 +86,19 @@ test('a portal with a monster beside its entrance is a fight on the way, not a f
 	assert.strictEqual(w.objects[3].options.amount, 18, 'the portal guard cut');
 	assert.strictEqual(w.objects[2].options.amount, 200, 'the land guard left');
 });
+
+test('a gate far cheaper than the others is raised to the median over one and a half', () => {
+	// free 72x72 two-level seed 5: one start out past 525, the others 2,100 to 2,990
+	const w = world([{ color: 'red', amount: 5 }, { color: 'blue', amount: 21 }, { color: 'tan', amount: 25 }, { color: 'green', amount: 30 }]);
+	const r = evenStarts(w);
+	assert.deepStrictEqual(r.cuts, [{ color: 'red', from: 500, to: 2300 / 1.5, raised: true }]);
+	assert.strictEqual(w.objects[0].options.amount, 15, 'its guard now costs about the floor');
+	assert.ok(r.starts.find(s => s.color === 'red').gate >= 1500, 'measured again after the raise');
+	assert.strictEqual(w.objects[1].options.amount, 21, 'the others as they were');
+});
+
+test('two starts: the median is their mean, so the dearer one is cut and the cheaper one raised', () => {
+	const w = world([{ color: 'red', amount: 5 }, { color: 'blue', amount: 30 }]);
+	const r = evenStarts(w);
+	assert.deepStrictEqual(r.cuts.map(c => [c.color, c.to]), [['blue', 1.5 * 1750], ['red', 1750 / 1.5]]);
+});

@@ -2746,6 +2746,14 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		} else if (Number(p.guardPortals) > 0) {
 			portalGuard(monoTpl, A[0], A[1], o.b);
 			portalGuard(monoTpl, B[0], B[1], o.a);
+		} else if (!tplZones) {
+			// a free layout's portal out of a start is guarded at the start's
+			// end, as a passage out of a start always is, and that is one fight
+			// either way through it. Unguarded, it was a way out for free: on
+			// 72x72 two-level seed 3 green walked through two into two more
+			// zones and on to a neutral town, 987 cells against 342-467
+			if (classes[o.a] === BIOME_CLASS.PLAYER) portalGuard(monoTpl, A[0], A[1], o.b);
+			if (classes[o.b] === BIOME_CLASS.PLAYER) portalGuard(monoTpl, B[0], B[1], o.a);
 		}
 		links.push([openBeside(monoTpl, A[0], A[1]), openBeside(monoTpl, B[0], B[1])]);
 		// a link with a road has one to each monolith (ConnectionsPlacer::
@@ -4433,10 +4441,12 @@ function balanceStarts(plan, W, H, blocked, playerStarts, rng) {
 			const x = c % W, y = (c / W) | 0;
 			const gap = target - e.value;
 			let type, tpl, subtype, v;
-			// the last cells the ring has left take a piece big enough to close the
-			// gap: a crowded start ran out of ground a chest or a pile short (36x36
-			// for eight, red at 97% of its target with no cell left)
-			const closing = nearHome.length + rest.length <= 2
+			// the last cells the ring has left, or the last piece a start may take,
+			// take a piece big enough to close the gap: a crowded start ran out of
+			// ground a chest or a pile short (36x36 for eight, red at 97% of its
+			// target with no cell left), and one ran out of pieces (purple at 82%,
+			// twelve placed, twenty cells left)
+			const closing = nearHome.length + rest.length <= 2 || placed === 11
 				? [[750, 'randomResource'], [1500, 'treasureChest'], [5000, 'randomArtifactTreasure'], [10000, 'randomArtifactMinor'], [20000, 'randomArtifactMajor']]
 					.find(([val]) => val >= gap) : null;
 			if (closing) {
