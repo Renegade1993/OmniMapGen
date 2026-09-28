@@ -205,6 +205,46 @@ function concretizeGuards(objects, picked, { registry, h3, useMods, W = Infinity
 }
 
 /**
+ * The placeholders no rule picked a creature for (the free layout's guards,
+ * and any a template zone's rule left), written as the creature the game
+ * itself rolls for them when the map loads (CCreatureHandler::
+ * pickRandomMonster: any creature of that level that is neither special nor
+ * kept out of random rolls, each as likely), so the map holds concrete guards
+ * as every corpus map does and declares the mods they come from. The stack
+ * stays as placed. A level with no creature the map can draw keeps its
+ * placeholders.
+ */
+function rollPlaceholders(objects, picked, { registry, h3, useMods, W = Infinity, H = Infinity, rng }) {
+	const holders = nameHolders(registry);
+	const looks = new Map();
+	const lookOf = id => {
+		if (!looks.has(id)) looks.set(id, creatureLook(registry.get(id), { h3, useMods, holders }));
+		return looks.get(id);
+	};
+	// per level, the creatures the roll can land on whose art the map can use
+	const byLevel = new Map();
+	for (const c of registry.values()) {
+		if (c.special || c.noRandom || !(c.level >= 1 && c.level <= 7) || !lookOf(c.id)) continue;
+		if (!byLevel.has(c.level)) byLevel.set(c.level, []);
+		byLevel.get(c.level).push(c.id);
+	}
+	const mods = new Set();
+	let placed = 0, kept = 0;
+	for (const o of objects) {
+		const m = PLACEHOLDER.exec(o.type);
+		if (!m || (picked && picked.has(o))) continue;
+		const ids = (byLevel.get(Number(m[1])) || []).filter(id => anchorFits(o, lookOf(id).shift, W, H));
+		if (!ids.length) { kept++; continue; }
+		const id = ids[(rng() * ids.length) | 0];
+		const look = lookOf(id);
+		becomeCreature(o, registry.get(id).name, look, o.options && o.options.amount);
+		for (const mod of look.mods) mods.add(mod);
+		placed++;
+	}
+	return { placed, kept, mods };
+}
+
+/**
  * The strength a placeholder of each level stands for. The engine rolls any
  * creature of that level, so it is the mean over them, taken over core the
  * way engineGuard sizes its stacks: per creature (for a stack given an
@@ -345,6 +385,6 @@ function applyGuardTheme(objects, { pool, share = 1, rng, W = Infinity, H = Infi
 	return { themed, placeholders, mods };
 }
 
-module.exports = { themeNames, themePool, applyGuardTheme, concretizeGuards, creatureRegistry,
+module.exports = { themeNames, themePool, applyGuardTheme, concretizeGuards, rollPlaceholders, creatureRegistry,
 	guardPool, creatureLook, footprintShift, levelStrengths, themeMatcher, themeDwellingPool,
 	themeBankPool };

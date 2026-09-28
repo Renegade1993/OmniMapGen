@@ -395,3 +395,30 @@ test('a template that brings a theme gets it when none is asked for', { timeout:
 	assert.match(r.stderr, /guard theme golems:/);
 	fs.rmSync(path.join(testTmp(), 'vmapgen_golem_foundry.vmap'), { force: true });
 });
+
+test('a placeholder no rule picked becomes a creature the game itself would roll for it', () => {
+	const { rollPlaceholders } = require('../src/biome/guardCreatures');
+	const c = (name, level, extra = {}) => [`modA:${name}`, { id: `modA:${name}`, name, scope: 'modA', level,
+		aiValue: 100, map: `${name}.def`, mapMask: ['VV', 'VA'], ...extra }];
+	// CCreatureHandler::pickRandomMonster: any creature of the level but a
+	// special one or one kept out of random rolls
+	const registry = new Map([c('wolf', 1), c('imp', 1), c('ghost', 1, { special: true }),
+		c('boss', 1, { noRandom: true }), c('giant', 7)]);
+	const ph = (level, x) => ({ type: `randomMonsterLevel${level}`, instanceName: `ph_${x}`, x, y: 5, l: 0,
+		template: { animation: 'AVWmrnd0', mask: ['VV', 'VA'] }, options: { character: 'hostile', amount: 3 } });
+	const objs = [ph(1, 5), ph(1, 7), ph(1, 9), ph(3, 11), ph(1, 13)];
+	const picked = new Map([[objs[4], 'modA:giant']]);
+	let k = 0;
+	const r = rollPlaceholders(objs, picked, { registry, h3: null, useMods: true, W: 20, H: 20, rng: () => (k++ % 2) * 0.99 });
+	assert.strictEqual(r.placed, 3);
+	assert.strictEqual(r.kept, 1, 'no creature of level 3: it stays a placeholder');
+	for (const o of objs.slice(0, 3)) {
+		assert.strictEqual(o.type, 'monster');
+		assert.ok(['wolf', 'imp'].includes(o.subtype), `${o.subtype}: never the special one or the one kept out of rolls`);
+		assert.strictEqual(o.options.amount, 3, 'the stack as placed');
+	}
+	assert.deepStrictEqual(new Set(objs.slice(0, 3).map(o => o.subtype)), new Set(['wolf', 'imp']), 'each as likely');
+	assert.strictEqual(objs[3].type, 'randomMonsterLevel3');
+	assert.strictEqual(objs[4].type, 'randomMonsterLevel1', 'one a rule picked is concretizeGuards\' to write');
+	assert.ok(r.mods.has('modA'), 'the creature\'s mod is declared');
+});

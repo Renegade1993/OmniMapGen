@@ -20,7 +20,7 @@ const { planMap, chooseTemplateLayout } = require('../biome/plan');
 const { registerTerrainDecor, clearTerrainDecor, TERRAINS: DECOR_TERRAINS } = require('../biome/decor');
 const { registerModSet, clearModSets, coreSetTemplates } = require('../biome/retile');
 const { blockingCells, visitableCells, allowedDirs, REMOVABLE_TYPES } = require('../biome/content');
-const { themePool, applyGuardTheme, concretizeGuards, creatureRegistry, guardPool, themeDwellingPool,
+const { themePool, applyGuardTheme, concretizeGuards, rollPlaceholders, creatureRegistry, guardPool, themeDwellingPool,
 	themeBankPool, levelStrengths } = require('../biome/guardCreatures');
 const { evenStarts } = require('./startFairness');
 const { DWELLING_POOL, CORE_BANKS, bankRate, chestTemplate, registerTerrainBarriers, clearTerrainBarriers } = require('../biome/economy');
@@ -1584,7 +1584,12 @@ async function generateMap(params) {
 	}
 
 	phase('guards');
-	const h3 = (params.guardTheme || picked.size)
+	// the rest of the placeholders rolled as the game rolls them (below), on a
+	// map that declares its mods: without them the registry is core alone, and
+	// a placeholder left for the game draws from every creature it has loaded,
+	// mods' included, as the engine's own generator draws its guards
+	const rollRest = concreteGuards && guardMods && process.env.VMAPGEN_CONCRETE_FREE !== '0';
+	const h3 = (params.guardTheme || picked.size || rollRest)
 		? h3MonsterTemplates([roots.userDir, roots.installDir]) : null;
 	// Themed guards (--guardtheme): a share of the guard placeholders become
 	// creatures of one family, each standing for the strength it replaced.
@@ -1606,6 +1611,21 @@ async function generateMap(params) {
 		for (const mod of c.mods) usedMods.add(mod);
 		console.error(`[gen] concrete guards: ${c.placed} written as their creature, `
 			+ `${c.kept} kept as placeholders (no template the map can use)`);
+	}
+	// The free layout's guards, and any placeholder a template zone's rule
+	// left, as the creature the game rolls for a placeholder at load
+	// (rollPlaceholders): on a map that declares its mods they are concrete,
+	// as every corpus map's are, and their mods are declared. Before this the
+	// free layout wrote every guard as a placeholder, and the lens could read
+	// neither its guards' factions nor their mods (0% against the corpus's 53%
+	// mod creatures). VMAPGEN_CONCRETE_FREE=0 leaves them placeholders.
+	if (rollRest) {
+		const r = rollPlaceholders(objects, picked, { registry, h3, useMods: guardMods,
+			W: params.mapW, H: params.mapH, rng: xorshift((params.seed || 1) + 7717) });
+		for (const mod of r.mods) usedMods.add(mod);
+		if (r.placed || r.kept)
+			console.error(`[gen] guards rolled as the game rolls a placeholder: ${r.placed}, `
+				+ `${r.kept} kept as placeholders (no creature of their level the map can use)`);
 	}
 
 	// VMAPGEN_ZONE_DUMP=<file>: each level's zone per cell, its border walls and
