@@ -2696,6 +2696,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				done = !!e;
 			}
 			if (done) posted++;
+			else if (process.env.VMAPGEN_PILE_TRACE) console.error(`[pile]   guard level ${guard.level} DROPPED: no cell`);
 		};
 		if (pileSim) {
 			// the engine's piles (VMAPGEN_TPL_PILE_MODEL=engine, above): each
