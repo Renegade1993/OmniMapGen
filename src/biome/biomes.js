@@ -62,7 +62,12 @@ const BIOME_DEFAULTS = {
 	chokeGuardRatio: 0.7,
 	artifactDensity: 0.006,
 	artifactRichness: 0.5,
-	highLootRatio: 0.15,
+	// 0.15 while the starts were small; once they took half the land (start
+	// ZoneShare) the treasure biomes held half as much of the map, and the free
+	// layout's level 6 and 7 guards read 0.62-0.69 of the corpus. 0.25 puts the
+	// treasure biomes' share of the map back: levels 6-7 0.94-0.98, guards 1.05-
+	// 1.08, banks 1.05-1.11 (lens t59F, 2026-09-27).
+	highLootRatio: 0.25,
 	// 0.20 gave 0.69 neutral towns per 1000 cells against the corpus's
 	// 1.16 - each town-class biome yields exactly one town, so the class
 	// share IS the rate. 0.34 overshot on the repointed 75-map corpus

@@ -16,7 +16,7 @@
 		"params": {
 			"zoneCells": 400,
 			"zoneCap": 300,
-			"highLootRatio": 0.15,
+			"highLootRatio": 0.25,
 			"townRatio": 0.1,
 			"lowLootRatio": 0.25,
 			"borderSolidity": 1,

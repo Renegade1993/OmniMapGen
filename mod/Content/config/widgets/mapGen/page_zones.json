@@ -176,7 +176,7 @@
 			"setting": "persistent:mapGen/params/highLootRatio",
 			"valueMin": 0,
 			"valueStep": 0.05,
-			"valueDefault": 0.15,
+			"valueDefault": 0.25,
 			"valueLabel": "value_highLootRatio",
 			"valueDisplayScale": 100,
 			"valueDecimals": 0,

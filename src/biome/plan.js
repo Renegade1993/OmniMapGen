@@ -4194,7 +4194,15 @@ function balanceStarts(plan, W, H, blocked, playerStarts, rng) {
 			const x = c % W, y = (c / W) | 0;
 			const gap = target - e.value;
 			let type, tpl, subtype, v;
-			if (gap >= 15000 && arts < 3) {
+			// the last cells the ring has left take a piece big enough to close the
+			// gap: a crowded start ran out of ground a chest or a pile short (36x36
+			// for eight, red at 97% of its target with no cell left)
+			const closing = nearHome.length + rest.length <= 2
+				? [[750, 'randomResource'], [1500, 'treasureChest'], [5000, 'randomArtifactTreasure'], [10000, 'randomArtifactMinor'], [20000, 'randomArtifactMajor']]
+					.find(([val]) => val >= gap) : null;
+			if (closing) {
+				[v, type] = closing;
+			} else if (gap >= 15000 && arts < 3) {
 				type = 'randomArtifactMajor'; v = 20000;
 			} else if (gap >= 8000 && arts < 3) {
 				type = 'randomArtifactMinor'; v = 10000;
