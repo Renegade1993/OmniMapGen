@@ -1710,6 +1710,20 @@ function townNearCentre(zone, b, W, H, levelIndex, blocked, water, barriers) {
 	return null;
 }
 
+/**
+ * A fixed template's own neutralTowns counts, scaled by the player's Neutral
+ * town biomes setting (K, 2026-09-28: Jebus Cross at townRatio 0 still
+ * placed its authored 2, the slider silently ignored for every fixed
+ * template - the same principle as C1, a setting never goes silently
+ * overridden). Scaled against the slider's own default so a template's
+ * calibrated count is unchanged at the default and responds either way past it.
+ */
+function scaledNeutralTowns(z, p) {
+	const nt = z.neutralTowns || {};
+	const scale = p.townRatio / BIOME_DEFAULTS.townRatio;
+	return { castles: Math.round((nt.castles || 0) * scale), towns: Math.round((nt.towns || 0) * scale) };
+}
+
 function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	params, terrainShortIds, tileIdsByShort, numTiles, blocked, underground,
 	objectPools, terrainInfo }) {
@@ -1863,7 +1877,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			if (z.owner && startOfOwner(playerStarts, z.owner)) return;   // a start: its player's faction
 			const types = zoneTownTypes(z, tp.factions);
 			if (!types.length) return;
-			const nt = z.neutralTowns || {};
+			const nt = scaledNeutralTowns(z, p);
 			const towns = (nt.castles || 0) + (nt.towns || 0);
 			const faction = towns || rng() >= 0.25 ? types[(rng() * types.length) | 0] : null;
 			zoneTownType[i] = faction;
@@ -1895,7 +1909,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	const zoneMeta = tplZones && tplZones.map((z, zi) => {
 		const ownerStart = z.owner && startOfOwner(playerStarts, z.owner);
 		const townWishes = [];
-		const pt = z.playerTowns || {}, nt = z.neutralTowns || {};
+		const pt = z.playerTowns || {}, nt = scaledNeutralTowns(z, p);
 		// in the engine's order (TownPlacer::placeTowns): the owner's castles
 		// and towns, then neutral castles, then neutral towns; a castle starts
 		// with its fort

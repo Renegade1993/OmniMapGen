@@ -114,3 +114,32 @@ test('every town a template asks for gets placed: 8XM8 for seven has its 16', { 
 	assert.strictEqual(towns.filter(t => !(t.options && t.options.owner)).length, 9);
 	fs.rmSync(out, { force: true });
 });
+
+test('Neutral town biomes at 0 suppresses a fixed template\'s own neutral towns too', { timeout: 300000 }, () => {
+	// K, 2026-09-28, live testing: Jebus Cross at 2 players with the slider at
+	// 0 still placed its authored neutral towns, the setting silently ignored
+	// outside free layout. 4 players gives every start zone its own player,
+	// isolating the fix from the unrelated "spare start becomes a neutral
+	// town" accommodation (template.js's checkConstraints): the only neutral
+	// towns left on the map are the template's own authored ones, 2 in each
+	// of the 4 player zones plus 2 in the crossroads zone, 10 total.
+	const { spawnSync } = require('child_process');
+	const run = (out, extra) => spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'),
+		'--w', '108', '--h', '108', '--players', '4', '--seed', '1001', '--declaremods', '0',
+		'--template', 'Jebus Cross', '--out', out, ...extra],
+	{ encoding: 'utf8', timeout: 280000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
+	const neutralTowns = out => require('../src/preview/render').readVmap(out).objects
+		.filter(o => /town/i.test(o.type) && !(o.options && o.options.owner)).length;
+
+	const outDefault = path.join(testTmp(), 'vmapgen_jebus_towns_default.vmap');
+	const rDefault = run(outDefault, []);
+	assert.strictEqual(rDefault.status, 0, rDefault.stderr.slice(-600));
+	assert.strictEqual(neutralTowns(outDefault), 10, 'unchanged at the default setting, the calibrated corpus behavior');
+	fs.rmSync(outDefault, { force: true });
+
+	const outZero = path.join(testTmp(), 'vmapgen_jebus_towns_zero.vmap');
+	const rZero = run(outZero, ['--bio.townRatio', '0']);
+	assert.strictEqual(rZero.status, 0, rZero.stderr.slice(-600));
+	assert.strictEqual(neutralTowns(outZero), 0, 'the slider at 0 now actually suppresses them');
+	fs.rmSync(outZero, { force: true });
+});
