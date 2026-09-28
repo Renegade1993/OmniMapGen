@@ -10,7 +10,7 @@
 'use strict';
 
 const { BIOME_DEFAULTS, rimModeOf, bordersOff } = require('./biomes');
-const { engineGuard } = require('./content');
+const { engineGuard, creepTier } = require('./content');
 
 /**
  * For each biome edge, pick opening cells from the shared border.
@@ -287,7 +287,6 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 	// monsterStrength shifts every guard by whole creature levels, as the stock
 	// tab's weak / strong setting does for the engine's own generator
 	const shift = Math.round(p.monsterStrength || 0);
-	const lv = v => Math.max(1, Math.min(7, v + shift));
 	const guards = [];
 	for (const o of openings) {
 		if (o.kind === 'portal') continue;
@@ -308,11 +307,13 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 		}
 		if (rng() >= p.chokeGuardRatio) continue;
 		const mid = o.hole[(o.hole.length / 2) | 0];
-		// guard strength keys off the destination biome class
-		const cls = zoneClasses[o.b];
-		const level = lv(cls === 'highLoot' ? 5 + ((rng() * 3) | 0)
-			: cls === 'town' ? 4 + ((rng() * 2) | 0)
-			: 1 + ((rng() * 4) | 0));
+		// guard strength keys off the destination biome class, drawn the way
+		// that zone's own monsters are (creepTier): the doorway guard comes
+		// out of the zone's monster budget (content.js), so the map's level
+		// mix stays the corpus's. The old bands (high-loot 5-7, town 4-5, the
+		// rest 1-4) put the free layout's levels 3 and 4 at 1.23x the corpus
+		// once the doorway guards stopped being lost.
+		const level = creepTier(zoneClasses[o.b], rng, shift);
 		guards.push({ cell: mid, level, edge: [o.a, o.b] });
 	}
 	return guards;

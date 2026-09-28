@@ -2490,7 +2490,15 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// monsterStrength (player lever, whole creature levels) stacks on it
 	const monsterShift = (zoneMeta ? (zoneMeta.monsterShift || 0) : 0)
 		+ Math.round(p.monsterStrength || 0);
-	const guardBudget = Math.round(scale * fill.creeps * p.guardDensity);
+	// A free zone's budget pays for the guards already standing in its
+	// doorways (p.doorGuards, half of each on its borders): the budget was
+	// measured against maps whose monster count includes their link guards,
+	// and set while every doorway guard was being lost (plan.js), so with
+	// them back the free layout ran 1.13x the corpus's monsters. A template
+	// zone's link guards are the template's, over its own treasure guards,
+	// as in the engine.
+	const guardBudget = Math.max(0, Math.round(scale * fill.creeps * p.guardDensity
+		- (zoneMeta ? 0 : p.doorGuards || 0)));
 	// objectGuardShare (default OBJECT_GUARD_SHARE, 0.75): the rest roams
 	const guardShare = Number.isFinite(p.objectGuardShare) ? p.objectGuardShare : OBJECT_GUARD_SHARE;
 	const wantGuards = Math.round(guardBudget * guardShare);
@@ -3103,4 +3111,4 @@ module.exports = { fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	entranceOpen, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED,
 	APPROACH, allowedDirs, markApproach, weldsMasses, REMOVABLE_TYPES, MONSTER_OPTIONS,
 	monsterOptions, STACK_RANGE,
-	sliverCount, engineGuard, zoneGuardPool, nearestLevelDwelling };
+	sliverCount, engineGuard, zoneGuardPool, nearestLevelDwelling, creepTier };

@@ -149,13 +149,14 @@ function cheapestPath(from, to, W, H, open, cost) {
  * Lay level l's roads before the fill. plan: the level's plan (zone, openings,
  * roadCells, roadNodes, p.water); towns: [{x, y, l, gates}] on this level;
  * approach(town): the open cells beside a town's gate (roadnet.js); avoid(c):
- * cells no road may take (the zone walls before they are objects). A zone
+ * cells no road may take (the zone walls before they are objects); standOn:
+ * cells an object will stand on over the road (a doorway's guard). A zone
  * that already has roads (plan.roadCells) keeps them, and its new nodes join
- * them. Adds to plan.roadCells, reserves every road cell in `blocked`, and
- * returns { zones, cells, failed, failedNodes: [{z, cells}] } (joinFailed
- * takes those after the fill).
+ * them. Adds to plan.roadCells, reserves every road cell in `blocked` but
+ * those, and returns { zones, cells, failed, failedNodes: [{z, cells}] }
+ * (joinFailed takes those after the fill).
  */
-function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null }) {
+function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null, standOn = null }) {
 	const zone = plan.zone;
 	const base = l * W * H;
 	const free = c => !(blocked[base + c] & OCCUPIED) && !(avoid && avoid(c));
@@ -176,6 +177,8 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null }) {
 	// A roaded opening's own cells are road ground even under the link's guard,
 	// which stands in the doorway on the road, as the engine's guards do
 	const holeCells = new Set();
+	// a doorway is one node shared by the zones it opens into
+	const doorNodes = new Set();
 	for (const o of plan.openings || []) {
 		if (o.kind === 'portal' && o.roadNodes) {
 			for (const [z, cells] of o.roadNodes) {
@@ -198,6 +201,7 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null }) {
 			}
 		}
 		for (const z of zones) addNode(z, cells);
+		doorNodes.add(cells);
 	}
 	for (const cells of plan.roadNodes || []) {
 		const open = cells.filter(free);
@@ -228,13 +232,28 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null }) {
 		// leftmost) starts the roads and the rest join in that order
 		list.sort((a, b) => Math.min(...a) - Math.min(...b));
 		const inZone = c => holeCells.has(c) || (free(c) && zone[c] === z);
-		const roads = new Set(before || list[0]);
-		for (const cells of before ? list : list.slice(1)) {
+		// A doorway is one road node, its middle cell, where the link's guard
+		// stands (the engine's road node per link is the guard's tile), or
+		// the cell the zone beyond already took, so the road runs on through
+		// it. Each zone taking the doorway cell nearest itself broke the road
+		// wherever the doorway's cells were not side by side (a diagonal zone
+		// line), and the tail pass then dropped both halves (Golems Aplenty
+		// 72, underground).
+		const met = cells => {
+			if (!doorNodes.has(cells)) return cells;
+			const on = cells.filter(c => laid.has(c));
+			return on.length ? on : [cells[(cells.length / 2) | 0]];
+		};
+		const first = met(list[0]);
+		const roads = new Set(before || first);
+		for (const node of before ? list : list.slice(1)) {
+			const cells = met(node);
 			if (cells.some(c => roads.has(c))) continue;
-			const path = cheapestPath(roads, cells, W, H, inZone, cost);
+			const path = cheapestPath(roads, cells, W, H, inZone, cost)
+				|| (cells !== node ? cheapestPath(roads, node, W, H, inZone, cost) : null);
 			if (!path) {
 				failed++;
-				failedNodes.push({ z, cells });
+				failedNodes.push({ z, cells: node });
 				if (process.env.VMAPGEN_ROAD_TRACE) {
 					console.error(`[roads] level ${l}: zone ${z}: no way from the roads to the node at `
 						+ cells.slice(0, 3).map(c => `(${c % W},${(c / W) | 0})`).join(' '));
@@ -261,10 +280,14 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null }) {
 		zonesRoaded++;
 	}
 	// a node's own cells joined no road unless a path reached them: only the
-	// laid paths are road
+	// laid paths are road. A doorway's guard stands on its road, as the
+	// engine's does (the guard's tile is the link's road node), so its cell is
+	// road but not held clear: reserved, the guard could not be placed, and
+	// every roaded doorway lost its guard (Jebus Cross 108 s5001: all four
+	// starts walked into the centre unopposed)
 	for (const c of laid) {
 		plan.roadCells.add(c);
-		blocked[base + c] |= RESERVED;
+		if (!(standOn && standOn.has(c))) blocked[base + c] |= RESERVED;
 	}
 	return { zones: zonesRoaded, cells: laid.size, failed, failedNodes };
 }

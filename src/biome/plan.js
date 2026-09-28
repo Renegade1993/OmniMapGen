@@ -33,6 +33,7 @@ const { carveBoundaries, placeChokeGuards } = require('./boundaries');
 const { buildRoadNetwork, pruneOrphanRoads, approach: roadApproach } = require('./roadnet');
 const { planRoads, joinFailed, pruneTails } = require('./roadplan');
 const { phase } = require('../main/phases');
+const { linkBook } = require('./portals');
 const { fillBiome, blockingCells, footprintFits, footprintBlock, entranceOpen,
 	visitableCells, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED,
 	RESERVED, APPROACH, markApproach, allowedDirs, REMOVABLE_TYPES,
@@ -399,6 +400,23 @@ function approachCells(tpl, x, y, l, W, H, blocked) {
 }
 
 /**
+ * True when an object at (x, y) stands wholly in zone z, the ground before it
+ * too. A portal or gate anchored in its zone but facing across the zone line
+ * opened into the neighbour: on [HotA] Nostalgia 144x2 a gate of the 7-15
+ * link was entered from zone 10's side, and the starts met through it.
+ */
+function inZone(tpl, x, y, zone, z, W, H) {
+	for (const [a, b] of blockingCells(tpl, x, y))
+		if (a < 0 || b < 0 || a >= W || b >= H || zone[b * W + a] !== z) return false;
+	for (const [vx, vy] of visitableCells(tpl, x, y))
+		for (const [dx, dy] of allowedDirs(tpl)) {
+			const nx = vx + dx, ny = vy + dy;
+			if (nx >= 0 && ny >= 0 && nx < W && ny < H && zone[ny * W + nx] !== z) return false;
+		}
+	return true;
+}
+
+/**
  * Place the mines every player is guaranteed to start with.
  *
  * Wood and ore are what the opening week of construction actually spends, so
@@ -725,9 +743,20 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 		&& !PROTECT.has(o.type)
 		&& !(o.options && o.options.owner)
 		&& !STARTER_MINES_PLACED.has(o);
+	// A cell held only by objects a hero uses up (a guard he fights, a pile he
+	// picks up) is ground he gets through, as the stranded sweep and
+	// check_reach count it. Flooded as walls, every guard sealed what it
+	// guards: a start behind its link's guard was "dug out" through the
+	// scenery beside the guard, and after the fill a treasure nook got a
+	// scenery piece removed from its wall, a back door around its guard.
+	const wall = c => {
+		if (!(blocked[base + c] & OCCUPIED)) return false;
+		const own = cellObjs.get(c);
+		return !own || !own.length || !own.every(o => REMOVABLE_TYPES.has(o.type));
+	};
 	const flood = seeds => {
 		const seen = new Uint8Array(W * H);
-		const stack = seeds.filter(c => !(blocked[base + c] & OCCUPIED));
+		const stack = seeds.filter(c => !wall(c));
 		for (const c of stack) seen[c] = 1;
 		while (stack.length) {
 			const c = stack.pop();
@@ -738,7 +767,7 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 					const nx = x + dx, ny = y + dy;
 					if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
 					const n = ny * W + nx;
-					if (seen[n] || (blocked[base + n] & OCCUPIED)) continue;
+					if (seen[n] || wall(n)) continue;
 					seen[n] = 1; stack.push(n);
 				}
 		}
@@ -813,7 +842,7 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 	}
 	const removeAt = (i, cells) => {
 		const gone = objects[i];
-		if (process.env.VMAPGEN_DROP_TRACE && !DECOR_TYPES_SET.has(gone.type))
+		if (process.env.VMAPGEN_DROP_TRACE && (process.env.VMAPGEN_DROP_TRACE === 'all' || !DECOR_TYPES_SET.has(gone.type)))
 			console.error(`[drop] pocket pass removed ${gone.type} at (${gone.x},${gone.y})`);
 		for (const c of cells) {
 			const own = cellObjs.get(c);
@@ -843,7 +872,7 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 	const gates = objects.filter(o => (o.l || 0) === levelIndex && o.options && o.options.owner)
 		.map(gate).filter(g => g.length);
 	const cellCost = c => {
-		if (!(blocked[base + c] & OCCUPIED)) return 0;
+		if (!wall(c)) return 0;
 		if (water && water[c]) return Infinity;
 		const own = cellObjs.get(c);
 		if (!own || !own.length) return Infinity;
@@ -859,8 +888,7 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 		let dug = 0, opened = 0;
 		const failed = new Set();
 		for (let tries = 0; tries < 2 * gates.length + 2; tries++) {
-			const main = followLinks(flood(seeds), ways, W, H,
-				c => !!(blocked[base + c] & OCCUPIED));
+			const main = followLinks(flood(seeds), ways, W, H, wall);
 			const shut = gates.findIndex((g, i) => !failed.has(i) && !g.some(c => main[c]));
 			if (shut < 0) break;
 			const target = new Set(gates[shut]);
@@ -911,7 +939,7 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 			if (hit < 0) { failed.add(shut); continue; }
 			const victims = new Set();
 			for (let c = hit; c >= 0 && !main[c]; c = from[c])
-				if (blocked[base + c] & OCCUPIED)
+				if (wall(c))
 					for (const o of cellObjs.get(c) || []) victims.add(o);
 			for (const o of victims) {
 				const i = objects.indexOf(o);
@@ -935,8 +963,7 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 		removed += digToStarts();
 		let stage = 0;
 		for (let round = 0; round < 128; round++) {
-			const main = followLinks(flood(seeds), ways, W, H,
-				c => !!(blocked[base + c] & OCCUPIED));
+			const main = followLinks(flood(seeds), ways, W, H, wall);
 			// only pockets on land this start can walk to: another island is
 			// reached by boat or not at all, and peeling it would gain nothing
 			let touched = null;
@@ -955,7 +982,7 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 			let pockets = 0;
 			const q = [];
 			for (let c = 0; c < W * H; c++) {
-				if ((blocked[base + c] & OCCUPIED) || main[c] || outOf[c] >= 0)
+				if (wall(c) || main[c] || outOf[c] >= 0)
 					continue;
 				if (touched && !touched.has(island[c])) continue;
 				outOf[c] = pockets; q.push(c);
@@ -967,7 +994,7 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 							const nx = x + dx, ny = y + dy;
 							if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
 							const n = ny * W + nx;
-							if (outOf[n] >= 0 || (blocked[base + n] & OCCUPIED)) continue;
+							if (outOf[n] >= 0 || wall(n)) continue;
 							outOf[n] = pockets; q.push(n);
 						}
 				}
@@ -979,7 +1006,8 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 			let peel = -1, peelCells = null, peelSize = 1e9;
 			for (let i = 0; i < objects.length; i++) {
 				const o = objects[i];
-				if (!eligible(o)) continue;
+				// a guard or a pile seals nothing (wall above): taking it opens nothing
+				if (!eligible(o) || REMOVABLE_TYPES.has(o.type)) continue;
 				const cells = blockingCells(o.template, o.x, o.y)
 					.filter(([a, b]) => a >= 0 && b >= 0 && a < W && b < H)
 					.map(([a, b]) => b * W + a);
@@ -1018,6 +1046,111 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 }
 
 /**
+ * A carved level's doorway: the cells of its two zones around the cell its
+ * guard takes (placeChokeGuards: the hole's middle cell). A doorway's hole
+ * runs up to three cells either side of its pivot along a jagged zone line,
+ * and carving all of it, with the ground beside, opened a passage wider than
+ * the guard's reach: on [HotA] Nostalgia 144x2 the starts met below ground
+ * around their link guards. Held to the guard's own eight neighbours, every
+ * way through is a fight.
+ */
+function doorCells(o, zone, W, H) {
+	const mid = o.hole[(o.hole.length / 2) | 0];
+	const mx = mid % W, my = (mid / W) | 0, out = [];
+	for (let dy = -1; dy <= 1; dy++)
+		for (let dx = -1; dx <= 1; dx++) {
+			const x = mx + dx, y = my + dy;
+			if (x < 0 || y < 0 || x >= W || y >= H) continue;
+			const c = y * W + x;
+			if (zone[c] === o.a || zone[c] === o.b) out.push(c);
+		}
+	return out;
+}
+
+/**
+ * True when opening cell c puts no open ground of another zone beside it
+ * (heroes move 8-way), but where both are a doorway's cells.
+ */
+function zoneLineSafe(open, zone, W, H, c, doorCell = null) {
+	const x = c % W, y = (c / W) | 0, z = zone[c];
+	for (let dy = -1; dy <= 1; dy++)
+		for (let dx = -1; dx <= 1; dx++) {
+			if (!dx && !dy) continue;
+			const nx = x + dx, ny = y + dy;
+			if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+			const n = ny * W + nx;
+			if (open[n] && zone[n] !== z && !(doorCell && doorCell[n] && doorCell[c])) return false;
+		}
+	return true;
+}
+
+/**
+ * Cut a tunnel inside zone z from the cells `from` to the first cell `goal`
+ * accepts, `radius` wide, along the cheapest route over a noise field so it
+ * wanders. Only cells zoneLineSafe allows open. Returns false when no route
+ * exists.
+ */
+function tunnelInZone(open, zone, W, H, from, z, radius, noise, doorCell, goal) {
+	const N = W * H;
+	const passable = c => zone[c] === z && (open[c] || zoneLineSafe(open, zone, W, H, c, doorCell));
+	const dist = new Float64Array(N).fill(Infinity);
+	const prev = new Int32Array(N).fill(-1);
+	const heap = [];
+	const push = (d, c) => {
+		heap.push([d, c]);
+		for (let i = heap.length - 1; i > 0;) {
+			const q = (i - 1) >> 1;
+			if (heap[q][0] <= heap[i][0]) break;
+			[heap[q], heap[i]] = [heap[i], heap[q]]; i = q;
+		}
+	};
+	const pop = () => {
+		const top = heap[0], last = heap.pop();
+		if (heap.length) {
+			heap[0] = last;
+			for (let i = 0; ;) {
+				const a = 2 * i + 1, b = a + 1;
+				let m = i;
+				if (a < heap.length && heap[a][0] < heap[m][0]) m = a;
+				if (b < heap.length && heap[b][0] < heap[m][0]) m = b;
+				if (m === i) break;
+				[heap[m], heap[i]] = [heap[i], heap[m]]; i = m;
+			}
+		}
+		return top;
+	};
+	for (const c of from) if (c >= 0 && c < N && zone[c] === z) { dist[c] = 0; push(0, c); }
+	let hit = -1;
+	while (heap.length) {
+		const [d, c] = pop();
+		if (d > dist[c]) continue;
+		if (goal(c)) { hit = c; break; }
+		const x = c % W, y = (c / W) | 0;
+		for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+			const nx = x + dx, ny = y + dy;
+			if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+			const n = ny * W + nx;
+			if (!passable(n)) continue;
+			const nd = d + noise[n];
+			if (nd < dist[n]) { dist[n] = nd; prev[n] = c; push(nd, n); }
+		}
+	}
+	if (hit < 0) return false;
+	const r2 = radius * radius, rr = Math.ceil(radius);
+	for (let c = hit; c >= 0; c = prev[c]) {
+		if (!open[c] && zoneLineSafe(open, zone, W, H, c, doorCell)) open[c] = 1;
+		const cx = c % W, cy = (c / W) | 0;
+		for (let y = Math.max(0, cy - rr); y <= Math.min(H - 1, cy + rr); y++)
+			for (let x = Math.max(0, cx - rr); x <= Math.min(W - 1, cx + rr); x++) {
+				const k = y * W + x;
+				if ((x - cx) ** 2 + (y - cy) ** 2 > r2 || open[k] || zone[k] !== z) continue;
+				if (zoneLineSafe(open, zone, W, H, k, doorCell)) open[k] = 1;
+			}
+	}
+	return true;
+}
+
+/**
  * Which cells of an underground level are open ground rather than solid rock.
  *
  * The underground was generated by exactly the same code as the surface, so it
@@ -1026,14 +1159,22 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
  * between them, which is how VCMI's own generator builds one: its RockFiller
  * paints rock over everything outside the carved zones.
  *
- * A chamber per biome seed, sized from that biome's area, and a tunnel along
- * every border the connection pass left open. The biome graph is already
- * guaranteed connected by ensureConnected, so the tunnels inherit that and the
- * cave cannot come out in pieces.
+ * A chamber per zone at the ground nearest its centre, sized from its area,
+ * and for every link that is a path, a tunnel from each side's chamber to the
+ * link's doorway (`doors`: carveBoundaries' openings; doorCells). Everywhere
+ * else a zone line stays rock: no cell opens beside another
+ * zone's open ground (zoneLineSafe). The tunnels used to run chamber to chamber
+ * in a line, across whatever zones lay between, and the cave grew over zone
+ * lines, so neighbouring zones met at many points and a link's guard, standing
+ * in one of them, guarded nothing (Golems Aplenty 72, two levels: three starts
+ * walked to each other below ground unopposed). Without `doors` the old carve
+ * runs. The biome graph is guaranteed connected by ensureConnected, so the
+ * tunnels inherit that.
  *
- * Returns a Uint8Array flag per cell, 1 for open.
+ * Returns a Uint8Array flag per cell, 1 for open (and `open.tunnelsFailed`,
+ * the doorway sides no route reached).
  */
-function carveUnderground(W, H, zone, seeds, edges, connections, p, rng) {
+function carveUnderground(W, H, zone, seeds, edges, connections, p, rng, doors = null) {
 	const open = new Uint8Array(W * H);
 	const area = new Array(seeds.length).fill(0);
 	for (const z of zone) area[z]++;
@@ -1042,12 +1183,21 @@ function carveUnderground(W, H, zone, seeds, edges, connections, p, rng) {
 	// nothing at all. It means what it says here: how much of the underground
 	// is tunnel rather than chamber. 0 gives caverns, 1 gives corridors.
 	const narrow = Math.max(0, Math.min(1, p.subterraneanNarrow));
-	const disc = (cx, cy, r) => {
+	const doorCell = doors ? new Uint8Array(W * H) : null;
+	if (doors)
+		for (const o of doors)
+			if (o.kind !== 'portal' && o.hole.length) for (const c of doorCells(o, zone, W, H)) doorCell[c] = 1;
+	// with doorways, a disc opens only its own zone's cells, and only where no
+	// other zone's open ground lies beside them
+	const disc = (cx, cy, r, z = -1) => {
 		const r2 = r * r;
 		for (let y = Math.max(0, cy - r | 0); y <= Math.min(H - 1, cy + r); y++)
 			for (let x = Math.max(0, cx - r | 0); x <= Math.min(W - 1, cx + r); x++) {
 				const dx = x - cx, dy = y - cy;
-				if (dx * dx + dy * dy <= r2) open[y * W + x] = 1;
+				if (dx * dx + dy * dy > r2) continue;
+				const c = y * W + x;
+				if (doors && (zone[c] !== z || !zoneLineSafe(open, zone, W, H, c, doorCell))) continue;
+				open[c] = 1;
 			}
 	};
 
@@ -1056,7 +1206,9 @@ function carveUnderground(W, H, zone, seeds, edges, connections, p, rng) {
 	// seeds that happen to cluster produce one blob instead of three chambers:
 	// the first 36x36 cave came out as a single lobe covering a third of the
 	// level with nothing anywhere else. Voronoi regions tile the map, so their
-	// centroids are spread by construction.
+	// centroids are spread by construction. (A zone bent round a neighbour can
+	// have its centroid outside it; with doorways the chamber sits on the
+	// zone's own cell nearest the centroid.)
 	const cx = new Float64Array(seeds.length), cy = new Float64Array(seeds.length);
 	for (let c = 0; c < W * H; c++) { cx[zone[c]] += c % W; cy[zone[c]] += (c / W) | 0; }
 	const centre = [];
@@ -1064,38 +1216,70 @@ function carveUnderground(W, H, zone, seeds, edges, connections, p, rng) {
 		centre.push(area[i]
 			? { x: Math.round(cx[i] / area[i]), y: Math.round(cy[i] / area[i]) }
 			: { x: seeds[i].x, y: seeds[i].y });
+	const anchor = centre.map(() => -1);
+	if (doors) {
+		const bestD = centre.map(() => Infinity);
+		for (let c = 0; c < W * H; c++) {
+			const i = zone[c], d = (c % W - centre[i].x) ** 2 + (((c / W) | 0) - centre[i].y) ** 2;
+			if (d < bestD[i]) { bestD[i] = d; anchor[i] = c; }
+		}
+		anchor.forEach((c, i) => { if (c >= 0) centre[i] = { x: c % W, y: (c / W) | 0 }; });
+	}
 
 	for (let i = 0; i < seeds.length; i++) {
 		// a chamber holding a share of its biome's ground, with a little jitter
 		// so they are not all the same circle
 		const want = area[i] * (1 - narrow) * 0.5;
 		const r = Math.max(2, Math.sqrt(want / Math.PI) * (0.85 + rng() * 0.3));
-		disc(centre[i].x, centre[i].y, r);
+		disc(centre[i].x, centre[i].y, r, i);
+		if (doors && anchor[i] >= 0 && !open[anchor[i]] && zoneLineSafe(open, zone, W, H, anchor[i], doorCell))
+			open[anchor[i]] = 1;
 	}
 
-	// tunnels: a wandering line from seed to seed along every open border
 	const width = 1 + Math.round((1 - narrow) * 2);
-	for (const e of edges) {
-		if (connections.get(e.a * 100000 + e.b) === 'blocked') continue;
-		const A = centre[e.a], B = centre[e.b];
-		let x = A.x, y = A.y;
-		for (let step = 0; step < (W + H) * 2; step++) {
-			disc(x, y, width / 2 + 0.4);
-			if (x === B.x && y === B.y) break;
-			// step toward the target, with an occasional sideways wobble so the
-			// tunnel is not a ruler-straight line
-			if (rng() < 0.2) {
-				if (rng() < 0.5) x += (rng() < 0.5 ? 1 : -1);
-				else y += (rng() < 0.5 ? 1 : -1);
-			} else if (Math.abs(B.x - x) > Math.abs(B.y - y)) {
-				x += Math.sign(B.x - x);
-			} else if (B.y !== y) {
-				y += Math.sign(B.y - y);
-			} else {
-				x += Math.sign(B.x - x);
+	let tunnelsFailed = 0;
+	if (doors) {
+		// each path link's doorway, open, and a tunnel from each side of it to
+		// that side's chamber; the noise makes the tunnels wander
+		const noise = new Float64Array(W * H);
+		for (let c = 0; c < W * H; c++) noise[c] = 1 + rng() * 2;
+		for (const o of doors) {
+			if (o.kind === 'portal' || !o.hole.length) continue;
+			const door = doorCells(o, zone, W, H);
+			for (const c of door) open[c] = 1;
+			for (const z of [o.a, o.b]) {
+				const from = door.filter(c => zone[c] === z);
+				// to the zone's open ground: its chamber, or a tunnel already
+				// run to it
+				if (!tunnelInZone(open, zone, W, H, from, z, width / 2 + 0.4, noise, doorCell,
+					c => (open[c] && !doorCell[c]) || c === anchor[z]))
+					tunnelsFailed++;
 			}
-			x = Math.max(0, Math.min(W - 1, x));
-			y = Math.max(0, Math.min(H - 1, y));
+		}
+	} else {
+		// tunnels: a wandering line from seed to seed along every open border
+		for (const e of edges) {
+			if (connections.get(e.a * 100000 + e.b) === 'blocked') continue;
+			const A = centre[e.a], B = centre[e.b];
+			let x = A.x, y = A.y;
+			for (let step = 0; step < (W + H) * 2; step++) {
+				disc(x, y, width / 2 + 0.4);
+				if (x === B.x && y === B.y) break;
+				// step toward the target, with an occasional sideways wobble so the
+				// tunnel is not a ruler-straight line
+				if (rng() < 0.2) {
+					if (rng() < 0.5) x += (rng() < 0.5 ? 1 : -1);
+					else y += (rng() < 0.5 ? 1 : -1);
+				} else if (Math.abs(B.x - x) > Math.abs(B.y - y)) {
+					x += Math.sign(B.x - x);
+				} else if (B.y !== y) {
+					y += Math.sign(B.y - y);
+				} else {
+					x += Math.sign(B.x - x);
+				}
+				x = Math.max(0, Math.min(W - 1, x));
+				y = Math.max(0, Math.min(H - 1, y));
+			}
 		}
 	}
 
@@ -1135,11 +1319,14 @@ function carveUnderground(W, H, zone, seeds, edges, connections, p, rng) {
 		for (const c of edge) {
 			if (openCount + grew >= wanted) break;
 			if (rng() < 0.25) continue;
+			// the cave grows up to a zone line, not over it
+			if (doors && !zoneLineSafe(open, zone, W, H, c, doorCell)) continue;
 			open[c] = 1; grew++;
 		}
 		if (!grew) break;
 		openCount += grew;
 	}
+	open.tunnelsFailed = tunnelsFailed;
 	return open;
 }
 
@@ -1596,6 +1783,22 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			console.error(`[gen] level ${levelIndex}: gave ${reopened} start zone(s) `
 				+ 'a land border (their open borders were all portals)');
 	}
+	// A portal link takes a monolith channel of its own, and the map has
+	// eight (portals.js): a free layout's portal borders past the channels
+	// still free open as doorways instead, so no two links share one.
+	if (!(tplZones && tplZones.length) && p._links) {
+		let left = p._links.left(), opened = 0;
+		for (const e of edges) {
+			const k = e.a * 100000 + e.b;
+			if (connections.get(k) !== 'portal') continue;
+			if (left > 0) { left--; continue; }
+			connections.set(k, 'openNoRoad');
+			opened++;
+		}
+		if (opened)
+			console.error(`[gen] level ${levelIndex}: ${opened} portal border(s) opened as doorways, `
+				+ 'the monolith channels all taken');
+	}
 	// layout only (VMAPGEN_PLAN_ONLY, for analysis): zones and links are
 	// decided, which is all the water compatibility matrix measures
 	if (p.layoutOnly)
@@ -1604,37 +1807,50 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// Underground: cut chambers and tunnels out of solid rock, and mark the
 	// rock as occupied so every later pass routes around it without knowing
 	// anything about caves.
-	let openMask = null;
+	let openMask = null, carvedBounds = null;
 	if (underground && p.undergroundRock !== false) {
-		openMask = carveUnderground(W, H, zone, seeds, edges, connections, p, rng);
+		// the doorways first: the carve runs each path link's tunnel through its
+		// own doorway and keeps the rest of every zone line rock
+		carvedBounds = carveBoundaries(edges, connections, zone, W, H,
+			{ ...p, underground: true }, rng, edgeInfo);
+		openMask = carveUnderground(W, H, zone, seeds, edges, connections, p, rng, carvedBounds.openings);
+		if (openMask.tunnelsFailed)
+			console.error(`[gen] level ${levelIndex}: ${openMask.tunnelsFailed} doorway side(s) no tunnel reached`);
+		const doorCell = new Uint8Array(W * H);
+		for (const o of carvedBounds.openings)
+			if (o.kind !== 'portal' && o.hole.length) for (const c of doorCells(o, zone, W, H)) doorCell[c] = 1;
 		// under each gate site the level above held (gateSites, above), floor
 		// for this half: a small chamber, and a tunnel from it to the chamber
 		// of the zone the link names, so the gate does not open into a sealed
 		// pocket; only where that zone lies under the site
 		if (p.zonePlan && p.gateSitesAbove && p.gateSitesAbove.length) {
 			const links = new Map(crossLinks(p.zonePlan, levelIndex).filter(c => c.hi.l === levelIndex).map(c => [c.k, c]));
+			// the zone's own cells only, and never beside another zone's open
+			// ground (the zone line stays rock, carveUnderground)
 			const open = (x, y, r) => {
 				for (let yy = Math.max(0, Math.floor(y - r)); yy <= Math.min(H - 1, Math.ceil(y + r)); yy++)
-					for (let xx = Math.max(0, Math.floor(x - r)); xx <= Math.min(W - 1, Math.ceil(x + r)); xx++)
-						if ((xx - x) ** 2 + (yy - y) ** 2 <= r * r && zone[yy * W + xx] === zone[y * W + x]) openMask[yy * W + xx] = 1;
+					for (let xx = Math.max(0, Math.floor(x - r)); xx <= Math.min(W - 1, Math.ceil(x + r)); xx++) {
+						const k = yy * W + xx;
+						if ((xx - x) ** 2 + (yy - y) ** 2 <= r * r && zone[k] === zone[y * W + x]
+								&& zoneLineSafe(openMask, zone, W, H, k, doorCell)) openMask[k] = 1;
+					}
 			};
+			const flat = new Float64Array(W * H).fill(1);
 			for (const s of p.gateSitesAbove) {
 				const c = links.get(s.k);
 				if (!c || zone[s.y * W + s.x] !== c.hi.i) continue;
+				const carved = openMask.slice();
 				open(s.x, s.y, 2.6);
-				let cx = 0, cy = 0, n = 0;
-				for (let i = 0; i < zone.length; i++) if (zone[i] === c.hi.i) { cx += i % W; cy += (i / W) | 0; n++; }
-				cx = Math.round(cx / n); cy = Math.round(cy / n);
-				for (let x = s.x, y = s.y, step = 0; step < W + H && (x !== cx || y !== cy); step++) {
-					if (Math.abs(cx - x) >= Math.abs(cy - y)) x += Math.sign(cx - x); else y += Math.sign(cy - y);
-					open(x, y, 1.1);
-				}
+				// and a tunnel from it to the ground the carve opened in that zone
+				tunnelInZone(openMask, zone, W, H, [s.y * W + s.x], c.hi.i, 1.1, flat, doorCell,
+					k => carved[k] && !doorCell[k]);
 			}
 		}
 		// shape the carve for the terrain art before anything reads it (queue
 		// 26): no sprite fits one-cell rock or one-cell notches
 		if (p.caveChecker) {
-			const fit = fitCave(openMask, zone, W, H, p.caveChecker);
+			// a doorway's cells stay open: its guard stands in one of them
+			const fit = fitCave(openMask, zone, W, H, p.caveChecker, 12, doorCell);
 			console.error(`[gen] level ${levelIndex}: cave shaped for the terrain art, `
 				+ `${fit.before} -> ${fit.after} cell(s) no sprite fits `
 				+ `(${fit.opened} opened, ${fit.closed} closed)`);
@@ -1652,7 +1868,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		const tpl = OBJECT_DEFS.subterraneanGateUnder;
 		for (const s of p.gateSitesAbove) {
 			const c = links.get(s.k);
-			if (!c || zone[s.y * W + s.x] !== c.hi.i) continue;
+			if (!c || !inZone(tpl, s.x, s.y, zone, c.hi.i, W, H)) continue;
 			if (!footprintFits(tpl, s.x, s.y, levelIndex, W, H, blocked)) continue;
 			if (!entranceOpen(tpl, s.x, s.y, levelIndex, W, H, blocked, null)) continue;
 			holdGateGround(tpl, s.x, s.y, levelIndex, W, H, blocked);
@@ -1733,8 +1949,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	}
 
 	phase('borders');
-	const { barriers, openings, rim } = carveBoundaries(edges, connections, zone,
+	const { barriers, openings, rim } = carvedBounds || carveBoundaries(edges, connections, zone,
 		W, H, { ...p, underground: !!openMask }, rng, edgeInfo);
+	const book = p._links || (p._links = linkBook());
+	for (const o of openings)
+		if (o.kind !== 'portal') book.join(`${levelIndex}:${o.a}`, `${levelIndex}:${o.b}`);
 	// VMAPGEN_OPENINGS_TRACE: every zone border's verdict and the doorways cut
 	if (process.env.VMAPGEN_OPENINGS_TRACE) {
 		seeds.forEach((s, i) => console.error(`[zones] ${levelIndex}: zone ${i} seed (${s.x},${s.y})${s.player ? ' player' : ''}`));
@@ -1742,7 +1961,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			console.error(`[zones] ${levelIndex}: border ${e.a}-${e.b} ${e.borderCells.length} cells: `
 				+ `${connections.get(e.a * 100000 + e.b)}`);
 		for (const o of openings)
-			console.error(`[zones] ${levelIndex}: opening ${o.a}-${o.b} ${o.kind} hole ${o.hole.length}`);
+			console.error(`[zones] ${levelIndex}: opening ${o.a}-${o.b} ${o.kind} hole ${o.hole.length} ${o.hole.map(c => `(${c % W},${(c / W) | 0})`).join(" ")}`);
 	}
 	// A template link whose zones ended up not touching still has to exist, so
 	// it is bridged with a monolith pair on cells deep inside each zone.
@@ -1787,6 +2006,13 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	for (const o of openings)
 		for (const c of o.hole.concat(o.inner || []))
 			if (!guardCells.has(c)) reserveCell(blocked, levelIndex, W, H, c);
+	// The guard's own cell is held as a doorstep: nothing is built on it and
+	// the corridor web counts it as its own, but it is not reserved, which the
+	// guard's placement refuses. Left bare, the corridor pass widened its web
+	// onto it (every free cell beside a reserved one) and a doorway whose hole
+	// ran straight lost its guard: all four of Jebus Cross's 45000 links on
+	// 108 s5001, every start walking into the centre unopposed.
+	for (const c of guardCells) blocked[levelIndex * W * H + c] |= APPROACH;
 
 	// A template start's town stands at its zone's centre, where the engine
 	// puts it: once the zones are laid each one's position moves to the centre
@@ -2097,6 +2323,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				const x = i % W, y = (i / W) | 0;
 				if (blockingCells(tpl, x, y).some(([a, b]) => a < 3 || b < 3 || a > W - 4 || b > H - 4)) continue;
 				if (!footprintFits(tpl, x, y, levelIndex, W, H, blocked)) continue;
+				if (!inZone(tpl, x, y, zone, c.lo.i, W, H)) continue;
 				if (!entranceOpen(tpl, x, y, levelIndex, W, H, blocked, null)) continue;
 				const walls = blockingCells(tpl, x, y).map(([a, b]) => b * W + a);
 				if (!townGuard.accepts(walls)) continue;
@@ -2127,8 +2354,6 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// guardPortals (off by default): a monster in front of each end, its level
 	// chosen the way a doorway guard's is, so a portal costs a fight too.
 	const links = [];
-	const monoTpl = OBJECT_DEFS.monolithTwoWay;
-	const portalSeq = p._portalSeq = p._portalSeq || { n: 0 };
 	const openBeside = (tpl, x, y) => {
 		const own = new Set(blockingCells(tpl, x, y).map(([a, b]) => b * W + a));
 		const out = [];
@@ -2143,21 +2368,21 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	};
 	// the planned cell, or the nearest cell of the same zone where a monolith
 	// fits with open ground in front of it
-	const portalSpot = (cell, z) => {
+	const portalSpot = (cell, z, monoTpl) => {
 		const cx = cell % W, cy = (cell / W) | 0;
 		for (let r = 0; r <= 6; r++)
 			for (let dy = -r; dy <= r; dy++)
 				for (let dx = -r; dx <= r; dx++) {
 					if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
 					const x = cx + dx, y = cy + dy;
-					if (x < 0 || y < 0 || x >= W || y >= H || zone[y * W + x] !== z) continue;
+					if (x < 0 || y < 0 || x >= W || y >= H || !inZone(monoTpl, x, y, zone, z, W, H)) continue;
 					if (!footprintFits(monoTpl, x, y, levelIndex, W, H, blocked)) continue;
 					if (!entranceOpen(monoTpl, x, y, levelIndex, W, H, blocked, null)) continue;
 					return [x, y];
 				}
 		return null;
 	};
-	const portalGuard = (mx, my, toZone) => {
+	const portalGuard = (monoTpl, mx, my, toZone) => {
 		const monster = OBJECT_TEMPLATES.randomMonster;
 		for (const c of openBeside(monoTpl, mx, my)) {
 			const gx = c % W, gy = (c / W) | 0;
@@ -2178,7 +2403,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// strength, chosen from its own zone's creatures (ConnectionsPlacer::
 	// placeMonolithConnection), so both ends get one, sized like a doorway
 	// guard (engineGuard, zone-link rule).
-	const linkPortalGuard = (mx, my, z, strength) => {
+	const linkPortalGuard = (monoTpl, mx, my, z, strength) => {
 		const concrete = !!(objectPools && objectPools.guards && zoneMeta);
 		const g = engineGuard(strength, 1 + Math.round(p.monsterStrength || 0), rng, true,
 			concrete ? zoneGuardPool(objectPools.guards, zoneMeta[z] && zoneMeta[z].spec) : undefined);
@@ -2198,12 +2423,26 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		return false;
 	};
 	phase('monoliths');
-	for (const o of openings) {
-		if (o.kind !== 'portal') continue;
-		const A = portalSpot(o.portalA, o.a);
+	// a channel per link (portals.js); the links whose zones are still apart
+	// go first, and once the channels are all taken a link whose zones are
+	// joined already is left out
+	const pendingPortals = openings.filter(o => o.kind === 'portal');
+	const zoneKey = z => `${levelIndex}:${z}`;
+	let portalsLeftOut = 0;
+	while (pendingPortals.length) {
+		let at = pendingPortals.findIndex(o => !book.joined(zoneKey(o.a), zoneKey(o.b)));
+		if (at < 0) at = 0;
+		const o = pendingPortals.splice(at, 1)[0];
+		let ch = book.next();
+		if (!ch) {
+			if (book.joined(zoneKey(o.a), zoneKey(o.b))) { portalsLeftOut++; continue; }
+			ch = book.shared();
+		}
+		const monoTpl = ch.tpl;
+		const A = portalSpot(o.portalA, o.a, monoTpl);
 		if (!A) continue;
 		footprintBlock(monoTpl, A[0], A[1], levelIndex, W, H, blocked);
-		const B = portalSpot(o.portalB, o.b);
+		const B = portalSpot(o.portalB, o.b, monoTpl);
 		if (!B) {
 			// both ends or neither: a lone monolith is a door onto nothing
 			for (const [fx, fy] of blockingCells(monoTpl, A[0], A[1]))
@@ -2215,15 +2454,16 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		footprintBlock(monoTpl, B[0], B[1], levelIndex, W, H, blocked);
 		markApproach(monoTpl, A[0], A[1], levelIndex, W, H, blocked);
 		markApproach(monoTpl, B[0], B[1], levelIndex, W, H, blocked);
-		const subtype = `monolith${1 + (portalSeq.n++ % 6)}`;
-		objects.push(objectEntry('monolithTwoWay', A[0], A[1], levelIndex, monoTpl, subtype));
-		objects.push(objectEntry('monolithTwoWay', B[0], B[1], levelIndex, monoTpl, subtype));
+		book.take(ch);
+		book.join(zoneKey(o.a), zoneKey(o.b));
+		objects.push(objectEntry('monolithTwoWay', A[0], A[1], levelIndex, monoTpl, ch.subtype));
+		objects.push(objectEntry('monolithTwoWay', B[0], B[1], levelIndex, monoTpl, ch.subtype));
 		if (o.tplGuard > 0 && process.env.VMAPGEN_PORTAL_GUARD !== '0') {
-			linkPortalGuard(A[0], A[1], o.a, o.tplGuard);
-			linkPortalGuard(B[0], B[1], o.b, o.tplGuard);
+			linkPortalGuard(monoTpl, A[0], A[1], o.a, o.tplGuard);
+			linkPortalGuard(monoTpl, B[0], B[1], o.b, o.tplGuard);
 		} else if (Number(p.guardPortals) > 0) {
-			portalGuard(A[0], A[1], o.b);
-			portalGuard(B[0], B[1], o.a);
+			portalGuard(monoTpl, A[0], A[1], o.b);
+			portalGuard(monoTpl, B[0], B[1], o.a);
 		}
 		links.push([openBeside(monoTpl, A[0], A[1]), openBeside(monoTpl, B[0], B[1])]);
 		// a link with a road has one to each monolith (ConnectionsPlacer::
@@ -2232,7 +2472,8 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	}
 	const portalLinks = openings.filter(o => o.kind === 'portal').length;
 	if (portalLinks)
-		console.error(`[gen] level ${levelIndex}: ${links.length} of ${portalLinks} portal link(s) placed`);
+		console.error(`[gen] level ${levelIndex}: ${links.length} of ${portalLinks} portal link(s) placed`
+			+ (portalsLeftOut ? `, ${portalsLeftOut} left out (the monolith channels all taken, their zones joined another way)` : ''));
 
 	// Roads first (K, 2026-09-27: "roads be build off splines early on, not to
 	// be broken up by things placed around them"), in the engine's order: its
@@ -2322,7 +2563,8 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			W, H, blocked, l: levelIndex, approach: t => roadApproach(t, W, H, blocked, levelIndex),
 			// a wall cell held clear (a doorway's side, a town's apron) never
 			// takes a wall object (footprintFits vetoes RESERVED), so a road may
-			avoid: c => barriers.has(c) && !(blocked[levelIndex * W * H + c] & RESERVED) });
+			avoid: c => barriers.has(c) && !(blocked[levelIndex * W * H + c] & RESERVED),
+			standOn: guardCells });
 		// what could not be reached yet is joined after the fill (planMap)
 		roadFailed.push(...r.failedNodes);
 		if (r.cells)
@@ -2497,9 +2739,16 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		// types onto the mass edges where the corpus puts them (measured:
 		// log 414/414 edge-adjacent, cactus 718/719, subRocks 2870/2968)
 		// and thins the barrier types that read HIGH on the census.
-		const b = (rng() < 0.33 ? singleTemplate(terrain, rng) : null)
+		let b = (rng() < 0.33 ? singleTemplate(terrain, rng) : null)
 			|| barrierTemplate(terrain, rng);
-		if (!footprintFits(b.tpl, x, y, levelIndex, W, H, blocked)) continue;
+		// a harvested single can reach past its cell onto ground held clear
+		// (a road, an apron); the wall cell still has to close, so the one-cell
+		// barrier takes it. Skipping it left the cell open, a gap in the zone
+		// wall (7 of 1280 wall cells on Jebus Cross 108 s5001, roads laid first)
+		if (!footprintFits(b.tpl, x, y, levelIndex, W, H, blocked)) {
+			b = barrierTemplate(terrain, rng);
+			if (!footprintFits(b.tpl, x, y, levelIndex, W, H, blocked)) continue;
+		}
 		objects.push(objectEntry(b.type, x, y, levelIndex, b.tpl, b.subtype));
 		footprintBlock(b.tpl, x, y, levelIndex, W, H, blocked);
 		wallLeft.delete(c);
@@ -2536,6 +2785,12 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	 * for share-minus-preBlocked, so whatever lands here is automatically
 	 * deducted from the later ask.
 	 */
+	if (process.env.VMAPGEN_WALL_TRACE) {
+		const open = [...barriers].filter(c => !(blocked[levelIndex * W * H + c] & OCCUPIED));
+		const flags = {};
+		for (const c of open) { const f = blocked[levelIndex * W * H + c]; const k = (f & RESERVED ? 'R' : '') + (f & APPROACH ? 'A' : '') + (roadCells.has(c) ? 'road' : '') || 'none'; flags[k] = (flags[k] || 0) + 1; }
+		console.error(`[walls] level ${levelIndex}: ${open.length} of ${barriers.size} barrier cells left open: ${JSON.stringify(flags)}`);
+	}
 	phase('valleys');
 	if (!openMask && p.decorDensity > 0) {
 		const packGuard = makeConnectivityGuard(blocked, levelIndex, W, H, 2);
@@ -3500,19 +3755,38 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			+ `(${Math.round(100 * (sizes[0] || 0) / (tot || 1))}%)`);
 	}
 
+	const guardsLost = [];
+	// each zone's share of the doorway guards on its borders, half a guard
+	// per side (fillLevel: a free zone's monster budget pays for them)
+	const doorGuards = new Map();
 	for (const g of guards) {
 		const x = g.cell % W, y = (g.cell / W) | 0;
 		if (!footprintFits(OBJECT_TEMPLATES.randomMonster, x, y, levelIndex, W, H,
-				blocked, true)) continue;
+				blocked, true)) {
+			guardsLost.push(`${g.edge.join('-')} at (${x},${y}) flags ${blocked[levelIndex * W * H + g.cell]}`);
+			continue;
+		}
 		const guardEntry = objectEntry(`randomMonsterLevel${g.level}`, x, y, levelIndex,
 			OBJECT_TEMPLATES.randomMonster, 'object',
 			g.amount ? { character: 'hostile', amount: g.amount } : monsterOptions(g.level, p, rng));
 		// the creature the engine's rule picked, for generate.js to write
 		if (g.creature) guardEntry.guardCreature = g.creature;
 		objects.push(guardEntry);
-		footprintBlock(OBJECT_TEMPLATES.randomMonster, x, y, levelIndex, W, H, blocked);
+		// Held, not walled: every flood that decides what the fill may reach
+		// sees through a guard, as a hero does by fighting it. Walled, a guard
+		// in a one-cell passage cut every zone behind it off the fill: on Jebus
+		// Cross 108 s5001 three of the four start zones got no mines and no
+		// towns. Reserved, nothing is built on its cell. (The passes that know
+		// objects, the pocket pass and the stranded sweep, see the monster.)
+		reserveCell(blocked, levelIndex, W, H, g.cell);
 		markApproach(OBJECT_TEMPLATES.randomMonster, x, y, levelIndex, W, H, blocked);
+		for (const z of g.edge) doorGuards.set(z, (doorGuards.get(z) || 0) + 0.5);
 	}
+	// a doorway left without its guard is an open way between two zones the
+	// template (or the guard setting) meant closed
+	if (guardsLost.length)
+		console.error(`[gen] level ${levelIndex}: WARNING ${guardsLost.length} doorway guard(s) found no room: `
+			+ guardsLost.join(', '));
 	for (const o of openings)
 		if (o.kind === 'openRoad') for (const c of o.hole) roadCells.add(c);
 
@@ -3533,7 +3807,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// had open reachable ground beside it, so zero gates were placed and the
 	// entire underground was unreachable.
 	return { zone, seeds, gateSites, gateSitesHere, classes, biomeTerrain, barriers, roadCells, roadFailed, objects, openings,
-		guards, rng, p, levelIndex, playerStarts, alignPlayers, towns,
+		guards, doorGuards, rng, p, levelIndex, playerStarts, alignPlayers, towns,
 		objectPools, openMask, zoneMeta, zdist, rim, harbours, links, sailLinks,
 		stats: layoutStats(zone, seeds, tplZones, tplConns, unfulfilled, forced, W, H, water, openMask, landCells) };
 }
@@ -3665,7 +3939,8 @@ function fillLevel(plan, W, H, blocked) {
 		(classes[a] === BIOME_CLASS.TOWN ? 0 : 1) - (classes[b] === BIOME_CLASS.TOWN ? 0 : 1));
 	for (const b of order) {
 		objects.push(...fillBiome(classes[b], byBiome.get(b), blocked, W, H,
-			levelIndex, rng, p, towns, alignPlayers || playerStarts, objectPools,
+			levelIndex, rng, { ...p, doorGuards: (plan.doorGuards && plan.doorGuards.get(b)) || 0 },
+			towns, alignPlayers || playerStarts, objectPools,
 			biomeTerrain[b], reachable, connectivity,
 			plan.zoneMeta && plan.zoneMeta[b]
 				&& { ...plan.zoneMeta[b], minesDone: starterDone.get(b) || {} }, plan.openMask,
@@ -3935,7 +4210,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	const rng = xorshift(params.seed || 1);
 	const blocked = new Uint8Array(W * H * levels);
 	const plans = [];
-	p._portalSeq = { n: 0 }; // map-global monolith channel allocator
+	p._links = linkBook(); // the map's monolith channels and joined zones (portals.js)
 	const towns = []; // cross-level sameAsTown registry (instanceNames are global)
 	for (let l = 0; l < levels; l++) {
 		const starts = l === 0 ? playerStarts : [];
@@ -4011,7 +4286,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			.filter(c => c.aRef && c.bRef && c.aRef.l !== c.bRef.l);
 		const reachNow = () => [0, 1].map(l =>
 			mainComponent(W, H, l, blocked, l === 0 ? playerStarts : []));
-		const zoneCell = (l, zi, reach) => {
+		const zoneCell = (l, zi, reach, tpl) => {
 			// open reachable cell nearest the zone centroid
 			const cells = [];
 			let cx = 0, cy = 0, n = 0;
@@ -4025,17 +4300,47 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			cells.sort((a, b) =>
 				((a % W - cx) ** 2 + (((a / W) | 0) - cy) ** 2)
 				- ((b % W - cx) ** 2 + (((b / W) | 0) - cy) ** 2));
-			const tpl = OBJECT_DEFS.monolithTwoWay;
 			for (const c of cells) {
 				const x = c % W, y = (c / W) | 0;
 				if (footprintFits(tpl, x, y, l, W, H, blocked)
+					&& inZone(tpl, x, y, plans[l].zone, zi, W, H)
 					&& entranceOpen(tpl, x, y, l, W, H, blocked, reach))
 					return c;
 			}
 			return -1;
 		};
 		phase('underworld');
-		let crossGates = 0, crossPortals = 0;
+		let crossGates = 0, crossPortals = 0, crossLeftOut = 0;
+		const book = p._links;
+		const node = r => `${r.l}:${r.i}`;
+		// A cross-level link's guard in front of each end, as the engine guards
+		// a gate or a monolith with the link's strength (ConnectionsPlacer.cpp:
+		// selfSideIndirectConnection addGuard, placeMonolithConnection's
+		// required objects). Placed without one, every gate and portal between
+		// the levels was a free passage: on Coldshadow's Fantasy 144x2 one
+		// start walked through them into 20 of the map's 23 towns unopposed.
+		// Held clear like a doorway guard (planLevel), not walled.
+		const guardEnd = (l, tpl, x, y, z, strength) => {
+			if (!(strength > 0) || process.env.VMAPGEN_PORTAL_GUARD === '0') return false;
+			const meta = plans[l].zoneMeta;
+			const concrete = !!(objectPools && objectPools.guards && meta);
+			const g = engineGuard(strength, 1 + Math.round(p.monsterStrength || 0), rng, true,
+				concrete ? zoneGuardPool(objectPools.guards, meta[z] && meta[z].spec) : undefined);
+			if (!g) return false;
+			const monster = OBJECT_TEMPLATES.randomMonster;
+			for (const c of approachCells(tpl, x, y, l, W, H, blocked)) {
+				const gx = c % W, gy = (c / W) | 0;
+				if (!footprintFits(monster, gx, gy, l, W, H, blocked, true)) continue;
+				const e = objectEntry(`randomMonsterLevel${g.level}`, gx, gy, l, monster, 'object',
+					{ character: 'hostile', amount: g.amount });
+				if (concrete) e.guardCreature = g.creature;
+				plans[l].objects.push(e);
+				reserveCell(blocked, l, W, H, c);
+				markApproach(monster, gx, gy, l, W, H, blocked);
+				return true;
+			}
+			return false;
+		};
 		// every held surface site is given back first, a pair or not, so none
 		// stays a blocked footprint with nothing on it
 		const heldPair = new Map();
@@ -4048,6 +4353,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			}
 		}
 		if (heldPair.size || (plans[0].gateSites || []).length) { conn[0].refresh(); conn[1].refresh(); }
+		const needPortal = [];
 		for (const c of crossConns) {
 			const lo = c.aRef.l === 0 ? c.aRef : c.bRef;
 			const hi = c.aRef.l === 0 ? c.bRef : c.aRef;
@@ -4068,6 +4374,8 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				const x = cell % W, y = (cell / W) | 0;
 				if (!footprintFits(surfaceTpl, x, y, 0, W, H, blocked)) continue;
 				if (!footprintFits(underTpl, x, y, 1, W, H, blocked)) continue;
+				if (!inZone(surfaceTpl, x, y, plans[0].zone, lo.i, W, H)
+					|| !inZone(underTpl, x, y, plans[1].zone, hi.i, W, H)) continue;
 				if (!entranceOpen(surfaceTpl, x, y, 0, W, H, blocked, reach[0])) continue;
 				// the underground half is itself the way in, so its pocket
 				// does not have to be reachable before the gate exists
@@ -4100,28 +4408,47 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 							.filter(([a, b]) => a >= 0 && b >= 0 && a < W && b < H)
 							.map(([a, b]) => b * W + a));
 				}
+				guardEnd(0, surfaceTpl, x, y, lo.i, c.guard);
+				guardEnd(1, underTpl, x, y, hi.i, c.guard);
+				book.join(node(lo), node(hi));
 				crossGates++;
 				done = true;
 				break;
 			}
-			if (done) continue;
+			if (!done) needPortal.push(c);
+		}
+		// The links no gate could carry become monolith pairs, a channel each
+		// (portals.js): the ones still joining zones apart first, and once the
+		// channels are all taken a link whose zones are joined another way is
+		// left out.
+		while (needPortal.length) {
+			let at = needPortal.findIndex(k => !book.joined(node(k.aRef), node(k.bRef)));
+			if (at < 0) at = 0;
+			const c = needPortal.splice(at, 1)[0];
+			const lo = c.aRef.l === 0 ? c.aRef : c.bRef;
+			const hi = c.aRef.l === 0 ? c.bRef : c.aRef;
+			let ch = book.next();
+			if (!ch) {
+				if (book.joined(node(lo), node(hi))) { crossLeftOut++; continue; }
+				ch = book.shared();
+			}
+			const tpl = ch.tpl;
+			const reach = reachNow();
 			// same asymmetry as the gate: the surface monolith must be on
 			// ground a hero can already walk to, the underground one just has
 			// to stand on open carved floor, whatever pocket that is
-			const ca = zoneCell(0, lo.i, reach[0]);
-			const cb = zoneCell(1, hi.i, null);
+			const ca = zoneCell(0, lo.i, reach[0], tpl);
+			const cb = zoneCell(1, hi.i, null, tpl);
 			if (ca < 0 || cb < 0) {
 				console.error(`[gen] cross-level link zone ${lo.i}<->${hi.i}: `
-					+ `${cand.length} shared cells, portal side `
+					+ 'no gate, and the portal side '
 					+ `${ca < 0 ? 'surface' : ''}${ca < 0 && cb < 0 ? '+' : ''}`
 					+ `${cb < 0 ? 'underground' : ''} found no open cell`);
 				continue;
 			}
-			const tpl = OBJECT_DEFS.monolithTwoWay;
-			// core knows only monolith1-6; the corpus harvest carries HotA's
-			// wider set and emitting one is an engine refusal, same class as
-			// the UTIL_POOL subtypes clamped in economy.js
-			const subtype = `monolith${1 + (p._portalSeq.n++ % 6)}`;
+			book.take(ch);
+			book.join(node(lo), node(hi));
+			const subtype = ch.subtype;
 			const ax = ca % W, ay = (ca / W) | 0, bx = cb % W, by = (cb / W) | 0;
 			const pairId = `portal_${subtype}`;
 			const e0 = objectEntry('monolithTwoWay', ax, ay, 0, tpl, subtype);
@@ -4133,6 +4460,8 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			footprintBlock(tpl, bx, by, 1, W, H, blocked);
 			markApproach(tpl, ax, ay, 0, W, H, blocked);
 			markApproach(tpl, bx, by, 1, W, H, blocked);
+			guardEnd(0, tpl, ax, ay, lo.i, c.guard);
+			guardEnd(1, tpl, bx, by, hi.i, c.guard);
 			// the underground end is an entrance in its own right: the hero
 			// teleports in, so whatever pocket it sits in is played space
 			(plans[1].entrances = plans[1].entrances || [])
@@ -4150,9 +4479,15 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		}
 		if (crossConns.length)
 			console.error(`[gen] ${crossConns.length} cross-level template `
-				+ `link(s): ${crossGates} gate pair(s), ${crossPortals} portal pair(s)`);
+				+ `link(s): ${crossGates} gate pair(s), ${crossPortals} portal pair(s)`
+				+ (crossLeftOut ? `, ${crossLeftOut} left out (the monolith channels all taken, their zones joined another way)` : ''));
+		// Gates of the map's own, anywhere both levels fit: the free layout's
+		// way between the levels, and a template's when none of its own links
+		// could be placed. A template whose links stand gets no more: the
+		// engine adds none, and these unguarded ones were free passages
+		// between zones the template keeps apart.
 		let placed = 0, cursor = 0;
-		for (let i = 0; i < gateCount; i++) {
+		for (let i = 0; i < (crossGates + crossPortals ? 0 : gateCount); i++) {
 			// reachability shifts as each pair lands, so recompute per gate
 			const reach = [0, 1].map(l => mainComponent(W, H, l, blocked,
 				l === 0 ? playerStarts : []));
@@ -4202,9 +4537,8 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		// end on ground a hero can walk to, the underground end in the
 		// cave's largest open region.
 		let standIns = 0;
-		if (!placed && !crossPortals) {
-			const tpl = OBJECT_DEFS.monolithTwoWay;
-			const spot = (l, reach, used) => {
+		if (!placed && !crossPortals && !crossGates) {
+			const spot = (l, reach, used, tpl) => {
 				for (const c of order) {
 					const x = c % W, y = (c / W) | 0;
 					if (used.some(u => Math.abs(u % W - x) + Math.abs(((u / W) | 0) - y) < 12)) continue;
@@ -4218,10 +4552,14 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const usedUp = [], usedDown = [];
 			for (let i = 0; i < gateCount; i++) {
 				const reach = reachNow();
-				const ca = spot(0, reach[0], usedUp), cb = spot(1, reach[1], usedDown);
+				// the only way down: a channel of its own, or the least-used one
+				const ch = book.next() || book.shared();
+				const tpl = ch.tpl;
+				const ca = spot(0, reach[0], usedUp, tpl), cb = spot(1, reach[1], usedDown, tpl);
 				if (ca < 0 || cb < 0) break;
 				usedUp.push(ca); usedDown.push(cb);
-				const subtype = `monolith${1 + (p._portalSeq.n++ % 6)}`;
+				book.take(ch);
+				const subtype = ch.subtype;
 				const pairId = `portal_${subtype}`;
 				const ends = [[ca % W, (ca / W) | 0], [cb % W, (cb / W) | 0]];
 				ends.forEach(([x, y], l) => {

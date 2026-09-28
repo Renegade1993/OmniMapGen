@@ -57,10 +57,10 @@ function safeToClose(open, W, H, c) {
 
 /**
  * Repair `open` (1 = carved, 0 = rock) in place. `checker` is a
- * maskcheck.js checker with rock as its wet terrain. Returns
- * { before, after, opened, closed }.
+ * maskcheck.js checker with rock as its wet terrain; `keep` flags cells that
+ * never close (a doorway's). Returns { before, after, opened, closed }.
  */
-function fitCave(open, zone, W, H, checker, maxRounds = 12) {
+function fitCave(open, zone, W, H, checker, maxRounds = 12, keep = null) {
 	const N = W * H;
 	const rock = new Uint8Array(N);
 	for (let c = 0; c < N; c++) rock[c] = open[c] ? 0 : 1;
@@ -80,7 +80,7 @@ function fitCave(open, zone, W, H, checker, maxRounds = 12) {
 				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
 				const d = ny * W + nx;
 				const opening = !!rock[d];
-				if (opening ? !zoneSafeToOpen(open, zone, W, H, d) : !safeToClose(open, W, H, d)) continue;
+				if (opening ? !zoneSafeToOpen(open, zone, W, H, d) : (keep && keep[d]) || !safeToClose(open, W, H, d)) continue;
 				const was = checker.around(rock, W, H, nx, ny, 2);
 				rock[d] ^= 1;
 				const now = checker.around(rock, W, H, nx, ny, 2);

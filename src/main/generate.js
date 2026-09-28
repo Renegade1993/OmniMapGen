@@ -18,9 +18,10 @@ const { mergeChunks, mergeChunksAsync } = require('../stitch/poms');
 const { planMap, chooseTemplateLayout } = require('../biome/plan');
 const { registerTerrainDecor, clearTerrainDecor, TERRAINS: DECOR_TERRAINS } = require('../biome/decor');
 const { registerModSet, clearModSets, coreSetTemplates } = require('../biome/retile');
-const { blockingCells } = require('../biome/content');
+const { blockingCells, visitableCells, allowedDirs, REMOVABLE_TYPES } = require('../biome/content');
 const { themePool, applyGuardTheme, concretizeGuards, creatureRegistry, guardPool, themeDwellingPool,
-	themeBankPool } = require('../biome/guardCreatures');
+	themeBankPool, levelStrengths } = require('../biome/guardCreatures');
+const { evenStarts } = require('./startFairness');
 const { DWELLING_POOL, CORE_BANKS, bankRate, chestTemplate, registerTerrainBarriers, clearTerrainBarriers } = require('../biome/economy');
 const TEMPLATE_THEMES = require('../biome/templateThemes.json');
 const { h3ArtifactTemplates, h3MonsterTemplates, h3CreatureTraits } = require('../parser/h3data');
@@ -1555,6 +1556,88 @@ async function generateMap(params) {
 		for (const mod of c.mods) usedMods.add(mod);
 		console.error(`[gen] concrete guards: ${c.placed} written as their creature, `
 			+ `${c.kept} kept as placeholders (no template the map can use)`);
+	}
+
+	// VMAPGEN_ZONE_DUMP=<file>: each level's zone per cell, its border walls and
+	// its roads, for tools that ask where a path crosses from zone to zone
+	if (process.env.VMAPGEN_ZONE_DUMP)
+		fs.writeFileSync(process.env.VMAPGEN_ZONE_DUMP, JSON.stringify(plans.map(pl => pl && {
+			zone: Array.from(pl.zone || []), barriers: [...(pl.barriers || [])], roads: [...(pl.roadCells || [])],
+			ids: (pl.zoneMeta || []).map(m => m && m.spec ? m.spec.id : null) })));
+	// Every start as fair as the settings allow: the cheapest guard between
+	// each start and the rest of the map evened out between them
+	// (startFairness.js; K, 2026-09-27: "get balance as good as we possibly can
+	// while meeting the player's request"). VMAPGEN_FAIR_STARTS=0 leaves them.
+	if (process.env.VMAPGEN_FAIR_STARTS !== '0') {
+		const W = params.mapW, H = params.mapH;
+		const byName = new Map([...registry.values()].map(e => [e.name, e]));
+		const levelsOf = levelStrengths();
+		const unit = o => {
+			if (o.type === 'monster') {
+				const e = byName.get(String(o.subtype));
+				return e && e.aiValue > 0 ? { each: e.aiValue, stack: e.aiValue * ((e.advMin || 1) + (e.advMax || 1)) / 2 } : null;
+			}
+			const m = String(o.type).match(/^randomMonsterLevel([1-7])$/);
+			const ls = levelsOf.get(m ? +m[1] : 3);
+			return ls ? { each: ls.perCreature, stack: ls.perStack } : null;
+		};
+		const starts = players.filter((p, i) => i !== observerIndex).map(p => {
+			const town = objects.find(o => /town/i.test(o.type) && !/gate/i.test(o.type)
+				&& o.options && o.options.owner === p.color);
+			const from = [];
+			if (town && town.template)
+				for (const [vx, vy] of visitableCells(town.template, town.x, town.y))
+					for (const [dx, dy] of allowedDirs(town.template)) {
+						const x = vx + dx, y = vy + dy;
+						if (x >= 0 && y >= 0 && x < W && y < H) from.push(y * W + x);
+					}
+			return { color: p.color, l: town ? town.l || 0 : p.townPos.l || 0, from };
+		}).filter(s => s.from.length);
+		const water = waterPlan ? waterPlan.mask : null;
+		// the ways a portal gives: each monolith channel's ends, and each surface
+		// subterranean gate with the nearest one below not yet taken
+		const approach = o => {
+			const out = [], base = (o.l || 0) * W * H;
+			for (const [vx, vy] of visitableCells(o.template, o.x, o.y))
+				for (const [dx, dy] of allowedDirs(o.template)) {
+					const x = vx + dx, y = vy + dy;
+					if (x >= 0 && y >= 0 && x < W && y < H) out.push(base + y * W + x);
+				}
+			return out;
+		};
+		const visit = o => visitableCells(o.template, o.x, o.y)
+			.filter(([x, y]) => x >= 0 && y >= 0 && x < W && y < H).map(([x, y]) => (o.l || 0) * W * H + y * W + x);
+		const link = (a, b) => ({ a: approach(a), b: approach(b), va: visit(a), vb: visit(b) });
+		const links = [];
+		const channels = new Map();
+		for (const o of objects)
+			if (o.type === 'monolithTwoWay' && o.template)
+				channels.set(o.subtype, [...(channels.get(o.subtype) || []), o]);
+		for (const ends of channels.values())
+			for (let i = 0; i < ends.length; i++)
+				for (let j = i + 1; j < ends.length; j++) links.push(link(ends[i], ends[j]));
+		const below = objects.filter(o => o.type === 'subterraneanGate' && o.template && (o.l || 0) === 1);
+		for (const g of objects.filter(o => o.type === 'subterraneanGate' && o.template && !(o.l || 0))) {
+			let best = -1, bd = Infinity;
+			below.forEach((d, i) => { const dd = (d.x - g.x) ** 2 + (d.y - g.y) ** 2; if (dd < bd) { bd = dd; best = i; } });
+			if (best >= 0) links.push(link(g, below.splice(best, 1)[0]));
+		}
+		const fair = evenStarts({ objects, starts, W, H, levels: plans.length, links,
+			blockedAt: (l, c) => !!(l === 0 && water && water[c]) || !!(plans[l] && plans[l].openMask && !plans[l].openMask[c]),
+			removable: o => REMOVABLE_TYPES.has(o.type),
+			strengthOf: o => {
+				const u = unit(o);
+				if (!u) return 0;
+				return o.options && o.options.amount > 0 ? u.each * o.options.amount : u.stack;
+			},
+			setStrength: (o, v) => {
+				const u = unit(o);
+				if (!u) return;
+				o.options = { ...(o.options || {}), amount: Math.max(1, Math.floor(v / u.each)) };
+			} });
+		if (starts.length > 1)
+			console.error('[gen] start fairness: ' + fair.starts.map(s => `${s.color} home ${s.home}, gate `
+				+ (s.gate === null ? 'none' : Math.round(s.gate)) + (s.cut ? ` cut to ${Math.round(s.cut)}` : '')).join('; '));
 	}
 
 	// Every town lists the spells its mage guild may offer. The engine reads
