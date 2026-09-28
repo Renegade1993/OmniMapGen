@@ -35,7 +35,7 @@ const { buildPatterns, assignTerrainViews, smoothForPatterns } = require('../exp
 const { buildRiverNetwork } = require('../biome/rivernet');
 const { buildWaterPlan, WATER_SHAPES } = require('../biome/water');
 const { makeMaskChecker } = require('../exporter/maskcheck');
-const { loadTemplate, resolveZones, checkConstraints, buildZonePlan, parseSizeCode }
+const { loadTemplate, resolveZones, checkConstraints, buildZonePlan, assignLevels, parseSizeCode }
 	= require('../rmg/template');
 const { orderStarts } = require('../rmg/startOrder');
 
@@ -749,6 +749,39 @@ async function generateMap(params) {
 	const tplZonesEarly = params.template ? resolveZones(loadTemplate(params.template).raw) : null;
 	const ownerZone = i => tplZonesEarly && tplZonesEarly.find(z => Number(z.owner) === i + 1
 		&& /start/i.test(String(z.type || '')));
+	// Which level each start is on (template.js assignLevels, the engine's
+	// rule): a player's picked town native to the surface stays up, one native
+	// to the underground alone (Dungeon) goes down, a random town lands on
+	// either. The level of a native terrain is read from its allowedLayers.
+	// K (2026-09-27): starts underground by default, overridable by the player
+	// (the undergroundStarts lever: 0 never, 1 as the game does, 2 always).
+	const terrainByName = name => {
+		const bare = String(name || '').replace(/^.*:/, '').toLowerCase();
+		for (const [, t] of assetIndex.terrains)
+			if (String(t.identifier || '').toLowerCase() === bare
+				|| String(t.name || '').replace(/^.*:/, '').toLowerCase() === bare) return t;
+		return null;
+	};
+	const startNative = (params.players || []).map((p, i) => {
+		if (i === observerIndex || !p.chosenFaction || p.chosenFaction === 'random') return null;
+		const f = resolveFaction(p.chosenFaction);
+		const t = f ? terrainByName(nativeOf(f)) : null;
+		const layers = (t && t.allowedLayers) || [];
+		if (!layers.length) return null;
+		return layers.includes('underground') && !layers.includes('surface') ? 'underground' : 'surface';
+	});
+	const levelReq = { levels: levels.length, seed: params.seed || 1, starts: startNative,
+		undergroundStarts: (params.biomes || {}).undergroundStarts };
+	const startLevels = tplZonesEarly && observerIndex < 0 ? assignLevels(tplZonesEarly, levelReq) : null;
+	if (startLevels)
+		(params.players || []).forEach((p, i) => {
+			const z = ownerZone(i);
+			const l = z ? startLevels.get(z.id) : undefined;
+			if (l !== undefined && p.townPos && (p.townPos.l || 0) !== l) p.townPos = { ...p.townPos, l };
+		});
+	if (startLevels && (params.players || []).some(p => p.townPos && p.townPos.l > 0))
+		console.error('[gen] starts underground: ' + (params.players || [])
+			.filter(p => p.townPos && p.townPos.l > 0).map(p => p.color).join(', '));
 	// The template decides where its starts go. The engine lays start zones out
 	// with the rest (CZonePlacer) and puts each town inside its zone; we pin
 	// starts to fixed cells, so the cells have to suit the template's links.
@@ -776,7 +809,8 @@ async function generateMap(params) {
 			let plan0 = null;
 			try {
 				plan0 = buildZonePlan(tplRawEarly, tplZonesEarly, { w: params.mapW, h: params.mapH,
-					levels: levels.length, players: n, humans: params.humans, seed: params.seed || 1 }, new Set(params.accommodate || []));
+					levels: levels.length, players: n, humans: params.humans, seed: params.seed || 1,
+					starts: startNative, undergroundStarts: levelReq.undergroundStarts }, new Set(params.accommodate || []));
 			} catch { plan0 = null; }
 			if (plan0) {
 				const W = params.mapW, H = params.mapH;
@@ -945,9 +979,9 @@ async function generateMap(params) {
 	// The observer is not a start the surface planner knows about: it has its
 	// own level and its own town, placed by hand below.
 	const makeStarts = () => players
-		.filter((_, i) => i !== observerIndex)
-		.map(p => ({ ...p.townPos, color: p.color,
-			native: nativeOf(p.pinnedFaction) }));
+		.map((p, i) => ({ ...p.townPos, color: p.color, owner: i + 1,
+			native: nativeOf(p.pinnedFaction) }))
+		.filter((_, i) => i !== observerIndex);
 	let starts = makeStarts();
 
 	// Biome plan drives both the WFC domains and the object layer.
@@ -1256,7 +1290,8 @@ async function generateMap(params) {
 		const tpl = loadTemplate(params.template);
 		const zones = resolveZones(tpl.raw);
 		const req = { w: params.mapW, h: params.mapH, levels: levels.length,
-			players: players.length, humans: params.humans, seed: params.seed || 1 };
+			players: players.length, humans: params.humans, seed: params.seed || 1,
+			starts: startNative, undergroundStarts: levelReq.undergroundStarts };
 		const acc = templateAcc;
 		const { violations, accommodated } = checkConstraints(tpl.raw, zones, req, acc);
 		for (const a of accommodated)
@@ -1340,7 +1375,8 @@ async function generateMap(params) {
 				.some(code => (parseSizeCode(code) || [0, 1])[1] >= 2);
 			if (levels.length === 1 && twoLevels) {
 				const plan2 = buildZonePlan(tplRaw, resolveZones(tplRaw),
-					{ w: params.mapW, h: params.mapH, levels: 2, players: players.length, humans: params.humans, seed: params.seed || 1 },
+					{ w: params.mapW, h: params.mapH, levels: 2, players: players.length, humans: params.humans, seed: params.seed || 1,
+						starts: startNative, undergroundStarts: 0 },
 					templateAcc);
 				if (plan2.perLevel[1].length && judge(biomeParams, plan2).ok) ok.push('turn the underground on');
 			}
@@ -1623,6 +1659,7 @@ async function generateMap(params) {
 			if (best >= 0) links.push(link(g, below.splice(best, 1)[0]));
 		}
 		const fair = evenStarts({ objects, starts, W, H, levels: plans.length, links,
+			zoneAt: (l, c) => (plans[l] && plans[l].zone ? plans[l].zone[c] : -1),
 			blockedAt: (l, c) => !!(l === 0 && water && water[c]) || !!(plans[l] && plans[l].openMask && !plans[l].openMask[c]),
 			removable: o => REMOVABLE_TYPES.has(o.type),
 			strengthOf: o => {

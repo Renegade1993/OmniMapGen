@@ -304,10 +304,55 @@ function checkConstraints(raw, zones, req, accommodations) {
 }
 
 /**
+ * Each zone's level on a two-level map, the engine's way (CZonePlacer::
+ * prepareZones), starts included. The zones in a random order: a forced
+ * level holds; a start whose player picked a town native to the surface
+ * stays up, and one native to the underground alone (Dungeon) goes down; a
+ * start with a random town, and every other zone, then goes to the level
+ * holding fewer zones so far, the surface on a tie. K (2026-09-27): starts
+ * underground by default, as in the game, and the player's to override.
+ *
+ * req.starts[owner - 1]: 'surface', 'underground' or null (a random town, or
+ * a start with no player); req.undergroundStarts: 0 keeps every start on the
+ * surface, 1 is the game's rule (the default), 2 puts every start below.
+ * Returns Map zone id -> level, or null for mode 0 (buildZonePlan's own split).
+ */
+function assignLevels(zones, req) {
+	const mode = req.undergroundStarts === undefined || req.undergroundStarts === null
+		? 1 : Math.round(Number(req.undergroundStarts));
+	if (req.levels < 2 || mode === 0) return null;
+	let s = ((req.seed || 1) * 2654435761 + 0x9e3779b9) >>> 0;
+	const rnd = () => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+	rnd(); rnd();
+	const order = [...zones];
+	for (let i = order.length - 1; i > 0; i--) {
+		const j = (rnd() * (i + 1)) | 0;
+		[order[i], order[j]] = [order[j], order[i]];
+	}
+	const levelOf = new Map();
+	const count = [0, 0];
+	const put = (z, l) => { levelOf.set(z.id, l); count[l]++; };
+	const isStart = z => z.type === 'playerStart' || z.type === 'cpuStart';
+	const later = [];
+	for (const z of order) {
+		if (z.forcedLevel === 'underground') { put(z, 1); continue; }
+		if (z.forcedLevel === 'surface') { put(z, 0); continue; }
+		if (isStart(z) && mode === 2) { put(z, 1); continue; }
+		const native = isStart(z) && z.owner ? (req.starts || [])[Number(z.owner) - 1] : null;
+		if (native === 'underground') { put(z, 1); continue; }
+		if (native === 'surface') { put(z, 0); continue; }
+		later.push(z);
+	}
+	for (const z of later) put(z, count[1] < count[0] ? 1 : 0);
+	return levelOf;
+}
+
+/**
  * Assign zones to levels. forcedLevel:"underground" zones go down. With two
  * levels the engine balances zone area across them (CZonePlacer.cpp:447), so
  * when a template defines no underground zones but the map has a second
- * level, non-start zones migrate to balance the size^2 totals.
+ * level, the zones migrate to balance the counts, starts by the engine's
+ * rule too (assignLevels).
  *
  * Returns {levels: [zoneSpec[]...], connections} with zone indices pointing
  * into each level's own array plus a global zoneById map.
@@ -316,6 +361,11 @@ function buildZonePlan(raw, zones, req, accommodations) {
 	const acc = accommodations || new Set();
 	const perLevel = [[]];
 	for (let l = 1; l < req.levels; l++) perLevel.push([]);
+	const levelOf = assignLevels(zones, req);
+	if (levelOf) {
+		for (const z of zones) perLevel[levelOf.get(z.id)].push(z);
+		return finishZonePlan(raw, zones, req, perLevel);
+	}
 
 	const forced = zones.filter(z => z.forcedLevel === 'underground');
 	if (req.levels > 1) {
@@ -352,6 +402,10 @@ function buildZonePlan(raw, zones, req, accommodations) {
 		for (const z of forced) if (!starts.includes(z)) perLevel[0].push({ ...z, forcedLevel: undefined });
 	}
 
+	return finishZonePlan(raw, zones, req, perLevel);
+}
+
+function finishZonePlan(raw, zones, req, perLevel) {
 	const indexOf = new Map();
 	perLevel.forEach((list, l) =>
 		list.forEach((z, i) => indexOf.set(z.id, { l, i })));
@@ -502,7 +556,7 @@ const MINE_SUBTYPE = {
 };
 
 module.exports = {
-	loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan,
+	loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan, assignLevels,
 	guardToLevel, zoneTreasureMass, lootScale, pileRate, pileLoot, ZONE_CLASS, MONSTER_BAND,
 	MINE_SUBTYPE, parseSizeCode, parseRange,
 };

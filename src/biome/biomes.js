@@ -80,6 +80,9 @@ const BIOME_DEFAULTS = {
 	// a level with that little floor has nowhere to put the terrain features
 	// that make one look real. Measured with `vmap_thickness.js --corpus`.
 	subterraneanOpen: 0.57,
+	// template maps: which starts go below (template.js assignLevels): 0 none,
+	// 1 the game's rule, 2 all of them
+	undergroundStarts: 1,
 	mineDensity: 1.0,
 	resourceDensity: 1.0,
 	pickupDensity: 1.0,
@@ -381,6 +384,19 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 // templates holds about a fifth (Vortex, 0.21).
 const MAX_START_SHARE = 0.2;
 
+/**
+ * The start a template zone's owner (a player number) names: the start that
+ * carries that owner, or, when the starts carry none, the one at that place
+ * in the list. With starts on both levels a level's list is not every
+ * player's, so the place alone named the wrong player.
+ */
+function startOfOwner(playerStarts, owner) {
+	const n = Number(owner);
+	if (!n || !playerStarts) return undefined;
+	if (playerStarts.some(s => s && s.owner)) return playerStarts.find(s => s && s.owner === n);
+	return playerStarts[n - 1];
+}
+
 /** Steps from each cell to the nearest water cell (4-neighbour). */
 function distanceToWater(W, H, water) {
 	const d = new Float64Array(W * H).fill(Infinity);
@@ -566,8 +582,8 @@ function layoutZoneSeeds(zoneSpecs, conns, W, H, playerStarts, rng, opts = {}) {
 
 	const pos = zoneSpecs.map((z, i) => {
 		const pinned = (z.type === 'playerStart' || z.type === 'cpuStart')
-			&& z.owner && playerStarts[z.owner - 1];
-		if (pinned) return { x: playerStarts[z.owner - 1].x, y: playerStarts[z.owner - 1].y, pin: true };
+			&& z.owner && startOfOwner(playerStarts, z.owner);
+		if (pinned) return { x: startOfOwner(playerStarts, z.owner).x, y: startOfOwner(playerStarts, z.owner).y, pin: true };
 		return { x: 6 + rng() * (W - 12), y: 6 + rng() * (H - 12), pin: false };
 	});
 
@@ -961,4 +977,4 @@ module.exports = { BIOME_CLASS, BIOME_DEFAULTS, partitionBiomes, partitionSeeded
 	layoutZoneSeeds, symmetricEigen, spectralCoords, fitSimilarity, assignClasses, zoneDistances, physZoneDistances,
 	biomeEdges, assignConnections, ensureConnected, valueNoise,
 	rimModeOf, rimLobeScale, bordersOff, nearestLand,
-	REF_ZONES, portalGateScale, portalScale, MAX_START_SHARE };
+	REF_ZONES, portalGateScale, portalScale, MAX_START_SHARE, startOfOwner };

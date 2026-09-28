@@ -49,6 +49,7 @@
 			"mineGuardWeight": 1,
 			"subterraneanGateRatio": 1,
 			"subterraneanNarrow": 0.6,
+			"undergroundStarts": 1,
 			"subterraneanOpen": 0.57,
 			"decorDensity": 1,
 			"rivers": 1,

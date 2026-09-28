@@ -279,7 +279,7 @@ function addRimBand(zone, W, H, connections, edgeInfo, barriers, openings, water
  * asks its own zone's ObjectManager::chooseGuard), and comes back with its
  * creature for generate.js to write.
  */
-function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor = null) {
+function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor = null, forcedStrength = null) {
 	const p = { ...BIOME_DEFAULTS, ...params };
 	// guardBottlenecks 0: no monster in any doorway, the template's own
 	// guarded links included (the player switched the context off)
@@ -299,6 +299,17 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 			// content.js engineGuard). Too weak a link stays unguarded there.
 			if (!info.guard) continue;
 			const g = engineGuard(info.guard, 1 + shift, rng, true, poolFor ? poolFor(o.a) : undefined);
+			if (!g) continue;
+			const mid = o.hole[(o.hole.length / 2) | 0];
+			guards.push({ cell: mid, level: g.level, amount: g.amount, edge: [o.a, o.b],
+				...(poolFor ? { creature: g.creature } : {}) });
+			continue;
+		}
+		// a border a template level opened to keep itself in one piece: the
+		// strongest link its zones have (planLevel), sized the same way
+		if (forcedStrength) {
+			const strength = forcedStrength(o.a, o.b);
+			const g = strength > 0 ? engineGuard(strength, 1 + shift, rng, true, poolFor ? poolFor(o.a) : undefined) : null;
 			if (!g) continue;
 			const mid = o.hole[(o.hole.length / 2) | 0];
 			guards.push({ cell: mid, level: g.level, amount: g.amount, edge: [o.a, o.b],

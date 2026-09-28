@@ -133,11 +133,87 @@
 			}
 		},
 		{
-			"name": "help_subterraneanOpen",
+			"name": "help_undergroundStarts",
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
 				"y": 222,
+				"w": 143,
+				"h": 22
+			},
+			"help": {
+				"hover": "vcmi.mapGen.undergroundStarts.hover",
+				"help": "vcmi.mapGen.undergroundStarts.help"
+			}
+		},
+		{
+			"name": "label_undergroundStarts",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "yellow",
+			"text": "vcmi.mapGen.undergroundStarts.hover",
+			"position": {
+				"x": 58,
+				"y": 227
+			}
+		},
+		{
+			"name": "slider_undergroundStarts",
+			"type": "slider",
+			"orientation": "horizontal",
+			"style": "brown",
+			"position": {
+				"x": 198,
+				"y": 226
+			},
+			"size": 104,
+			"itemsVisible": 0,
+			"itemsTotal": 2,
+			"scrollBounds": {
+				"x": -4,
+				"y": -6,
+				"w": 112,
+				"h": 26
+			},
+			"setting": "persistent:mapGen/params/undergroundStarts",
+			"valueMin": 0,
+			"valueStep": 1,
+			"valueDefault": 1,
+			"valueLabel": "value_undergroundStarts",
+			"valueNames": [
+				[
+					0,
+					"vcmi.mapGen.undergroundStarts.stop0"
+				],
+				[
+					1,
+					"vcmi.mapGen.undergroundStarts.stop1"
+				],
+				[
+					2,
+					"vcmi.mapGen.undergroundStarts.stop2"
+				]
+			]
+		},
+		{
+			"name": "value_undergroundStarts",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "",
+			"position": {
+				"x": 308,
+				"y": 227
+			}
+		},
+		{
+			"name": "help_subterraneanOpen",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 55,
+				"y": 252,
 				"w": 143,
 				"h": 22
 			},
@@ -155,7 +231,7 @@
 			"text": "vcmi.mapGen.subterraneanOpen.hover",
 			"position": {
 				"x": 58,
-				"y": 227
+				"y": 257
 			}
 		},
 		{
@@ -165,7 +241,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 226
+				"y": 256
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -194,7 +270,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 227
+				"y": 257
 			}
 		}
 	]

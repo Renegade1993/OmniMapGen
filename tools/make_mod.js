@@ -375,7 +375,11 @@ function buildModJson(text, { pager, atBegin, classic = false }) {
 	if (classic) text = text.replace(/\n\t"dmb" :/, '\n\t"depends" : [ "vcmi-extras" ],\n\t"dmb" :');
 	if (atBegin) {
 		if (!/\n\t\t"name" : "[^"]*",/.test(text)) throw new Error('mod/mod.json: no mapGenerator "name" line');
-		text = text.replace(/\n\t\t"name" : "[^"]*",/, '\n\t\t"name" : "Omni Map Gen",\n\t\t"atBegin" : true,');
+		// "arguments": the options beyond the Generate set DMB may send at Begin;
+		// the CLI refuses an option it does not know, so DMB sends --humanColors
+		// (the seated humans' colours, K's B2) only to a generator that names it
+		text = text.replace(/\n\t\t"name" : "[^"]*",/,
+			'\n\t\t"name" : "Omni Map Gen",\n\t\t"atBegin" : true,\n\t\t"arguments" : [ "humanColors" ],');
 	}
 	return text;
 }

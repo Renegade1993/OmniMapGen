@@ -80,7 +80,10 @@ test('Golems Aplenty\'s neutral town is Tower, and no surface start is Dungeon, 
 		'--declaremods', '0'],
 	{ encoding: 'utf8', timeout: 200000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
 	assert.strictEqual(r.status, 0, r.stderr.slice(-600));
-	const factions = (r.stderr.match(/\[gen\] factions: (.*)/) || [])[1] || '';
+	// a start underground (template.js assignLevels) prefers exactly those
+	const below = ((r.stderr.match(/\[gen\] starts underground: (.*)/) || [])[1] || '').split(', ').filter(Boolean);
+	const factions = ((r.stderr.match(/\[gen\] factions: (.*)/) || [])[1] || '')
+		.split(/\s{2,}/).filter(f => !below.includes(f.split('=')[0])).join('  ');
 	assert.doesNotMatch(factions, /dungeon|inferno|necropolis/, factions);
 	const { readVmap } = require('../src/preview/render');
 	const towns = readVmap(out).objects.filter(o => o.type === 'town');

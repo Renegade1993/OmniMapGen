@@ -59,9 +59,12 @@ function cellsOf(o, letters, W, H) {
  * blockedAt(l, c): ground no hero crosses on level l (water, rock);
  * removable(o): an object a hero picks up or beats (not a wall);
  * strengthOf(o): a guard's fighting value; setStrength(o, value): its stack
- * cut to that value. Returns { starts: [{ color, home, gate, cut }], cuts }.
+ * cut to that value; zoneAt(l, c), when given: the zone a cell belongs to,
+ * so a way out has to reach another zone's ground, past the start's own
+ * zone, rather than a treasure ground of its own behind a guard. Returns
+ * { starts: [{ color, home, gate, cut }], cuts }.
  */
-function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, removable, strengthOf, setStrength }) {
+function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, removable, strengthOf, setStrength, zoneAt = null }) {
 	const N = W * H, ALL = levels * N;
 	const walls = new Uint8Array(ALL);
 	for (let l = 0; l < levels; l++)
@@ -147,6 +150,16 @@ function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, 
 	const region = c => (piece[c] >= 0 ? find(piece[c]) : -1);
 	const regionSize = new Map();
 	pieceSize.forEach((n, i) => { const r = find(i); regionSize.set(r, (regionSize.get(r) || 0) + n); });
+	// each region's cells by zone (level and zone), for the way out of a start's own
+	const regionZones = new Map();
+	if (zoneAt)
+		for (let c = 0; c < ALL; c++) {
+			if (piece[c] < 0) continue;
+			const r = find(piece[c]), l = (c / N) | 0, key = l + ':' + zoneAt(l, c - l * N);
+			if (!regionZones.has(r)) regionZones.set(r, new Map());
+			const m = regionZones.get(r);
+			m.set(key, (m.get(key) || 0) + 1);
+		}
 	// what each guard's fight opens onto: pieces, and other guards' fights
 	const opens = fights.map((f, k) => {
 		const regions = new Set(), guards = new Set();
@@ -188,6 +201,15 @@ function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, 
 	const measured = starts.map(s => {
 		const from = (s.from || []).map(c => (s.l || 0) * N + c).filter(c => c >= 0 && c < ALL && !walls[c]);
 		const homes = new Set(from.map(region).filter(r => r >= 0));
+		// the start's own zone: its town's (the gate's ground), on its level
+		const ownZone = zoneAt && from.length
+			? ((from[0] / N) | 0) + ':' + zoneAt((from[0] / N) | 0, from[0] % N) : null;
+		const leadsOn = id => {
+			if (!ownZone) return regionSize.get(id) > LEADS_TO;
+			let away = 0;
+			for (const [z, n] of regionZones.get(id) || []) if (z !== ownZone) away += n;
+			return away > LEADS_TO;
+		};
 		let home = 0;
 		for (const r of homes) home += regionSize.get(r);
 		// the route whose hardest fight is the weakest: nodes are regions
@@ -228,7 +250,7 @@ function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, 
 			if (cost > best.get(node)) continue;
 			const id = +node.slice(1);
 			if (node[0] === 'r') {
-				if (!homes.has(id) && regionSize.get(id) > LEADS_TO) { dest = node; break; }
+				if (!homes.has(id) && leadsOn(id)) { dest = node; break; }
 				for (const k of meets.get(id) || []) push('g' + k, Math.max(cost, value[k]), node);
 			} else {
 				for (const r of opens[id].regions) push('r' + r, cost, node);

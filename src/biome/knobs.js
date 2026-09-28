@@ -161,6 +161,11 @@ const KNOBS = [
 	{ key: 'subterraneanNarrow', page: 'underground', label: 'Narrow tunnels',
 		help: 'How the underground is carved: 0 gives wide caverns, 1 narrow tunnels between small chambers.',
 		min: 0, max: 1, step: 0.05 },
+	// K (2026-09-27): starts underground by default, as in the game, inferred
+	// from the template, and the player's to override
+	{ key: 'undergroundStarts', page: 'underground', label: 'Starts underground',
+		help: 'Whether player starts may lie underground on a two-level template map. As the game does: a start whose picked town belongs on the surface stays up, Dungeon goes down, and a random town may land on either level, as the template\'s own levels allow. Never keeps every start on the surface; Always puts them all below.',
+		min: 0, max: 2, step: 1, stops: [[0, 'Never'], [1, 'As the game does'], [2, 'Always']] },
 	{ key: 'subterraneanOpen', page: 'underground', label: 'Open cave floor',
 		help: 'How much of the underground is open floor rather than solid rock. Real two-level maps leave about 57% open.',
 		min: 0.2, max: 0.9, step: 0.05 },

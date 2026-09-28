@@ -134,6 +134,7 @@ test('--atbegin: the game makes the map at Begin, so no Generate button, and the
 	assert.deepStrictEqual(atBegin.dmb, { api: 3 });
 	assert.strictEqual(atBegin.mapGenerator.atBegin, true);
 	assert.strictEqual(atBegin.mapGenerator.name, 'Omni Map Gen');
+	assert.deepStrictEqual(atBegin.mapGenerator.arguments, ['humanColors'], 'DMB sends --humanColors only when named');
 	assert.strictEqual(atBegin.mapGenerator.command, JSON.parse(text).mapGenerator.command);
 	assert.deepStrictEqual(JSON.parse(buildModJson(text, { pager: true, atBegin: false })).dmb, { api: 2 });
 	assert.strictEqual(buildModJson(text, { pager: false, atBegin: false }), text);

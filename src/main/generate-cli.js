@@ -200,7 +200,10 @@ async function main() {
 		const faction = 'core:' + ['castle','rampart','tower','inferno',
 			'necropolis','dungeon','stronghold','fortress'][COLORS.indexOf(c)];
 		const seat = humanColors ? { canPlay: humanColors.includes(c) ? 'PlayerOrAI' : 'AIOnly' } : {};
-		const chosenFaction = picks[i] ? picks[i].toLowerCase() : undefined;
+		// with --humanColors the lobby offers every colour and DMB sends a pick per
+		// colour from red on; without it, one per map player in colour order
+		const pick = humanColors ? picks[COLORS.indexOf(c)] : picks[i];
+		const chosenFaction = pick ? pick.toLowerCase() : undefined;
 		if (c === observerColor)
 			// a placeholder; generateMap overwrites it with the chamber anchor
 			return { color: c, factions: [faction], townPos: { x: 0, y: 0, l: 1 }, ...seat };

@@ -265,3 +265,32 @@ test('random road options follow the engine on link types and town zones', () =>
 	}
 	assert.deepStrictEqual([...outcomes].sort(), ['fictive', 'guarded']);
 });
+
+test('starts take their level the engine\'s way: picked town up or down, random either, the lever overrides', () => {
+	// K, 2026-09-27: starts underground by default as in the game, and the player's to override
+	const { assignLevels } = require('../src/rmg/template');
+	const zones = [
+		{ id: 1, type: 'playerStart', owner: 1 }, { id: 2, type: 'playerStart', owner: 2 },
+		{ id: 3, type: 'playerStart', owner: 3 }, { id: 4, type: 'playerStart', owner: 4 },
+		{ id: 5, type: 'treasure' }, { id: 6, type: 'treasure' }, { id: 7, type: 'treasure', forcedLevel: 'underground' },
+	];
+	const req = (starts, undergroundStarts, seed = 1) => ({ levels: 2, seed, starts, undergroundStarts });
+	assert.strictEqual(assignLevels(zones, req([], 0)), null, 'Never: the old split, every start on the surface');
+	assert.strictEqual(assignLevels(zones, { ...req([], 1), levels: 1 }), null, 'one level: nothing to decide');
+	for (let seed = 1; seed <= 20; seed++) {
+		const picked = assignLevels(zones, req(['surface', 'underground', 'surface', 'underground'], 1, seed));
+		assert.deepStrictEqual([1, 2, 3, 4].map(id => picked.get(id)), [0, 1, 0, 1], `seed ${seed}: picked towns decide`);
+		assert.strictEqual(picked.get(7), 1, 'a forced level holds');
+		const all = assignLevels(zones, req([], 2, seed));
+		assert.deepStrictEqual([1, 2, 3, 4].map(id => all.get(id)), [1, 1, 1, 1], 'Always');
+		const levels = [...assignLevels(zones, req([], 1, seed)).values()];
+		assert.ok(Math.abs(levels.filter(l => l === 0).length - levels.filter(l => l === 1).length) <= 1,
+			`seed ${seed}: random towns balance the levels, the surface first on a tie`);
+	}
+	const below = new Set();
+	for (let seed = 1; seed <= 40; seed++) {
+		const m = assignLevels(zones, req([null, null, null, null], 1, seed));
+		for (const id of [1, 2, 3, 4]) if (m.get(id) === 1) below.add(id);
+	}
+	assert.strictEqual(below.size, 4, 'every random start lands below on some seed');
+});

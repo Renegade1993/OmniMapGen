@@ -21,7 +21,7 @@ const {
 	partitionBiomes, partitionSeeded, layoutZoneSeeds,
 	assignClasses, zoneDistances, physZoneDistances, biomeEdges,
 	assignConnections, ensureConnected, rimModeOf, nearestLand,
-	portalGateScale, MAX_START_SHARE,
+	portalGateScale, MAX_START_SHARE, startOfOwner,
 } = require('./biomes');
 const { settleZonesOnLand } = require('./water');
 const { fitCave } = require('./cavefit');
@@ -715,7 +715,7 @@ function landPieces8(water, W, H) {
  * Only the one-cell scenery is eligible. A guard or a portal is there for a
  * reason; a rock is not.
  */
-function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, towns, links = [], water = null) {
+function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, towns, links = [], water = null, seedAll = false) {
 	const base = levelIndex * W * H;
 	// Eligible victims are scenery of any footprint. The one-cell-only
 	// version could not open a mouth sealed by a mountain, which is what a
@@ -802,6 +802,15 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 	const firstTown = objects.find(o => (o.l || 0) === levelIndex
 		&& o.options && o.options.owner);
 	if (firstTown) seeds = gate(firstTown);
+	// seedAll (a level below the surface): every start on it and every way in
+	// counts as reached. Its starts may meet only through the surface (a
+	// template's start zones below, each linked up to the centre), and seeded
+	// from one, the pass dug and peeled at the other's whole zone as a pocket.
+	if (seedAll) {
+		for (const o of objects)
+			if ((o.l || 0) === levelIndex && o.options && o.options.owner && o !== firstTown) seeds.push(...gate(o));
+		for (const c of playerStarts || []) if (Number.isInteger(c)) seeds.push(c);
+	}
 	const first = (playerStarts || [])[0];
 	// Underground callers hand over entrance approach cells (plain indexes),
 	// not {x,y} starts - first.x on a number is NaN, and NaN seeds silently
@@ -1464,7 +1473,7 @@ function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = 
 		// inward of the town, layoutZoneSeeds startInset)
 		let lost = 0;
 		tplZones.forEach((zs, i) => {
-			const st = (zs.type === 'playerStart' || zs.type === 'cpuStart') && zs.owner && playerStarts[zs.owner - 1];
+			const st = (zs.type === 'playerStart' || zs.type === 'cpuStart') && zs.owner && startOfOwner(playerStarts, zs.owner);
 			if (st && z[st.y * W + st.x] !== i) lost++;
 		});
 		const area = new Array(s.length).fill(0);
@@ -1580,7 +1589,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			// a start zone for a player the map does not have becomes a
 			// prize zone with a neutral town rather than a dead start
 			if ((z.type === 'playerStart' || z.type === 'cpuStart')
-				&& !playerStarts[z.owner - 1]) return BIOME_CLASS.HIGH_LOOT;
+				&& !startOfOwner(playerStarts, z.owner)) return BIOME_CLASS.HIGH_LOOT;
 			return ZONE_CLASS[z.type] || BIOME_CLASS.STANDARD;
 		});
 	} else {
@@ -1682,7 +1691,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			return any;
 		};
 		tplZones.forEach((z, i) => {
-			if (z.owner && playerStarts[z.owner - 1]) return;   // a start: its player's faction
+			if (z.owner && startOfOwner(playerStarts, z.owner)) return;   // a start: its player's faction
 			const types = zoneTownTypes(z, tp.factions);
 			if (!types.length) return;
 			const nt = z.neutralTowns || {};
@@ -1709,13 +1718,13 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// (TreasurePlacer::addDwellings; counted on this level, the level below
 	// not being rolled yet)
 	const zoneFaction = tplZones ? tplZones.map((z, i) => {
-		const ownerStart = z.owner && playerStarts[z.owner - 1];
+		const ownerStart = z.owner && startOfOwner(playerStarts, z.owner);
 		const tp = objectPools && objectPools.towns;
 		const f = ownerStart && tp && tp.pinned ? tp.pinned.get(ownerStart.color) : zoneTownType[i];
 		return f && f.bare ? f.bare : 'neutral';
 	}) : [];
 	const zoneMeta = tplZones && tplZones.map((z, zi) => {
-		const ownerStart = z.owner && playerStarts[z.owner - 1];
+		const ownerStart = z.owner && startOfOwner(playerStarts, z.owner);
 		const townWishes = [];
 		const pt = z.playerTowns || {}, nt = z.neutralTowns || {};
 		// in the engine's order (TownPlacer::placeTowns): the owner's castles
@@ -1760,6 +1769,13 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// interconnectivity is a per-border coin flip, so it can leave a biome, or
 	// a whole group of them, with every border sealed. Open the minimum number
 	// of extra borders that puts every biome back in one piece.
+	// A template level whose zones meet only through the other level (two
+	// starts below, each linked up to the centre) still opens a border here:
+	// the passes that keep a level in one piece count one level at a time, and
+	// without it they cut the wall open with no guard (Coldshadow's Fantasy
+	// 144x2). The border gets the guard of the strongest link either zone has
+	// (placeChokeGuards' forcedStrength), so it parts the zones as the
+	// template's own links do.
 	const forced = ensureConnected(edges, connections, seeds.length, p, rng);
 	if (forced)
 		console.error(`[gen] level ${levelIndex}: opened ${forced} extra biome `
@@ -2000,9 +2016,19 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 					+ 'border; bridged with a portal pair');
 		}
 	}
+	// a template level's border the template has no link for: guarded as the
+	// strongest link either zone has, across the levels too
+	const forcedStrength = tplZones && tplZones.length && p.zonePlan
+		? (a, b) => {
+			let g = 0;
+			for (const c of p.zonePlan.connections)
+				for (const r of [c.aRef, c.bRef])
+					if (r && r.l === levelIndex && (r.i === a || r.i === b)) g = Math.max(g, c.guard || 0);
+			return g;
+		} : null;
 	const guards = placeChokeGuards(openings, classes, rng, p, edgeInfo,
 		objectPools && objectPools.guards && zoneMeta
-			? z => zoneGuardPool(objectPools.guards, zoneMeta[z] && zoneMeta[z].spec) : null);
+			? z => zoneGuardPool(objectPools.guards, zoneMeta[z] && zoneMeta[z].spec) : null, forcedStrength);
 	// Hold the doorways clear. A path opening is two or three cells wide and
 	// the chokepoint guard takes one of them, so a single object dropped on
 	// the rest turns a connected map into two sealed halves. Reserved ground
@@ -2030,7 +2056,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	phase('capitals');
 	if (tplZones && tplZones.length && process.env.VMAPGEN_START_CENTRE !== '0')
 		tplZones.forEach((z, b) => {
-			const s = (z.type === 'playerStart' || z.type === 'cpuStart') && z.owner && playerStarts[z.owner - 1];
+			const s = (z.type === 'playerStart' || z.type === 'cpuStart') && z.owner && startOfOwner(playerStarts, z.owner);
 			if (!s) return;
 			const at = townNearCentre(zone, b, W, H, levelIndex, blocked, water, barriers);
 			if (!at || (at.x === s.x && at.y === s.y)) return;
@@ -3804,7 +3830,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// one piece, because a chokepoint guard or a monolith can close a doorway
 	// the barrier pass opened a moment earlier.
 	const reopened = openSealedByObjects(objects, W, H, levelIndex, blocked,
-		playerStarts, towns, links, water);
+		playerStarts, towns, links, water, levelIndex > 0);
 	if (reopened)
 		console.error(`[gen] level ${levelIndex}: removed ${reopened} scenery `
 			+ 'object(s) that sealed part of the level off');
@@ -3870,8 +3896,23 @@ function fillLevel(plan, W, H, blocked) {
 	// and portal entrances each open a pocket of their own, so they union.
 	const isOccupied = c => !!(blocked[levelIndex * W * H + c] & OCCUPIED);
 	// ...and the ground a portal pair (or a boat) leads on to (queue 27)
+	// Below the surface a level's starts may meet only through the surface (a
+	// template's start zones there, each linked up to the centre): every
+	// start's ground counts, with every way in, or the fill left all but one
+	// start zone empty (Jebus Cross 108 on two levels: 14 of 14 mines).
+	const nearStarts = () => {
+		const cells = [...(plan.entrances || [])];
+		for (const s of playerStarts)
+			for (let dy = -3; dy <= 3; dy++)
+				for (let dx = -3; dx <= 3; dx++) {
+					const x = s.x + dx, y = s.y + dy;
+					if (x >= 0 && y >= 0 && x < W && y < H) cells.push(y * W + x);
+				}
+		return cells;
+	};
 	const reachable = followLinks(playerStarts.length
-		? mainComponent(W, H, levelIndex, blocked, playerStarts)
+		? (levelIndex > 0 ? reachableUnion(W, H, levelIndex, blocked, nearStarts())
+			: mainComponent(W, H, levelIndex, blocked, playerStarts))
 		: (plan.entrances && plan.entrances.length
 			? reachableUnion(W, H, levelIndex, blocked, plan.entrances)
 			: mainComponent(W, H, levelIndex, blocked, [])), plan.links, W, H, isOccupied);
@@ -3996,7 +4037,7 @@ function fillLevel(plan, W, H, blocked) {
  * starting position a contestant can still play out of.
  */
 function balanceStarts(plan, W, H, blocked, playerStarts, rng) {
-	const levelIndex = 0;
+	const levelIndex = plan.levelIndex || 0;
 	const objects = plan.objects;
 	const zone = plan.zone;
 	const RES_VALUE = { wood: 300, ore: 300, mercury: 1000, sulfur: 1000,
@@ -4238,9 +4279,11 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	const blocked = new Uint8Array(W * H * levels);
 	const plans = [];
 	p._links = linkBook(); // the map's monolith channels and joined zones (portals.js)
+	// a level's own starts (a template may put some below, template.js assignLevels)
+	const startsOn = l => playerStarts.filter(s => (s.l || 0) === l);
 	const towns = []; // cross-level sameAsTown registry (instanceNames are global)
 	for (let l = 0; l < levels; l++) {
-		const starts = l === 0 ? playerStarts : [];
+		const starts = startsOn(l);
 		// A template zone linked to zones on a level already laid out is laid
 		// out over them: the engine's zone placer draws both levels in one
 		// plane, so a link between levels pulls its zones onto the same ground
@@ -4312,7 +4355,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		const crossConns = (p.zonePlan ? p.zonePlan.connections : [])
 			.filter(c => c.aRef && c.bRef && c.aRef.l !== c.bRef.l);
 		const reachNow = () => [0, 1].map(l =>
-			mainComponent(W, H, l, blocked, l === 0 ? playerStarts : []));
+			mainComponent(W, H, l, blocked, startsOn(l)));
 		const zoneCell = (l, zi, reach, tpl) => {
 			// open reachable cell nearest the zone centroid
 			const cells = [];
@@ -4517,7 +4560,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		for (let i = 0; i < (crossGates + crossPortals ? 0 : gateCount); i++) {
 			// reachability shifts as each pair lands, so recompute per gate
 			const reach = [0, 1].map(l => mainComponent(W, H, l, blocked,
-				l === 0 ? playerStarts : []));
+				startsOn(l)));
 			let done = false;
 			for (; cursor < order.length && !done; cursor++) {
 				const c = order[cursor];
@@ -4607,13 +4650,15 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				standIns++;
 			}
 		}
-		if (!placed && !crossPortals && standIns)
+		// a template's own links, when any stand, are the way down (the random
+		// gates above only run without them)
+		if (!placed && !crossPortals && !crossGates && standIns)
 			console.error(`[gen] no subterranean gate fit both levels; ${standIns} `
 				+ 'monolith pair(s) link the surface and the underground instead');
-		else if (!placed && !crossPortals)
+		else if (!placed && !crossPortals && !crossGates)
 			console.error('[gen] no subterranean gate could be placed: the '
 				+ 'underground level is unreachable and everything on it is wasted');
-		else if (!placed)
+		else if (!placed && !crossGates)
 			console.error('[gen] no gate pair fit both levels without sealing '
 				+ `a corridor; the ${crossPortals} portal pair(s) carry the `
 				+ 'cross-level traffic');
@@ -4727,8 +4772,8 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	// once more on the finished level before the stranded sweep grades it.
 	for (let l = 0; l < levels; l++) {
 		const opened = openSealedByObjects(plans[l].objects, W, H, l, blocked,
-			l === 0 ? playerStarts : (plans[l].entrances || []), null, plans[l].links,
-			plans[l].p.water);
+			l > 0 ? (plans[l].entrances || []) : startsOn(l), null, plans[l].links,
+			plans[l].p.water, l > 0);
 		if (opened)
 			console.error(`[gen] level ${l}: removed ${opened} scenery `
 				+ 'object(s) that sealed part of the level off');
@@ -4741,7 +4786,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	const droppedPairs = new Set();
 	for (let l = 0; l < levels; l++) {
 		sweepStranded(plans[l], W, H, l,
-			l === 0 ? playerStarts : (plans[l].entrances || []), droppedPairs);
+			startsOn(l).length ? startsOn(l) : (plans[l].entrances || []), droppedPairs);
 	}
 
 	// Even out what each player's start ring offers. The ring here is the
@@ -4755,12 +4800,16 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	// catches up. Chests for a big gap, piles to close it out; both are
 	// removable pickups, so the placement is the same guarded path the
 	// content fill uses and can never wall anything in.
-	if (playerStarts.length > 1) {
-		balanceStarts(plans[0], W, H, blocked, playerStarts, rng);
+	// Each level's starts against each other (a template may put some below):
+	// the ring is walked on one level. startFairness.js (generate.js) weighs
+	// the starts across the levels.
+	for (let l = 0; l < levels && playerStarts.length > 1; l++) {
+		if (startsOn(l).length < 2) continue;
+		balanceStarts(plans[l], W, H, blocked, startsOn(l), rng);
 		// balanceStarts lands after the sweep above and its own drops can seal
-		// a pocket another pickup sits in; grade level 0 once more so nothing
+		// a pocket another pickup sits in; grade the level once more so nothing
 		// it added ships stranded.
-		sweepStranded(plans[0], W, H, 0, playerStarts, droppedPairs);
+		sweepStranded(plans[l], W, H, l, startsOn(l), droppedPairs);
 	}
 	// Scenery art, chosen the way the engine chooses it (retile.js): every
 	// earlier pass decided WHICH cells are blocked; here the decor on them is
