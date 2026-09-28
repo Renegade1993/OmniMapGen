@@ -20,11 +20,18 @@ mods: towns, mines, guards by level, treasure, creature banks and dwellings per 
 ## Installing it in the game
 
 OmniMapGen is a VCMI mod. It needs a client with the map generator framework, which Dead Man's
-Boots (DMB) has. Install and enable it from DMB's launcher like any other mod, or unzip
-`omnimapgen.zip` from the latest release into the `Mods` folder of your game's user folder and
-enable it in the launcher. A single-player lobby then shows a MapGen button beside Random Map,
-and Generate map makes a map with the tab's settings and selects it. The mod carries its own
-Node runtime; nothing else needs installing.
+Boots (DMB) has, at its addon API level 4. Install and enable it from DMB's launcher like any other
+mod; the launcher also turns on the VCMI Extras submod (extendedLobby) whose lobby art the tab
+draws with. Or unzip `omnimapgen.zip` from the latest release into the `Mods` folder of your
+game's user folder and enable it in the launcher. The mod carries its own Node runtime; nothing
+else needs installing.
+
+In a game's lobby, the gold arrows at the top of the Random Map window switch between VCMI's own
+random map and Omni Map Gen. In Omni Map Gen, eight page buttons open the settings: Map
+(template, size, players, teams, mod content), Biomes, Borders, Treasure, Monsters, Underground,
+Scenery and Water; every setting's help says what it does. Press Begin and the game makes the map
+from those settings and every player's town and colour, as its own random map does. Reset puts
+the settings back to their defaults, and your own presets save and load beside it.
 
 To build the mod from this repository and play it straight away: `node tools/make_mod.js
 --install --trust-unlisted`. It builds the mod into `dist/` (the official Node runtime is
@@ -33,7 +40,9 @@ of DMB's user folder (`Documents\My Games\Dead Man's Boots`; name another with `
 enables it. DMB runs a mod's code only when its mod catalog pins that code, and a build of your
 own is pinned by no catalog: `--trust-unlisted` turns on DMB's developer switch for it
 (`"mods": { "allowUnlistedCode": true }` in the user folder's `config/settings.json`). Plain
-`node tools/make_mod.js` only builds.
+`node tools/make_mod.js` only builds. `--classic --atbegin --api4` builds the tab this release
+ships (the game's own look, the map made at Begin, DMB's addon API 4) into
+`dist-classic-atbegin-api4/`.
 
 ## Running it from the command line
 
