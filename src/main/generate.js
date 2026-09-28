@@ -25,7 +25,7 @@ const { themePool, applyGuardTheme, concretizeGuards, rollPlaceholders, creature
 const { evenStarts } = require('./startFairness');
 const { DWELLING_POOL, CORE_BANKS, bankRate, chestTemplate, registerTerrainBarriers, clearTerrainBarriers } = require('../biome/economy');
 const TEMPLATE_THEMES = require('../biome/templateThemes.json');
-const { h3ArtifactTemplates, h3MonsterTemplates, h3CreatureTraits } = require('../parser/h3data');
+const { h3ArtifactTemplates, h3MonsterTemplates, h3CreatureTraits, h3TerrainRows } = require('../parser/h3data');
 const { phase, resetPhases } = require('./phases');
 const { giveArtifactsTheirArt } = require('./artifactArt');
 const { townFactions, zoneTownTypes, pickStartFaction } = require('../biome/zoneTowns');
@@ -445,7 +445,8 @@ function cachedAssetIndex(coreConfigDir, orderedMods, noCache) {
 		//     template records the mod that brought it
 		// v25: creatures record their weekly growth
 		// v26: artifacts record their H3 number and a mod's own map art
-		.update('v26')
+		// v27: core objects record their class and subtype numbers
+		.update('v27')
 		.update(String(coreConfigDir))
 		.update(dirSignature(coreConfigDir));
 	// A submod lies inside its parent's folder, whose signature already covers
@@ -1435,7 +1436,7 @@ async function generateMap(params) {
 	// map that declares mods, so a lens run can measure that one variable
 	const guardMods = useMods && process.env.VMAPGEN_GUARD_POOL !== 'core';
 	const registry = creatureRegistry(assetIndex.creatures, guardMods);
-	const { plans, blocked } = planMap({
+	const planOnce = () => planMap({
 		W: params.mapW, H: params.mapH,
 		levels: hasObserver ? levels.length - 1 : levels.length,
 		playerStarts: starts,
@@ -1452,7 +1453,8 @@ async function generateMap(params) {
 		// pileCommon: the engine's common treasure pool (src/rmg/piles.js), for
 		// template zones' piles with VMAPGEN_TPL_PILE_MODEL=engine
 		objectPools: { banks, dwellings, engineDwellings, coreBanks, chests, terrainNames,
-			pileCommon: require('../rmg/piles').commonPool(assetIndex.objects, useMods), ...(concreteGuards ? { guards: guardPool(registry) } : {}),
+			pileCommon: require('../rmg/piles').commonPool(assetIndex.objects, useMods,
+				h3TerrainRows([roots.userDir, roots.installDir].filter(Boolean))), ...(concreteGuards ? { guards: guardPool(registry) } : {}),
 			...(themeDwellings ? { themeDwellings } : {}),
 			...(themeBanks && themeBanks.pool.length ? { themeBanks } : {}),
 			// a template zone's towns: concrete, of the factions it allows
@@ -1461,6 +1463,31 @@ async function generateMap(params) {
 					[p.color, factionsForTowns.find(f => f.id === p.pinnedFaction)]).filter(([, f]) => f)) } } : {}) },
 		terrainInfo: assetIndex.terrains,
 	});
+	// Never refused (K, 2026-09-27): an islands layout that leaves a start's
+	// island no shore a boat can use gives way to Continental at the same
+	// amount, then to a dry map, and says so. It refused before (a random
+	// sweep, September 27th: 36x36 for eight and Coldshadow's Fantasy 108 for
+	// two, both on two levels with Islands water content).
+	let planned = null;
+	for (let attempt = 0; !planned; attempt++) {
+		try {
+			planned = planOnce();
+		} catch (err) {
+			if (attempt >= 2 || !waterPlan || !/island start has no shore/.test(String(err && err.message))) throw err;
+			const was = (WATER_SHAPES[biomeParams.waterShape] || {}).label || 'Islands';
+			if (attempt === 0) {
+				biomeParams.waterShape = WATER_SHAPES.findIndex(w => w.id === 'continental');
+				waterPlan = planWater(biomeParams);
+			} else {
+				biomeParams.waterCoverage = 0;
+				waterPlan = (planWater({ ...biomeParams, waterCoverage: 0 }), null);
+			}
+			starts = makeStarts();
+			console.error(`[gen] water accommodation: ${was} left a start's island no shore a boat can use; `
+				+ `made with ${waterPlan ? 'Continental water' : 'no water'} instead`);
+		}
+	}
+	const { plans, blocked } = planned;
 	// A template start's town moves to its zone's centre in the plan, where the
 	// engine puts it (plan.js); the header's main town follows it there.
 	for (const s of starts) {

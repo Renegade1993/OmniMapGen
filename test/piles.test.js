@@ -87,3 +87,32 @@ test('creature box counts round as the game\'s own Pandora\'s boxes', () => {
 	assert.strictEqual(piles.creatureCount({ aiValue: 0, level: 1 }), 0);
 	assert.strictEqual(piles.creatureCount({ aiValue: 50000, level: 7 }), 0, 'less than one: no box');
 });
+
+test('a zone\'s pool holds only objects with a template for its ground, as the engine\'s does', () => {
+	// TreasurePlacer::addCommonObjects takes an object only if one of its
+	// templates can stand on the zone's terrain; the core campfire's H3 rows
+	// name a few terrains each, so a mod terrain with no campfire art of its
+	// own gets no campfires
+	const obj = (key, extra) => [key, { type: key.split(':')[1].split('.')[0], rmg: { value: 2000, rarity: 500 }, templates: [], ...extra }];
+	const objects = new Map([
+		obj('core:campfire.campfire', { classIndex: 12, subIndex: 0,
+			templates: [{ raw: { animation: 'deadCamp' }, allowedTerrains: ['newtown:deadland'] }] }),
+		obj('core:resource.wood', { classIndex: 79, subIndex: 0, templates: [{ raw: { animation: 'AVTwood0' } }] }),
+		obj('core:treasureChest.treasureChest', { classIndex: 101, subIndex: 0 }),
+	]);
+	const rows = new Map([
+		['12.0', [{ anyLand: false, terrains: ['dirt', 'grass'] }, { anyLand: false, terrains: ['snow'] }]],
+		['79.0', [{ anyLand: false, terrains: ['dirt'] }]],
+		['101.0', [{ anyLand: true, terrains: ['dirt', 'sand', 'grass', 'snow', 'swamp', 'rough', 'subterra', 'lava'] }]],
+	]);
+	const pool = piles.commonPool(objects, true, rows);
+	const at = key => pool.find(e => e.key === key);
+	assert.deepStrictEqual(at('core:campfire.campfire').terrains.sort(), ['deadland', 'dirt', 'grass', 'snow']);
+	assert.strictEqual(at('core:resource.wood').terrains, null, 'a JSON template with no terrains is any land');
+	assert.strictEqual(at('core:treasureChest.treasureChest').terrains, null, 'an H3 row allowing all eight land terrains is any land');
+	const types = terrain => [...new Set(piles.zonePool(pool, { maxValue: 10000, terrain }, () => 0.5).map(e => e.type))]
+		.filter(t => ['campfire', 'resource', 'treasureChest'].includes(t)).sort();
+	assert.deepStrictEqual(types('grass'), ['campfire', 'resource', 'treasureChest']);
+	assert.deepStrictEqual(types('highlands'), ['resource', 'treasureChest'], 'no campfire art for it: no campfire');
+	assert.deepStrictEqual(types('deadland'), ['campfire', 'resource', 'treasureChest'], 'a mod\'s own campfire art');
+});

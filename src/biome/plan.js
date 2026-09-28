@@ -2207,11 +2207,54 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	const guards = placeChokeGuards(openings, classes, rng, p, edgeInfo,
 		objectPools && objectPools.guards && zoneMeta
 			? z => zoneGuardPool(objectPools.guards, zoneMeta[z] && zoneMeta[z].spec) : null, forcedStrength);
+	// A doorway's guard stands on its middle cell; where that cell is taken
+	// already (water under a doorway along a shore), or a start's town will
+	// stand on it or it would stand over the ground before the town's gate,
+	// it moves to the nearest open cell of the same doorway. On water it was
+	// lost, and the doorway left open (72x72 for five, seed 1104); over a
+	// gate it boxed the start in, home 0 (Golems Aplenty 72 for six, 2130).
+	const townCells = new Set();
+	for (const st of playerStarts) {
+		for (const [a, b] of blockingCells(OBJECT_TEMPLATES.randomTown, st.x, st.y)) townCells.add(b * W + a);
+		for (const [vx, vy] of visitableCells(OBJECT_TEMPLATES.randomTown, st.x, st.y))
+			for (const [dx, dy] of allowedDirs(OBJECT_TEMPLATES.randomTown))
+				for (let ry = -1; ry <= 1; ry++)
+					for (let rx = -1; rx <= 1; rx++) {
+						const nx = vx + dx + rx, ny = vy + dy + ry;
+						if (nx >= 0 && ny >= 0 && nx < W && ny < H) townCells.add(ny * W + nx);
+					}
+	}
+	const taken = c => (blocked[levelIndex * W * H + c] & OCCUPIED) || townCells.has(c);
+	for (const g of guards) {
+		if (!taken(g.cell)) continue;
+		const o = openings.find(q => q.hole.includes(g.cell));
+		if (!o) continue;
+		const at = o.hole.indexOf(g.cell);
+		const open = o.hole.map((c, i) => [c, Math.abs(i - at)])
+			.filter(([c]) => !taken(c))
+			.sort((a, b) => a[1] - b[1]);
+		if (process.env.VMAPGEN_GUARDCELL_TRACE)
+			console.error(`[guardcell] level ${levelIndex} doorway ${g.edge.join('-')}: (${g.cell % W},${(g.cell / W) | 0}) taken, `
+				+ (open.length ? `moved to (${open[0][0] % W},${(open[0][0] / W) | 0})` : `no other cell in its ${o.hole.length}`));
+		if (open.length) g.cell = open[0][0];
+	}
 	// Hold the doorways clear. A path opening is two or three cells wide and
 	// the chokepoint guard takes one of them, so a single object dropped on
 	// the rest turns a connected map into two sealed halves. Reserved ground
 	// stays walkable; it just may not be built on.
 	const guardCells = new Set(guards.map(g => g.cell));
+	// VMAPGEN_GUARDCELL_TRACE: each doorway guard cell something has taken, the
+	// first phase it is seen taken in (a guard with no room is a doorway open)
+	const gcSeen = new Set();
+	const gcTrace = !process.env.VMAPGEN_GUARDCELL_TRACE ? () => {} : tag => {
+		for (const c of guardCells) {
+			const f = blocked[levelIndex * W * H + c];
+			if ((f & (OCCUPIED | RESERVED)) && !gcSeen.has(c)) {
+				gcSeen.add(c);
+				console.error(`[guardcell] level ${levelIndex} ${tag}: (${c % W},${(c / W) | 0}) flags ${f}`);
+			}
+		}
+	};
 	for (const o of openings)
 		for (const c of o.hole.concat(o.inner || []))
 			if (!guardCells.has(c)) reserveCell(blocked, levelIndex, W, H, c);
@@ -2232,6 +2275,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// beside it and its roads a fraction of the engine's (Jebus Cross 108: 356
 	// road tiles against the corpus's 613). VMAPGEN_START_CENTRE=0 keeps the cell.
 	phase('capitals');
+	gcTrace('before capitals');
 	if (tplZones && tplZones.length && process.env.VMAPGEN_START_CENTRE !== '0')
 		tplZones.forEach((z, b) => {
 			const s = (z.type === 'playerStart' || z.type === 'cpuStart') && z.owner && startOfOwner(playerStarts, z.owner);
@@ -2278,7 +2322,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		for (const [vx, vy] of visitableCells(OBJECT_TEMPLATES.randomTown, s.x, s.y))
 			for (const [dx, dy] of allowedDirs(OBJECT_TEMPLATES.randomTown)) {
 				const nx = vx + dx, ny = vy + dy;
-				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+				if (nx < 0 || ny < 0 || nx >= W || ny >= H || guardCells.has(ny * W + nx)) continue;
 				reserveCell(blocked, levelIndex, W, H, ny * W + nx);
 			}
 		// The approach cell alone is not enough: the ground past it can be a
@@ -2293,7 +2337,10 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				for (let py = -2; py <= 2; py++)
 					for (let px = -2; px <= 2; px++) {
 						const nx = ax + px, ny = ay + py;
-						if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+						// a doorway's guard may stand in the apron: reserved, the
+						// doorway out of the start lost its guard (36x36 for
+						// eight, seed 1110; Golems Aplenty 72, seed 2130)
+						if (nx < 0 || ny < 0 || nx >= W || ny >= H || guardCells.has(ny * W + nx)) continue;
 						reserveCell(blocked, levelIndex, W, H, ny * W + nx);
 					}
 			}
@@ -2310,6 +2357,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// pass carries its own: a 5x3 in a narrow corridor plugs it and seals
 	// whatever pocket lies past it (72x72 s5 islanded green this way).
 	phase('towns');
+	gcTrace('before towns');
 	const townGuard = makeConnectivityGuard(blocked, levelIndex, W, H, 2);
 	const townZones = [];
 	for (let b = 0; b < classes.length; b++)
@@ -2512,6 +2560,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// laid out (crossLevelAnchors puts it on the mean of its partners here),
 	// held as a town's ground is; the level below opens its cave under it and
 	// holds the other half, and the gate pass tries the pair there first.
+	gcTrace('before the gate sites');
 	const gateSites = [];
 	if (tplZones && p.zonePlan && !underground && (p.zonePlan.perLevel || []).length > levelIndex + 1) {
 		const links = crossLinks(p.zonePlan, levelIndex).filter(c => c.lo.l === levelIndex);
@@ -2538,6 +2587,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				if (!footprintFits(tpl, x, y, levelIndex, W, H, blocked)) continue;
 				if (!inZone(tpl, x, y, zone, c.lo.i, W, H)) continue;
 				if (!entranceOpen(tpl, x, y, levelIndex, W, H, blocked, null)) continue;
+				// the ground held before it never takes a doorway guard's cell:
+				// it did on Coldshadow's Fantasy 36 (seed 1124), and the doorway
+				// stood open
+				if (visitableCells(tpl, x, y).some(([vx, vy]) => allowedDirs(tpl)
+					.some(([dx, dy]) => guardCells.has((vy + dy) * W + vx + dx)))) continue;
 				const walls = blockingCells(tpl, x, y).map(([a, b]) => b * W + a);
 				if (!townGuard.accepts(walls)) continue;
 				holdGateGround(tpl, x, y, levelIndex, W, H, blocked);
@@ -2552,14 +2606,16 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		if (links.length)
 			console.error(`[gen] level ${levelIndex}: ground held for ${gateSites.length} of ${links.length} gate(s) down`);
 	}
+	gcTrace('after the gate sites');
 
 	// Boats and shipyards (waterfill.js, water W2) go in with the towns, so
 	// every later pass routes around them and their boarding cells stay free.
 	// Their own stream, so a dry map draws exactly what it did before.
 	phase('harbours');
+	gcTrace('before harbours');
 	const harbours = water ? placeHarbours({ W, H, l: levelIndex, water, zone, blocked,
 		rng: xorshift(((params.seed || 1) ^ 0x5eaf00d) >>> 0), p, objects, towns,
-		playerStarts, objectEntry, islands: !!p.waterIslands }) : [];
+		playerStarts, objectEntry, islands: !!p.waterIslands, keepClear: guardCells }) : [];
 
 	// Portal links (queue 27) go in with the towns. A portal border is all
 	// wall, so the monolith pair is the only way between its two zones, and
@@ -2645,15 +2701,18 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// link the template leaves free a fight ([HotA] Nostalgia seed 5002, two
 	// monoliths side by side in teal's zone)
 	const guardSpots = (monoTpl, mx, my) => {
+		// never a doorway guard's cell: a portal's guard took one on [HotA]
+		// Nostalgia squeezed to 36x36 (seed 3126) and the doorway stood open
+		const beside = openBeside(monoTpl, mx, my).filter(c => !guardCells.has(c));
 		if (!tplZones) {
-			const out = openBeside(monoTpl, mx, my);
+			const out = beside.slice();
 			out.clear = new Set(out);
 			return out;
 		}
 		const monster = OBJECT_TEMPLATES.randomMonster;
 		const mine = new Set(openBeside(monoTpl, mx, my));
 		for (const [vx, vy] of visitableCells(monoTpl, mx, my)) mine.add(vy * W + vx);
-		const cells = openBeside(monoTpl, mx, my);
+		const cells = beside;
 		const clear = cells.filter(c => !reachOnReserved(monster, c % W, (c / W) | 0, levelIndex, W, H, blocked, mine));
 		const out = [...clear, ...cells.filter(c => !clear.includes(c))];
 		out.clear = new Set(clear);
@@ -2705,6 +2764,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		return false;
 	};
 	phase('monoliths');
+	gcTrace('before monoliths');
 	// a channel per link (portals.js); the links whose zones are still apart
 	// go first, and once the channels are all taken a link whose zones are
 	// joined already is left out
@@ -2776,6 +2836,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// zone roadless). The held gate sites of links with a road are nodes too.
 	// VMAPGEN_ROADS=late keeps the old order, roads routed after the fill.
 	phase('roads');
+	gcTrace('before roads');
 	const roadCells = new Set();
 	const roadFailed = [];
 	if (process.env.VMAPGEN_ROADS !== 'late') {
@@ -2914,6 +2975,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// decides what is passage and what is rock, so carved levels emit no
 	// border barriers at all.
 	phase('mountains');
+	gcTrace('before mountains');
 	const wallLeft = new Set(barriers);
 	let wallClustersPlaced = 0;
 	// A cluster may lean off the wall, but not onto a player's doorstep:
@@ -3082,6 +3144,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		console.error(`[walls] level ${levelIndex}: ${open.length} of ${barriers.size} barrier cells left open: ${JSON.stringify(flags)}`);
 	}
 	phase('valleys');
+	gcTrace('before valleys');
 	if (!openMask && p.decorDensity > 0) {
 		const packGuard = makeConnectivityGuard(blocked, levelIndex, W, H, 2);
 		const foreignAt = (x, y, r) => {
@@ -4045,12 +4108,20 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			+ `(${Math.round(100 * (sizes[0] || 0) / (tot || 1))}%)`);
 	}
 
+	gcTrace('at the guards');
 	const guardsLost = [];
 	// each zone's share of the doorway guards on its borders, half a guard
 	// per side (fillLevel: a free zone's monster budget pays for them)
 	const doorGuards = new Map();
+	const guarded = new Set();
 	for (const g of guards) {
 		const x = g.cell % W, y = (g.cell / W) | 0;
+		// two doorways that meet on one cell (three zones' corner) share its
+		// guard: its 3x3 holds both
+		if (guarded.has(g.cell)) {
+			for (const z of g.edge) doorGuards.set(z, (doorGuards.get(z) || 0) + 0.5);
+			continue;
+		}
 		if (!footprintFits(OBJECT_TEMPLATES.randomMonster, x, y, levelIndex, W, H,
 				blocked, true)) {
 			guardsLost.push(`${g.edge.join('-')} at (${x},${y}) flags ${blocked[levelIndex * W * H + g.cell]}`);
@@ -4071,6 +4142,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		reserveCell(blocked, levelIndex, W, H, g.cell);
 		markApproach(OBJECT_TEMPLATES.randomMonster, x, y, levelIndex, W, H, blocked);
 		for (const z of g.edge) doorGuards.set(z, (doorGuards.get(z) || 0) + 0.5);
+		guarded.add(g.cell);
 	}
 	// a doorway left without its guard is an open way between two zones the
 	// template (or the guard setting) meant closed

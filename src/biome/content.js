@@ -2102,6 +2102,8 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				.map(d => ({ value: d.value, prob: d.prob, fromRmg: d.fromRmg })),
 			creatures: (objectPools.guards || GUARD_POOL).filter(c => bare(c.faction) === faction),
 			nativeZones: zoneMeta.nativeZones || 1, totalZones: zoneMeta.totalZones || 1,
+			// the objects with a template for this ground (piles.js groundsOf)
+			terrain: ((objectPools.terrainNames && objectPools.terrainNames.get(terrain)) || {}).name || null,
 		}, rng);
 		const gIdx = 1 + (zoneMeta.monsterShift || 0) + Math.max(-2, Math.min(2, Math.round(p.monsterStrength || 0)));
 		const gPool = objectPools.guards ? zoneGuardPool(objectPools.guards, zoneMeta.spec) : undefined;

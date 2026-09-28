@@ -271,6 +271,8 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 	// object type -> its group's "base", which every subtype inherits (mods'
 	// included), the way CObjectClassesHandler does (lines 344 and 508)
 	const typeBases = new Map();
+	// object type -> its class number (core's configs give one per group)
+	const typeIndex = new Map();
 	// "type.subtype" -> the id of the entry that defined it first (core, or the
 	// mod that added it), which later mods' patches merge into
 	const objectOwners = new Map();
@@ -404,11 +406,17 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 							if (at >= 0) owner.templates[at] = t; else owner.templates.push(t);
 						}
 					} else objectOwners.set(`${baseType}.${subKey}`, id);
+					// a core object's class and subtype numbers, which find its
+					// H3 templates in OBJECTS.TXT (the engine adds those rows to
+					// the object whatever its config's own templates)
+					if (Number.isInteger(val.index) && !typeIndex.has(baseType)) typeIndex.set(baseType, val.index);
+					const h3 = scope === 'core' && typeIndex.has(baseType) && Number.isInteger(rawSub && rawSub.index)
+						? { classIndex: typeIndex.get(baseType), subIndex: rawSub.index } : {};
 					index.objects.set(id, {
 						type: baseType, subtype: subKey, handler,
 						aiValue: sub.aiValue || 0,
 						removable: !!sub.removable,
-						templates,
+						templates, ...h3,
 						...(owner ? { overrides: ownerId } : rmg ? { rmg } : {}),
 						...(creatureId ? { creature: creatureId, creatures: allCreatures } : {}),
 						...(bankCreatures.length ? { bankCreatures: [...new Set(bankCreatures)] } : {}),

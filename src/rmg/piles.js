@@ -47,10 +47,18 @@ const topVisitable = t => !(t.raw && Array.isArray(t.raw.visitableFrom))
  * non-static, an rmg value, not one of the objects with a pool of their own.
  * Core objects follow their H3 templates; a mod's follow its own. useMods
  * false keeps core only, as a map that declares no mods does.
- * Returns [{ key, type, value, probability, zoneLimit, mapLimit, large, water }],
- * water 'only' | 'never'.
+ * h3rows (h3data.js h3TerrainRows): each OBJECTS.TXT row's terrains, for the
+ * ground an object may stand on. The engine takes an object into a zone's pool
+ * only if one of its templates can stand on the zone's terrain
+ * (TreasurePlacer::addCommonObjects, ObjectTemplate::canBePlacedAt). The core
+ * campfire has only H3 rows that name a few terrains each, so every zone on a
+ * mod's terrain without campfire art of its own has none, where our piles drew
+ * 3.1 times the corpus's campfires.
+ * Returns [{ key, type, value, probability, zoneLimit, mapLimit, large, water,
+ * terrains }], water 'only' | 'never', terrains null for any land or the
+ * lowercase names of those it may stand on.
  */
-function commonPool(objects, useMods = true) {
+function commonPool(objects, useMods = true, h3rows = null) {
 	const out = [];
 	for (const [key, o] of objects) {
 		if (o.overrides || !o.rmg || !(o.rmg.value > 0) || o.handler === 'static') continue;
@@ -70,9 +78,33 @@ function commonPool(objects, useMods = true) {
 			water = tpls.every(onWater) ? 'only' : 'never';
 		}
 		out.push({ key, type: o.type, value: o.rmg.value, probability: o.rmg.rarity || 0,
-			zoneLimit: o.rmg.zoneLimit, mapLimit: o.rmg.mapLimit, large, water });
+			zoneLimit: o.rmg.zoneLimit, mapLimit: o.rmg.mapLimit, large, water, terrains: groundsOf(o, h3rows) });
 	}
 	return out;
+}
+
+/**
+ * Where an object may stand: null for any land, else the lowercase names of the
+ * terrains its templates allow, its config's and mods' (none listed is any
+ * land, ObjectTemplate::readJson) and its OBJECTS.TXT rows (a row allowing all
+ * eight land terrains is any land). An object with neither is taken as any land.
+ */
+function groundsOf(o, h3rows) {
+	const names = new Set();
+	let known = false;
+	for (const t of o.templates || []) {
+		if (!t.raw || !t.raw.animation) continue;
+		known = true;
+		if (!t.allowedTerrains) return null;
+		for (const n of t.allowedTerrains) names.add(String(n).slice(String(n).lastIndexOf(':') + 1).toLowerCase());
+	}
+	const rows = h3rows && o.classIndex !== undefined ? h3rows.get(`${o.classIndex}.${o.subIndex}`) : null;
+	for (const r of rows || []) {
+		known = true;
+		if (r.anyLand) return null;
+		for (const n of r.terrains) names.add(n);
+	}
+	return known ? [...names] : null;
 }
 
 /**
@@ -87,6 +119,8 @@ function commonPool(objects, useMods = true) {
  *   mapZones    zones sharing a map-limited object (default totalZones)
  *   prisons     the zone's prison allowance (default 1)
  *   seerHuts    quest artifacts the zone has room for (default 1; 0 without links)
+ *   terrain     the zone's terrain, its lowercase name: an object none of whose
+ *               templates can stand there is left out (commonPool's terrains)
  * rng: for the map-limited objects' share. Sorted by value, as the engine sorts.
  */
 function zonePool(common, opts = {}, rng = Math.random) {
@@ -97,6 +131,7 @@ function zonePool(common, opts = {}, rng = Math.random) {
 	const add = (e, left) => { if (left > 0 && e.value > 0 && e.value <= maxValue) pool.push({ ...e, left }); };
 	for (const e of common) {
 		if (water ? e.water === 'never' : e.water === 'only') continue;
+		if (opts.terrain && e.terrains && !e.terrains.includes(opts.terrain)) continue;
 		if (e.mapLimit !== undefined) {
 			// ObjectDistributor: ceil(limit / zones) to each zone that can take it, in
 			// a shuffled order until the limit runs out; one zone gets it at that rate

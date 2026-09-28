@@ -103,7 +103,12 @@ function placeHarbours(ctx) {
 	const { id, bodies } = waterBodies(water, W, H);
 	const startZones = new Set(playerStarts.map(s => zone[s.y * W + s.x]));
 	const townZones = new Set(towns.filter(t => t.l === l).map(t => zone[t.y * W + t.x]));
-	const free = c => !(blocked[base + c] & (OCCUPIED | RESERVED));
+	// ctx.keepClear: the doorways' guard cells. A harbour's approach or a boat's
+	// boarding cell reserved on one left the doorway's guard no room, and two
+	// zones open to each other: on water maps of September 27th's sweep, 36x36
+	// and 72x72 (lens t65, and this afternoon's code with the same water)
+	const keep = ctx.keepClear || new Set();
+	const free = c => !(blocked[base + c] & (OCCUPIED | RESERVED)) && !keep.has(c);
 	const near = (c, list, r) => list.some(s => Math.max(Math.abs(s.x - c % W), Math.abs(s.y - ((c / W) | 0))) <= r);
 	const shipyards = templatesOf('shipyard'), boats = templatesOf('boat');
 	const harbours = [];
@@ -130,7 +135,7 @@ function placeHarbours(ctx) {
 			const ax = a % W, ay = (a / W) | 0;
 			if (!inMask(tpl, ax, ay, W, H) || !footprintFits(tpl, ax, ay, l, W, H, blocked)) continue;
 			const own = blockingCells(tpl, ax, ay).map(([u, v]) => v * W + u);
-			if (own.some(c => water[c] || zone[c] !== z)) continue;
+			if (own.some(c => water[c] || zone[c] !== z || keep.has(c))) continue;
 			if (near(a, playerStarts, 4)) continue;
 			// a hero walks up to it from the row below
 			const [vx, vy] = visitableCells(tpl, ax, ay)[0];

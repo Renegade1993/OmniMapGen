@@ -139,6 +139,35 @@ function h3ObjectTemplates(roots, classId, fromTop = null) {
 	return out;
 }
 
+// OBJECTS.TXT's terrain order (ObjectTemplate::readTxt: column 5, read right to
+// left), by the identifiers the engine gives them
+const H3_TERRAINS = ['dirt', 'sand', 'grass', 'snow', 'swamp', 'rough', 'subterra', 'lava', 'water'];
+
+/**
+ * Where each OBJECTS.TXT row may stand, as ObjectTemplate::readTxt reads it:
+ * `${class}.${subtype}` -> [{ anyLand, terrains }] per row. A row allowing all
+ * eight land terrains and not water is any land (canBePlacedAt then takes a
+ * mod's land terrains too); any other stands only on the terrains it names.
+ * Empty when the data is not found.
+ */
+function h3TerrainRows(roots) {
+	const out = new Map();
+	const text = findResource(roots, 'Data', DATA_LODS, 'OBJECTS.TXT');
+	if (!text) return out;
+	const lines = text.toString('latin1').split(/\r?\n/);
+	const total = parseInt(lines[0], 10) || 0;
+	for (let i = 1; i <= total && i < lines.length; i++) {
+		const s = lines[i].trim().split(' ');
+		if (s.length < 9 || s[4].length !== 9) continue;
+		const terrains = H3_TERRAINS.filter((_, k) => s[4][8 - k] === '1');
+		const anyLand = terrains.length >= 8 && !terrains.includes('water');
+		const key = `${parseInt(s[5], 10)}.${parseInt(s[6], 10)}`;
+		if (!out.has(key)) out.set(key, []);
+		out.get(key).push({ anyLand, terrains });
+	}
+	return out;
+}
+
 /** The H3 monster templates from OBJECTS.TXT (object 54): creature index -> template. */
 function h3MonsterTemplates(roots) {
 	return h3ObjectTemplates(roots, 54, true);
@@ -170,4 +199,5 @@ function h3CreatureTraits(roots) {
 	return out;
 }
 
-module.exports = { h3ObjectTemplates, h3MonsterTemplates, h3ArtifactTemplates, h3CreatureTraits, lodIndex, lodRead, findResource };
+module.exports = { h3ObjectTemplates, h3MonsterTemplates, h3ArtifactTemplates, h3CreatureTraits, h3TerrainRows,
+	lodIndex, lodRead, findResource };
