@@ -143,3 +143,48 @@ test('Neutral town biomes at 0 suppresses a fixed template\'s own neutral towns 
 	assert.strictEqual(neutralTowns(outZero), 0, 'the slider at 0 now actually suppresses them');
 	fs.rmSync(outZero, { force: true });
 });
+
+test('the same fix, verified live on every other template that authors neutral towns',
+{ timeout: 600000 }, () => {
+	// The lead's own follow-up, 2026-09-28: the fix above was only reproduced
+	// and re-verified on Jebus Cross; "report real per-template results, not
+	// just 'should cover it'". Each run at the template's own full player
+	// count, same reason as Jebus Cross: no spare start, so every neutral
+	// town on the map is one the template itself authored. Predicted counts
+	// hand-summed from each template's own JSON, confirmed live before being
+	// pinned here.
+	const { spawnSync } = require('child_process');
+	const { readVmap } = require('../src/preview/render');
+	const run = (name, players, w, h, underground, extra, out) => {
+		const args = [path.join(__dirname, '../src/main/generate-cli.js'),
+			'--w', String(w), '--h', String(h), '--players', String(players), '--seed', '1001',
+			'--declaremods', '0', '--template', name, '--out', out, ...extra];
+		if (underground) args.push('--underground', '1');
+		return spawnSync(process.execPath, args,
+			{ encoding: 'utf8', timeout: 280000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
+	};
+	const neutralTowns = out => readVmap(out).objects
+		.filter(o => /town/i.test(o.type) && !(o.options && o.options.owner)).length;
+
+	const CASES = [
+		// name, players (the template's own max), w, h, underground, expected neutral towns at default
+		['Golems Aplenty', 4, 72, 72, 0, 1],       // zone 5's neutralTowns.towns:1, nothing on any player zone
+		['Headquarters', 7, 108, 108, 0, 9],       // 7 player zones' neutralTowns.towns:1 each, zone 9's castles:2
+		['Nostalgia', 8, 144, 144, 1, 9],          // 9 treasure zones (16-24) at neutralTowns.towns:1 each
+		["Coldshadow's Fantasy", 8, 144, 144, 1, 17], // 8 player zones + 8 treasure zones (9-16) + zone 21, all towns/castles:1
+	];
+	for (const [name, players, w, h, underground, expectDefault] of CASES) {
+		const slug = name.replace(/[^a-z0-9]/gi, '_');
+		const outDefault = path.join(testTmp(), `vmapgen_${slug}_default.vmap`);
+		const rDefault = run(name, players, w, h, underground, [], outDefault);
+		assert.strictEqual(rDefault.status, 0, `${name} default: ${rDefault.stderr.slice(-600)}`);
+		assert.strictEqual(neutralTowns(outDefault), expectDefault, `${name}: unchanged at default`);
+		fs.rmSync(outDefault, { force: true });
+
+		const outZero = path.join(testTmp(), `vmapgen_${slug}_zero.vmap`);
+		const rZero = run(name, players, w, h, underground, ['--bio.townRatio', '0'], outZero);
+		assert.strictEqual(rZero.status, 0, `${name} townRatio=0: ${rZero.stderr.slice(-600)}`);
+		assert.strictEqual(neutralTowns(outZero), 0, `${name}: the slider at 0 suppresses them too`);
+		fs.rmSync(outZero, { force: true });
+	}
+});
