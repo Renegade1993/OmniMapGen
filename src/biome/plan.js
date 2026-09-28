@@ -3626,6 +3626,8 @@ function fillLevel(plan, W, H, blocked) {
 	// that lists no wood or ore gets none.
 	const RES_OF = { sawmill: 'wood', orePit: 'ore' };
 	const starterDone = new Map();
+	// the mines themselves, for the fill to lay their resources beside (content.js)
+	const starterMines = new Map();
 	for (const s of playerStarts) {
 		const home = zone[s.y * W + s.x];
 		const meta = plan.zoneMeta && plan.zoneMeta[home];
@@ -3637,6 +3639,7 @@ function fillLevel(plan, W, H, blocked) {
 		const done = starterDone.get(home) || {};
 		for (const o of got) done[RES_OF[o.subtype]] = (done[RES_OF[o.subtype]] || 0) + 1;
 		starterDone.set(home, done);
+		starterMines.set(home, [...(starterMines.get(home) || []), ...got]);
 	}
 
 	// Fill each biome's cells with class-appropriate content.
@@ -3655,7 +3658,7 @@ function fillLevel(plan, W, H, blocked) {
 			biomeTerrain[b], reachable, connectivity,
 			plan.zoneMeta && plan.zoneMeta[b]
 				&& { ...plan.zoneMeta[b], minesDone: starterDone.get(b) || {} }, plan.openMask,
-			plan.zdist && plan.zdist[b]));
+			plan.zdist && plan.zdist[b], starterMines.get(b) || []));
 	}
 	return plan;
 }

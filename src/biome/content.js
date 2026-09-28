@@ -1265,7 +1265,7 @@ function objectEntry(type, x, y, l, tpl, opts, subtype = 'object') {
  * pre-game castle pick through owner/alignmentToPlayer chains).
  * players: [{x,y,color}] for alignmentToPlayer on neutral towns.
  */
-function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], players = [], objectPools = {}, terrain = 'gr', reachable = null, connectivity = null, zoneMeta = null, openMask = null, zoneDist = null) {
+function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], players = [], objectPools = {}, terrain = 'gr', reachable = null, connectivity = null, zoneMeta = null, openMask = null, zoneDist = null, preplaced = []) {
 	const p = { ...BIOME_DEFAULTS, ...params };
 	// A template zone overrides the free-running densities: its treasure bands
 	// become a loot multiplier and its monsters field a guard one. Both are
@@ -1376,12 +1376,15 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// lost to a crowded massif.
 	const fillStat = FILL_TRACE
 		? (objectPools.__fillStat || (objectPools.__fillStat = {})) : null;
+	// onlyPick: draw from pickFrom alone, never from the rest of the zone (an
+	// object that belongs beside another or nowhere)
 	const put = (type, tpl, opts, subtype, tryBudget = 32, pickFrom = null,
-			noEdge = false) => {
+			noEdge = false, onlyPick = false) => {
 		const sliverBind = SLIVER_RULE
 			&& rng() < (SLIVER_SHARE[sliverClass(type)] || 0);
 		for (let tries = 0; tries < tryBudget && free.length; tries++) {
-			const usePick = pickFrom && pickFrom.length && tries < tryBudget - 4;
+			const usePick = pickFrom && pickFrom.length && (onlyPick || tries < tryBudget - 4);
+			if (onlyPick && !usePick) break;
 			const src = usePick ? pickFrom
 				: (!noEdge && edgeCells.length && rng() < 0.75 ? edgeCells : free);
 			const i = src[(rng() * src.length) | 0];
@@ -1719,6 +1722,35 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			}
 		return false;
 	});
+	// Resources of a mine's own kind lie beside it, one to three, as the
+	// engine's MinePlacer lays them (randomMap.json extraResourcesLimit, 3, on
+	// the ring of cells around the mine). The late corpus carries 2.04 a mine
+	// and ours carried 0.15 (mine_resources.js, 2026-09-27). They count
+	// against the zone's loose resource piles below, which were calibrated with
+	// the corpus's in them. VMAPGEN_MINE_EXTRAS=0 leaves them out.
+	let mineExtras = 0;
+	const MINE_KIND = Object.fromEntries(Object.entries(MINE_SUBTYPE).map(([k, v]) => [v, k]));
+	const inThisZone = new Set(cells);
+	const besideMine = e => {
+		const kind = e && MINE_KIND[e.subtype];
+		if (!kind || process.env.VMAPGEN_MINE_EXTRAS === '0' || !PILE_KINDS) return;
+		const own = new Set(blockingCells(e.template, e.x, e.y).map(([a, b]) => b * W + a));
+		const ring = [];
+		for (const c of own) {
+			const x = c % W, y = (c / W) | 0;
+			for (let dy = -1; dy <= 1; dy++)
+				for (let dx = -1; dx <= 1; dx++) {
+					const nx = x + dx, ny = y + dy;
+					if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+					const n = ny * W + nx;
+					if (!own.has(n) && inThisZone.has(n) && !(blocked[l * W * H + n] & OCCUPIED) && !ring.includes(n)) ring.push(n);
+				}
+		}
+		for (let k = 1 + ((rng() * 3) | 0); k > 0 && ring.length; k--)
+			if (put('resource', pileTemplate(kind), undefined, kind, ring.length, ring, true, true)) mineExtras++;
+	};
+	// the start's own mines, placed before the fill (plan.js placeStarterMines)
+	for (const e of preplaced) if (e.type === 'mine') besideMine(e);
 	if (zoneMeta) {
 		// A template zone gets the mines it lists and no others, as the
 		// engine's MinePlacer does; a zone listing none used to draw its
@@ -1737,9 +1769,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			const mt = mineTemplate(subtype, terrain);
 			for (let i = done[res] || 0; i < count; i++) {
 				asked++;
-				if (!put('mine', mt, undefined, subtype, 48, earlyEdge)
-						&& !put('mine', mt, undefined, subtype, 40, fitAnchors(mt), true))
-					missed++;
+				const e = put('mine', mt, undefined, subtype, 48, earlyEdge)
+					|| put('mine', mt, undefined, subtype, 40, fitAnchors(mt), true);
+				if (!e) missed++;
+				else besideMine(e);
 			}
 		}
 		if (missed)
@@ -1757,7 +1790,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const mineCount = Math.round(scale * (p.mineRate || 2.6) * mines.weight * p.mineDensity * caveMines);
 		for (let i = 0; i < mineCount; i++) {
 			const subtype = mines.pool[(rng() * mines.pool.length) | 0];
-			put('mine', mineTemplate(subtype, terrain), undefined, subtype, 48, earlyEdge);
+			besideMine(put('mine', mineTemplate(subtype, terrain), undefined, subtype, 48, earlyEdge));
 		}
 	}
 
@@ -2019,6 +2052,9 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const gPool = objectPools.guards ? zoneGuardPool(objectPools.guards, zoneMeta.spec) : undefined;
 		const guarded = zoneMeta.spec.monsters !== 'none';
 		pileSim = { landed: [] };
+		// VMAPGEN_PILE_TRACE: every candidate pile's contents by landing class
+		// (open, guarded, rich), landed or not, for fitting the three shares
+		const tally = process.env.VMAPGEN_PILE_TRACE ? { open: {}, guarded: {}, rich: {} } : null;
 		for (const { band, byDensity, want } of templatePiles(bands, cells.length)) {
 			let made = 0, empty = 0;
 			while (made < byDensity && empty < byDensity) {
@@ -2027,13 +2063,23 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				if (made < want) {
 					const guard = guarded ? engineGuard(pile.value, gIdx, rng, false, gPool) : null;
 					if (guard && gPool) guard.concrete = true;
-					const share = !guard ? TPL_PILE_LAND_OPEN
-						: band.min >= TPL_RICH_MIN ? TPL_PILE_LAND_RICH : TPL_PILE_LAND_GUARDED;
+					const cls = !guard ? 'open' : band.min >= TPL_RICH_MIN ? 'rich' : 'guarded';
+					const share = cls === 'open' ? TPL_PILE_LAND_OPEN : cls === 'rich' ? TPL_PILE_LAND_RICH : TPL_PILE_LAND_GUARDED;
+					if (tally) {
+						const t = tally[cls];
+						t.piles = (t.piles || 0) + 1;
+						if (guard) t['guardLvl' + guard.level] = (t['guardLvl' + guard.level] || 0) + 1;
+						for (const o of pile.objects) {
+							const k = o.type === 'pandoraBox' || o.type === 'resource' ? `${o.type}:${o.key}` : o.type;
+							t[k] = (t[k] || 0) + 1;
+						}
+					}
 					if (rng() < share) pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects });
 				}
 				made++;
 			}
 		}
+		if (tally) console.error(`[pilejson] ${JSON.stringify({ zone: zoneMeta.spec.id, cells: cells.length, tally })}`);
 		if (process.env.VMAPGEN_PILE_TRACE)
 			console.error(`[pile] zone ${zoneMeta.spec.id} engine piles: ${pileSim.landed.length} landed, `
 				+ `${pileSim.landed.filter(x => x.guard).length} guarded, `
@@ -2330,9 +2376,12 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		for (const k in PILE_KINDS) { roll -= PILE_KINDS[k]; if (roll <= 0) return k; }
 		return 'gold';
 	};
+	// the resources already lying beside the mines are the first concrete piles
+	let besideLeft = mineExtras;
 	for (let i = Math.round(scale * fill.piles * p.resourceDensity); i > 0; i--) {
 		if (PILE_KINDS && rng() < 0.667) {
 			const kind = pickKind();
+			if (besideLeft > 0) { besideLeft--; continue; }
 			put('resource', pileTemplate(kind), undefined, kind);
 		} else
 			put('randomResource', pileTpl, undefined, 'randomResource');
