@@ -110,9 +110,22 @@ test('--atbegin: the game makes the map at Begin, so no Generate button, and the
 		assert.ok(!tab.items.some(w => w.callback === 'generateMapGenMap'), 'no Generate button');
 		const defaults = tab.items.find(w => w.callback === 'resetMapGenDefaults');
 		assert.ok(defaults, 'Defaults stays');
-		if (classic) assert.strictEqual(defaults.image, 'RanShowButton337', 'Defaults takes the whole gold bar');
+		// the player's own presets in Generate's place (DMB API 3)
+		for (const cb of ['saveMapGenPreset', 'loadMapGenPreset']) {
+			const b = tab.items.find(w => w.callback === cb);
+			assert.ok(b, `${cb} beside Defaults`);
+			assert.ok(texts[b.help.hover] && texts[b.help.help] && texts[b.items[0].text], `${cb} has its texts`);
+			if (classic) assert.ok(b.position.x + 83 <= 54 + 337, `${cb} inside the gold bar`);
+		}
 		assert.strictEqual(texts['vcmi.lobby.mapGen.hover'], 'Omni Map Gen');
 		assert.match(texts['vcmi.lobby.mapGen.help'], /when the game begins/);
+		if (classic) {
+			const pages = tab.items.find(w => w.type === 'pages').pages;
+			const map = JSON.parse(fs.readFileSync(path.join(stage, pages[0].layout), 'utf8')).items;
+			assert.strictEqual(map.find(i => i.name === 'buttonCustomSize').callback, 'chooseMapGenCustomSize', 'C, the custom size');
+			assert.strictEqual(map.find(i => i.name === 'labelTemplate').valueTexts.random, 'vcmi.mapGen.template.random');
+			assert.strictEqual(texts['vcmi.mapGen.template.random'], '(Random)');
+		}
 	}
 	// the manifest a build carries: level 3, atBegin, K's name; the pages build level 2, the released one untouched
 	const { buildModJson } = require('../tools/make_mod');
@@ -124,6 +137,9 @@ test('--atbegin: the game makes the map at Begin, so no Generate button, and the
 	assert.strictEqual(atBegin.mapGenerator.command, JSON.parse(text).mapGenerator.command);
 	assert.deepStrictEqual(JSON.parse(buildModJson(text, { pager: true, atBegin: false })).dmb, { api: 2 });
 	assert.strictEqual(buildModJson(text, { pager: false, atBegin: false }), text);
+	// the stock look needs VCMI Extras' art; the plain pages do not
+	assert.deepStrictEqual(JSON.parse(buildModJson(text, { pager: true, atBegin: true, classic: true })).depends, ['vcmi-extras']);
+	assert.strictEqual(atBegin.depends, undefined);
 });
 
 test('the released layout keeps its page buttons and asks for no addon API level', () => {

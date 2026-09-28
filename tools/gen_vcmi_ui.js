@@ -112,7 +112,7 @@ const CLASSIC_ON_MAP = new Set(['monsterStrength', 'roadType']);
 // or say how a layout names them when that mod is off; they change here only.
 const EXTRAS_ART = {
 	background: 'RanMapBk_new', templateBox: 'RmgTTBk', templateField: 'DrDoCoBk',
-	sizes: ['RandSizS', 'RandSizM', 'RandSizL', 'RandSizXL', 'RandSizH', 'RandSizXH', 'RandSizG'],
+	sizes: ['RandSizS', 'RandSizM', 'RandSizL', 'RandSizXL', 'RandSizH', 'RandSizXH', 'RandSizG'], customSize: 'RandSizC',
 	twoLevels: 'RANDUND', setupButton: 'HWBUT2', checkbox: 'ChkBlue',
 };
 // the pages widget's title and arrows: the classic background's title box is
@@ -249,6 +249,8 @@ function classicMapPageJson() {
 		// DMB's settings-bound label (addon API 2): the stored template, or the short "none" line
 		{ name: 'labelTemplate', type: 'label', font: 'small', alignment: 'center', color: 'white',
 			setting: 'persistent:mapGen/map/template', emptyText: 'vcmi.mapGen.template.noneShort',
+			// the chooser's Random stores "random"; the label says so in words (API 3)
+			...(AT_BEGIN ? { valueTexts: { random: 'vcmi.mapGen.template.random' } } : {}),
 			position: { x: 262, y: 66 } });
 	// the size row, 37 px apart from x 54, and the two-level toggle last in it (x 350)
 	// each size its own tooltip, with the days a new hero takes to cross it
@@ -258,6 +260,11 @@ function classicMapPageJson() {
 		{ name: 'check_map.underground', type: 'toggleButton', image: EXTRAS_ART.twoLevels, imageOrder: [0, 1, 1, 3],
 			position: { x: 350, y: 81 }, setting: 'persistent:mapGen/map/underground',
 			selected: !!MAP_DEFAULTS.underground, help: help('map.underground') });
+	// C, the custom size window, where the extended lobby has it (DMB API 3:
+	// map/width and map/height, and map/size 0 so the row shows none)
+	if (AT_BEGIN)
+		items.push({ name: 'buttonCustomSize', type: 'button', image: EXTRAS_ART.customSize,
+			position: { x: 313, y: 81 }, callback: 'chooseMapGenCustomSize', help: help('map.size.custom') });
 	// the players: stock's two bands, each with Random (-1)
 	const numbersAndRandom = from => [...range(0, 7).map(i => i * 32), 256];
 	items.push(...head(0, 'map.humans'),
@@ -410,14 +417,22 @@ function tabJson() {
 			// classic: the stock tab's gold bar (RANSHOW's place, 54,535), as two
 			// halves of DMB's blank one, lettered black as RANSHOW is
 			...(CLASSIC ? [
-				{ name: 'defaultsButton', type: 'button', image: AT_BEGIN ? 'RanShowButton337' : 'RanShowButton166',
+				{ name: 'defaultsButton', type: 'button', image: 'RanShowButton166',
 					position: { x: 54, y: 535 },
 					help: { hover: 'vcmi.mapGen.defaults.hover', help: 'vcmi.mapGen.defaults.help' },
 					callback: 'resetMapGenDefaults',
 					items: [{ type: 'label', font: 'big', alignment: 'center', color: [0, 0, 0, 255],
 						text: 'vcmi.mapGen.defaults.hover' }] },
+				// at Begin the game makes the map, so no Generate: the player's own
+				// presets take its half of the gold bar (DMB API 3, K's "save and load
+				// presets"), two of the stock word buttons side by side
+				...(AT_BEGIN ? ['save', 'load'].map((k, i) => ({
+					name: `${k}PresetButton`, type: 'button', image: 'RanButton83', position: { x: 224 + i * 83, y: 539 },
+					help: { hover: `vcmi.mapGen.presets.${k}.hover`, help: `vcmi.mapGen.presets.${k}.help` },
+					callback: k === 'save' ? 'saveMapGenPreset' : 'loadMapGenPreset',
+					items: [{ type: 'label', font: 'medium', alignment: 'center', color: 'yellow',
+						text: `vcmi.mapGen.presets.${k}.word` }] })) : [
 				// at Begin the game makes the map: no Generate
-				...(AT_BEGIN ? [] : [
 				{ name: 'generateButton', type: 'button', image: 'RanShowButton166', position: { x: 225, y: 535 },
 					help: { hover: 'vcmi.mapGen.generate.hover', help: 'vcmi.mapGen.generate.help' },
 					callback: 'generateMapGenMap',
@@ -431,7 +446,12 @@ function tabJson() {
 				callback: 'resetMapGenDefaults',
 				items: [{ type: 'label', font: 'small', alignment: 'center', color: 'yellow',
 					text: 'vcmi.mapGen.defaults.hover' }] },
-			...(AT_BEGIN ? [] : [
+			...(AT_BEGIN ? ['save', 'load'].map((k, i) => ({
+				name: `${k}PresetButton`, type: 'button', image: 'MapGenButton80', position: { x: X_CTRL + i * 90, y: BUTTON_Y },
+				help: { hover: `vcmi.mapGen.presets.${k}.hover`, help: `vcmi.mapGen.presets.${k}.help` },
+				callback: k === 'save' ? 'saveMapGenPreset' : 'loadMapGenPreset',
+				items: [{ type: 'label', font: 'small', alignment: 'center', color: 'yellow',
+					text: `vcmi.mapGen.presets.${k}.word` }] })) : [
 			{ name: 'generateButton', type: 'button', image: 'MapGenButton190',
 				position: { x: X_CTRL, y: BUTTON_Y },
 				help: { hover: 'vcmi.mapGen.generate.hover', help: 'vcmi.mapGen.generate.help' },
@@ -450,6 +470,18 @@ function stringsJson() {
 			? '{Omni Map Gen}\n\nOur own random map generator with every one of its settings: the map, biomes, borders, treasure, monsters, underground, scenery and water. The map is made when the game begins, from these settings and the town each player picks.'
 			: '{MapGen}\n\nOur own random map generator with every one of its settings: the map, biomes, borders, treasure, monsters, underground, scenery and water. Generate makes a map and selects it in the scenario list.',
 		'vcmi.mapGen.tab.subtitle': 'Every setting of our own map generator',
+		// the Begin build's own buttons and texts (DMB API 3)
+		...(AT_BEGIN ? {
+			'vcmi.mapGen.presets.save.word': 'Save',
+			'vcmi.mapGen.presets.save.hover': 'Save these settings',
+			'vcmi.mapGen.presets.save.help': '{Save these settings}\n\nKeeps every setting on these pages under a name you choose, to load again later.',
+			'vcmi.mapGen.presets.load.word': 'Load',
+			'vcmi.mapGen.presets.load.hover': 'Load saved settings',
+			'vcmi.mapGen.presets.load.help': '{Load saved settings}\n\nReplaces every setting on these pages with a set you saved.',
+			'vcmi.mapGen.map.size.custom.hover': 'Custom size',
+			'vcmi.mapGen.map.size.custom.help': '{Custom size}\n\nAny width and height you type, and one or two levels, instead of the sizes in the row.',
+			'vcmi.mapGen.template.random': '(Random)',
+		} : {}),
 		'vcmi.mapGen.defaults.hover': 'Defaults',
 		'vcmi.mapGen.defaults.help': `{Defaults}\n\nPuts every setting back to the ${PRESETS.nostalgia.label} defaults. ${PRESETS.nostalgia.help}`,
 		'vcmi.mapGen.generate.hover': 'Generate map',

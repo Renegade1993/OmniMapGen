@@ -290,7 +290,7 @@ async function main() {
 	// mod/mod.json is the one copy: the mod catalog reads it from the
 	// repository, and the release carries it unchanged
 	let modJson = fs.readFileSync(path.join(ROOT, 'mod', 'mod.json'));
-	if (pager) modJson = Buffer.from(buildModJson(modJson.toString('utf8'), { pager, atBegin }), 'utf8');
+	if (pager) modJson = Buffer.from(buildModJson(modJson.toString('utf8'), { pager, atBegin, classic }), 'utf8');
 	const manifest = JSON.parse(modJson.toString('utf8'));
 	if (manifest.version !== pkg.version)
 		throw new Error(`mod/mod.json says ${manifest.version}, package.json ${pkg.version}: bump both together`);
@@ -364,10 +364,15 @@ async function main() {
  * Begin); at Begin, the generator run when the host presses Begin, under K's
  * name for the mode.
  */
-function buildModJson(text, { pager, atBegin }) {
+function buildModJson(text, { pager, atBegin, classic = false }) {
 	if (!pager) return text;
 	if (!/\n\t"mapGenerator" :/.test(text)) throw new Error('mod/mod.json: no "mapGenerator" line to put "dmb" before');
 	text = text.replace(/\n\t"mapGenerator" :/, `\n\t"dmb" : { "api" : ${atBegin ? 3 : 2} },\n\t"mapGenerator" :`);
+	// the stock look draws with the VCMI Extras mod's lobby art: without it the
+	// page loses its background, size row and checkboxes (DMB Dev, 2026-09-27),
+	// so the launcher asks for Extras with it until K decides where that art
+	// comes from
+	if (classic) text = text.replace(/\n\t"dmb" :/, '\n\t"depends" : [ "vcmi-extras" ],\n\t"dmb" :');
 	if (atBegin) {
 		if (!/\n\t\t"name" : "[^"]*",/.test(text)) throw new Error('mod/mod.json: no mapGenerator "name" line');
 		text = text.replace(/\n\t\t"name" : "[^"]*",/, '\n\t\t"name" : "Omni Map Gen",\n\t\t"atBegin" : true,');
