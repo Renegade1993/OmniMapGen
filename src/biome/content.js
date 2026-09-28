@@ -914,9 +914,50 @@ const RESERVED = 2;
  * accessibleArea of RmgObject.cpp:70-84.
  */
 const APPROACH = 4;
+const MONSTER_TYPE = /^(monster|randomMonster)/;
 
 function reserveCell(blocked, l, W, H, cell) {
 	if (cell >= 0 && cell < W * H) blocked[l * W * H + cell] |= RESERVED;
+}
+
+/**
+ * Every placed object's visitable cells, per blocked grid (global cell index,
+ * level * W * H + cell): markApproach records them as each object lands, so
+ * any placement can ask whether a cell is some object's entrance.
+ */
+const ENTRANCES = new WeakMap();
+function entrancesOf(blocked) {
+	let set = ENTRANCES.get(blocked);
+	if (!set) ENTRANCES.set(blocked, (set = new Set()));
+	return set;
+}
+
+/**
+ * Whether a monster at (x, y) would stand over ground it must leave free: a
+ * road, a corridor, a doorway or a held gate site (RESERVED), or another
+ * object's entrance, within the 3x3 it guards, other than the cells in
+ * `except` (the object it guards, and its approach). The engine refuses such a
+ * guard (TreasurePlacer.cpp:1071: what the guard blocks beyond its own object
+ * may not touch the zone's free paths, a road or any object's visitable
+ * tile): a monster beside a road makes the road a fight. On [HotA] Nostalgia
+ * seed 5002 treasure guards below stood over the only ways to two gates the
+ * template leaves free, and pink was cut off from the three starts it shares
+ * ground with.
+ */
+function reachOnReserved(tpl, x, y, l, W, H, blocked, except = null) {
+	const own = new Set(blockingCells(tpl, x, y).map(([a, b]) => b * W + a));
+	const entrances = ENTRANCES.get(blocked);
+	for (const [vx, vy] of visitableCells(tpl, x, y))
+		for (let dy = -1; dy <= 1; dy++)
+			for (let dx = -1; dx <= 1; dx++) {
+				const nx = vx + dx, ny = vy + dy;
+				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+				const c = ny * W + nx;
+				if (own.has(c) || (except && except.has(c))) continue;
+				if (blocked[l * W * H + c] & RESERVED) return true;
+				if (entrances && entrances.has(l * W * H + c)) return true;
+			}
+	return false;
 }
 
 /**
@@ -928,6 +969,9 @@ function reserveCell(blocked, l, W, H, cell) {
  */
 function markApproach(tpl, x, y, l, W, H, blocked) {
 	const own = new Set(blockingCells(tpl, x, y).map(([a, b]) => b * W + a));
+	const entrances = entrancesOf(blocked);
+	for (const [vx, vy] of visitableCells(tpl, x, y))
+		if (vx >= 0 && vy >= 0 && vx < W && vy < H) entrances.add(l * W * H + vy * W + vx);
 	for (const [vx, vy] of visitableCells(tpl, x, y))
 		for (const [dx, dy] of allowedDirs(tpl)) {
 			const nx = vx + dx, ny = vy + dy;
@@ -1436,6 +1480,13 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// scenery. Checking here rather than after the fact keeps the
 			// count honest: the object is simply placed somewhere else.
 			if (!entranceOpen(tpl, x, y, l, W, H, blocked, reachable)) { rej('entrance'); continue; }
+			// in a template zone a monster never stands over a road, a
+			// corridor, a doorway or an entrance (reachOnReserved, the
+			// engine's rule). The free layout keeps its roaming monsters on
+			// the routes: its monster count and its starts' guards were
+			// measured with them there, and on 36x36 for eight the rule left
+			// two starts with no fight between them.
+			if (zoneMeta && MONSTER_TYPE.test(type) && reachOnReserved(tpl, x, y, l, W, H, blocked)) { rej('road'); continue; }
 			const walls = blockingCells(tpl, x, y).map(([a, b]) => b * W + a);
 			// Item 21: on a bound placement, a draw that would leave a one-cell
 			// sliver beside the object is refused for the first three quarters
@@ -2534,11 +2585,17 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			const j = (rng() * (k + 1)) | 0;
 			[spots[k], spots[j]] = [spots[j], spots[k]];
 		}
+		// what the guard is meant to block: its target and its approach
+		const targetApproach = new Set(spots.map(([ax, ay]) => ay * W + ax));
+		for (const [vx, vy] of visitableCells(tpl, entry.x, entry.y)) targetApproach.add(vy * W + vx);
 		for (const [gx, gy, vx, vy] of spots) {
 			if (gx < 0 || gy < 0 || gx >= W || gy >= H) continue;
 			// monsters are removable: the guard may stand on the approach
 			// cell itself, which is what guarding means
 			if (!footprintFits(monsterTpl, gx, gy, l, W, H, blocked, true)) continue;
+			// but in a template zone not over a road, a corridor, a doorway
+			// or another entrance (the free layout's guards, as in put)
+			if (zoneMeta && reachOnReserved(monsterTpl, gx, gy, l, W, H, blocked, targetApproach)) continue;
 			// A guard that cannot be approached is a wall, not a guard.
 			if (!entranceOpen(monsterTpl, gx, gy, l, W, H, blocked, reachable)) continue;
 			// The guard must not be the only way in. A monster is blocked and
@@ -3115,4 +3172,4 @@ module.exports = { fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	entranceOpen, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED,
 	APPROACH, allowedDirs, markApproach, weldsMasses, REMOVABLE_TYPES, MONSTER_OPTIONS,
 	monsterOptions, STACK_RANGE,
-	sliverCount, engineGuard, zoneGuardPool, nearestLevelDwelling, creepTier };
+	sliverCount, engineGuard, zoneGuardPool, nearestLevelDwelling, creepTier, reachOnReserved };

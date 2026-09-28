@@ -17,6 +17,12 @@
  * the last one). Past it, a link whose zones are already joined some other
  * way is left out, and only a link that would leave its zones apart shares
  * the least-used channel.
+ *
+ * A mod's two-way monoliths are channels too: getNextMonlithIndex walks every
+ * subtype the game knows, skipping one whose first template cannot stand on
+ * every terrain (HotA's sea portals). HotA adds twelve, and the engine's own
+ * [HotA] Nostalgia maps use 14 and 16 channels (the corpus), where our eight
+ * ran out and left links out.
  */
 'use strict';
 
@@ -33,13 +39,37 @@ const CHANNELS = [
 ].map(([subtype, animation, mask]) => ({ subtype, tpl: { animation, mask, visitableFrom: VISIT } }));
 
 /**
- * One map's book of links. Zones are named `${level}:${zone}`.
+ * The two-way monoliths the active mods add (the asset index's objects), as
+ * channels after the core's: each land-placeable subtype with art and a mask,
+ * wearing the mod the map then has to declare.
+ */
+function modChannels(objects) {
+	const core = new Set(CHANNELS.map(ch => ch.subtype));
+	const out = [];
+	for (const [id, o] of objects || []) {
+		if (!/(^|:)monolithTwoWay\./.test(id)) continue;
+		const scope = id.split(':')[0];
+		if (scope === 'core' || !o || core.has(o.subtype)) continue;
+		const t = (o.templates || [])[0];
+		const raw = t && t.raw;
+		if (!raw || !raw.animation || !Array.isArray(raw.mask) || !raw.mask.length) continue;
+		if ((t.allowedTerrains && t.allowedTerrains.length) || (raw.allowedTerrains && raw.allowedTerrains.length)) continue;
+		core.add(o.subtype);
+		out.push({ subtype: o.subtype, mod: scope, tpl: { animation: raw.animation, mask: raw.mask, visitableFrom: VISIT } });
+	}
+	return out;
+}
+
+/**
+ * One map's book of links. Zones are named `${level}:${zone}`. extra: more
+ * channels after the core's (modChannels).
  *   next(): the next free channel, or null (not yet taken);
  *   take(ch): the channel is used by one more link;
  *   shared(): the least-used channel, for a link that cannot be left out;
  *   join(a, b), joined(a, b): which zones reach each other by the links so far.
  */
-function linkBook() {
+function linkBook(extra = []) {
+	const CH = [...CHANNELS, ...extra];
 	let free = 0;
 	const uses = new Map();
 	const parent = new Map();
@@ -52,20 +82,20 @@ function linkBook() {
 		return k;
 	};
 	return {
-		next: () => (free < CHANNELS.length ? CHANNELS[free] : null),
+		next: () => (free < CH.length ? CH[free] : null),
 		take(ch) {
-			if (ch === CHANNELS[free]) free++;
+			if (ch === CH[free]) free++;
 			uses.set(ch.subtype, (uses.get(ch.subtype) || 0) + 1);
 		},
 		shared() {
-			let best = CHANNELS[0];
-			for (const ch of CHANNELS) if ((uses.get(ch.subtype) || 0) < (uses.get(best.subtype) || 0)) best = ch;
+			let best = CH[0];
+			for (const ch of CH) if ((uses.get(ch.subtype) || 0) < (uses.get(best.subtype) || 0)) best = ch;
 			return best;
 		},
-		left: () => CHANNELS.length - free,
+		left: () => CH.length - free,
 		join(a, b) { parent.set(find(a), find(b)); },
 		joined: (a, b) => find(a) === find(b),
 	};
 }
 
-module.exports = { CHANNELS, linkBook };
+module.exports = { CHANNELS, linkBook, modChannels };

@@ -11,6 +11,7 @@ const { Worker } = require('worker_threads');
 
 const { locateVcmiRoots, crawlMods, resolveLoadOrder, loadActivationState } = require('../parser/modCrawler');
 const { buildAssetIndex } = require('../parser/assetIndex');
+const { modChannels } = require('../biome/portals');
 const { buildCompat, xorshift } = require('../wfc/solver');
 const { BitSet } = require('../wfc/bitset');
 const { computeTaccl } = require('../stitch/taccl');
@@ -804,6 +805,9 @@ async function generateMap(params) {
 		const tplRawEarly = loadTemplate(params.template).raw;
 		const cand = (params.players || []).map((p, i) => ({ i, zone: ownerZone(i), pos: p.townPos }))
 			.filter(s => s.i !== observerIndex && s.zone && s.pos);
+		// level by level: handing all of them out at once, whatever their
+		// levels, gave [HotA] Nostalgia one arrangement for every roll, and on
+		// seed 5001 it left 3 of 14 links between levels with no gate or portal
 		for (const l of new Set(cand.map(s => s.pos.l))) {
 			const onLevel = cand.filter(s => s.pos.l === l);
 			const order = orderStarts(tplRawEarly, onLevel.map(s => s.zone.id), onLevel.map(s => s.pos));
@@ -1436,6 +1440,11 @@ async function generateMap(params) {
 		levels: hasObserver ? levels.length - 1 : levels.length,
 		playerStarts: starts,
 		params: { ...biomeParams, seed: params.seed || 1, zonePlan,
+			// the active mods' two-way monoliths, channels after the core's, on
+			// a template map as the engine hands them out; the free layout keeps
+			// the core's eight, which its portal count was measured with (with
+			// HotA's twelve more it made 1.4 to 2.0 times the corpus's portals)
+			monolithChannels: useMods && zonePlan ? modChannels(assetIndex.objects) : [],
 			waterMask: waterPlan ? waterPlan.mask : null, caveChecker,
 			waterIslands: !!(waterPlan && waterPlan.islands),
 			layoutOnly: !!process.env.VMAPGEN_PLAN_ONLY },

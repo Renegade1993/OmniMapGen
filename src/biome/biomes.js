@@ -702,6 +702,23 @@ function layoutZoneSeeds(zoneSpecs, conns, W, H, playerStarts, rng, opts = {}) {
 			if (!pos[i].pin) { fx[i] += ux * f; fy[i] += uy * f; }
 			if (!pos[j].pin) { fx[j] -= ux * f; fy[j] -= uy * f; }
 		}
+		// a link to a zone on another level pulls in the plane with no rest
+		// length: the engine's placer pulls both ends alike, and zones on two
+		// levels "can overlap completely" (CZonePlacer::attractConnectedZones).
+		// The other end is fixed here (a level laid out already, or a start
+		// pinned below), so each such link is a spring to the anchor. Without
+		// it the anchor was only where the zone began, and once starts could
+		// lie below (template.js assignLevels) a level's pinned starts dragged
+		// its zones off their anchors: [HotA] Nostalgia's gate sites found the
+		// linked zone under them 2 to 5 times in 14. VMAPGEN_ANCHOR_PULL=0 turns
+		// it off, for measuring.
+		if (anchors && process.env.VMAPGEN_ANCHOR_PULL !== '0')
+			for (let i = 0; i < n; i++) {
+				const a = anchors[i];
+				if (!a || pos[i].pin) continue;
+				fx[i] += (a.x - pos[i].x) * 0.02 * (a.k || 1);
+				fy[i] += (a.y - pos[i].y) * 0.02 * (a.k || 1);
+			}
 		// a repulsive link pushes its zones apart at any distance, as the
 		// engine's placer does (CZonePlacer.cpp:694-700)
 		for (const [i, j] of opts.repulse || []) {

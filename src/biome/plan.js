@@ -37,7 +37,8 @@ const { linkBook } = require('./portals');
 const { fillBiome, blockingCells, footprintFits, footprintBlock, entranceOpen,
 	visitableCells, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED,
 	RESERVED, APPROACH, markApproach, allowedDirs, REMOVABLE_TYPES,
-	weldsMasses, MONSTER_OPTIONS, monsterOptions, zoneGuardPool, engineGuard } = require("./content");
+	weldsMasses, MONSTER_OPTIONS, monsterOptions, zoneGuardPool, engineGuard,
+	reachOnReserved } = require("./content");
 const { mineTemplate, STARTER_MINES, MINES_PER_PLAYER, STRUCTURES,
 	STRUCTURE_SUBTYPE, barrierTemplate, pileTemplate,
 	chestTemplate } = require('./economy');
@@ -268,6 +269,13 @@ function objectEntry(type, x, y, l, tpl, subtype = 'object', opts) {
 	return entry;
 }
 
+/** A monolith of a channel (portals.js); a mod's channel declares its mod. */
+function monolithEntry(x, y, l, ch) {
+	const e = objectEntry('monolithTwoWay', x, y, l, ch.tpl, ch.subtype);
+	if (ch.mod) e.mod = ch.mod;
+	return e;
+}
+
 /**
  * The largest walkable region of a level, as a Uint8Array flag per cell.
  *
@@ -397,6 +405,93 @@ function approachCells(tpl, x, y, l, W, H, blocked) {
 			if (!(blocked[l * W * H + c] & OCCUPIED)) out.push(c);
 		}
 	return out;
+}
+
+/**
+ * The engine joins every link of a zone to the zone's free paths
+ * (ConnectionsPlacer: each connection's path is connected to
+ * zone.freePaths(), which starts at the zone's centre), and no object or guard
+ * may stand on them or over them (TreasurePlacer.cpp:1071). Our roads join
+ * only the links that carry one, so a zone whose links have none (a treasure
+ * zone below, reached by a gate and a monolith) held no way between them, and
+ * a treasure guard could take its only corridor: on [HotA] Nostalgia seed 5001
+ * one did in zone 7, and purple was cut off from blue's group. Here each
+ * zone's gates, monoliths, town gate, doorways and roads are joined by paths
+ * held clear (RESERVED), laid around every guard standing so far. Returns the
+ * cells newly held.
+ */
+function holdFreePaths(plan, l, W, H, blocked) {
+	const N = W * H, base = l * N, zone = plan.zone;
+	const reach = new Set();
+	const groups = new Map();
+	const addGroup = (z, cells) => {
+		const g = cells.filter(c => c >= 0 && c < N && zone[c] === z && !(blocked[base + c] & OCCUPIED));
+		if (!g.length) return;
+		if (!groups.has(z)) groups.set(z, []);
+		groups.get(z).push(new Set(g));
+	};
+	for (const o of plan.objects) {
+		if (!o.template || (o.l || 0) !== l) continue;
+		if (/^(monster|randomMonster)/.test(o.type)) {
+			for (const [vx, vy] of visitableCells(o.template, o.x, o.y))
+				for (let dy = -1; dy <= 1; dy++)
+					for (let dx = -1; dx <= 1; dx++) {
+						const nx = vx + dx, ny = vy + dy;
+						if (nx >= 0 && ny >= 0 && nx < W && ny < H) reach.add(ny * W + nx);
+					}
+			continue;
+		}
+		if (o.type !== 'monolithTwoWay' && o.type !== 'subterraneanGate'
+				&& !(/town/i.test(o.type) && !/gate/i.test(o.type))) continue;
+		const cells = approachCells(o.template, o.x, o.y, l, W, H, blocked);
+		if (cells.length) addGroup(zone[cells[0]], cells);
+	}
+	for (const o of plan.openings || [])
+		for (const z of [o.a, o.b]) addGroup(z, o.hole || []);
+	const roadsBy = new Map();
+	for (const c of plan.roadCells || []) {
+		if (!roadsBy.has(zone[c])) roadsBy.set(zone[c], []);
+		roadsBy.get(zone[c]).push(c);
+	}
+	for (const [z, cells] of roadsBy) addGroup(z, cells);
+	let held = 0;
+	for (const [z, gs] of groups) {
+		if (gs.length < 2) continue;
+		const joined = new Set(gs[0]);
+		const rest = gs.slice(1);
+		while (rest.length) {
+			// out from what is joined to the nearest cell of a group not yet
+			const prev = new Map();
+			const q = [...joined];
+			for (const c of q) prev.set(c, -1);
+			let hit = -1;
+			for (let qi = 0; qi < q.length && hit < 0; qi++) {
+				const c = q[qi], x = c % W, y = (c / W) | 0;
+				for (let dy = -1; dy <= 1 && hit < 0; dy++)
+					for (let dx = -1; dx <= 1; dx++) {
+						if (!dx && !dy) continue;
+						const nx = x + dx, ny = y + dy;
+						if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+						const n = ny * W + nx;
+						if (prev.has(n) || zone[n] !== z || (blocked[base + n] & OCCUPIED)) continue;
+						const target = rest.some(g => g.has(n));
+						if (reach.has(n) && !target) continue;
+						prev.set(n, c);
+						if (target) { hit = n; break; }
+						q.push(n);
+					}
+			}
+			// the rest lie past a guard or a wall already: nothing to hold
+			if (hit < 0) break;
+			for (let c = hit; c >= 0 && !joined.has(c); c = prev.get(c)) {
+				if (!(blocked[base + c] & RESERVED)) { blocked[base + c] |= RESERVED; held++; }
+				joined.add(c);
+			}
+			for (let i = rest.length - 1; i >= 0; i--)
+				if (rest[i].has(hit)) { for (const c of rest[i]) joined.add(c); rest.splice(i, 1); }
+		}
+	}
+	return held;
 }
 
 /**
@@ -1370,21 +1465,88 @@ function layoutStats(zone, seeds, tplZones, tplConns, unfulfilled, forced, W, H,
 
 /**
  * For each zone of level l, the mean seed of the zones it links to on levels
- * already laid out (null for a zone with no such link): where the layout pulls
- * it, so a link between levels has ground both zones share.
+ * already laid out, and of the starts pinned on levels still to come (null for
+ * a zone with no such link): where the layout pulls it, so a link between
+ * levels has ground both zones share. A start's zone is laid round its own
+ * town whatever its partners do, so a zone linked to a start below has to come
+ * to it: with half of [HotA] Nostalgia's starts below (template.js
+ * assignLevels), 2 of its 14 gate sites found the start's zone under them and
+ * 4 links made gate pairs where the corpus has 10 or 11.
  */
-function crossLevelAnchors(zonePlan, plans, l) {
+function crossLevelAnchors(zonePlan, plans, l, starts = null, W = 0, H = 0) {
 	const n = (zonePlan.perLevel[l] || []).length;
 	const sum = Array.from({ length: n }, () => ({ x: 0, y: 0, k: 0 }));
 	for (const c of zonePlan.connections || []) {
 		if (!c.aRef || !c.bRef || c.aRef.l === c.bRef.l) continue;
 		const [here, there] = c.aRef.l === l ? [c.aRef, c.bRef] : c.bRef.l === l ? [c.bRef, c.aRef] : [null, null];
-		if (!here || there.l >= l || !plans[there.l] || !plans[there.l].seeds) continue;
-		const s = plans[there.l].seeds[there.i];
-		if (!s || here.i >= n) continue;
+		if (!here || here.i >= n) continue;
+		const s = there.l < l ? plans[there.l] && plans[there.l].seeds && plans[there.l].seeds[there.i]
+			: pinnedStartSeed(zonePlan, there, starts, W, H);
+		if (!s) continue;
 		sum[here.i].x += s.x; sum[here.i].y += s.y; sum[here.i].k++;
 	}
-	return sum.map(a => (a.k ? { x: a.x / a.k, y: a.y / a.k } : null));
+	return sum.map(a => (a.k ? { x: a.x / a.k, y: a.y / a.k, k: a.k } : null));
+}
+
+/**
+ * Where the zone of a start pinned on its level will have its seed, before
+ * that level is laid out: the town's cell moved toward the map's middle by
+ * half the zone's radius, as layoutZoneSeeds moves it (startInset 0.5). Null
+ * for any zone that is not a start on that level.
+ */
+function pinnedStartSeed(zonePlan, ref, starts, W, H) {
+	const zones = (zonePlan.perLevel || [])[ref.l] || [];
+	const z = zones[ref.i];
+	if (!z || (z.type !== 'playerStart' && z.type !== 'cpuStart') || !z.owner || !W) return null;
+	const st = startOfOwner(starts, z.owner);
+	if (!st || (st.l || 0) !== ref.l) return null;
+	const mass = zones.reduce((a, q) => a + (q.size || 10) ** 2, 0);
+	const radius = Math.max(2, (z.size || 10) * Math.sqrt((W * H) / (mass * Math.PI)));
+	const dx = W / 2 - st.x, dy = H / 2 - st.y, d = Math.hypot(dx, dy);
+	if (!d) return { x: st.x, y: st.y };
+	const step = Math.min(0.5 * radius, d / 2);
+	return { x: st.x + dx / d * step, y: st.y + dy / d * step };
+}
+
+/**
+ * The cheapest way the template itself gives between two zones: over every
+ * link that can be walked (not fictive or repulsive; a wide one costs
+ * nothing), the path whose strongest guard is the weakest, and that guard.
+ * Returns (la, a, lb, b) => strength, Infinity when no path joins them.
+ */
+function templateBottleneck(zonePlan) {
+	const adj = new Map();
+	const key = (l, i) => `${l}:${i}`;
+	for (const c of zonePlan.connections || []) {
+		if (!c.aRef || !c.bRef || c.type === 'fictive' || c.type === 'repulsive') continue;
+		const w = c.type === 'wide' ? 0 : Number(c.guard) || 0;
+		const a = key(c.aRef.l, c.aRef.i), b = key(c.bRef.l, c.bRef.i);
+		if (!adj.has(a)) adj.set(a, []);
+		if (!adj.has(b)) adj.set(b, []);
+		adj.get(a).push([b, w]); adj.get(b).push([a, w]);
+	}
+	const memo = new Map();
+	const from = src => {
+		if (memo.has(src)) return memo.get(src);
+		const best = new Map([[src, 0]]);
+		const done = new Set();
+		for (;;) {
+			let u = null, bu = Infinity;
+			for (const [k, v] of best) if (!done.has(k) && v < bu) { u = k; bu = v; }
+			if (u === null) break;
+			done.add(u);
+			for (const [v, w] of adj.get(u) || []) {
+				const m = Math.max(bu, w);
+				if (m < (best.has(v) ? best.get(v) : Infinity)) best.set(v, m);
+			}
+		}
+		memo.set(src, best);
+		return best;
+	};
+	return (la, a, lb, b) => {
+		const d = from(key(la, a)).get(key(lb, b));
+		return d === undefined ? Infinity : d;
+	};
 }
 
 /**
@@ -1896,6 +2058,9 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		const tpl = OBJECT_DEFS.subterraneanGateUnder;
 		for (const s of p.gateSitesAbove) {
 			const c = links.get(s.k);
+			if (process.env.VMAPGEN_GATE_TRACE && c)
+				console.error(`[gate] link ${s.k}: below (${s.x},${s.y}) is zone ${zone[s.y * W + s.x]}, `
+					+ `the link wants ${c.hi.i} (seed ${seeds[c.hi.i] ? seeds[c.hi.i].x + ',' + seeds[c.hi.i].y : '-'})`);
 			if (!c || !inZone(tpl, s.x, s.y, zone, c.hi.i, W, H)) continue;
 			if (!footprintFits(tpl, s.x, s.y, levelIndex, W, H, blocked)) continue;
 			if (!entranceOpen(tpl, s.x, s.y, levelIndex, W, H, blocked, null)) continue;
@@ -2024,14 +2189,20 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		}
 	}
 	// a template level's border the template has no link for: guarded as the
-	// strongest link either zone has, across the levels too
-	const forcedStrength = tplZones && tplZones.length && p.zonePlan
+	// strongest link either zone has, across the levels too, and never below
+	// the template's own cheapest way between the two (templateBottleneck).
+	// With the strongest link alone, two zones whose links were all free got
+	// a free border: [HotA] Nostalgia's two groups of four starts, apart by
+	// its 12,500 links, met through one below (seed 5002, starts underground).
+	const bottleneck = tplZones && tplZones.length && p.zonePlan ? templateBottleneck(p.zonePlan) : null;
+	const forcedStrength = bottleneck
 		? (a, b) => {
 			let g = 0;
 			for (const c of p.zonePlan.connections)
 				for (const r of [c.aRef, c.bRef])
 					if (r && r.l === levelIndex && (r.i === a || r.i === b)) g = Math.max(g, c.guard || 0);
-			return g;
+			const t = bottleneck(levelIndex, a, levelIndex, b);
+			return Math.max(g, Number.isFinite(t) ? t : 0);
 		} : null;
 	const guards = placeChokeGuards(openings, classes, rng, p, edgeInfo,
 		objectPools && objectPools.guards && zoneMeta
@@ -2353,7 +2524,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		for (const c of links) {
 			const ps = partners.get(c.hi.i).map(i => seeds[i]).filter(Boolean);
 			if (!ps.length || !seeds[c.lo.i]) continue;
-			const ax = ps.reduce((s, q) => s + q.x, 0) / ps.length, ay = ps.reduce((s, q) => s + q.y, 0) / ps.length;
+			// a start pinned below lays its zone round its own town, not on the
+			// mean of its partners here
+			const pin = pinnedStartSeed(p.zonePlan, c.hi, alignPlayers || playerStarts, W, H);
+			const ax = pin ? pin.x : ps.reduce((s, q) => s + q.x, 0) / ps.length;
+			const ay = pin ? pin.y : ps.reduce((s, q) => s + q.y, 0) / ps.length;
 			const cells = [];
 			for (let i = 0; i < zone.length; i++) if (zone[i] === c.lo.i && !(water && water[i])) cells.push(i);
 			cells.sort((a, b) => ((a % W - ax) ** 2 + (((a / W) | 0) - ay) ** 2) - ((b % W - ax) ** 2 + (((b / W) | 0) - ay) ** 2));
@@ -2368,6 +2543,9 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				holdGateGround(tpl, x, y, levelIndex, W, H, blocked);
 				townGuard.refresh();
 				gateSites.push({ k: c.k, x, y });
+				if (process.env.VMAPGEN_GATE_TRACE)
+					console.error(`[gate] link ${c.k}: zone ${c.lo.i} to ${c.hi.i} below${pin ? ' (a start)' : ''}, `
+						+ `aimed at (${ax.toFixed(0)},${ay.toFixed(0)}), site (${x},${y})`);
 				break;
 			}
 		}
@@ -2406,27 +2584,85 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	};
 	// the planned cell, or the nearest cell of the same zone where a monolith
 	// fits with open ground in front of it
+	// A portal is a fight to use when its entrance, or every cell a hero can
+	// step to it from, lies in a monster's 3x3. Out of reach of the guards
+	// already standing on this level where it can be, and four cells or more
+	// from any other gate or monolith, so neither one's guard can stand over
+	// the other: on [HotA] Nostalgia seed 5002 teal's free monolith went down
+	// three cells from the next portal, whose guard then had no cell that did
+	// not cover it, and teal was cut off from the three starts it shares
+	// ground with.
+	const inGuardReach = () => {
+		const reach = new Set(), ends = [];
+		for (const o of objects) {
+			if ((o.l || 0) !== levelIndex || !o.template) continue;
+			if (/^(monster|randomMonster)/.test(o.type))
+				for (const [vx, vy] of visitableCells(o.template, o.x, o.y))
+					for (let dy = -1; dy <= 1; dy++)
+						for (let dx = -1; dx <= 1; dx++) reach.add((vy + dy) * W + vx + dx);
+			else if (o.type === 'monolithTwoWay' || o.type === 'subterraneanGate')
+				ends.push(...visitableCells(o.template, o.x, o.y));
+		}
+		reach.ends = ends;
+		return reach;
+	};
+	const guardedAt = (reach, monoTpl, x, y) => {
+		const mine = visitableCells(monoTpl, x, y);
+		if (mine.some(([vx, vy]) => reach.has(vy * W + vx))) return true;
+		if (mine.some(([vx, vy]) => reach.ends.some(([ex, ey]) => Math.max(Math.abs(ex - vx), Math.abs(ey - vy)) < 4)))
+			return true;
+		const ways = openBeside(monoTpl, x, y);
+		return ways.length > 0 && ways.every(c => reach.has(c));
+	};
+	// on a template map, whose links the template leaves free or guards; the
+	// free layout places its portals as it always has (its starts' fairness
+	// and parity were measured on them, and on 36x36 for eight the spacing
+	// left a start with no ground to top up)
 	const portalSpot = (cell, z, monoTpl) => {
 		const cx = cell % W, cy = (cell / W) | 0;
-		for (let r = 0; r <= 6; r++)
-			for (let dy = -r; dy <= r; dy++)
-				for (let dx = -r; dx <= r; dx++) {
-					if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
-					const x = cx + dx, y = cy + dy;
-					if (x < 0 || y < 0 || x >= W || y >= H || !inZone(monoTpl, x, y, zone, z, W, H)) continue;
-					if (!footprintFits(monoTpl, x, y, levelIndex, W, H, blocked)) continue;
-					if (!entranceOpen(monoTpl, x, y, levelIndex, W, H, blocked, null)) continue;
-					return [x, y];
-				}
+		const reach = inGuardReach();
+		for (const clear of tplZones ? [true, false] : [false])
+			for (let r = 0; r <= 6; r++)
+				for (let dy = -r; dy <= r; dy++)
+					for (let dx = -r; dx <= r; dx++) {
+						if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+						const x = cx + dx, y = cy + dy;
+						if (x < 0 || y < 0 || x >= W || y >= H || !inZone(monoTpl, x, y, zone, z, W, H)) continue;
+						if (!footprintFits(monoTpl, x, y, levelIndex, W, H, blocked)) continue;
+						if (!entranceOpen(monoTpl, x, y, levelIndex, W, H, blocked, null)) continue;
+						if (clear && guardedAt(reach, monoTpl, x, y)) continue;
+						if (!clear && process.env.VMAPGEN_GATE_TRACE)
+							console.error(`[gate] level ${levelIndex}: portal in zone ${z} at (${x},${y}) stands in a guard's reach`);
+						return [x, y];
+					}
 		return null;
 	};
 	// Guards at bottlenecks off (guardBottlenecks 0) leaves every way between
 	// biomes open, portals and gates as well as passages
 	const linkGuardsOff = Number(p.guardBottlenecks) === 0;
+	// a portal's guard cells, those whose reach covers nothing but the portal
+	// first (content.js reachOnReserved): a guard over the next portal made a
+	// link the template leaves free a fight ([HotA] Nostalgia seed 5002, two
+	// monoliths side by side in teal's zone)
+	const guardSpots = (monoTpl, mx, my) => {
+		if (!tplZones) {
+			const out = openBeside(monoTpl, mx, my);
+			out.clear = new Set(out);
+			return out;
+		}
+		const monster = OBJECT_TEMPLATES.randomMonster;
+		const mine = new Set(openBeside(monoTpl, mx, my));
+		for (const [vx, vy] of visitableCells(monoTpl, mx, my)) mine.add(vy * W + vx);
+		const cells = openBeside(monoTpl, mx, my);
+		const clear = cells.filter(c => !reachOnReserved(monster, c % W, (c / W) | 0, levelIndex, W, H, blocked, mine));
+		const out = [...clear, ...cells.filter(c => !clear.includes(c))];
+		out.clear = new Set(clear);
+		return out;
+	};
 	const portalGuard = (monoTpl, mx, my, toZone) => {
 		if (linkGuardsOff) return false;
 		const monster = OBJECT_TEMPLATES.randomMonster;
-		for (const c of openBeside(monoTpl, mx, my)) {
+		for (const c of guardSpots(monoTpl, mx, my)) {
 			const gx = c % W, gy = (c / W) | 0;
 			const cls = classes[toZone];
 			const base = cls === BIOME_CLASS.HIGH_LOOT ? 5 + ((rng() * 3) | 0)
@@ -2452,9 +2688,12 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			concrete ? zoneGuardPool(objectPools.guards, zoneMeta[z] && zoneMeta[z].spec) : undefined);
 		if (!g) return false;
 		const monster = OBJECT_TEMPLATES.randomMonster;
-		for (const c of openBeside(monoTpl, mx, my)) {
+		const spots = guardSpots(monoTpl, mx, my);
+		for (const c of spots) {
 			const gx = c % W, gy = (c / W) | 0;
 			if (!footprintFits(monster, gx, gy, levelIndex, W, H, blocked, true)) continue;
+			if (!spots.clear.has(c) && process.env.VMAPGEN_GATE_TRACE)
+				console.error(`[gate] level ${levelIndex}: the guard of the portal at (${mx},${my}) stands at (${gx},${gy}) over other ground`);
 			const e = objectEntry(`randomMonsterLevel${g.level}`, gx, gy, levelIndex, monster, 'object',
 				{ character: 'hostile', amount: g.amount });
 			if (concrete) e.guardCreature = g.creature;
@@ -2499,8 +2738,8 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		markApproach(monoTpl, B[0], B[1], levelIndex, W, H, blocked);
 		book.take(ch);
 		book.join(zoneKey(o.a), zoneKey(o.b));
-		objects.push(objectEntry('monolithTwoWay', A[0], A[1], levelIndex, monoTpl, ch.subtype));
-		objects.push(objectEntry('monolithTwoWay', B[0], B[1], levelIndex, monoTpl, ch.subtype));
+		objects.push(monolithEntry(A[0], A[1], levelIndex, ch));
+		objects.push(monolithEntry(B[0], B[1], levelIndex, ch));
 		if (o.tplGuard > 0 && process.env.VMAPGEN_PORTAL_GUARD !== '0') {
 			linkPortalGuard(monoTpl, A[0], A[1], o.a, o.tplGuard);
 			linkPortalGuard(monoTpl, B[0], B[1], o.b, o.tplGuard);
@@ -4293,7 +4532,9 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	const rng = xorshift(params.seed || 1);
 	const blocked = new Uint8Array(W * H * levels);
 	const plans = [];
-	p._links = linkBook(); // the map's monolith channels and joined zones (portals.js)
+	// the map's monolith channels and joined zones (portals.js), the active
+	// mods' after the core's
+	p._links = linkBook(p.monolithChannels || []);
 	// a level's own starts (a template may put some below, template.js assignLevels)
 	const startsOn = l => playerStarts.filter(s => (s.l || 0) === l);
 	const towns = []; // cross-level sameAsTown registry (instanceNames are global)
@@ -4306,12 +4547,17 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		// Laid out apart, the zones rarely shared a cell: [HotA] Nostalgia made
 		// 1 gate where the corpus has 21 and monoliths took the rest (47
 		// against 30); Coldshadow's Fantasy 0 against 13 (lens t37L).
-		const anchors = p.zonePlan && l > 0 ? crossLevelAnchors(p.zonePlan, plans, l) : null;
+		// A zone linked to a start pinned on a level still to come starts on
+		// that start's ground the same way (template.js assignLevels can put
+		// starts below); on the surface only when some start is below, so a map
+		// with none is laid out as before.
+		const anchors = p.zonePlan ? crossLevelAnchors(p.zonePlan, plans, l, playerStarts, W, H) : null;
 		const above = l > 0 && plans[l - 1].gateSites && plans[l - 1].gateSites.length ? plans[l - 1].gateSites : null;
 		plans.push(planLevel({
 			W, H, levelIndex: l, playerStarts: starts,
 			alignPlayers: playerStarts, towns,
-			params: anchors ? { ...p, layoutAnchors: anchors, ...(above ? { gateSitesAbove: above } : {}) } : p,
+			params: anchors && (l > 0 || anchors.some(Boolean))
+				? { ...p, layoutAnchors: anchors, ...(above ? { gateSitesAbove: above } : {}) } : p,
 			terrainShortIds, tileIdsByShort, numTiles, blocked,
 			underground: l > 0, objectPools, terrainInfo,
 		}));
@@ -4405,6 +4651,28 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		// the levels was a free passage: on Coldshadow's Fantasy 144x2 one
 		// start walked through them into 20 of the map's 23 towns unopposed.
 		// Held clear like a doorway guard (planLevel), not walled.
+		// A guard stands where it covers no other link's gate or monolith when
+		// it can: a monster guards the 3x3 round it, and one beside another
+		// link's end makes that link a fight too. On [HotA] Nostalgia seed 5001
+		// a gate's 81 zombie lords stood by the monolith of a link the template
+		// leaves free, and cut purple off from the three starts it shares ground
+		// with.
+		const otherEnds = (l, x, y) => {
+			const out = new Set();
+			for (const o of plans[l].objects)
+				if ((o.type === 'monolithTwoWay' || o.type === 'subterraneanGate') && o.template
+						&& !(o.x === x && o.y === y))
+					for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) out.add(vy * W + vx);
+			return out;
+		};
+		const covers = (ends, monster, gx, gy) => visitableCells(monster, gx, gy).some(([vx, vy]) => {
+			for (let dy = -1; dy <= 1; dy++)
+				for (let dx = -1; dx <= 1; dx++) {
+					const nx = vx + dx, ny = vy + dy;
+					if (nx >= 0 && ny >= 0 && nx < W && ny < H && ends.has(ny * W + nx)) return true;
+				}
+			return false;
+		});
 		const guardEnd = (l, tpl, x, y, z, strength) => {
 			if (!(strength > 0) || process.env.VMAPGEN_PORTAL_GUARD === '0' || Number(p.guardBottlenecks) === 0) return false;
 			const meta = plans[l].zoneMeta;
@@ -4413,17 +4681,23 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				concrete ? zoneGuardPool(objectPools.guards, meta[z] && meta[z].spec) : undefined);
 			if (!g) return false;
 			const monster = OBJECT_TEMPLATES.randomMonster;
-			for (const c of approachCells(tpl, x, y, l, W, H, blocked)) {
-				const gx = c % W, gy = (c / W) | 0;
-				if (!footprintFits(monster, gx, gy, l, W, H, blocked, true)) continue;
-				const e = objectEntry(`randomMonsterLevel${g.level}`, gx, gy, l, monster, 'object',
-					{ character: 'hostile', amount: g.amount });
-				if (concrete) e.guardCreature = g.creature;
-				plans[l].objects.push(e);
-				reserveCell(blocked, l, W, H, c);
-				markApproach(monster, gx, gy, l, W, H, blocked);
-				return true;
-			}
+			const ends = otherEnds(l, x, y);
+			const cells = approachCells(tpl, x, y, l, W, H, blocked);
+			for (const clear of [true, false])
+				for (const c of cells) {
+					const gx = c % W, gy = (c / W) | 0;
+					if (clear && covers(ends, monster, gx, gy)) continue;
+					if (!footprintFits(monster, gx, gy, l, W, H, blocked, true)) continue;
+					const e = objectEntry(`randomMonsterLevel${g.level}`, gx, gy, l, monster, 'object',
+						{ character: 'hostile', amount: g.amount });
+					if (concrete) e.guardCreature = g.creature;
+					plans[l].objects.push(e);
+					reserveCell(blocked, l, W, H, c);
+					markApproach(monster, gx, gy, l, W, H, blocked);
+					if (!clear && process.env.VMAPGEN_GATE_TRACE)
+						console.error(`[gate] level ${l}: the guard at (${gx},${gy}) also covers another link's end`);
+					return true;
+				}
 			return false;
 		};
 		// every held surface site is given back first, a pair or not, so none
@@ -4536,8 +4810,8 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const subtype = ch.subtype;
 			const ax = ca % W, ay = (ca / W) | 0, bx = cb % W, by = (cb / W) | 0;
 			const pairId = `portal_${subtype}`;
-			const e0 = objectEntry('monolithTwoWay', ax, ay, 0, tpl, subtype);
-			const e1 = objectEntry('monolithTwoWay', bx, by, 1, tpl, subtype);
+			const e0 = monolithEntry(ax, ay, 0, ch);
+			const e1 = monolithEntry(bx, by, 1, ch);
 			e0.pairId = e1.pairId = pairId;
 			plans[0].objects.push(e0);
 			plans[1].objects.push(e1);
@@ -4653,7 +4927,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				const pairId = `portal_${subtype}`;
 				const ends = [[ca % W, (ca / W) | 0], [cb % W, (cb / W) | 0]];
 				ends.forEach(([x, y], l) => {
-					const e = objectEntry('monolithTwoWay', x, y, l, tpl, subtype);
+					const e = monolithEntry(x, y, l, ch);
 					e.pairId = pairId;
 					plans[l].objects.push(e);
 					footprintBlock(tpl, x, y, l, W, H, blocked);
@@ -4701,6 +4975,13 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				console.error(`[gen] level ${l}: gates and monoliths placed late joined the roads, `
 					+ `${r.cells} cells in ${r.zones} zone(s)`
 					+ (r.failed ? `, ${r.failed} node(s) no road reached` : ''));
+		}
+	// the engine's free paths between each zone's links (holdFreePaths), on a
+	// template map, where the fill keeps its guards off them
+	if (p.zonePlan)
+		for (let l = 0; l < levels; l++) {
+			const held = holdFreePaths(plans[l], l, W, H, blocked);
+			if (held) console.error(`[gen] level ${l}: ${held} cell(s) held clear between each zone's links`);
 		}
 
 	// Content fill runs last, after the gates have claimed their ground.
@@ -5250,4 +5531,5 @@ function sweepStranded(plan, W, H, levelIndex, playerStarts, droppedPairs) {
 
 module.exports = { planLevel, fillLevel, planMap, chooseTemplateLayout, OBJECT_DEFS,
 	CLASS_TERRAIN_HINT, mainComponent, sweepStranded, openSealedPockets,
-	openSealedByObjects, carveUnderground };
+	openSealedByObjects, carveUnderground, templateBottleneck, crossLevelAnchors, pinnedStartSeed,
+	holdFreePaths };
