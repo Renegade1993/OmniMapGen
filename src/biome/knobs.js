@@ -203,9 +203,11 @@ const KNOBS = [
 	{ key: 'roadCobblestone', page: 'map', stock: true, label: 'Cobblestone road',
 		help: 'Allows cobblestone roads. Roads take the best type allowed, cobblestone first, as in the game\'s own generator; with none allowed there are no roads.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']], default: 1 },
+	// None by default: the default amount is 0%, and Normal beside it read as
+	// water on a map that had none (DMB Dev, 2026-09-27)
 	{ key: 'waterContent', page: 'map', stock: true, label: 'Water content',
-		help: 'None makes a dry map. Normal uses the Water page as set. Islands lays the water out as islands, at the Water page\'s amount. Random rolls one of the three.',
-		min: -1, max: 2, step: 1, stops: [[0, 'None'], [1, 'Normal'], [2, 'Islands'], [-1, 'Random']], default: 1 },
+		help: 'None makes a dry map. Normal lays the water as this page sets it, Islands as islands; either at 20% when the amount below is 0%. Random rolls one of the three.',
+		min: -1, max: 2, step: 1, stops: [[0, 'None'], [1, 'Normal'], [2, 'Islands'], [-1, 'Random']], default: 0 },
 
 	// ---- water
 	{ key: 'waterCoverage', page: 'water', label: 'Amount of water',

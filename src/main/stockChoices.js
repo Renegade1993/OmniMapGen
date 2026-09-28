@@ -86,8 +86,9 @@ function playerCounts({ players, humans, compOnly, templatePlayers }, roll) {
 /**
  * Water content, stock's four choices over the Water page's levers, applied to
  * biomes: 0 None (no water), 1 Normal (the levers as set), 2 Islands (the
- * islands layout at the set amount, or at defaultCoverage where the map was
- * dry), RANDOM one of the three.
+ * islands layout), RANDOM one of the three. Normal and Islands at an amount of
+ * 0% take defaultCoverage, so either always brings water: Normal beside 0%
+ * made a dry map while the page read Normal (DMB Dev, 2026-09-27).
  */
 function applyWaterContent(biomes, roll, { islandsShape, defaultCoverage }) {
 	if (biomes.waterContent === undefined) return;
@@ -96,11 +97,9 @@ function applyWaterContent(biomes, roll, { islandsShape, defaultCoverage }) {
 		w = roll.pick([0, 1, 2]);
 		roll.rolled.push(`water ${['none', 'normal', 'islands'][w]}`);
 	}
-	if (w === 0) biomes.waterCoverage = 0;
-	else if (w === 2) {
-		biomes.waterShape = islandsShape;
-		if (!(biomes.waterCoverage > 0)) biomes.waterCoverage = defaultCoverage;
-	}
+	if (w === 0) { biomes.waterCoverage = 0; return; }
+	if (w === 2) biomes.waterShape = islandsShape;
+	if (!(biomes.waterCoverage > 0)) biomes.waterCoverage = defaultCoverage;
 }
 
 /** Monster strength RANDOM_STRENGTH: stock rolls among weak, normal and strong. */

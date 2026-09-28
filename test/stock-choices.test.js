@@ -63,6 +63,9 @@ test('water content: none dries the map, islands takes the islands layout, Rando
 	const normal = { waterContent: 1, waterCoverage: 0.3, waterShape: 2 };
 	stock.applyWaterContent(normal, stock.roller(1), opts);
 	assert.deepStrictEqual([normal.waterShape, normal.waterCoverage], [2, 0.3], 'normal leaves the Water page as set');
+	const normalDry = { waterContent: 1, waterCoverage: 0, waterShape: 2 };
+	stock.applyWaterContent(normalDry, stock.roller(1), opts);
+	assert.deepStrictEqual([normalDry.waterShape, normalDry.waterCoverage], [2, 0.2], 'normal at 0% brings the default amount');
 	const seen = new Set();
 	for (let seed = 1; seed <= 60; seed++) {
 		const b = { waterContent: -1, waterCoverage: 0.3, waterShape: 1 };
