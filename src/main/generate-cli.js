@@ -12,7 +12,8 @@ const KNOWN = new Set(['w', 'h', 'players', 'out', 'seed', 'threads', 'perode',
 	'nocache', 'declaremods', 'rivers', 'rivershare', 'teams',
 	'template', 'accommodate', 'listtemplates', 'humans', 'render', 'observer',
 	'aionly', 'preset', 'listknobs', 'vcmiroot', 'vcmiuserdir', 'guardtheme',
-	'guardthemeshare', 'theme', 'dwellingthemeshare', 'bankthemeshare', 'strict', 'factions']);
+	'guardthemeshare', 'theme', 'dwellingthemeshare', 'bankthemeshare', 'strict', 'factions',
+	'humancolors']);
 
 /**
  * Parse `--key value` pairs, and refuse anything else.
@@ -130,10 +131,10 @@ stock.applyMonsterStrength(biomes, roll);
 // --teams still wins.
 const ROAD_BY_KNOB = ['pd', 'pg', 'pc'];   // dirt, gravel, cobblestone (config/roads.json)
 const RIVER_SHARE = 0.018;                  // the share rivers run through at amount 1
-function teamsFromCount(count, nPlayers) {
+function teamsFromCount(count, colors) {
 	const t = Math.round(count);
-	if (!(t >= 2) || t >= nPlayers) return undefined;   // everyone for themselves
-	return Array.from({ length: t }, (_, k) => COLORS.slice(0, nPlayers).filter((_, i) => i % t === k));
+	if (!(t >= 2) || t >= colors.length) return undefined;   // everyone for themselves
+	return Array.from({ length: t }, (_, k) => colors.filter((_, i) => i % t === k));
 }
 
 async function main() {
@@ -153,8 +154,23 @@ async function main() {
 	const W = parseInt(opt.w || '64', 10);
 	const H = parseInt(opt.h || '64', 10);
 	const tplMod = require('../rmg/template');
-	const { nPlayers, humans } = stock.playerCounts({ players: opt.players, humans: opt.humans, compOnly: biomes.compOnly,
+	const counts = stock.playerCounts({ players: opt.players, humans: opt.humans, compOnly: biomes.compOnly,
 		templatePlayers: opt.template && !RANDOM_TEMPLATE ? tplMod.loadTemplate(opt.template).raw.players : null }, roll);
+	// --humanColors red,green (DMB at Begin): the colours the seated humans
+	// took in the lobby. They are the map's human-or-computer seats and the
+	// rest of its players take the first colours left, as computer-only seats
+	// (canHumanPlay false, stock's COMP_ONLY). Without it every seat is open
+	// and the players are the first colours, as before.
+	const humanColors = opt.humancolors
+		? [...new Set(String(opt.humancolors).split(',').map(s => s.trim().toLowerCase()).filter(Boolean))] : null;
+	for (const c of humanColors || [])
+		if (!COLORS.includes(c)) fail(`--humanColors: "${c}" is no player colour; colours: ${COLORS.join(', ')}`);
+	const nPlayers = humanColors ? Math.max(counts.nPlayers, humanColors.length) : counts.nPlayers;
+	const humans = humanColors ? humanColors.length : counts.humans;
+	const mapColors = humanColors
+		? COLORS.filter(c => humanColors.includes(c)
+			|| COLORS.filter(k => !humanColors.includes(k)).indexOf(c) < nPlayers - humanColors.length)
+		: COLORS.slice(0, nPlayers);
 	const underground = opt.underground === '1' || opt.underground === 'true';
 	const template = !RANDOM_TEMPLATE ? opt.template : stock.randomTemplate(tplMod.listTemplates(), name => {
 		const tpl = tplMod.loadTemplate(name);
@@ -172,23 +188,24 @@ async function main() {
 	const observerColor = !opt.observer ? null
 		: (opt.observer === '1' || opt.observer === 'true')
 			? COLORS[0] : String(opt.observer).toLowerCase();
-	if (observerColor && !COLORS.slice(0, nPlayers).includes(observerColor))
+	if (observerColor && !mapColors.includes(observerColor))
 		fail(`--observer ${opt.observer}: this map's colours are `
-			+ COLORS.slice(0, nPlayers).join(', '));
+			+ mapColors.join(', '));
 	let corner = 0;
 	// --factions castle,random,tower,...: each player's own pick in colour order
 	// (the lobby's, when the map is made at Begin), a name to pin or random to
 	// roll; a player with no entry keeps every faction open in the map
 	const picks = opt.factions ? String(opt.factions).split(',').map(s => s.trim()) : [];
-	const players = COLORS.slice(0, nPlayers).map((c, i) => {
+	const players = mapColors.map((c, i) => {
 		const faction = 'core:' + ['castle','rampart','tower','inferno',
-			'necropolis','dungeon','stronghold','fortress'][i];
+			'necropolis','dungeon','stronghold','fortress'][COLORS.indexOf(c)];
+		const seat = humanColors ? { canPlay: humanColors.includes(c) ? 'PlayerOrAI' : 'AIOnly' } : {};
 		const chosenFaction = picks[i] ? picks[i].toLowerCase() : undefined;
 		if (c === observerColor)
 			// a placeholder; generateMap overwrites it with the chamber anchor
-			return { color: c, factions: [faction], townPos: { x: 0, y: 0, l: 1 } };
+			return { color: c, factions: [faction], townPos: { x: 0, y: 0, l: 1 }, ...seat };
 		const [cx, cy] = corners[corner++];
-		return { color: c, factions: [faction], chosenFaction, townPos: { x: cx, y: cy, l: 0 } };
+		return { color: c, factions: [faction], chosenFaction, townPos: { x: cx, y: cy, l: 0 }, ...seat };
 	});
 
 	const res = await generateMap({
@@ -241,7 +258,7 @@ async function main() {
 		// --teams "red,tan;blue,green" -> [["red","tan"],["blue","green"]]
 		teams: opt.teams
 			? opt.teams.split(';').map(g => g.split(',').map(s => s.trim()))
-			: biomes.teams !== undefined ? teamsFromCount(biomes.teams, nPlayers) : undefined,
+			: biomes.teams !== undefined ? teamsFromCount(biomes.teams, mapColors) : undefined,
 		guardTheme,
 		guardThemeShare,
 		dwellingThemeShare,
