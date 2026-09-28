@@ -52,6 +52,15 @@ const PRESETS = require(path.join(ROOT, 'src/biome/presets.json'));
 const CLASSIC = process.argv.includes('--classic');
 const AT_BEGIN = process.argv.includes('--atbegin');
 const PAGER = CLASSIC || AT_BEGIN || process.argv.includes('--pager');
+// K (2026-09-27), on the Begin build: "I didn't authorize the paging of all
+// the omnimapgen pages to be done with the main map controls window...that was
+// supposed to be to toggle back and forth between omni map gen and vcmi map
+// gen, with the old button layout for each of omni map gens many pages". The
+// arrows at the top are DMB's now, switching between VCMI's random map and each
+// generator (its name between them, y 0-50 kept clear); the pages are chosen
+// with the row of page buttons again. Only the plain --pager build keeps DMB's
+// pages widget.
+const PAGE_WIDGET = PAGER && !CLASSIC && !AT_BEGIN;
 const outArg = process.argv.indexOf('--out');
 const STAGE = PAGER ? path.resolve(outArg > 0 ? process.argv[outArg + 1]
 	: path.join(ROOT, '.tmp', CLASSIC ? 'classic' : AT_BEGIN ? 'atbegin' : 'pager'))
@@ -76,7 +85,11 @@ const ALL_PAGES = [{ id: 'map', label: 'Map' }, ...PAGES];
 const PER_ROW = 4, BTN_W = 80, BTN_GAP = 4, BTN_X0 = 56, BTN_Y0 = 96, BTN_ROW = 26;
 const BTN_ROWS = Math.ceil(ALL_PAGES.length / PER_ROW);
 // with the pager the rows start just inside the lower box (its top line at y 89-90)
-const ROW0 = PAGER ? 104 : BTN_Y0 + BTN_ROWS * BTN_ROW + 14, ROW_H = 30;
+const ROW0 = PAGE_WIDGET ? 104 : BTN_Y0 + BTN_ROWS * BTN_ROW + 14, ROW_H = 30;
+// --classic: the page buttons just under DMB's mode bar (y 0-50), two rows of
+// four above the bands, where the lever pages have nothing and the Map page's
+// template row sits below them
+const CL_BTN_Y0 = 51, CL_BTN_ROW = 26, CL_TEMPLATE_Y = 103;
 // the stock left/right arrows (SCNRBLF / SCNRBRT, 16 px) either side of the
 // title at (222,36), symmetric inside the title box (x 55-388)
 const ARROW_Y = CLASSIC ? 24 : 28, ARROW_L = 66, ARROW_R = 362;
@@ -106,7 +119,10 @@ const classicRowTop = i => (i % 2 ? BAND_CTRL[i >> 1] + 5 : BAND_HEAD[i >> 1] - 
 // levers the classic Map page shows in a stock band of its own (the stock
 // tab's Monster Strength), and levers stock's own choices replace there (its
 // three road toggles pave as Road type did), so neither is on its lever page
-const CLASSIC_ON_MAP = new Set(['monsterStrength', 'roadType']);
+// Monster strength left the Map page for the Monsters page (K, 2026-09-27: "the
+// first monster settings are superseded by the other monster tab....we should
+// put it all on one page"), so no setting is in two places.
+const CLASSIC_ON_MAP = new Set(['roadType']);
 // VCMI Extras' art for the classic Map page (its extended lobby's background,
 // template box and field, size and two-level icons, Setup button and blue
 // checkbox): the look K plays with. DMB is asked (2026-09-27) to supply these
@@ -242,64 +258,60 @@ function classicMapPageJson() {
 	const knob = key => KNOBS.find(k => k.key === key);
 
 	// the template row: the stock box and label, and the field that opens the chooser
-	items.push({ name: 'boxTemplate', type: 'picture', image: EXTRAS_ART.templateBox, position: { x: 54, y: 56 } },
+	items.push({ name: 'boxTemplate', type: 'picture', image: EXTRAS_ART.templateBox, position: { x: 54, y: CL_TEMPLATE_Y } },
 		{ name: 'label_map.template', type: 'label', font: 'small', alignment: 'center', color: 'white',
-			text: 'vcmi.mapGen.template.hover', position: { x: 104, y: 66 } },
+			text: 'vcmi.mapGen.template.hover', position: { x: 104, y: CL_TEMPLATE_Y + 10 } },
 		{ name: 'buttonChooseTemplate', type: 'button', image: EXTRAS_ART.templateField, imageOrder: [0, 0, 0, 0],
-			position: { x: 158, y: 56 }, callback: 'chooseMapGenTemplate', help: help('map.template') },
+			position: { x: 158, y: CL_TEMPLATE_Y }, callback: 'chooseMapGenTemplate', help: help('map.template') },
 		// DMB's settings-bound label (addon API 2): the stored template, or the short "none" line
 		{ name: 'labelTemplate', type: 'label', font: 'small', alignment: 'center', color: 'white',
 			setting: 'persistent:mapGen/map/template', emptyText: 'vcmi.mapGen.template.noneShort',
 			// the chooser's Random stores "random"; the label says so in words (API 3)
 			...(AT_BEGIN ? { valueTexts: { random: 'vcmi.mapGen.template.random' } } : {}),
-			position: { x: 262, y: 66 } });
-	// the size row, 37 px apart from x 54, and the two-level toggle last in it (x 350)
-	// each size its own tooltip, with the days a new hero takes to cross it
-	items.push(group('group_map.size', { x: 54, y: 81 }, 'persistent:mapGen/map/size', SIZE_STOPS.map(([v]) => v),
-		MAP_DEFAULTS.size, (v, i) => EXTRAS_ART.sizes[i], SIZE_STOPS.map((_, i) => i * 37),
-		undefined, undefined, i => `map.size.s${i}`),
+			position: { x: 262, y: CL_TEMPLATE_Y + 10 } });
+	// the first band: the seven sizes, 35 px apart from x 67, then C and the
+	// two-level toggle last in the row; each size its own tooltip, with the days
+	// a new hero takes to cross it
+	items.push(...head(0, 'map.size'),
+		group('group_map.size', { x: 67, y: BAND_CTRL[0] }, 'persistent:mapGen/map/size', SIZE_STOPS.map(([v]) => v),
+			MAP_DEFAULTS.size, (v, i) => EXTRAS_ART.sizes[i], SIZE_STOPS.map((_, i) => i * 35),
+			undefined, undefined, i => `map.size.s${i}`),
 		{ name: 'check_map.underground', type: 'toggleButton', image: EXTRAS_ART.twoLevels, imageOrder: [0, 1, 1, 3],
-			position: { x: 350, y: 81 }, setting: 'persistent:mapGen/map/underground',
+			position: { x: 347, y: BAND_CTRL[0] }, setting: 'persistent:mapGen/map/underground',
 			selected: !!MAP_DEFAULTS.underground, help: help('map.underground') });
 	// C, the custom size window, where the extended lobby has it (DMB API 3:
 	// map/width and map/height, and map/size 0 so the row shows none)
 	if (AT_BEGIN)
 		items.push({ name: 'buttonCustomSize', type: 'button', image: EXTRAS_ART.customSize,
-			position: { x: 313, y: 81 }, callback: 'chooseMapGenCustomSize', help: help('map.size.custom') });
+			position: { x: 67 + 7 * 35, y: BAND_CTRL[0] }, callback: 'chooseMapGenCustomSize', help: help('map.size.custom') });
 	// the players: stock's two bands, each with Random (-1)
 	const numbersAndRandom = from => [...range(0, 7).map(i => i * 32), 256];
-	items.push(...head(0, 'map.humans'),
-		group('group_map.humans', { x: 67, y: BAND_CTRL[0] }, 'persistent:mapGen/map/humans', [...range(1, 8), -1],
+	items.push(...head(1, 'map.humans'),
+		group('group_map.humans', { x: 67, y: BAND_CTRL[1] }, 'persistent:mapGen/map/humans', [...range(1, 8), -1],
 			MAP_DEFAULTS.humans, v => (v < 0 ? 'RANRAND' : `RANNUM${v}`), numbersAndRandom()));
-	items.push(...head(1, 'compOnly'),
-		group('group_compOnly', { x: 67, y: BAND_CTRL[1] }, 'persistent:mapGen/params/compOnly', [...range(0, 7), -1],
+	items.push(...head(2, 'compOnly'),
+		group('group_compOnly', { x: 67, y: BAND_CTRL[2] }, 'persistent:mapGen/params/compOnly', [...range(0, 7), -1],
 			knob('compOnly').default, v => (v < 0 ? 'RANRAND' : `RANNUM${v}`), numbersAndRandom()));
 	// team alignments (DMB's grid, one team a player) and, beside them, mod content
-	items.push(...head(2, 'map.teams', X_LABEL, 150), ...head(2, 'map.declareMods', 228, 150),
-		{ name: 'buttonTeams', type: 'button', image: EXTRAS_ART.setupButton, position: { x: 73, y: 292 },
+	items.push(...head(3, 'map.teams', X_LABEL, 150), ...head(3, 'map.declareMods', 228, 150),
+		{ name: 'buttonTeams', type: 'button', image: EXTRAS_ART.setupButton, position: { x: 73, y: BAND_CTRL[3] + 7 },
 			callback: 'chooseMapGenTeams', help: help('map.teams'),
 			items: [{ type: 'label', font: 'small', alignment: 'center', color: 'yellow', text: 'vcmi.mapGen.map.teams.setup' }] },
-		{ name: 'check_map.declareMods', type: 'toggleButton', image: EXTRAS_ART.checkbox, position: { x: 228, y: 290 },
+		{ name: 'check_map.declareMods', type: 'toggleButton', image: EXTRAS_ART.checkbox, position: { x: 228, y: BAND_CTRL[3] + 5 },
 			setting: 'persistent:mapGen/map/declareMods', selected: !!MAP_DEFAULTS.declareMods, help: help('map.declareMods') },
 		{ name: 'label_map.declareMods.use', type: 'label', font: 'small', alignment: 'left', color: 'white',
-			text: 'vcmi.mapGen.map.declareMods.use', position: { x: 263, y: 294 } });
+			text: 'vcmi.mapGen.map.declareMods.use', position: { x: 263, y: BAND_CTRL[3] + 9 } });
 	// the road types: stock's three toggles, each beside its road
-	items.push(...head(3, 'map.roads'));
+	items.push(...head(4, 'map.roads'));
 	['roadDirt', 'roadGravel', 'roadCobblestone'].forEach((key, i) => items.push(
-		{ name: `check_${key}`, type: 'toggleButton', image: EXTRAS_ART.checkbox, position: { x: 67 + 100 * i, y: 354 },
+		{ name: `check_${key}`, type: 'toggleButton', image: EXTRAS_ART.checkbox, position: { x: 67 + 100 * i, y: BAND_CTRL[4] + 3 },
 			setting: `persistent:mapGen/params/${key}`, selected: !!knob(key).default, help: help(key) },
-		{ name: `road_${key}`, type: 'animation', image: ['dirtrd', 'gravrd', 'cobbrd'][i], position: { x: 117 + 100 * i, y: 354 },
+		{ name: `road_${key}`, type: 'animation', image: ['dirtrd', 'gravrd', 'cobbrd'][i], position: { x: 117 + 100 * i, y: BAND_CTRL[4] + 3 },
 			frames: { start: 13, end: 13 } }));
-	// water content and monster strength, each with Random
-	items.push(...head(4, 'waterContent'),
-		group('group_waterContent', { x: 67, y: BAND_CTRL[4] }, 'persistent:mapGen/params/waterContent', [0, 1, 2, -1],
+	// water content, with Random
+	items.push(...head(5, 'waterContent'),
+		group('group_waterContent', { x: 67, y: BAND_CTRL[5] }, 'persistent:mapGen/params/waterContent', [0, 1, 2, -1],
 			knob('waterContent').default, v => ({ 0: 'RANNONE', 1: 'RANNORM', 2: 'RANISLD' }[v] || 'RANRAND'), [0, 85, 170, 256]));
-	// our five strengths on DMB's 50 px blanks where stock has three, then stock's Random (-9)
-	const strength = knob('monsterStrength');
-	items.push(...head(5, 'monsterStrength'),
-		group('group_monsterStrength', { x: 67, y: BAND_CTRL[5] }, 'persistent:mapGen/params/monsterStrength',
-			[...strength.stops.map(([v]) => v), -9], strength.default, v => (v === -9 ? 'RANRAND' : 'RanButton50'),
-			[0, 51, 102, 153, 204, 256], strength.stops.map((_, i) => `vcmi.mapGen.monsterStrength.word${i}`), 'small'));
 	return { library: ['config/widgets/commonPrimitives.json'], items };
 }
 
@@ -370,7 +382,8 @@ function mapPageJson() {
 function tabJson() {
 	const buttons = ALL_PAGES.map((p, i) => ({
 		index: i, type: 'toggleButton', image: 'MapGenButton80',
-		position: { x: BTN_X0 + (i % PER_ROW) * (BTN_W + BTN_GAP), y: BTN_Y0 + Math.floor(i / PER_ROW) * BTN_ROW },
+		position: { x: BTN_X0 + (i % PER_ROW) * (BTN_W + BTN_GAP),
+			y: (CLASSIC ? CL_BTN_Y0 : BTN_Y0) + Math.floor(i / PER_ROW) * (CLASSIC ? CL_BTN_ROW : BTN_ROW) },
 		help: { hover: `vcmi.mapGen.page.${p.id}.hover`, help: `vcmi.mapGen.page.${p.id}.help` },
 		items: [{ type: 'label', font: 'small', alignment: 'center', color: 'yellow',
 			text: `vcmi.mapGen.page.${p.id}.hover` }],
@@ -382,7 +395,7 @@ function tabJson() {
 	return {
 		library: ['config/widgets/commonPrimitives.json'],
 		// the page list the page buttons show; the pages widget carries its own
-		...(PAGER ? {} : { pages: ALL_PAGES.map(p => `config/widgets/mapGen/page_${p.id}.json`) }),
+		...(PAGE_WIDGET ? {} : { pages: ALL_PAGES.map(p => `config/widgets/mapGen/page_${p.id}.json`) }),
 		// the preset Defaults returns to, which the client no longer assumes
 		defaults: { params, map: MAP_DEFAULTS, preset: 'nostalgia' },
 		items: [
@@ -395,7 +408,7 @@ function tabJson() {
 			// through the screens (DMB's "pages" widget; named "pages" so
 			// MapGenTab drives it, id "mapGen" so another mod's tabPages can add
 			// a screen of its own)
-			...(PAGER ? [
+			...(PAGE_WIDGET ? [
 				{ name: 'pages', type: 'pages', id: 'mapGen', position: { x: 0, y: 0 },
 					pages: ALL_PAGES.map(p => ({ layout: `config/widgets/mapGen/page_${p.id}.json`,
 						title: `vcmi.mapGen.page.${p.id}.hover` })),
@@ -407,13 +420,14 @@ function tabJson() {
 				...(CLASSIC ? [] : [{ name: 'labelSubTitle', type: 'label', font: 'small', alignment: 'center', color: 'white',
 					text: 'vcmi.mapGen.tab.subtitle', position: { x: 222, y: 60 } }]),
 			] : [
-				{ name: 'labelTitle', type: 'label', font: 'big', alignment: 'center', color: 'yellow',
-					text: 'vcmi.lobby.mapGen.hover', position: { x: 222, y: 36 } },
-				{ name: 'labelSubTitle', type: 'label', font: 'small', alignment: 'center', color: 'white',
-					text: 'vcmi.mapGen.tab.subtitle', position: { x: 222, y: 60 } },
+				// at Begin DMB writes the mode's name at the top, between its arrows
+				...(AT_BEGIN || CLASSIC ? [] : [{ name: 'labelTitle', type: 'label', font: 'big', alignment: 'center', color: 'yellow',
+					text: 'vcmi.lobby.mapGen.hover', position: { x: 222, y: 36 } }]),
+				...(CLASSIC ? [] : [{ name: 'labelSubTitle', type: 'label', font: 'small', alignment: 'center', color: 'white',
+					text: 'vcmi.mapGen.tab.subtitle', position: { x: 222, y: 60 } }]),
 				{ name: 'pageButtons', type: 'toggleGroup', position: { x: 0, y: 0 }, items: buttons,
 					callback: 'activateMapGenPage' },
-				{ name: 'lineTop', type: 'horizontalLine', rect: { x: X_IN, y: ROW0 - 12, w: W_IN, h: 3 } },
+				...(CLASSIC ? [] : [{ name: 'lineTop', type: 'horizontalLine', rect: { x: X_IN, y: ROW0 - 12, w: W_IN, h: 3 } }]),
 			]),
 			// classic: the stock tab's gold bar (RANSHOW's place, 54,535), as two
 			// halves of DMB's blank one, lettered black as RANSHOW is

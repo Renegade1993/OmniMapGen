@@ -52,8 +52,16 @@ test('--classic: the stock background, the rows inside its bands, every text the
 	const texts = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'omnimapgen', 'english.json'), 'utf8'));
 	// the extended lobby's background, as the Random Map Setup K plays with has it
 	assert.strictEqual(tab.items.find(w => w.name === 'background').image, 'RanMapBk_new');
-	const w = tab.items.find(i => i.type === 'pages');
-	assert.ok(w && w.name === 'pages' && w.id === 'mapGen');
+	// K (2026-09-27): the page buttons at the top, as the released tab has them;
+	// the arrows there are DMB's, switching modes, so y 0-50 stays clear
+	assert.ok(!tab.items.some(i => i.type === 'pages'), 'no pages widget');
+	assert.strictEqual(tab.pages.length, 8);
+	const buttons = tab.items.find(i => i.name === 'pageButtons');
+	assert.strictEqual(buttons.callback, 'activateMapGenPage');
+	for (const b of buttons.items)
+		assert.ok(b.position.y >= 51 && b.position.y + 24 <= 103, `page button ${b.index} under the mode bar, above the template row`);
+	assert.ok(!tab.items.some(i => i.position && !['background', 'pageButtons'].includes(i.name) && i.position.y < 51), 'nothing of ours in the mode bar DMB draws');
+	const w = { pages: tab.pages.map(layout => ({ layout })) };
 	// every text a label, a button's word or an empty line names exists
 	const keys = [];
 	const walk = node => {
@@ -78,7 +86,9 @@ test('--classic: the stock background, the rows inside its bands, every text the
 		}
 	}
 	for (const k of keys) assert.ok(texts[k], `${k} has a text`);
-	assert.ok(settings.get('persistent:mapGen/params/monsterStrength').endsWith('page_map.json'), 'monster strength on the Map page, as stock');
+	// K: "the first monster settings are superseded by the other monster tab" -
+	// one place for them, the Monsters page
+	assert.ok(settings.get('persistent:mapGen/params/monsterStrength').endsWith('page_monsters.json'), 'monster strength on the Monsters page');
 	assert.ok(!settings.has('persistent:mapGen/params/roadType'), 'the three road toggles replace Road type');
 
 	// K's no-regression rule, against the stock screen: every choice it offers is here
@@ -92,7 +102,6 @@ test('--classic: the stock background, the rows inside its bands, every text the
 	assert.ok(bound('persistent:mapGen/map/humans').values.includes(-1), 'human or computer players: Random');
 	assert.deepStrictEqual(bound('persistent:mapGen/params/compOnly').values, [0, 1, 2, 3, 4, 5, 6, 7, -1], 'computer only players 0-7 and Random');
 	assert.deepStrictEqual(bound('persistent:mapGen/params/waterContent').values, [0, 1, 2, -1], 'water: none, normal, islands, Random');
-	assert.ok(bound('persistent:mapGen/params/monsterStrength').values.includes(-9), 'monster strength: Random');
 	for (const r of ['roadDirt', 'roadGravel', 'roadCobblestone'])
 		assert.strictEqual(bound(`persistent:mapGen/params/${r}`).type, 'toggleButton', `${r}: its own toggle, as stock`);
 	assert.ok(map.some(i => i.callback === 'chooseMapGenTeams'), 'team alignments open the grid');
@@ -106,7 +115,9 @@ test('--atbegin: the game makes the map at Begin, so no Generate button, and the
 			{ windowsHide: true });
 		const tab = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'widgets', 'mapGen', 'mapGenTab.json'), 'utf8'));
 		const texts = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'omnimapgen', 'english.json'), 'utf8'));
-		assert.ok(tab.items.some(w => w.type === 'pages' && w.name === 'pages'), 'on the pages widget');
+		assert.ok(tab.items.some(w => w.name === 'pageButtons') && tab.pages.length === 8, 'on the page buttons');
+		assert.ok(!tab.items.some(w => w.type === 'pages'), 'no pages widget: its arrows are DMB\'s mode switch now');
+		assert.ok(!tab.items.some(w => w.name === 'labelTitle'), 'DMB writes the mode\'s name');
 		assert.ok(!tab.items.some(w => w.callback === 'generateMapGenMap'), 'no Generate button');
 		const defaults = tab.items.find(w => w.callback === 'resetMapGenDefaults');
 		assert.ok(defaults, 'Defaults stays');
@@ -120,8 +131,7 @@ test('--atbegin: the game makes the map at Begin, so no Generate button, and the
 		assert.strictEqual(texts['vcmi.lobby.mapGen.hover'], 'Omni Map Gen');
 		assert.match(texts['vcmi.lobby.mapGen.help'], /when the game begins/);
 		if (classic) {
-			const pages = tab.items.find(w => w.type === 'pages').pages;
-			const map = JSON.parse(fs.readFileSync(path.join(stage, pages[0].layout), 'utf8')).items;
+			const map = JSON.parse(fs.readFileSync(path.join(stage, tab.pages[0]), 'utf8')).items;
 			assert.strictEqual(map.find(i => i.name === 'buttonCustomSize').callback, 'chooseMapGenCustomSize', 'C, the custom size');
 			assert.strictEqual(map.find(i => i.name === 'labelTemplate').valueTexts.random, 'vcmi.mapGen.template.random');
 			assert.strictEqual(texts['vcmi.mapGen.template.random'], '(Random)');
