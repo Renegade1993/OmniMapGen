@@ -91,21 +91,31 @@ test('--classic: the stock background, the rows inside its bands, every text the
 	assert.ok(settings.get('persistent:mapGen/params/monsterStrength').endsWith('page_monsters.json'), 'monster strength on the Monsters page');
 	assert.ok(!settings.has('persistent:mapGen/params/roadType'), 'the three road toggles replace Road type');
 
-	// K's no-regression rule, against the stock screen: every choice it offers is here
-	const map = JSON.parse(fs.readFileSync(path.join(stage, w.pages[0].layout), 'utf8')).items;
+	// K's no-regression rule, against the stock screen: every choice it offers is
+	// here, drawn as stock draws it; and his other (2026-09-27): "all options per
+	// theme should be together", so the Map page keeps the map's own and each of
+	// the rest is on its theme's page
+	const pageItems = id => JSON.parse(fs.readFileSync(path.join(stage, 'config', 'widgets', 'mapGen', `page_${id}.json`), 'utf8')).items;
+	const map = pageItems('map');
 	const bound = s => map.find(i => i.setting === s);
-	const size = bound('persistent:mapGen/map/size'), under = bound('persistent:mapGen/map/underground');
+	const size = bound('persistent:mapGen/map/size');
 	assert.strictEqual(size.type, 'toggleGroup', 'map size is a row of buttons, as stock');
 	assert.deepStrictEqual(size.values, [36, 72, 108, 144, 180, 216, 252]);
-	assert.strictEqual(under.position.y, size.position.y, 'the two-level toggle in the size row');
-	assert.ok(under.position.x > size.position.x + size.items[size.items.length - 1].position.x, 'and last in it');
 	assert.ok(bound('persistent:mapGen/map/humans').values.includes(-1), 'human or computer players: Random');
 	assert.deepStrictEqual(bound('persistent:mapGen/params/compOnly').values, [0, 1, 2, 3, 4, 5, 6, 7, -1], 'computer only players 0-7 and Random');
-	assert.deepStrictEqual(bound('persistent:mapGen/params/waterContent').values, [0, 1, 2, -1], 'water: none, normal, islands, Random');
-	for (const r of ['roadDirt', 'roadGravel', 'roadCobblestone'])
-		assert.strictEqual(bound(`persistent:mapGen/params/${r}`).type, 'toggleButton', `${r}: its own toggle, as stock`);
 	assert.ok(map.some(i => i.callback === 'chooseMapGenTeams'), 'team alignments open the grid');
 	assert.ok(map.some(i => i.callback === 'chooseMapGenTemplate'), 'the template chooser');
+	const on = (setting, id) => assert.ok(settings.get(setting).endsWith(`page_${id}.json`), `${setting} on the ${id} page`);
+	on('persistent:mapGen/map/underground', 'underground');
+	on('persistent:mapGen/params/waterContent', 'water');
+	for (const r of ['roadDirt', 'roadGravel', 'roadCobblestone']) on(`persistent:mapGen/params/${r}`, 'borders');
+	const under = pageItems('underground').filter(i => i.setting);
+	assert.strictEqual(under[0].setting, 'persistent:mapGen/map/underground', 'the two-level toggle heads its page');
+	assert.strictEqual(under[0].type, 'toggleButton', 'a toggle, as stock');
+	const water = pageItems('water').filter(i => i.setting);
+	assert.deepStrictEqual(water[0].values, [0, 1, 2, -1], 'water content heads its page: none, normal, islands, Random');
+	for (const r of ['roadDirt', 'roadGravel', 'roadCobblestone'])
+		assert.strictEqual(pageItems('borders').find(i => i.setting === `persistent:mapGen/params/${r}`).type, 'toggleButton', `${r}: its own toggle, as stock`);
 });
 
 test('--atbegin: the game makes the map at Begin, so no Generate button, and the mode is "Omni Map Gen"', () => {
@@ -168,6 +178,16 @@ test('--api4: the gold bar\'s words carved, Water layout a chooser, and the mani
 	const tab = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'widgets', 'mapGen', 'mapGenTab.json'), 'utf8'));
 	const texts = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'omnimapgen', 'english.json'), 'utf8'));
 	assert.strictEqual(tab.items.find(w => w.name === 'defaultsButton').items[0].style, 'engraved', 'K: black on gold, carved');
+	// the game's own size buttons (DMB's DmbSize, 44 by 33): the seven fill the
+	// band, C takes the next one, and the two-level button is the game's own too
+	const page = id => JSON.parse(fs.readFileSync(path.join(stage, 'config', 'widgets', 'mapGen', `page_${id}.json`), 'utf8')).items;
+	const size = page('map').find(w => w.setting === 'persistent:mapGen/map/size');
+	assert.deepStrictEqual(size.items.map(b => b.image), ['DmbSizeS', 'DmbSizeM', 'DmbSizeL', 'DmbSizeXL', 'DmbSizeH', 'DmbSizeXH', 'DmbSizeG']);
+	assert.ok(size.position.x >= 67 && size.position.x + size.items[6].position.x + 44 <= 67 + 312, 'the seven inside the band');
+	const custom = page('map').find(w => w.callback === 'chooseMapGenCustomSize');
+	assert.strictEqual(custom.image, 'DmbSizeC');
+	assert.ok(custom.position.y >= size.position.y + 33, 'C below the row');
+	assert.strictEqual(page('underground').find(w => w.setting === 'persistent:mapGen/map/underground').image, 'RANUNDR');
 	const water = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'widgets', 'mapGen', 'page_water.json'), 'utf8'));
 	const chooser = water.items.find(w => w.name === 'choose_waterShape');
 	assert.ok(chooser && chooser.setting === 'persistent:mapGen/params/waterShape' && chooser.options.length >= 5);

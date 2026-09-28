@@ -123,9 +123,8 @@ const LINE_BOTTOM = 540, BUTTON_Y = 548;
 const BAND_HEAD = [133, 199, 265, 331, 398, 465];
 const BAND_CTRL = [153, 219, 285, 351, 419, 485];
 const classicRowTop = i => (i % 2 ? BAND_CTRL[i >> 1] + 5 : BAND_HEAD[i >> 1] - 5);
-// levers the classic Map page shows in a stock band of its own (the stock
-// tab's Monster Strength), and levers stock's own choices replace there (its
-// three road toggles pave as Road type did), so neither is on its lever page
+// levers stock's own choices replace in the classic tab (its three road
+// toggles, on the Borders page, pave as Road type did)
 // Monster strength left the Map page for the Monsters page (K, 2026-09-27: "the
 // first monster settings are superseded by the other monster tab....we should
 // put it all on one page"), so no setting is in two places.
@@ -232,21 +231,85 @@ function knobRow(k, y) {
 function pageJson(page) {
 	const items = [];
 	const knobs = KNOBS.filter(k => k.page === page.id && !(CLASSIC && CLASSIC_ON_MAP.has(k.key)));
-	if (CLASSIC && knobs.length > 2 * BAND_HEAD.length)
-		throw new Error(`the ${page.id} page has ${knobs.length} levers, more than six bands hold`);
-	knobs.forEach((k, i) => items.push(...knobRow(k, CLASSIC ? classicRowTop(i) : ROW0 + i * ROW_H)));
+	// a stock band takes both strips of one band, the room of two levers
+	const band = CLASSIC ? STOCK_BANDS[page.id] : null;
+	const lead = band && band.first ? 2 : 0;
+	const rows = knobs.length + (band ? 2 + (band.first ? 0 : knobs.length % 2) : 0);
+	if (CLASSIC && rows > 2 * BAND_HEAD.length)
+		throw new Error(`the ${page.id} page needs ${rows} rows, more than six bands hold`);
+	if (band && band.first) items.push(...band.items(0));
+	// the released tab's two-level checkbox heads its Underground page the same way
+	const under = !CLASSIC && page.id === 'underground' ? 1 : 0;
+	if (under)
+		items.push(helpButton('map.underground', ROW0), rowLabel('map.underground', ROW0),
+			checkbox('map.underground', 'persistent:mapGen/map/underground', ROW0, MAP_DEFAULTS.underground));
+	knobs.forEach((k, i) => items.push(...knobRow(k, CLASSIC ? classicRowTop(i + lead) : ROW0 + (i + under) * ROW_H)));
+	if (band && !band.first) items.push(...band.items(Math.ceil(knobs.length / 2)));
 	return { library: ['config/widgets/commonPrimitives.json'], items };
 }
+
+// The classic look's pieces, shared by its Map page and the lever pages that
+// carry one of stock's bands.
+const clHelp = id => ({ hover: `vcmi.mapGen.${id}.hover`, help: `vcmi.mapGen.${id}.help` });
+const clWord = (text, font = 'big') => [{ type: 'label', font, alignment: 'center', color: 'yellow', text }];
+const clRange = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
+// a band's header, white on the header strip as the stock tab writes them
+const clHead = (n, id, x = X_LABEL, w = 312) => [
+	{ name: `help_${id}`, type: 'hoverHelp', rect: { x: x - 2, y: BAND_HEAD[n] - 3, w, h: 18 }, help: clHelp(id) },
+	{ name: `label_${id}`, type: 'label', font: 'small', alignment: 'left', color: 'white',
+		text: `vcmi.mapGen.${id}.hover`, position: { x, y: BAND_HEAD[n] } }];
+// a row of choices, settings-bound: items[i] stores values[i]; stock's word
+// buttons and size buttons wear the gold frame when chosen (imageOrder),
+// RANRAND and the number buttons draw their own
+const clGroup = (name, pos, setting, values, def, imageOf, xs, words, font, helpOf) => ({
+	name, type: 'toggleGroup', position: pos, setting, values, selected: Math.max(0, values.indexOf(def)),
+	items: values.map((v, i) => {
+		const image = imageOf(v, i);
+		return { index: i, type: 'toggleButton', image,
+			...(/^(RANNUM|RANRAND)/.test(image) ? {} : { imageOrder: [0, 1, 1, 3] }),
+			position: { x: xs[i], y: 0 }, help: clHelp(helpOf ? helpOf(i) : name.replace(/^group_/, '')),
+			...(words && words[i] ? { items: clWord(words[i], font) } : {}) };
+	}),
+});
+
+// K (2026-09-27, via the lead): "are all dungeon options in the dungeon tab?
+// etc.? all options per theme should be together." The stock screen's choices
+// that belong to a lever page's theme are on that page, a band each: the
+// two-level toggle heads Underground, water content heads Water, and the three
+// road types follow the Borders page's road levers. The Map page keeps the map
+// itself: template, size, players, teams, mod content.
+const knobDefault = key => KNOBS.find(k => k.key === key).default;
+const STOCK_BANDS = {
+	underground: { first: true, items: n => [...clHead(n, 'map.underground'),
+		{ name: 'check_map.underground', type: 'toggleButton',
+			// the game's own two-level button with API 4; VCMI Extras' before it
+			...(API4 ? { image: 'RANUNDR' } : { image: EXTRAS_ART.twoLevels, imageOrder: [0, 1, 1, 3] }),
+			position: { x: 67, y: BAND_CTRL[n] }, setting: 'persistent:mapGen/map/underground',
+			selected: !!MAP_DEFAULTS.underground, help: clHelp('map.underground') }] },
+	// with Random
+	water: { first: true, items: n => [...clHead(n, 'waterContent'),
+		clGroup('group_waterContent', { x: 67, y: BAND_CTRL[n] }, 'persistent:mapGen/params/waterContent', [0, 1, 2, -1],
+			knobDefault('waterContent'), v => ({ 0: 'RANNONE', 1: 'RANNORM', 2: 'RANISLD' }[v] || 'RANRAND'), [0, 85, 170, 256])] },
+	// stock's three toggles, each beside its road
+	borders: { first: false, items: n => [...clHead(n, 'map.roads'),
+		...['roadDirt', 'roadGravel', 'roadCobblestone'].flatMap((key, i) => [
+			{ name: `check_${key}`, type: 'toggleButton', image: EXTRAS_ART.checkbox, position: { x: 67 + 100 * i, y: BAND_CTRL[n] + 3 },
+				setting: `persistent:mapGen/params/${key}`, selected: !!knobDefault(key), help: clHelp(key) },
+			{ name: `road_${key}`, type: 'animation', image: ['dirtrd', 'gravrd', 'cobbrd'][i], position: { x: 117 + 100 * i, y: BAND_CTRL[n] + 3 },
+				frames: { start: 13, end: 13 } }])] },
+};
 
 /**
  * The classic Map page, laid out as the game's Random Map Setup looks with
  * the VCMI Extras mod's extended lobby (the screen K plays with, 2026-09-27),
- * with every choice stock offers there: the template; the seven map sizes
- * with the two-level toggle last in the same row; human or computer players
- * and computer only players, each with Random; team alignments; the three
- * road types; water content and monster strength, each with Random. Mod
- * content, which stock has no screen for, shares the team band. K's rule: the
- * tab may do more than stock, never less.
+ * with the choices stock offers there that are the map's own: the template;
+ * the seven map sizes; human or computer players and computer only players,
+ * each with Random; team alignments. Mod content, which stock has no screen
+ * for, shares the team band. Stock's other choices are on the page of their
+ * theme (STOCK_BANDS): the two-level toggle on Underground, water content on
+ * Water, the three road types on Borders, monster strength on Monsters. K's
+ * rules: the tab may do more than stock, never less; all options per theme
+ * together.
  *
  * The RANNUM, RANRAND, RANNONE, RANNORM and RANISLD buttons and the road
  * sprites are the game's own; RanButton50 and the gold bars are DMB's blank
@@ -254,27 +317,7 @@ function pageJson(page) {
  */
 function classicMapPageJson() {
 	const items = [];
-	const help = id => ({ hover: `vcmi.mapGen.${id}.hover`, help: `vcmi.mapGen.${id}.help` });
-	const word = (text, font = 'big') => [{ type: 'label', font, alignment: 'center', color: 'yellow', text }];
-	const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => a + i);
-	// a band's header, white on the header strip as the stock tab writes them
-	const head = (n, id, x = X_LABEL, w = 312) => [
-		{ name: `help_${id}`, type: 'hoverHelp', rect: { x: x - 2, y: BAND_HEAD[n] - 3, w, h: 18 }, help: help(id) },
-		{ name: `label_${id}`, type: 'label', font: 'small', alignment: 'left', color: 'white',
-			text: `vcmi.mapGen.${id}.hover`, position: { x, y: BAND_HEAD[n] } }];
-	// a row of choices, settings-bound: items[i] stores values[i]; stock's
-	// word buttons wear the gold frame when chosen (imageOrder), RANRAND and
-	// the number buttons draw their own
-	const group = (name, pos, setting, values, def, imageOf, xs, words, font, helpOf) => ({
-		name, type: 'toggleGroup', position: pos, setting, values, selected: Math.max(0, values.indexOf(def)),
-		items: values.map((v, i) => {
-			const image = imageOf(v, i);
-			return { index: i, type: 'toggleButton', image,
-				...(/^(RANNUM|RANRAND)/.test(image) ? {} : { imageOrder: [0, 1, 1, 3] }),
-				position: { x: xs[i], y: 0 }, help: help(helpOf ? helpOf(i) : name.replace(/^group_/, '')),
-				...(words && words[i] ? { items: word(words[i], font) } : {}) };
-		}),
-	});
+	const help = clHelp, range = clRange, head = clHead, group = clGroup;
 	const knob = key => KNOBS.find(k => k.key === key);
 
 	// the template row: the stock box and label, and the field that opens the chooser
@@ -289,49 +332,47 @@ function classicMapPageJson() {
 			// the chooser's Random stores "random"; the label says so in words (API 3)
 			...(AT_BEGIN ? { valueTexts: { random: 'vcmi.mapGen.template.random' } } : {}),
 			position: { x: 262, y: CL_TEMPLATE_Y + 10 } });
-	// the first band: the seven sizes, 35 px apart from x 67, then C and the
-	// two-level toggle last in the row; each size its own tooltip, with the days
-	// a new hero takes to cross it
+	// the first band: the seven sizes, each its own tooltip with the days a new
+	// hero takes to cross it. VCMI Extras' art 35 px apart from x 67, with C
+	// last in the row; with API 4 the game's own size buttons (DMB's DmbSize,
+	// 44 by 33, the game's RANSIZ), whose seven fill the band's 312 px, so C
+	// takes the next band. The two-level toggle heads the Underground page.
+	const sizeArt = API4 ? ['DmbSizeS', 'DmbSizeM', 'DmbSizeL', 'DmbSizeXL', 'DmbSizeH', 'DmbSizeXH', 'DmbSizeG'] : EXTRAS_ART.sizes;
+	const sizeX = API4 ? 69 : 67, sizeStep = API4 ? 44 : 35;
 	items.push(...head(0, 'map.size'),
-		group('group_map.size', { x: 67, y: BAND_CTRL[0] }, 'persistent:mapGen/map/size', SIZE_STOPS.map(([v]) => v),
-			MAP_DEFAULTS.size, (v, i) => EXTRAS_ART.sizes[i], SIZE_STOPS.map((_, i) => i * 35),
-			undefined, undefined, i => `map.size.s${i}`),
-		{ name: 'check_map.underground', type: 'toggleButton', image: EXTRAS_ART.twoLevels, imageOrder: [0, 1, 1, 3],
-			position: { x: 347, y: BAND_CTRL[0] }, setting: 'persistent:mapGen/map/underground',
-			selected: !!MAP_DEFAULTS.underground, help: help('map.underground') });
-	// C, the custom size window, where the extended lobby has it (DMB API 3:
-	// map/width and map/height, and map/size 0 so the row shows none)
-	if (AT_BEGIN)
+		group('group_map.size', { x: sizeX, y: BAND_CTRL[0] }, 'persistent:mapGen/map/size', SIZE_STOPS.map(([v]) => v),
+			MAP_DEFAULTS.size, (v, i) => sizeArt[i], SIZE_STOPS.map((_, i) => i * sizeStep),
+			undefined, undefined, i => `map.size.s${i}`));
+	// C, the custom size window (DMB API 3: map/width and map/height, and
+	// map/size 0 so the row shows none)
+	let band = 1;
+	if (AT_BEGIN && API4)
+		items.push(...head(band, 'map.size.custom'), { name: 'buttonCustomSize', type: 'button', image: 'DmbSizeC',
+			position: { x: sizeX, y: BAND_CTRL[band++] }, callback: 'chooseMapGenCustomSize', help: help('map.size.custom') });
+	else if (AT_BEGIN)
 		items.push({ name: 'buttonCustomSize', type: 'button', image: EXTRAS_ART.customSize,
 			position: { x: 67 + 7 * 35, y: BAND_CTRL[0] }, callback: 'chooseMapGenCustomSize', help: help('map.size.custom') });
 	// the players: stock's two bands, each with Random (-1)
 	const numbersAndRandom = from => [...range(0, 7).map(i => i * 32), 256];
-	items.push(...head(1, 'map.humans'),
-		group('group_map.humans', { x: 67, y: BAND_CTRL[1] }, 'persistent:mapGen/map/humans', [...range(1, 8), -1],
+	items.push(...head(band, 'map.humans'),
+		group('group_map.humans', { x: 67, y: BAND_CTRL[band] }, 'persistent:mapGen/map/humans', [...range(1, 8), -1],
 			MAP_DEFAULTS.humans, v => (v < 0 ? 'RANRAND' : `RANNUM${v}`), numbersAndRandom()));
-	items.push(...head(2, 'compOnly'),
-		group('group_compOnly', { x: 67, y: BAND_CTRL[2] }, 'persistent:mapGen/params/compOnly', [...range(0, 7), -1],
+	band++;
+	items.push(...head(band, 'compOnly'),
+		group('group_compOnly', { x: 67, y: BAND_CTRL[band] }, 'persistent:mapGen/params/compOnly', [...range(0, 7), -1],
 			knob('compOnly').default, v => (v < 0 ? 'RANRAND' : `RANNUM${v}`), numbersAndRandom()));
+	band++;
 	// team alignments (DMB's grid, one team a player) and, beside them, mod content
-	items.push(...head(3, 'map.teams', X_LABEL, 150), ...head(3, 'map.declareMods', 228, 150),
-		{ name: 'buttonTeams', type: 'button', image: EXTRAS_ART.setupButton, position: { x: 73, y: BAND_CTRL[3] + 7 },
+	items.push(...head(band, 'map.teams', X_LABEL, 150), ...head(band, 'map.declareMods', 228, 150),
+		{ name: 'buttonTeams', type: 'button', image: EXTRAS_ART.setupButton, position: { x: 73, y: BAND_CTRL[band] + 7 },
 			callback: 'chooseMapGenTeams', help: help('map.teams'),
 			items: [{ type: 'label', font: 'small', alignment: 'center', color: 'yellow', text: 'vcmi.mapGen.map.teams.setup' }] },
-		{ name: 'check_map.declareMods', type: 'toggleButton', image: EXTRAS_ART.checkbox, position: { x: 228, y: BAND_CTRL[3] + 5 },
+		{ name: 'check_map.declareMods', type: 'toggleButton', image: EXTRAS_ART.checkbox, position: { x: 228, y: BAND_CTRL[band] + 5 },
 			setting: 'persistent:mapGen/map/declareMods', selected: !!MAP_DEFAULTS.declareMods, help: help('map.declareMods') },
 		{ name: 'label_map.declareMods.use', type: 'label', font: 'small', alignment: 'left', color: 'white',
-			text: 'vcmi.mapGen.map.declareMods.use', position: { x: 263, y: BAND_CTRL[3] + 9 } });
-	// the road types: stock's three toggles, each beside its road
-	items.push(...head(4, 'map.roads'));
-	['roadDirt', 'roadGravel', 'roadCobblestone'].forEach((key, i) => items.push(
-		{ name: `check_${key}`, type: 'toggleButton', image: EXTRAS_ART.checkbox, position: { x: 67 + 100 * i, y: BAND_CTRL[4] + 3 },
-			setting: `persistent:mapGen/params/${key}`, selected: !!knob(key).default, help: help(key) },
-		{ name: `road_${key}`, type: 'animation', image: ['dirtrd', 'gravrd', 'cobbrd'][i], position: { x: 117 + 100 * i, y: BAND_CTRL[4] + 3 },
-			frames: { start: 13, end: 13 } }));
-	// water content, with Random
-	items.push(...head(5, 'waterContent'),
-		group('group_waterContent', { x: 67, y: BAND_CTRL[5] }, 'persistent:mapGen/params/waterContent', [0, 1, 2, -1],
-			knob('waterContent').default, v => ({ 0: 'RANNONE', 1: 'RANNORM', 2: 'RANISLD' }[v] || 'RANRAND'), [0, 85, 170, 256]));
+			text: 'vcmi.mapGen.map.declareMods.use', position: { x: 263, y: BAND_CTRL[band] + 9 } });
+	// the road types went to the Borders page, water content to the Water page
+	// and the two-level toggle to the Underground page (STOCK_BANDS)
 	return { library: ['config/widgets/commonPrimitives.json'], items };
 }
 
@@ -355,9 +396,8 @@ function mapPageJson() {
 		...slider('map.size', 'persistent:mapGen/map/size', y, 36, 36, 6, MAP_DEFAULTS.size,
 			{ valueNames: SIZE_STOPS.map(([v], i) => [v, `vcmi.mapGen.map.size.stop${i}`]) }));
 	y += ROW_H;
-	items.push(helpButton('map.underground', y), rowLabel('map.underground', y),
-		checkbox('map.underground', 'persistent:mapGen/map/underground', y, MAP_DEFAULTS.underground));
-	y += ROW_H;
+	// (the two-level checkbox heads the Underground page, with the rest of the
+	// underground's settings: pageJson)
 	// Queue item "Mod-content integration" (2026-09-21, SID-20260921-5e2c9a):
 	// default stays core-only so maps still work mod-free, an opt-in toggle
 	// unlocks modded terrain/creature banks/dwellings and declares them in
@@ -456,8 +496,11 @@ function tabJson() {
 					position: { x: 54, y: 535 },
 					help: { hover: 'vcmi.mapGen.defaults.hover', help: 'vcmi.mapGen.defaults.help' },
 					callback: 'resetMapGenDefaults',
+					// with API 4 the word is carved in the game's own gold-button
+					// capitals, which DMB draws only when the word fits the half
+					// bar (about 120 px): DEFAULTS takes 178, RESET 107
 					items: [{ type: 'label', font: 'big', alignment: 'center', ...GOLD_WORD,
-						text: 'vcmi.mapGen.defaults.hover' }] },
+						text: API4 ? 'vcmi.mapGen.defaults.word' : 'vcmi.mapGen.defaults.hover' }] },
 				// at Begin the game makes the map, so no Generate: the player's own
 				// presets take its half of the gold bar (DMB API 3, K's "save and load
 				// presets"), two of the stock word buttons side by side
@@ -519,6 +562,7 @@ function stringsJson() {
 		} : {}),
 		'vcmi.mapGen.defaults.hover': 'Defaults',
 		'vcmi.mapGen.defaults.help': '{Defaults}\n\nPuts every setting back to its default, matched to the random maps you have played.',
+		'vcmi.mapGen.defaults.word': 'Reset',
 		'vcmi.mapGen.generate.hover': 'Generate map',
 		'vcmi.mapGen.generate.help': '{Generate map}\n\nMakes a map from these settings and selects it in the scenario list. Settings are saved as you change them.',
 		'vcmi.mapGen.generate.running': 'Generating a map...',
@@ -546,8 +590,8 @@ function stringsJson() {
 		'vcmi.mapGen.map.size.hover': 'Map size',
 		'vcmi.mapGen.map.size.help': '{Map size}\n\nS 36, M 72, L 108, XL 144, H 180, XH 216 or G 252 cells a side. A new hero crosses one corner to corner in about '
 			+ SIZE_STOPS.map(([v]) => crossingDays(v)).join(', ').replace(/, (\d+)$/, ' or $1') + ' days, over open grass with nothing in the way.',
-		'vcmi.mapGen.map.underground.hover': 'Underground',
-		'vcmi.mapGen.map.underground.help': '{Underground}\n\nA second level underground, linked to the surface by subterranean gates and portals.',
+		'vcmi.mapGen.map.underground.hover': 'Two-level map',
+		'vcmi.mapGen.map.underground.help': '{Two-level map}\n\nA second level underground, linked to the surface by subterranean gates and portals. Off, the other settings on this page do nothing.',
 		'vcmi.mapGen.map.declareMods.hover': 'Use mod content',
 		'vcmi.mapGen.map.declareMods.help': '{Use mod content}\n\nPlace modded terrain, creature banks and dwellings from your installed mods, and declare them in the map so VCMI requires the same mods to open it. Off makes a map that loads anywhere, core content only.',
 		'vcmi.mapGen.map.players.hover': 'Players',
@@ -570,6 +614,12 @@ function stringsJson() {
 		s['vcmi.mapGen.map.roads.hover'] = 'Road types';
 		s['vcmi.mapGen.map.roads.help'] = '{Road types}\n\nThe roads are paved with the best type left on, cobblestone first, as the game\'s generator does; with none on there are no roads.';
 		['Weakest', 'Weak', 'Normal', 'Strong', 'Strongest'].forEach((w, i) => { s[`vcmi.mapGen.monsterStrength.word${i}`] = w; });
+	}
+	// the gold bar's word with API 4, and its status line to match (the bar
+	// says Reset: DEFAULTS does not fit it in the game's own capitals)
+	if (API4) {
+		s['vcmi.mapGen.defaults.hover'] = 'Reset to defaults';
+		s['vcmi.mapGen.defaults.help'] = '{Reset}\n\nPuts every setting back to its default, matched to the random maps you have played.';
 	}
 	// after the lever texts below: the classic band says what stock's does
 	const classicLabels = CLASSIC ? { 'vcmi.mapGen.monsterStrength.hover': 'Monster strength' } : {};

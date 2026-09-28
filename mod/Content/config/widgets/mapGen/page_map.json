@@ -157,52 +157,11 @@
 			}
 		},
 		{
-			"name": "help_map.underground",
-			"type": "hoverHelp",
-			"rect": {
-				"x": 55,
-				"y": 258,
-				"w": 143,
-				"h": 22
-			},
-			"help": {
-				"hover": "vcmi.mapGen.map.underground.hover",
-				"help": "vcmi.mapGen.map.underground.help"
-			}
-		},
-		{
-			"name": "label_map.underground",
-			"type": "label",
-			"font": "small",
-			"alignment": "left",
-			"color": "yellow",
-			"text": "vcmi.mapGen.map.underground.hover",
-			"position": {
-				"x": 58,
-				"y": 263
-			}
-		},
-		{
-			"name": "check_map.underground",
-			"type": "toggleButton",
-			"image": "lobby/checkbox",
-			"position": {
-				"x": 198,
-				"y": 257
-			},
-			"setting": "persistent:mapGen/map/underground",
-			"selected": false,
-			"help": {
-				"hover": "vcmi.mapGen.map.underground.hover",
-				"help": "vcmi.mapGen.map.underground.help"
-			}
-		},
-		{
 			"name": "help_map.declareMods",
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 288,
+				"y": 258,
 				"w": 143,
 				"h": 22
 			},
@@ -220,7 +179,7 @@
 			"text": "vcmi.mapGen.map.declareMods.hover",
 			"position": {
 				"x": 58,
-				"y": 293
+				"y": 263
 			}
 		},
 		{
@@ -229,7 +188,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 287
+				"y": 257
 			},
 			"setting": "persistent:mapGen/map/declareMods",
 			"selected": false,
@@ -243,7 +202,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 318,
+				"y": 288,
 				"w": 143,
 				"h": 22
 			},
@@ -261,7 +220,7 @@
 			"text": "vcmi.mapGen.map.players.hover",
 			"position": {
 				"x": 58,
-				"y": 323
+				"y": 293
 			}
 		},
 		{
@@ -269,7 +228,7 @@
 			"type": "toggleGroup",
 			"position": {
 				"x": 58,
-				"y": 342
+				"y": 312
 			},
 			"setting": "persistent:mapGen/map/players",
 			"values": [
@@ -381,7 +340,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 382,
+				"y": 352,
 				"w": 143,
 				"h": 22
 			},
@@ -399,7 +358,7 @@
 			"text": "vcmi.mapGen.map.humans.hover",
 			"position": {
 				"x": 58,
-				"y": 387
+				"y": 357
 			}
 		},
 		{
@@ -407,7 +366,7 @@
 			"type": "toggleGroup",
 			"position": {
 				"x": 58,
-				"y": 406
+				"y": 376
 			},
 			"setting": "persistent:mapGen/map/humans",
 			"values": [
@@ -533,7 +492,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 450,
+				"y": 420,
 				"w": 143,
 				"h": 22
 			},
@@ -551,7 +510,7 @@
 			"text": "vcmi.mapGen.teams.hover",
 			"position": {
 				"x": 58,
-				"y": 455
+				"y": 425
 			}
 		},
 		{
@@ -561,7 +520,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 454
+				"y": 424
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -617,7 +576,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 455
+				"y": 425
 			}
 		}
 	]
