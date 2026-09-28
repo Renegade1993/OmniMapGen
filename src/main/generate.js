@@ -772,10 +772,15 @@ async function generateMap(params) {
 	});
 	const levelReq = { levels: levels.length, seed: params.seed || 1, starts: startNative,
 		undergroundStarts: (params.biomes || {}).undergroundStarts };
-	const startLevels = tplZonesEarly && observerIndex < 0 ? assignLevels(tplZonesEarly, levelReq) : null;
+	// without a template the starts are the only zones decided up front: the
+	// same rule over them alone, a random town to the level with fewer starts
+	const freeStarts = !tplZonesEarly && observerIndex < 0
+		? (params.players || []).map((p, i) => ({ id: i + 1, type: 'playerStart', owner: i + 1 })) : null;
+	const startLevels = observerIndex >= 0 ? null
+		: tplZonesEarly ? assignLevels(tplZonesEarly, levelReq) : assignLevels(freeStarts, levelReq);
 	if (startLevels)
 		(params.players || []).forEach((p, i) => {
-			const z = ownerZone(i);
+			const z = tplZonesEarly ? ownerZone(i) : freeStarts[i];
 			const l = z ? startLevels.get(z.id) : undefined;
 			if (l !== undefined && p.townPos && (p.townPos.l || 0) !== l) p.townPos = { ...p.townPos, l };
 		});

@@ -183,7 +183,7 @@
 	"vcmi.mapGen.subterraneanNarrow.hover": "Narrow tunnels",
 	"vcmi.mapGen.subterraneanNarrow.help": "{Narrow tunnels}\n\nHow the underground is carved: 0 gives wide caverns, 1 narrow tunnels between small chambers.",
 	"vcmi.mapGen.undergroundStarts.hover": "Starts underground",
-	"vcmi.mapGen.undergroundStarts.help": "{Starts underground}\n\nWhether player starts may lie underground on a two-level template map. As the game does: a start whose picked town belongs on the surface stays up, Dungeon goes down, and a random town may land on either level, as the template's own levels allow. Never keeps every start on the surface; Always puts them all below.",
+	"vcmi.mapGen.undergroundStarts.help": "{Starts underground}\n\nWhether player starts may lie underground on a two-level map. As the game does: a start whose picked town belongs on the surface stays up, Dungeon goes down, and a random town may land on either level. Never keeps every start on the surface; Always puts them all below.",
 	"vcmi.mapGen.undergroundStarts.stop0": "Never",
 	"vcmi.mapGen.undergroundStarts.stop1": "As the game does",
 	"vcmi.mapGen.undergroundStarts.stop2": "Always",

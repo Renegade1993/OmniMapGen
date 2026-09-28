@@ -256,6 +256,7 @@ async function main() {
 	// --classic: the pages in stock Heroes III's Random Map Setup look (gen_vcmi_ui.js --classic)
 	const classic = !!opt.classic;
 	const atBegin = !!opt.atbegin;
+	const api4 = !!opt.api4;
 	const pager = !!opt.pager || classic || atBegin;
 	// dist, dist-pager, dist-classic, dist-atbegin, dist-classic-atbegin
 	const out = path.resolve(opt.out || path.join(ROOT, (classic ? 'dist-classic' : pager && !atBegin ? 'dist-pager' : 'dist')
@@ -265,7 +266,7 @@ async function main() {
 	if (pager)
 		require('child_process').execFileSync(process.execPath,
 			[path.join(ROOT, 'tools', 'gen_vcmi_ui.js'), 'build', '--pager', ...(classic ? ['--classic'] : []),
-				...(atBegin ? ['--atbegin'] : []), '--out', pagerStage],
+				...(atBegin ? ['--atbegin'] : []), ...(api4 ? ['--api4'] : []), '--out', pagerStage],
 			{ stdio: 'inherit', windowsHide: true });
 	const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 
@@ -290,7 +291,7 @@ async function main() {
 	// mod/mod.json is the one copy: the mod catalog reads it from the
 	// repository, and the release carries it unchanged
 	let modJson = fs.readFileSync(path.join(ROOT, 'mod', 'mod.json'));
-	if (pager) modJson = Buffer.from(buildModJson(modJson.toString('utf8'), { pager, atBegin, classic }), 'utf8');
+	if (pager) modJson = Buffer.from(buildModJson(modJson.toString('utf8'), { pager, atBegin, classic, api4 }), 'utf8');
 	const manifest = JSON.parse(modJson.toString('utf8'));
 	if (manifest.version !== pkg.version)
 		throw new Error(`mod/mod.json says ${manifest.version}, package.json ${pkg.version}: bump both together`);
@@ -364,10 +365,10 @@ async function main() {
  * Begin); at Begin, the generator run when the host presses Begin, under K's
  * name for the mode.
  */
-function buildModJson(text, { pager, atBegin, classic = false }) {
+function buildModJson(text, { pager, atBegin, classic = false, api4 = false }) {
 	if (!pager) return text;
 	if (!/\n\t"mapGenerator" :/.test(text)) throw new Error('mod/mod.json: no "mapGenerator" line to put "dmb" before');
-	text = text.replace(/\n\t"mapGenerator" :/, `\n\t"dmb" : { "api" : ${atBegin ? 3 : 2} },\n\t"mapGenerator" :`);
+	text = text.replace(/\n\t"mapGenerator" :/, `\n\t"dmb" : { "api" : ${api4 ? 4 : atBegin ? 3 : 2} },\n\t"mapGenerator" :`);
 	// the stock look draws with the VCMI Extras mod's lobby art: without it the
 	// page loses its background, size row and checkboxes (DMB Dev, 2026-09-27),
 	// so the launcher asks for Extras with it until K decides where that art

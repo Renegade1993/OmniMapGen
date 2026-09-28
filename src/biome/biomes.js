@@ -80,8 +80,8 @@ const BIOME_DEFAULTS = {
 	// a level with that little floor has nowhere to put the terrain features
 	// that make one look real. Measured with `vmap_thickness.js --corpus`.
 	subterraneanOpen: 0.57,
-	// template maps: which starts go below (template.js assignLevels): 0 none,
-	// 1 the game's rule, 2 all of them
+	// which starts go below on a two-level map (template.js assignLevels): 0
+	// none, 1 the game's rule, 2 all of them
 	undergroundStarts: 1,
 	mineDensity: 1.0,
 	resourceDensity: 1.0,

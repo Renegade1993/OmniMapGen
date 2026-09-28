@@ -61,6 +61,13 @@ const PAGER = CLASSIC || AT_BEGIN || process.argv.includes('--pager');
 // with the row of page buttons again. Only the plain --pager build keeps DMB's
 // pages widget.
 const PAGE_WIDGET = PAGER && !CLASSIC && !AT_BEGIN;
+// --api4 (DMB's addon API level 4): the gold bar's words carved into the gold
+// as the game carves its own ("style": "engraved"; K: "we missed the mark on
+// the black on gold font"), and Water layout as a chooser, a list to pick from
+// (K's C10: "a category, like size and template")
+const API4 = process.argv.includes('--api4');
+const CHOOSERS = new Set(API4 ? ['waterShape'] : []);
+const GOLD_WORD = API4 ? { style: 'engraved' } : { color: [0, 0, 0, 255] };
 const outArg = process.argv.indexOf('--out');
 const STAGE = PAGER ? path.resolve(outArg > 0 ? process.argv[outArg + 1]
 	: path.join(ROOT, '.tmp', CLASSIC ? 'classic' : AT_BEGIN ? 'atbegin' : 'pager'))
@@ -203,6 +210,19 @@ const slider = (id, setting, y, min, step, total, def, fmt) => [
 // settings-bound slider for the rest
 function knobRow(k, y) {
 	const setting = `persistent:mapGen/params/${k.key}`;
+	// a chooser: the button shows the choice and lists them all when pressed
+	if (CHOOSERS.has(k.key) && k.stops) {
+		const texts = Object.fromEntries(k.stops.map(([v], i) => [String(v), `vcmi.mapGen.${k.key}.stop${i}`]));
+		const w = CLASSIC ? 150 : 190;
+		return [helpButton(k.key, y), rowLabel(k.key, y),
+			{ name: `choose_${k.key}`, type: 'button', image: CLASSIC ? 'RanButton150' : 'MapGenButton190',
+				position: { x: X_CTRL, y: CLASSIC ? y - 5 : y - 1 }, setting, callback: 'chooseMapGenOption',
+				options: k.stops.map(([v], i) => [v, `vcmi.mapGen.${k.key}.stop${i}`]),
+				title: `vcmi.mapGen.${k.key}.hover`,
+				help: { hover: `vcmi.mapGen.${k.key}.hover`, help: `vcmi.mapGen.${k.key}.help` },
+				items: [{ name: `value_${k.key}`, type: 'label', font: 'small', alignment: 'center', color: 'yellow',
+					setting, valueTexts: texts, emptyText: texts[String(k.default)] }] }];
+	}
 	if (k.stops && k.stops.length === 2 && k.min === 0 && k.max === 1)
 		return [helpButton(k.key, y), rowLabel(k.key, y), checkbox(k.key, setting, y, k.default)];
 	return [helpButton(k.key, y), rowLabel(k.key, y),
@@ -436,7 +456,7 @@ function tabJson() {
 					position: { x: 54, y: 535 },
 					help: { hover: 'vcmi.mapGen.defaults.hover', help: 'vcmi.mapGen.defaults.help' },
 					callback: 'resetMapGenDefaults',
-					items: [{ type: 'label', font: 'big', alignment: 'center', color: [0, 0, 0, 255],
+					items: [{ type: 'label', font: 'big', alignment: 'center', ...GOLD_WORD,
 						text: 'vcmi.mapGen.defaults.hover' }] },
 				// at Begin the game makes the map, so no Generate: the player's own
 				// presets take its half of the gold bar (DMB API 3, K's "save and load
@@ -451,7 +471,7 @@ function tabJson() {
 				{ name: 'generateButton', type: 'button', image: 'RanShowButton166', position: { x: 225, y: 535 },
 					help: { hover: 'vcmi.mapGen.generate.hover', help: 'vcmi.mapGen.generate.help' },
 					callback: 'generateMapGenMap',
-					items: [{ type: 'label', font: 'big', alignment: 'center', color: [0, 0, 0, 255],
+					items: [{ type: 'label', font: 'big', alignment: 'center', ...GOLD_WORD,
 						text: 'vcmi.mapGen.generate.hover' }] }]),
 			] : [
 			{ name: 'lineBottom', type: 'horizontalLine', rect: { x: X_IN, y: LINE_BOTTOM, w: W_IN, h: 3 } },

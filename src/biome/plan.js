@@ -1232,13 +1232,20 @@ function carveUnderground(W, H, zone, seeds, edges, connections, p, rng, doors =
 			const i = zone[c], d = (c % W - centre[i].x) ** 2 + (((c / W) | 0) - centre[i].y) ** 2;
 			if (d < bestD[i]) { bestD[i] = d; anchor[i] = c; }
 		}
+		// a start's chamber opens round its own cell, where its town stands
+		// (the free layout's starts stay on their cell; a template's move to
+		// their zone's centre, which is where this puts the chamber anyway)
+		seeds.forEach((sd, i) => { if (sd.player && zone[sd.y * W + sd.x] === i) anchor[i] = sd.y * W + sd.x; });
 		anchor.forEach((c, i) => { if (c >= 0) centre[i] = { x: c % W, y: (c / W) | 0 }; });
 	}
 
 	for (let i = 0; i < seeds.length; i++) {
 		// a chamber holding a share of its biome's ground, with a little jitter
-		// so they are not all the same circle
-		const want = area[i] * (1 - narrow) * 0.5;
+		// so they are not all the same circle; a start's holds half its zone, the
+		// open share a start has on the surface, or a start below began in a
+		// closet beside the surface starts' fields (free layout 72x72 s3: 137
+		// tiles against 1,352)
+		const want = area[i] * (seeds[i] && seeds[i].player ? 0.5 : (1 - narrow) * 0.5);
 		const r = Math.max(2, Math.sqrt(want / Math.PI) * (0.85 + rng() * 0.3));
 		disc(centre[i].x, centre[i].y, r, i);
 		if (doors && anchor[i] >= 0 && !open[anchor[i]] && zoneLineSafe(open, zone, W, H, anchor[i], doorCell))
@@ -4558,13 +4565,18 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		// between zones the template keeps apart.
 		let placed = 0, cursor = 0;
 		for (let i = 0; i < (crossGates + crossPortals ? 0 : gateCount); i++) {
-			// reachability shifts as each pair lands, so recompute per gate
+			// reachability shifts as each pair lands, so recompute per gate; below
+			// the surface the largest region, as before starts could lie there
 			const reach = [0, 1].map(l => mainComponent(W, H, l, blocked,
-				startsOn(l)));
+				l === 0 ? startsOn(l) : []));
 			let done = false;
 			for (; cursor < order.length && !done; cursor++) {
 				const c = order[cursor];
 				const x = c % W, y = (c / W) | 0;
+				// never inside a start's zone, on either level: these gates carry no
+				// guard, and one there was a way out of the start past its guarded
+				// doorways, into another start's ground (free layout, 72x72 s4)
+				if ([0, 1].some(l => plans[l].classes && plans[l].classes[plans[l].zone[c]] === BIOME_CLASS.PLAYER)) continue;
 				// a gate pair must fit and be usable on BOTH levels, else neither
 				// half is placed: one lone gate is a channel with no other end
 				if (!footprintFits(surfaceTpl, x, y, 0, W, H, blocked)) continue;

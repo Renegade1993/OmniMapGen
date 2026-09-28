@@ -164,7 +164,7 @@ const KNOBS = [
 	// K (2026-09-27): starts underground by default, as in the game, inferred
 	// from the template, and the player's to override
 	{ key: 'undergroundStarts', page: 'underground', label: 'Starts underground',
-		help: 'Whether player starts may lie underground on a two-level template map. As the game does: a start whose picked town belongs on the surface stays up, Dungeon goes down, and a random town may land on either level, as the template\'s own levels allow. Never keeps every start on the surface; Always puts them all below.',
+		help: 'Whether player starts may lie underground on a two-level map. As the game does: a start whose picked town belongs on the surface stays up, Dungeon goes down, and a random town may land on either level. Never keeps every start on the surface; Always puts them all below.',
 		min: 0, max: 2, step: 1, stops: [[0, 'Never'], [1, 'As the game does'], [2, 'Always']] },
 	{ key: 'subterraneanOpen', page: 'underground', label: 'Open cave floor',
 		help: 'How much of the underground is open floor rather than solid rock. Real two-level maps leave about 57% open.',

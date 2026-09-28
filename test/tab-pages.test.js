@@ -161,3 +161,22 @@ test('the released layout keeps its page buttons and asks for no addon API level
 	const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'mod', 'mod.json'), 'utf8'));
 	assert.strictEqual(manifest.dmb, undefined, 'DMB releases before level 2 cannot refuse the mod');
 });
+
+test('--api4: the gold bar\'s words carved, Water layout a chooser, and the manifest asks for level 4', () => {
+	const stage = fs.mkdtempSync(path.join(testTmp(), 'vmapgen-api4-'));
+	execFileSync(process.execPath, [TOOL, 'build', '--classic', '--atbegin', '--api4', '--out', stage], { windowsHide: true });
+	const tab = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'widgets', 'mapGen', 'mapGenTab.json'), 'utf8'));
+	const texts = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'omnimapgen', 'english.json'), 'utf8'));
+	assert.strictEqual(tab.items.find(w => w.name === 'defaultsButton').items[0].style, 'engraved', 'K: black on gold, carved');
+	const water = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'widgets', 'mapGen', 'page_water.json'), 'utf8'));
+	const chooser = water.items.find(w => w.name === 'choose_waterShape');
+	assert.ok(chooser && chooser.setting === 'persistent:mapGen/params/waterShape' && chooser.options.length >= 5);
+	for (const [, key] of chooser.options) assert.ok(texts[key], `${key} has a text`);
+	assert.ok(!water.items.some(w => w.name === 'slider_waterShape'), 'no slider beside it');
+	const label = chooser.items[0];
+	assert.strictEqual(label.setting, chooser.setting, 'the button shows the choice');
+	assert.deepStrictEqual(Object.keys(label.valueTexts), chooser.options.map(([v]) => String(v)));
+	const { buildModJson } = require('../tools/make_mod');
+	const text = fs.readFileSync(path.join(ROOT, 'mod', 'mod.json'), 'utf8');
+	assert.deepStrictEqual(JSON.parse(buildModJson(text, { pager: true, atBegin: true, api4: true })).dmb, { api: 4 });
+});
