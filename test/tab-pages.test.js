@@ -185,9 +185,20 @@ test('--api4: the gold bar\'s words carved, Water layout a chooser, and the mani
 	const size = page('map').find(w => w.setting === 'persistent:mapGen/map/size');
 	assert.deepStrictEqual(size.items.map(b => b.image), ['DmbSizeS', 'DmbSizeM', 'DmbSizeL', 'DmbSizeXL', 'DmbSizeH', 'DmbSizeXH', 'DmbSizeG']);
 	assert.ok(size.position.x >= 67 && size.position.x + size.items[6].position.x + 44 <= 67 + 312, 'the seven inside the band');
-	const custom = page('map').find(w => w.callback === 'chooseMapGenCustomSize');
-	assert.strictEqual(custom.image, 'DmbSizeC');
-	assert.ok(custom.position.y >= size.position.y + 33, 'C below the row');
+	// custom size: a type entry box, not the old popup (K, September 27th/28th)
+	assert.ok(!page('map').some(w => w.callback === 'chooseMapGenCustomSize'), 'the old popup is gone with API 4');
+	const widthIn = page('map').find(w => w.setting === 'persistent:mapGen/map/width');
+	const heightIn = page('map').find(w => w.setting === 'persistent:mapGen/map/height');
+	assert.strictEqual(widthIn.type, 'textInput');
+	assert.strictEqual(heightIn.type, 'textInput');
+	assert.ok(widthIn.rect.y >= size.position.y + 33, 'the width field below the size row');
+	assert.strictEqual(widthIn.rect.y, heightIn.rect.y, 'width and height in the same row');
+	assert.ok(widthIn.rect.x < heightIn.rect.x, 'width reads first, left to right');
+	assert.ok(widthIn.valueMin > 0 && widthIn.valueMax >= 252, 'bounds cover every stock size');
+	// each field has its own backdrop, since textInput draws no background
+	for (const inp of [widthIn, heightIn])
+		assert.ok(page('map').some(w => w.type === 'transparentFilledRectangle'
+			&& w.rect.x === inp.rect.x && w.rect.y === inp.rect.y), `${inp.setting} has a backdrop`);
 	assert.strictEqual(page('underground').find(w => w.setting === 'persistent:mapGen/map/underground').image, 'RANUNDR');
 	const water = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'widgets', 'mapGen', 'page_water.json'), 'utf8'));
 	const chooser = water.items.find(w => w.name === 'choose_waterShape');

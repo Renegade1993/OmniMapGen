@@ -343,12 +343,37 @@ function classicMapPageJson() {
 		group('group_map.size', { x: sizeX, y: BAND_CTRL[0] }, 'persistent:mapGen/map/size', SIZE_STOPS.map(([v]) => v),
 			MAP_DEFAULTS.size, (v, i) => sizeArt[i], SIZE_STOPS.map((_, i) => i * sizeStep),
 			undefined, undefined, i => `map.size.s${i}`));
-	// C, the custom size window (DMB API 3: map/width and map/height, and
-	// map/size 0 so the row shows none)
+	// Custom size: any width and height typed directly, no popup (K, September
+	// 27th/28th: "custom size should just be a type entry box"). With API 4,
+	// two textInput fields bound straight to persistent:mapGen/map/width and
+	// .../height (DMB Dev, September 28th): typed digits write live, clamped
+	// to WH_MIN..WH_MAX, and MapGenTab clears the standard-size row itself
+	// once either changes, same as picking a size clears these. Each field
+	// gets the dark backdrop SetSizeWindow's own three fields use
+	// (RandomMapTab.cpp), since textInput draws no background of its own.
+	// The old "C" button and its popup (chooseMapGenCustomSize) stay for the
+	// non-API4 build below; DMB Dev removes that path once every layout using
+	// it has moved over.
+	const WH_MIN = 36, WH_MAX = 999;
+	const customSizeField = (id, setting, x, y) => [
+		{ name: `backdrop_${id}`, type: 'transparentFilledRectangle',
+			rect: { x, y, w: 70, h: 22 }, color: [0, 0, 0, 128], colorLine: [64, 64, 64, 64] },
+		{ name: `input_${id}`, type: 'textInput', rect: { x, y, w: 70, h: 22 },
+			font: 'small', alignment: 'center', setting, valueMin: WH_MIN, valueMax: WH_MAX,
+			valueDefault: MAP_DEFAULTS.size },
+	];
 	let band = 1;
-	if (AT_BEGIN && API4)
-		items.push(...head(band, 'map.size.custom'), { name: 'buttonCustomSize', type: 'button', image: 'DmbSizeC',
-			position: { x: sizeX, y: BAND_CTRL[band++] }, callback: 'chooseMapGenCustomSize', help: help('map.size.custom') });
+	if (AT_BEGIN && API4) {
+		const y = BAND_CTRL[band++];
+		// height is built first so width, read first left to right, is built
+		// last and so holds the keyboard focus CTextInput grabs on creation
+		// (DMB Dev, September 28th); position is independent of build order
+		items.push(...head(band - 1, 'map.size.custom'),
+			...customSizeField('map.height', 'persistent:mapGen/map/height', sizeX + 106, y),
+			{ name: 'label_map.size.x', type: 'label', font: 'small', alignment: 'center', color: 'white',
+				text: 'x', position: { x: sizeX + 88, y: y + 9 } },
+			...customSizeField('map.width', 'persistent:mapGen/map/width', sizeX, y));
+	}
 	else if (AT_BEGIN)
 		items.push({ name: 'buttonCustomSize', type: 'button', image: EXTRAS_ART.customSize,
 			position: { x: 67 + 7 * 35, y: BAND_CTRL[0] }, callback: 'chooseMapGenCustomSize', help: help('map.size.custom') });
