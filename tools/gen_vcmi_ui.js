@@ -31,6 +31,7 @@
 const fs = require('fs'), path = require('path');
 const ROOT = path.join(__dirname, '..');
 const { PAGES, KNOBS } = require(path.join(ROOT, 'src/biome/knobs'));
+const { PHASES } = require(path.join(ROOT, 'src/main/phases'));
 const PRESETS = require(path.join(ROOT, 'src/biome/presets.json'));
 // --pager: the layout for DMB's "pages" widget (K, 2026-09-26: arrows either
 // side of the title page through the screens, as stock H3's Random Map Setup
@@ -538,6 +539,8 @@ function stringsJson() {
 	}
 	// after the lever texts below: the classic band says what stock's does
 	const classicLabels = CLASSIC ? { 'vcmi.mapGen.monsterStrength.hover': 'Monster strength' } : {};
+	// the load screen's line for each of the generator's stages (src/main/phases.js)
+	for (const [id, text] of PHASES) s[`vcmi.mapGen.phase.${id}`] = text;
 	SIZE_STOPS.forEach(([v, name], i) => {
 		s[`vcmi.mapGen.map.size.stop${i}`] = name;
 		s[`vcmi.mapGen.map.size.s${i}.hover`] = `${SIZE_NAMES[name]}, ${v}x${v}`;

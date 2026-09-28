@@ -24,6 +24,7 @@ const { themePool, applyGuardTheme, concretizeGuards, creatureRegistry, guardPoo
 const { DWELLING_POOL, CORE_BANKS, bankRate, chestTemplate, registerTerrainBarriers, clearTerrainBarriers } = require('../biome/economy');
 const TEMPLATE_THEMES = require('../biome/templateThemes.json');
 const { h3ArtifactTemplates, h3MonsterTemplates, h3CreatureTraits } = require('../parser/h3data');
+const { phase, resetPhases } = require('./phases');
 const { giveArtifactsTheirArt } = require('./artifactArt');
 const { townFactions, zoneTownTypes, pickStartFaction } = require('../biome/zoneTowns');
 const { OBJECT_TEMPLATES } = require('../stitch/zones');
@@ -392,7 +393,16 @@ function dirSignature(dir) {
 }
 
 function cachedAssetIndex(coreConfigDir, orderedMods, noCache) {
+	// Building the index outright is cheaper than knowing whether a kept one is
+	// still good: the check signs every file of every mod, 2.3 s on this
+	// install's 128 mods against 1.2 s to build (6 s against 20 s under the
+	// test harness's file guard), and it was most of the wait before a map
+	// began (2026-09-27). So it is built on every run, always current, and
+	// nothing is written into the player's folders. VMAPGEN_INDEX_CACHE=1
+	// brings the kept index back, for measuring.
+	if (process.env.VMAPGEN_INDEX_CACHE !== '1') return buildAssetIndex(coreConfigDir, orderedMods);
 	const crypto = require('crypto');
+	const traceT0 = Date.now();
 	// bump INDEX_SCHEMA when the index shape changes so stale entries miss
 	const h = crypto.createHash('sha1')
 		// v2: object templates carry raw {animation,mask,visitableFrom}
@@ -436,9 +446,16 @@ function cachedAssetIndex(coreConfigDir, orderedMods, noCache) {
 		.update('v26')
 		.update(String(coreConfigDir))
 		.update(dirSignature(coreConfigDir));
+	// A submod lies inside its parent's folder, whose signature already covers
+	// every file of it: signing it again walked most of this install's mods two
+	// and three times (109 of its 128 are nested), and the walk is most of the
+	// wait before a map starts.
+	const norm = d => path.resolve(String(d)).toLowerCase() + path.sep;
+	const dirs = (orderedMods || []).map(m => norm(m.__dir));
+	const inside = d => dirs.some(o => o !== d && d.startsWith(o));
 	for (const m of orderedMods || []) {
 		h.update(`${m.__id}@${m.__dir}`);
-		h.update(dirSignature(m.__dir));
+		if (!inside(norm(m.__dir))) h.update(dirSignature(m.__dir));
 	}
 	const key = h.digest('hex').slice(0, 16);
 	// Where the cache may live, first match wins: VMAPGEN_CACHE_DIR; the VCMI
@@ -456,6 +473,7 @@ function cachedAssetIndex(coreConfigDir, orderedMods, noCache) {
 		!inMod && path.join(generatorRoot, 'cache')].filter(Boolean);
 	const cacheName = `assetIndex-${key}.json`;
 	const cacheFile = cacheDirs.map(d => path.join(d, cacheName)).find(f => fs.existsSync(f));
+	if (process.env.VMAPGEN_INDEX_TRACE) console.error(`[index] key ${key} (${Date.now() - traceT0}ms to sign), cache ${cacheFile || "missing"}`);
 	if (!noCache && cacheFile) {
 		try {
 			const j = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
@@ -599,6 +617,9 @@ function observerChamber(W, H) {
 async function generateMap(params) {
 	const t0 = Date.now();
 	const stage = name => console.error(`[gen] ${name}: ${Date.now() - t0}ms`);
+	// the load screen's lines, one per real stage (phases.js)
+	resetPhases();
+	phase('lore');
 
 	const roots = locateVcmiRoots();
 	if (!roots.installDir)
@@ -636,6 +657,7 @@ async function generateMap(params) {
 	const compatPairs = buildAdjacency(tiles, assetIndex);
 	const compat = buildCompat(tiles.length, compatPairs);
 	stage('compat');
+	phase('charter');
 
 	// tile ids grouped by terrain shortId, for biome domain masks
 	const tileIdsByShort = new Map();
@@ -917,6 +939,7 @@ async function generateMap(params) {
 				+ `${Math.round(100 * asked)}% was asked for`);
 		return plan;
 	};
+	phase('seas');
 	let waterPlan = planWater(params.biomes || {});
 	// The observer is not a start the surface planner knows about: it has its
 	// own level and its own town, placed by hand below.
@@ -1425,6 +1448,7 @@ async function generateMap(params) {
 
 	const levelGrids = [];
 	let L = 1, stitchWidth = 3;
+	phase('weave');
 	for (const lv of levels) {
 		const plan = plans[lv.index];
 		const domainByBiome = new Map();
@@ -1508,6 +1532,7 @@ async function generateMap(params) {
 			console.error(`[gen] ${rolled} of ${fixed + rolled} artifact(s) have no art of their own; written as random artifacts`);
 	}
 
+	phase('guards');
 	const h3 = (params.guardTheme || picked.size)
 		? h3MonsterTemplates([roots.userDir, roots.installDir]) : null;
 	// Themed guards (--guardtheme): a share of the guard placeholders become
@@ -1617,6 +1642,7 @@ async function generateMap(params) {
 	if (waterPlan && !waterShortId)
 		throw new Error('water was asked for but the install has no core water terrain');
 
+	phase('shores');
 	const tilesByLevel = {};
 	for (let li = 0; li < levels.length; li++) {
 		const lv = levels[li];
@@ -1708,6 +1734,7 @@ async function generateMap(params) {
 				}
 			}
 
+		phase('rivers');
 		// Rivers. They neither block nor cost movement, so unlike roads they can
 		// run under anything, and the type comes from the ground each tile
 		// stands on, which is why a real river changes colour as it crosses a
@@ -1799,6 +1826,7 @@ async function generateMap(params) {
 	console.error(`[gen] allow-lists: ${waterMap ? 'a water map' : 'no water'} (${waterTiles} of ${allTiles} tiles), `
 		+ `banned ${bannedCounts.join(', ')}`);
 
+	phase('ink');
 	const header = makeHeader({
 		width: params.mapW, height: params.mapH,
 		players, levels,

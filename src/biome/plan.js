@@ -32,6 +32,7 @@ const { zoneTownTypes } = require('./zoneTowns');
 const { carveBoundaries, placeChokeGuards } = require('./boundaries');
 const { buildRoadNetwork, pruneOrphanRoads, approach: roadApproach } = require('./roadnet');
 const { planRoads, joinFailed, pruneTails } = require('./roadplan');
+const { phase } = require('../main/phases');
 const { fillBiome, blockingCells, footprintFits, footprintBlock, entranceOpen,
 	visitableCells, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED,
 	RESERVED, APPROACH, markApproach, allowedDirs, REMOVABLE_TYPES,
@@ -1379,6 +1380,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// repulsive links only steer the layout (template.js buildZonePlan)
 	const landConns = tplConns.filter(isLandLink);
 	const forcedPortals = tplConns.filter(c => c.type === 'forcePortal');
+	phase('sculpt');
 	if (tplZones && tplZones.length) {
 		const best = chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water,
 			seed: params.seed || 1, levelIndex, p,
@@ -1422,6 +1424,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		classes = assignClasses(seeds, p, rng,
 			physZoneDistances(zone, W, H, playerStarts, water, !!p.waterIslands));
 	}
+	phase('lands');
 	const biomeTerrain = assignTerrains(classes, terrainShortIds, rng,
 		terrainInfo, underground,
 		tplZones || null);
@@ -1729,6 +1732,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				+ `(${lavaZones.size} zone(s))`);
 	}
 
+	phase('borders');
 	const { barriers, openings, rim } = carveBoundaries(edges, connections, zone,
 		W, H, { ...p, underground: !!openMask }, rng, edgeInfo);
 	// VMAPGEN_OPENINGS_TRACE: every zone border's verdict and the doorways cut
@@ -1792,6 +1796,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// in its zone's corner against the map's edge, with the zone's other towns
 	// beside it and its roads a fraction of the engine's (Jebus Cross 108: 356
 	// road tiles against the corpus's 613). VMAPGEN_START_CENTRE=0 keeps the cell.
+	phase('capitals');
 	if (tplZones && tplZones.length && process.env.VMAPGEN_START_CENTRE !== '0')
 		tplZones.forEach((z, b) => {
 			const s = (z.type === 'playerStart' || z.type === 'cpuStart') && z.owner && playerStarts[z.owner - 1];
@@ -1869,6 +1874,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// The connectivity guard at fillBiome time does not exist yet, so this
 	// pass carries its own: a 5x3 in a narrow corridor plugs it and seals
 	// whatever pocket lies past it (72x72 s5 islanded green this way).
+	phase('towns');
 	const townGuard = makeConnectivityGuard(blocked, levelIndex, W, H, 2);
 	const townZones = [];
 	for (let b = 0; b < classes.length; b++)
@@ -2107,6 +2113,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// Boats and shipyards (waterfill.js, water W2) go in with the towns, so
 	// every later pass routes around them and their boarding cells stay free.
 	// Their own stream, so a dry map draws exactly what it did before.
+	phase('harbours');
 	const harbours = water ? placeHarbours({ W, H, l: levelIndex, water, zone, blocked,
 		rng: xorshift(((params.seed || 1) ^ 0x5eaf00d) >>> 0), p, objects, towns,
 		playerStarts, objectEntry, islands: !!p.waterIslands }) : [];
@@ -2190,6 +2197,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		}
 		return false;
 	};
+	phase('monoliths');
 	for (const o of openings) {
 		if (o.kind !== 'portal') continue;
 		const A = portalSpot(o.portalA, o.a);
@@ -2236,6 +2244,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// diagonally and a four-connected road cannot (Jebus Cross 108 s5001: one
 	// zone roadless). The held gate sites of links with a road are nodes too.
 	// VMAPGEN_ROADS=late keeps the old order, roads routed after the fill.
+	phase('roads');
 	const roadCells = new Set();
 	const roadFailed = [];
 	if (process.env.VMAPGEN_ROADS !== 'late') {
@@ -2372,6 +2381,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// every blocked border it crossed plugged it shut. The carve mask alone
 	// decides what is passage and what is rock, so carved levels emit no
 	// border barriers at all.
+	phase('mountains');
 	const wallLeft = new Set(barriers);
 	let wallClustersPlaced = 0;
 	// A cluster may lean off the wall, but not onto a player's doorstep:
@@ -2526,6 +2536,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	 * for share-minus-preBlocked, so whatever lands here is automatically
 	 * deducted from the later ask.
 	 */
+	phase('valleys');
 	if (!openMask && p.decorDensity > 0) {
 		const packGuard = makeConnectivityGuard(blocked, levelIndex, W, H, 2);
 		const foreignAt = (x, y, r) => {
@@ -4023,6 +4034,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			}
 			return -1;
 		};
+		phase('underworld');
 		let crossGates = 0, crossPortals = 0;
 		// every held surface site is given back first, a pair or not, so none
 		// stays a blocked footprint with nothing on it
@@ -4262,6 +4274,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		}
 
 	// Content fill runs last, after the gates have claimed their ground.
+	phase('resources');
 	for (const plan of plans) fillLevel(plan, W, H, blocked);
 
 	// Roads go in after the fill, so they route around what is actually there.
@@ -4330,6 +4343,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				+ `(${before} before the town net, +${added} from it) `
 				+ `linking ${here.length} place(s), ${orphans} orphan tile(s) and ${tails} tail tile(s) dropped`);
 	}
+	phase('edges');
 	// Item 21: the rows just inside each zone's rim and along the map edge,
 	// blocked the way the engine's post-object pass blocks them (rimfill.js).
 	// After the fill and the roads so it costs neither anything; before the
@@ -4341,6 +4355,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				&& !o.template.mask.some(r => /[AT]/.test(r)));
 		if (n) console.error(`[gen] level 0: rim rows filled, ${n} cell(s) blocked`);
 	}
+	phase('paths');
 	// The content fill can close a pocket the structure-time pass opened:
 	// settle fills and placed objects land after openSealedByObjects ran, so
 	// a gate pocket sealed at fill time was never inspected. Sweep seals
@@ -4415,6 +4430,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				+ `passage ${t.passage}, open-reserved ${t.reserved}, `
 				+ `open-approach ${t.approach}, open-other ${t.other}`);
 		}
+	phase('forests');
 	const retileOn = process.env.VMAPGEN_RETILE !== 'off';
 	if (retileOn)
 		for (let l = 0; l < levels; l++) {
