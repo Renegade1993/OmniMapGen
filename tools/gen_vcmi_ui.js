@@ -484,7 +484,7 @@ function stringsJson() {
 			'vcmi.mapGen.template.random': '(Random)',
 		} : {}),
 		'vcmi.mapGen.defaults.hover': 'Defaults',
-		'vcmi.mapGen.defaults.help': `{Defaults}\n\nPuts every setting back to the ${PRESETS.nostalgia.label} defaults. ${PRESETS.nostalgia.help}`,
+		'vcmi.mapGen.defaults.help': '{Defaults}\n\nPuts every setting back to its default, matched to the random maps you have played.',
 		'vcmi.mapGen.generate.hover': 'Generate map',
 		'vcmi.mapGen.generate.help': '{Generate map}\n\nMakes a map from these settings and selects it in the scenario list. Settings are saved as you change them.',
 		'vcmi.mapGen.generate.running': 'Generating a map...',
@@ -513,7 +513,7 @@ function stringsJson() {
 		'vcmi.mapGen.map.size.help': '{Map size}\n\nS 36, M 72, L 108, XL 144, H 180, XH 216 or G 252 cells a side. A new hero crosses one corner to corner in about '
 			+ SIZE_STOPS.map(([v]) => crossingDays(v)).join(', ').replace(/, (\d+)$/, ' or $1') + ' days, over open grass with nothing in the way.',
 		'vcmi.mapGen.map.underground.hover': 'Underground',
-		'vcmi.mapGen.map.underground.help': '{Underground}\n\nA second, underground level linked to the surface by subterranean gates.',
+		'vcmi.mapGen.map.underground.help': '{Underground}\n\nA second level underground, linked to the surface by subterranean gates and portals.',
 		'vcmi.mapGen.map.declareMods.hover': 'Use mod content',
 		'vcmi.mapGen.map.declareMods.help': '{Use mod content}\n\nPlace modded terrain, creature banks and dwellings from your installed mods, and declare them in the map so VCMI requires the same mods to open it. Off makes a map that loads anywhere, core content only.',
 		'vcmi.mapGen.map.players.hover': 'Players',
@@ -521,7 +521,7 @@ function stringsJson() {
 		'vcmi.mapGen.map.humans.hover': 'Human players',
 		'vcmi.mapGen.map.humans.help': '{Human players}\n\nHow many of those seats a human can take. The rest are computer players.',
 		'vcmi.mapGen.map.template.hover': 'Template',
-		'vcmi.mapGen.map.template.help': '{Template}\n\nThe biome layout. Free layout is our own, calibrated on your own random maps; the game\'s templates (Jebus Cross, Coldshadow\'s Fantasy and the rest) lay the biomes out their way, with the settings on the other pages still applied.',
+		'vcmi.mapGen.map.template.help': '{Template}\n\nThe map\'s layout. A template (Jebus Cross and the rest) sets its own biomes, links and guards, and the settings marked Free layout only then do nothing. Free layout is our own, matched to your random maps.',
 	};
 	if (CLASSIC) {
 		// the classic Map page names its bands as the game's Random Map Setup does

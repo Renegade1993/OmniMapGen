@@ -21,7 +21,7 @@ const {
 	partitionBiomes, partitionSeeded, layoutZoneSeeds,
 	assignClasses, zoneDistances, physZoneDistances, biomeEdges,
 	assignConnections, ensureConnected, rimModeOf, nearestLand,
-	portalGateScale,
+	portalGateScale, MAX_START_SHARE,
 } = require('./biomes');
 const { settleZonesOnLand } = require('./water');
 const { fitCave } = require('./cavefit');
@@ -1590,9 +1590,14 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		// binds if a player pulls it below what zoneCells implies for this
 		// map, or at the extreme of a huge map with a tiny zoneCells).
 		// With water the count follows the land: zoneCells is dry ground per zone.
+		// The starts first: each takes its share of the land (startZoneShare,
+		// biomes.js), and the other zones split the rest at zoneCells each.
+		const startCells = playerStarts.length
+			? Math.min(p.startZoneShare / playerStarts.length, MAX_START_SHARE) * landCells : 0;
 		const target = Math.max(playerStarts.length + 2,
-			Math.min(p.zoneCap, Math.round(landCells / Math.max(50, p.zoneCells))));
-		({ zone, seeds } = partitionBiomes(W, H, playerStarts, target, rng, p, water));
+			Math.min(p.zoneCap, playerStarts.length + Math.round(
+				(landCells - playerStarts.length * startCells) / Math.max(50, p.zoneCells))));
+		({ zone, seeds } = partitionBiomes(W, H, playerStarts, target, rng, p, water, startCells));
 		if (water) {
 			settleZonesOnLand(zone, seeds, W, H, water);
 			const land = new Array(seeds.length).fill(0);
@@ -2382,7 +2387,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				}
 		return null;
 	};
+	// Guards at bottlenecks off (guardBottlenecks 0) leaves every way between
+	// biomes open, portals and gates as well as passages
+	const linkGuardsOff = Number(p.guardBottlenecks) === 0;
 	const portalGuard = (monoTpl, mx, my, toZone) => {
+		if (linkGuardsOff) return false;
 		const monster = OBJECT_TEMPLATES.randomMonster;
 		for (const c of openBeside(monoTpl, mx, my)) {
 			const gx = c % W, gy = (c / W) | 0;
@@ -2404,6 +2413,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// placeMonolithConnection), so both ends get one, sized like a doorway
 	// guard (engineGuard, zone-link rule).
 	const linkPortalGuard = (monoTpl, mx, my, z, strength) => {
+		if (linkGuardsOff) return false;
 		const concrete = !!(objectPools && objectPools.guards && zoneMeta);
 		const g = engineGuard(strength, 1 + Math.round(p.monsterStrength || 0), rng, true,
 			concrete ? zoneGuardPool(objectPools.guards, zoneMeta[z] && zoneMeta[z].spec) : undefined);
@@ -3938,13 +3948,30 @@ function fillLevel(plan, W, H, blocked) {
 	const order = [...byBiome.keys()].sort((a, b) =>
 		(classes[a] === BIOME_CLASS.TOWN ? 0 : 1) - (classes[b] === BIOME_CLASS.TOWN ? 0 : 1));
 	for (const b of order) {
-		objects.push(...fillBiome(classes[b], byBiome.get(b), blocked, W, H,
-			levelIndex, rng, { ...p, doorGuards: (plan.doorGuards && plan.doorGuards.get(b)) || 0 },
-			towns, alignPlayers || playerStarts, objectPools,
-			biomeTerrain[b], reachable, connectivity,
-			plan.zoneMeta && plan.zoneMeta[b]
-				&& { ...plan.zoneMeta[b], minesDone: starterDone.get(b) || {} }, plan.openMask,
-			plan.zdist && plan.zdist[b], starterMines.get(b) || []));
+		// A free layout's start zone holds a share of the map (startZoneShare,
+		// biomes.js), several of the old start zones' worth. Its ground nearest
+		// the town, one biome's worth (zoneCells), is filled as a start, and the
+		// rest as the standard zones it took the place of: filled as a start
+		// all through, the start zones' low monster and high pile rates ran the
+		// map's monsters down to 0.86 of the corpus and its dwellings up to 1.7.
+		const parts = [[classes[b], byBiome.get(b)]];
+		const home = !plan.zoneMeta && classes[b] === BIOME_CLASS.PLAYER
+			&& playerStarts.find(s => zone[s.y * W + s.x] === b);
+		if (home && byBiome.get(b).length > p.zoneCells) {
+			const d2 = c => (c % W - home.x) ** 2 + (((c / W) | 0) - home.y) ** 2;
+			const near = byBiome.get(b).slice().sort((a, c) => d2(a) - d2(c) || a - c);
+			parts.splice(0, 1, [BIOME_CLASS.PLAYER, near.slice(0, p.zoneCells)],
+				[BIOME_CLASS.STANDARD, near.slice(p.zoneCells)]);
+		}
+		// the zone's doorway guards stand on its edge, so its far part pays for them
+		parts.forEach(([cls, cells], i) =>
+			objects.push(...fillBiome(cls, cells, blocked, W, H,
+				levelIndex, rng, { ...p, doorGuards: i === parts.length - 1 && plan.doorGuards ? plan.doorGuards.get(b) || 0 : 0 },
+				towns, alignPlayers || playerStarts, objectPools,
+				biomeTerrain[b], reachable, connectivity,
+				plan.zoneMeta && plan.zoneMeta[b]
+					&& { ...plan.zoneMeta[b], minesDone: starterDone.get(b) || {} }, plan.openMask,
+				plan.zdist && plan.zdist[b], i === 0 ? starterMines.get(b) || [] : [])));
 	}
 	return plan;
 }
@@ -4321,7 +4348,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		// start walked through them into 20 of the map's 23 towns unopposed.
 		// Held clear like a doorway guard (planLevel), not walled.
 		const guardEnd = (l, tpl, x, y, z, strength) => {
-			if (!(strength > 0) || process.env.VMAPGEN_PORTAL_GUARD === '0') return false;
+			if (!(strength > 0) || process.env.VMAPGEN_PORTAL_GUARD === '0' || Number(p.guardBottlenecks) === 0) return false;
 			const meta = plans[l].zoneMeta;
 			const concrete = !!(objectPools && objectPools.guards && meta);
 			const g = engineGuard(strength, 1 + Math.round(p.monsterStrength || 0), rng, true,

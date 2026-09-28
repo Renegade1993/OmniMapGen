@@ -141,3 +141,26 @@ test('border wobble bends at the zones\' own scale: nothing changes up to 108x10
 	// a template's few big zones on the same map keep the map-sized waves
 	assert.deepStrictEqual(wobbleWaves(252, 252, 5), { coarse: 50, fine: 18 });
 });
+
+test('free layout starts share half the land, each within a fifth of the others', () => {
+	// K, 2026-09-27: one start's biome was "about 3 times bigger than the
+	// castle"; the smallest start ran a twelfth of the largest on bad seeds
+	const { partitionBiomes, BIOME_DEFAULTS, MAX_START_SHARE } = require('../src/biome/biomes');
+	const { xorshift } = require('../src/wfc/solver');
+	for (const [W, n] of [[72, 4], [108, 4], [144, 8]]) {
+		const corners = [[4, 4], [W - 5, W - 5], [4, W - 5], [W - 5, 4], [4, W >> 1], [W - 5, W >> 1], [W >> 1, 4], [W >> 1, W - 5]];
+		const starts = corners.slice(0, n).map(([x, y]) => ({ x, y }));
+		const startCells = Math.min(BIOME_DEFAULTS.startZoneShare / n, MAX_START_SHARE) * W * W;
+		const count = n + Math.round((W * W - n * startCells) / BIOME_DEFAULTS.zoneCells);
+		for (const seed of [1, 2, 3]) {
+			const { zone, seeds } = partitionBiomes(W, W, starts, count, xorshift(seed * 7919), {}, null, startCells);
+			const area = new Array(seeds.length).fill(0);
+			for (const z of zone) area[z]++;
+			const own = area.slice(0, n);
+			const share = own.reduce((a, b) => a + b, 0) / (W * W);
+			assert.ok(share > 0.4 && share < 0.56, `${W}x${W} ${n}p seed ${seed}: starts hold ${share.toFixed(2)} of the land`);
+			assert.ok(Math.min(...own) / Math.max(...own) > 0.8,
+				`${W}x${W} ${n}p seed ${seed}: start areas ${own.join(', ')}`);
+		}
+	}
+});

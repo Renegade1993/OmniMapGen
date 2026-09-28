@@ -236,8 +236,12 @@ const TPL_DWELL_K = Number(process.env.VMAPGEN_TPL_DWELL_K) || 16;
 // objects a 108x108 map). With that fixed (2026-09-26) the free-layout lens
 // read banks 1.19 and dwellings 1.18 of the corpus, so both come down by that
 // much; template maps take their counts from the zone and stay as they were.
-const FREE_BANK_SCALE = Number(process.env.VMAPGEN_FREE_BANK_SCALE) || 0.84;
-const FREE_DWELL_SCALE = Number(process.env.VMAPGEN_FREE_DWELL_SCALE) || 0.85;
+// Again on 2026-09-27, when a start zone grew to a share of the map and its
+// far ground filled as standard ground (plan.js fillLevel): banks read 1.16-
+// 1.26 and dwellings 1.51-1.59 over two seeds (lens t55F), so 0.84 and 0.85
+// became 0.71 and 0.55.
+const FREE_BANK_SCALE = Number(process.env.VMAPGEN_FREE_BANK_SCALE) || 0.71;
+const FREE_DWELL_SCALE = Number(process.env.VMAPGEN_FREE_DWELL_SCALE) || 0.55;
 /** A guard for a pile of `value`, or null where the engine leaves it unguarded.
  * A zone-link guard (zoneGuard) skips the pile threshold, as the engine's does.
  * pool: the creatures the zone allows (zoneGuardPool); core by default. */

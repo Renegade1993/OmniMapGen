@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const { BIOME_DEFAULTS, rimModeOf, bordersOff } = require('./biomes');
+const { BIOME_DEFAULTS, BIOME_CLASS, rimModeOf, bordersOff } = require('./biomes');
 const { engineGuard, creepTier } = require('./content');
 
 /**
@@ -305,7 +305,11 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 				...(poolFor ? { creature: g.creature } : {}) });
 			continue;
 		}
-		if (rng() >= p.chokeGuardRatio) continue;
+		// a doorway out of a start is always guarded: left open, a start ran on
+		// into its neighbour's ground, another start's among them, with no fight
+		// (a template's start links carry their guard too)
+		const fromStart = zoneClasses[o.a] === BIOME_CLASS.PLAYER || zoneClasses[o.b] === BIOME_CLASS.PLAYER;
+		if (rng() >= p.chokeGuardRatio && !fromStart) continue;
 		const mid = o.hole[(o.hole.length / 2) | 0];
 		// guard strength keys off the destination biome class, drawn the way
 		// that zone's own monsters are (creepTier): the doorway guard comes

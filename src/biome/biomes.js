@@ -104,6 +104,15 @@ const BIOME_DEFAULTS = {
 	// number regardless of size.
 	zoneCells: 400,
 	zoneCap: 300,
+	// The free layout's start zones, together, as a share of the map's land,
+	// split evenly between the players (at most MAX_START_SHARE each). Real
+	// maps give their starts about half of it: over K's seven templates, 0.31
+	// to 0.85 at each one's own player count, 0.56 on average (a zone's area
+	// going with its size squared, CZonePlacer). A start zone used to be one
+	// more Voronoi cell among the rest, 1 to 2% of the map in a corner, and
+	// the smallest a twelfth of the largest: K found one "about 3 times bigger
+	// than the castle" holding nothing but its town and a guard at the exit.
+	startZoneShare: 0.5,
 	// Border solidity, one scale for how zones are walled off from each other:
 	//   1      solid rim band plus rim lobes (the engine's look, the default)
 	//   0.5-1  rim band, lobes scaled down toward none at 0.5
@@ -233,9 +242,27 @@ function wobbleWaves(W, H, zones, land = W * H) {
  * to nothing at a seed. That matters: a player's own cell has to stay inside
  * the player's own region, and an additive warp could hand it to a neighbour.
  */
-function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = null) {
+function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = null, startCells = 0) {
 	const p = { ...BIOME_DEFAULTS, ...params };
 	const seeds = playerStarts.map(pl => ({ x: pl.x, y: pl.y, player: true }));
+	// with a start area asked for, no other zone's seed lands well inside the
+	// disc that area fills around its start: the disc's radius grows until it
+	// holds the area on the map, so a corner start's reaches twice as far as
+	// one in open ground
+	const reach = seeds.map(s => {
+		if (!(startCells > 0)) return 0;
+		let lo = 1, hi = W + H;
+		for (let k = 0; k < 14; k++) {
+			const r = (lo + hi) / 2, r2 = r * r;
+			let n = 0;
+			for (let y = Math.max(0, Math.floor(s.y - r)); y <= Math.min(H - 1, Math.ceil(s.y + r)); y++)
+				for (let x = Math.max(0, Math.floor(s.x - r)); x <= Math.min(W - 1, Math.ceil(s.x + r)); x++)
+					if ((x - s.x) ** 2 + (y - s.y) ** 2 <= r2 && !(water && water[y * W + x])) n++;
+			if (n < startCells) lo = r; else hi = r;
+		}
+		return 0.8 * hi;
+	});
+	const nearStart = (x, y) => seeds.some((s, i) => s.player && Math.hypot(s.x - x, s.y - y) < reach[i]);
 	// With surface water (water.js) a zone grows from dry land, and its seed is
 	// the best of several dry candidates: far from the other seeds and not
 	// hugging the shore, where half its Voronoi cell would be sea and the zone
@@ -243,11 +270,14 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 	const shore = water ? distanceToWater(W, H, water) : null;
 	while (seeds.length < targetCount) {
 		let x = 2 + (rng() * (W - 4)) | 0, y = 2 + (rng() * (H - 4)) | 0;
+		for (let k = 0; k < 24 && nearStart(x, y); k++) {
+			x = 2 + (rng() * (W - 4)) | 0; y = 2 + (rng() * (H - 4)) | 0;
+		}
 		if (water) {
 			let best = null, bs = -Infinity;
 			for (let k = 0; k < 16; k++) {
 				if (k) { x = 2 + (rng() * (W - 4)) | 0; y = 2 + (rng() * (H - 4)) | 0; }
-				if (water[y * W + x]) continue;
+				if (water[y * W + x] || nearStart(x, y)) continue;
 				let d = Infinity;
 				for (const s of seeds) d = Math.min(d, Math.hypot(s.x - x, s.y - y));
 				const score = Math.min(d, 1.5 * shore[y * W + x]);
@@ -298,21 +328,58 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 		: null;
 
 	const zone = new Int16Array(W * H).fill(-1);
-	for (let y = 0; y < H; y++)
-		for (let x = 0; x < W; x++) {
-			let best = -1, bd = Infinity;
-			for (let i = 0; i < seeds.length; i++) {
-				const dx = x - seeds[i].x, dy = y - seeds[i].y;
+	// each seed's squared distance field, noise and all, once
+	const field = seeds.map((s, i) => {
+		const f = new Float32Array(W * H);
+		for (let y = 0; y < H; y++)
+			for (let x = 0; x < W; x++) {
+				const dx = x - s.x, dy = y - s.y;
 				let d = dx * dx + dy * dy; // squared euclid, rounder blobs than Chebyshev
 				if (noise) d *= 1 + amp * (noise[i].coarse(x, y) - 0.5)
 					+ (noise[i].fine
 						? amp * 0.35 * (noise[i].fine(x, y) - 0.5) : 0);
+				f[y * W + x] = d;
+			}
+		return f;
+	});
+	const weight = seeds.map(() => 1);
+	const assign = () => {
+		for (let c = 0; c < W * H; c++) {
+			let best = -1, bd = Infinity;
+			for (let i = 0; i < seeds.length; i++) {
+				const d = field[i][c] / weight[i];
 				if (d < bd) { bd = d; best = i; }
 			}
-			zone[y * W + x] = best;
+			zone[c] = best;
 		}
+	};
+	assign();
+	// Start zones grown to their area: a heavier seed wins ground farther
+	// out (partitionSeeded), so each start's weight is nudged toward the
+	// area it is owed until every start holds it to within a tenth. Equal
+	// areas are the point: they are what keeps one player from starting in
+	// a closet beside another's field (K, 2026-09-27).
+	if (startCells > 0 && playerStarts.length) {
+		for (let round = 0; round < 30; round++) {
+			const area = new Array(seeds.length).fill(0);
+			for (let c = 0; c < W * H; c++) if (!(water && water[c])) area[zone[c]]++;
+			let off = 0;
+			for (let i = 0; i < playerStarts.length; i++) {
+				const r = startCells / Math.max(1, area[i]);
+				off = Math.max(off, Math.abs(1 - r));
+				weight[i] *= Math.max(0.5, Math.min(2.5, r ** 0.9));
+			}
+			if (off < 0.1) break;
+			assign();
+		}
+	}
 	return { zone, seeds, count: seeds.length };
 }
+
+// One start's zone at most, as a share of the land: a two-player map would
+// otherwise hand each start a quarter of it; the largest start in K's
+// templates holds about a fifth (Vortex, 0.21).
+const MAX_START_SHARE = 0.2;
 
 /** Steps from each cell to the nearest water cell (4-neighbour). */
 function distanceToWater(W, H, water) {
@@ -894,4 +961,4 @@ module.exports = { BIOME_CLASS, BIOME_DEFAULTS, partitionBiomes, partitionSeeded
 	layoutZoneSeeds, symmetricEigen, spectralCoords, fitSimilarity, assignClasses, zoneDistances, physZoneDistances,
 	biomeEdges, assignConnections, ensureConnected, valueNoise,
 	rimModeOf, rimLobeScale, bordersOff, nearestLand,
-	REF_ZONES, portalGateScale, portalScale };
+	REF_ZONES, portalGateScale, portalScale, MAX_START_SHARE };
