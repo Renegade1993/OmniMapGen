@@ -174,6 +174,9 @@ const TPL_RICH_MIN = Number(process.env.VMAPGEN_TPL_RICH_MIN) || 10000;
 // TPL_RICH_MIN. The fit read guard levels 1-7 at 0.80-1.08 of the corpus and
 // its chests at 0.95, where the rate model's maps hold 0.50.
 const TPL_PILE_MODEL = process.env.VMAPGEN_TPL_PILE_MODEL || 'uniform';
+// VMAPGEN_TPL_PILE_VALUES=engine: the uniform model's pile guards sized on the
+// values the engine's piles reach (fillBiome)
+const TPL_PILE_VALUES = process.env.VMAPGEN_TPL_PILE_VALUES || 'uniform';
 const TPL_PILE_LAND_OPEN = Number(process.env.VMAPGEN_TPL_PILE_LAND_OPEN) || 1.0;
 const TPL_PILE_LAND_GUARDED = Number(process.env.VMAPGEN_TPL_PILE_LAND_GUARDED) || 0.70;
 const TPL_PILE_LAND_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_RICH) || 0.50;
@@ -2091,13 +2094,15 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// has room for land at their class's share. A landed pile's guard is sized
 	// on what the pile is worth; the chests pass below takes their chests.
 	let pileSim = null;
-	if (zoneMeta && zoneMeta.spec && TPL_PILE_MODEL === 'engine' && objectPools.pileCommon) {
+	// the pool this zone's piles draw from, as TreasurePlacer builds it
+	// (piles.js zonePool): the engine model's piles, and with
+	// VMAPGEN_TPL_PILE_VALUES=engine the uniform model's pile values
+	const makePilePool = () => {
 		const bands = zoneMeta.spec.treasure || [];
-		const maxValue = bands.reduce((a, b) => Math.max(a, b.max || 0), 0);
 		const bare = f => String(f || 'neutral').toLowerCase().replace(/^.*:/, '');
 		const faction = zoneMeta.faction || 'neutral';
-		const pool = pileZonePool(objectPools.pileCommon, {
-			maxValue,
+		return pileZonePool(objectPools.pileCommon, {
+			maxValue: bands.reduce((a, b) => Math.max(a, b.max || 0), 0),
 			dwellings: (objectPools.engineDwellings || []).filter(d => d.faction === faction)
 				.map(d => ({ value: d.value, prob: d.prob, fromRmg: d.fromRmg })),
 			creatures: (objectPools.guards || GUARD_POOL).filter(c => bare(c.faction) === faction),
@@ -2105,6 +2110,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// the objects with a template for this ground (piles.js groundsOf)
 			terrain: ((objectPools.terrainNames && objectPools.terrainNames.get(terrain)) || {}).name || null,
 		}, rng);
+	};
+	if (zoneMeta && zoneMeta.spec && TPL_PILE_MODEL === 'engine' && objectPools.pileCommon) {
+		const bands = zoneMeta.spec.treasure || [];
+		const pool = makePilePool();
 		const gIdx = 1 + (zoneMeta.monsterShift || 0) + Math.max(-2, Math.min(2, Math.round(p.monsterStrength || 0)));
 		const gPool = objectPools.guards ? zoneGuardPool(objectPools.guards, zoneMeta.spec) : undefined;
 		const guarded = zoneMeta.spec.monsters !== 'none';
@@ -2705,11 +2714,20 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// landed pile's guard, sized on what that pile is worth
 			for (const pl of pileSim.landed) if (pl.guard) postPileGuard(pl.guard);
 		} else {
+			// VMAPGEN_TPL_PILE_VALUES=engine: each pile sized on what a pile the
+			// engine builds in that band is worth (piles.js preparePile: objects
+			// drawn until the value drawn is spent, an even chance to stop once
+			// past the band's floor), which sits low in the band, where the
+			// uniform draw spreads evenly across it (B4: the engine's piles of
+			// 3000-6000 guarded 31%, the even draw 61%)
+			const valuePool = TPL_PILE_VALUES === 'engine' && objectPools.pileCommon ? makePilePool() : null;
 			for (const { band: t, count, d, byDensity, byRoom } of templatePiles(bands, cells.length)) {
 				if (process.env.VMAPGEN_PILE_TRACE)
 					console.error(`[pile] zone ${zoneMeta.spec.id} band ${t.min}-${t.max} density ${t.density}: cells ${cells.length}, d ${d.toFixed(1)}, by density ${byDensity}, by room ${byRoom}, placing ${count}`);
 				for (let k = count; k > 0; k--) {
-					const guard = zoneGuard(t.min + Math.floor(rng() * (t.max - t.min + 1)));
+					const v = valuePool ? preparePile(valuePool, t, rng).value : t.min + Math.floor(rng() * (t.max - t.min + 1));
+					if (!(v > 0)) continue;
+					const guard = zoneGuard(v);
 					if (guard) postPileGuard(guard);
 				}
 			}
