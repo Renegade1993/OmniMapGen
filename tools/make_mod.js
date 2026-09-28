@@ -370,10 +370,11 @@ function buildModJson(text, { pager, atBegin, classic = false, api4 = false }) {
 	if (!/\n\t"mapGenerator" :/.test(text)) throw new Error('mod/mod.json: no "mapGenerator" line to put "dmb" before');
 	text = text.replace(/\n\t"mapGenerator" :/, `\n\t"dmb" : { "api" : ${api4 ? 4 : atBegin ? 3 : 2} },\n\t"mapGenerator" :`);
 	// the stock look draws with the VCMI Extras mod's lobby art: without it the
-	// page loses its background, size row and checkboxes (DMB Dev, 2026-09-27),
-	// so the launcher asks for Extras with it until K decides where that art
-	// comes from
-	if (classic) text = text.replace(/\n\t"dmb" :/, '\n\t"depends" : [ "vcmi-extras" ],\n\t"dmb" :');
+	// page loses its background, template box and checkboxes (DMB Dev,
+	// 2026-09-27), so the launcher asks for it. The art is all in one submod,
+	// extendedLobby (RanMapBk_new, RmgTTBk, DrDoCoBk, HWBUT2, ChkBlue), which a
+	// player can switch off alone, so the dependency names that submod
+	if (classic) text = text.replace(/\n\t"dmb" :/, '\n\t"depends" : [ "vcmi-extras.extendedlobby" ],\n\t"dmb" :');
 	if (atBegin) {
 		if (!/\n\t\t"name" : "[^"]*",/.test(text)) throw new Error('mod/mod.json: no mapGenerator "name" line');
 		// "arguments": the options beyond the Generate set DMB may send at Begin;

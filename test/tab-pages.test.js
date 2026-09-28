@@ -159,7 +159,8 @@ test('--atbegin: the game makes the map at Begin, so no Generate button, and the
 	assert.deepStrictEqual(JSON.parse(buildModJson(text, { pager: true, atBegin: false })).dmb, { api: 2 });
 	assert.strictEqual(buildModJson(text, { pager: false, atBegin: false }), text);
 	// the stock look needs VCMI Extras' art; the plain pages do not
-	assert.deepStrictEqual(JSON.parse(buildModJson(text, { pager: true, atBegin: true, classic: true })).depends, ['vcmi-extras']);
+	// the classic look's lobby art is VCMI Extras' extendedLobby submod's
+	assert.deepStrictEqual(JSON.parse(buildModJson(text, { pager: true, atBegin: true, classic: true })).depends, ['vcmi-extras.extendedlobby']);
 	assert.strictEqual(atBegin.depends, undefined);
 });
 
