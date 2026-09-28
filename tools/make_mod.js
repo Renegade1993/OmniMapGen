@@ -38,7 +38,7 @@
  * --install puts the built mod straight into a user folder's Mods and enables
  * it in the active preset of its config/modSettings.json, as the launcher does
  * for a mod it installs: a developer's build is ready at the next start. With
- * no folder named, DMB's own (Documents\My Games\DMB). DMB runs a mod's code
+ * no folder named, DMB's own (Documents\My Games\Dead Man's Boots). DMB runs a mod's code
  * only when its catalog pins that code; a build of your own is pinned by no
  * catalog, and --trust-unlisted sets DMB's developer switch for that
  * (settings.json "mods": { "allowUnlistedCode": true }).
@@ -95,14 +95,14 @@ async function nodeRuntime(out) {
 	return { zip, sums };
 }
 
-/** DMB's user folder: Documents\My Games\DMB, Documents as Windows has it (it may be moved). */
+/** DMB's user folder: Documents\My Games\Dead Man's Boots, Documents as Windows has it (it may be moved). */
 function dmbUserDir() {
 	const { spawnSync } = require('child_process');
 	const r = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
 		"[Environment]::GetFolderPath('MyDocuments')"], { encoding: 'utf8', windowsHide: true, timeout: 30000 });
 	const docs = (r.stdout || '').trim();
 	if (r.status !== 0 || !docs) throw new Error('could not find the Documents folder: name the user folder, --install <folder>');
-	return path.join(docs, 'My Games', 'DMB');
+	return path.join(docs, 'My Games', "Dead Man's Boots");
 }
 
 /** Read, change and write back one of VCMI's JSON files (comments and all are rewritten plain). */
