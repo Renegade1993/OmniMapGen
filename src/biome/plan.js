@@ -4963,10 +4963,14 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		// between zones the template keeps apart.
 		let placed = 0, cursor = 0;
 		for (let i = 0; i < (crossGates + crossPortals ? 0 : gateCount); i++) {
-			// reachability shifts as each pair lands, so recompute per gate; below
-			// the surface the largest region, as before starts could lie there
-			const reach = [0, 1].map(l => mainComponent(W, H, l, blocked,
-				l === 0 ? startsOn(l) : []));
+			// below the surface the largest region unless a start actually lies
+			// there (mainComponent's own hasStart preference), matching the
+			// surface side now that starts can be underground too (2026-09-27's
+			// own undergroundStarts feature) - an empty list here always picked
+			// the biggest region with no regard for which one held a start, so a
+			// smaller start zone elsewhere could go ungated entirely (2026-09-29,
+			// a free-layout underground start left with no way out at all).
+			const reach = [0, 1].map(l => mainComponent(W, H, l, blocked, startsOn(l)));
 			let done = false;
 			for (; cursor < order.length && !done; cursor++) {
 				const c = order[cursor];
@@ -5074,6 +5078,94 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				+ 'cross-level traffic');
 		else
 			console.error(`[gen] ${placed} subterranean gate pair(s) placed`);
+
+			// mainComponent only ever returns ONE region, so with two underground
+			// starts sitting in two separate components the loop above keeps
+			// landing every gate in whichever one wins the hasStart/size
+			// tie-break, leaving any other start's own zone with no way out at
+			// all - not hypothetical, a free-layout 4-player map hit exactly
+			// this (2026-09-29): red's underground zone got every gate, tan's
+			// own, smaller and separate, got none ("tan home 200, gate none").
+			// Check each underground start directly against what fillLevel
+			// itself will see (nearStarts + reachableUnion, the same pairing
+			// used there) and patch a dedicated link onto any this loop missed.
+			const ugStarts = startsOn(1);
+			const nearCells = s => {
+				const cells = [...(plans[1].entrances || [])];
+				for (let dy = -3; dy <= 3; dy++)
+					for (let dx = -3; dx <= 3; dx++) {
+						const x = s.x + dx, y = s.y + dy;
+						if (x >= 0 && y >= 0 && x < W && y < H) cells.push(y * W + x);
+					}
+				return cells;
+			};
+			let patched = 0;
+			for (const s of ugStarts) {
+				const reached = reachableUnion(W, H, 1, blocked, nearCells(s));
+				if (reached[s.y * W + s.x]) continue;   // already has a way out
+				const zi = plans[1].zone[s.y * W + s.x];
+				const reachSurface = mainComponent(W, H, 0, blocked, startsOn(0));
+				// try a gate first (needs the same x,y on both levels)
+				const cb = zoneCell(1, zi, null, underTpl);
+				const bx = cb >= 0 ? cb % W : -1, by = cb >= 0 ? (cb / W) | 0 : -1;
+				if (cb >= 0 && footprintFits(surfaceTpl, bx, by, 0, W, H, blocked)
+						&& entranceOpen(surfaceTpl, bx, by, 0, W, H, blocked, reachSurface)
+						&& conn[0].accepts(blockingCells(surfaceTpl, bx, by).map(([a, b]) => b * W + a))
+						&& conn[1].accepts(blockingCells(underTpl, bx, by).map(([a, b]) => b * W + a))) {
+					const pairId = `gate_${bx}_${by}`;
+					for (const l of [0, 1]) {
+						const tpl = l === 0 ? surfaceTpl : underTpl;
+						const entry = objectEntry('subterraneanGate', bx, by, l, tpl, STRUCTURE_SUBTYPE.subterraneanGate);
+						entry.pairId = pairId;
+						plans[l].objects.push(entry);
+						footprintBlock(tpl, bx, by, l, W, H, blocked);
+						markApproach(tpl, bx, by, l, W, H, blocked);
+						conn[l].refresh();
+						(plans[l].entrances = plans[l].entrances || []).push(...approachCells(tpl, bx, by, l, W, H, blocked));
+						(plans[l].arrivals = plans[l].arrivals || []).push(...visitableCells(tpl, bx, by)
+							.filter(([a, b]) => a >= 0 && b >= 0 && a < W && b < H).map(([a, b]) => b * W + a));
+					}
+					patched++;
+					console.error(`[gen] ${s.color}'s underground start had no way out; patched a dedicated gate at (${bx},${by})`);
+					continue;
+				}
+				// no matching x,y for a gate: a monolith pair needs no such match
+				const ch = book.next() || book.shared();
+				const uCell = zoneCell(1, zi, null, ch.tpl);
+				let sCell = -1;
+				for (const c of order) {
+					const x = c % W, y = (c / W) | 0;
+					if (!footprintFits(ch.tpl, x, y, 0, W, H, blocked)) continue;
+					if (!entranceOpen(ch.tpl, x, y, 0, W, H, blocked, reachSurface)) continue;
+					if (!conn[0].accepts(blockingCells(ch.tpl, x, y).map(([a, b]) => b * W + a))) continue;
+					sCell = c; break;
+				}
+				if (uCell < 0 || sCell < 0) {
+					console.error(`[gen] ${s.color}'s underground start has no way out, and no gate or `
+						+ 'monolith site could be found either - the map ships with this start isolated');
+					continue;
+				}
+				book.take(ch);
+				const pairId = `portal_${ch.subtype}`;
+				const ends = [[sCell % W, (sCell / W) | 0], [uCell % W, (uCell / W) | 0]];
+				ends.forEach(([x, y], l) => {
+					const e = monolithEntry(x, y, l, ch);
+					e.pairId = pairId;
+					plans[l].objects.push(e);
+					footprintBlock(ch.tpl, x, y, l, W, H, blocked);
+					markApproach(ch.tpl, x, y, l, W, H, blocked);
+					conn[l].refresh();
+				});
+				const [ubx, uby] = ends[1];
+				(plans[1].entrances = plans[1].entrances || []).push(...approachCells(ch.tpl, ubx, uby, 1, W, H, blocked));
+				(plans[1].arrivals = plans[1].arrivals || []).push(...visitableCells(ch.tpl, ubx, uby)
+					.filter(([a, b]) => a >= 0 && b >= 0 && a < W && b < H).map(([a, b]) => b * W + a));
+				patched++;
+				console.error(`[gen] ${s.color}'s underground start had no way out; patched a dedicated monolith pair`);
+			}
+			if (patched)
+				console.error(`[gen] ${patched} underground start(s) patched with a dedicated link after the general pass missed them`);
+
 	}
 
 	// The roads went down in planLevel, before the walls and ridges. The gates
