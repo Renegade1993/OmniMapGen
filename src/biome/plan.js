@@ -1718,9 +1718,13 @@ function townNearCentre(zone, b, W, H, levelIndex, blocked, water, barriers) {
  * overridden). Scaled against the slider's own default so a template's
  * calibrated count is unchanged at the default and responds either way past it.
  */
+function neutralTownScale(p) {
+	return p.townRatio / BIOME_DEFAULTS.townRatio;
+}
+
 function scaledNeutralTowns(z, p) {
 	const nt = z.neutralTowns || {};
-	const scale = p.townRatio / BIOME_DEFAULTS.townRatio;
+	const scale = neutralTownScale(p);
 	return { castles: Math.round((nt.castles || 0) * scale), towns: Math.round((nt.towns || 0) * scale) };
 }
 
@@ -1912,11 +1916,27 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		const pt = z.playerTowns || {}, nt = scaledNeutralTowns(z, p);
 		// in the engine's order (TownPlacer::placeTowns): the owner's castles
 		// and towns, then neutral castles, then neutral towns; a castle starts
-		// with its fort
-		for (let k = Math.max(0, (pt.castles || 0) - (ownerStart ? 1 : 0)); k > 0; k--)
-			townWishes.push({ owner: ownerStart && ownerStart.color, fort: true });
-		for (let k = pt.towns || 0; k > 0; k--)
-			townWishes.push({ owner: ownerStart && ownerStart.color, fort: false });
+		// with its fort. A start zone past the player count has no owner: its
+		// own playerTowns becomes a neutral town instead of a player's
+		// (TownPlacer, "no player - randomize town"), and that substitution
+		// had never gone through the slider either - K hit it directly,
+		// 2026-09-28, Jebus Cross at 2 players Large: 0% and 25% left the same
+		// 2 neutral towns unmoved, one from each spare start, since this reads
+		// playerTowns, not neutralTowns, and scaledNeutralTowns only touches
+		// the latter. Scaled the same way now, the owned case untouched (a
+		// real player's own extra castle has nothing to do with this slider).
+		if (ownerStart) {
+			for (let k = Math.max(0, (pt.castles || 0) - 1); k > 0; k--)
+				townWishes.push({ owner: ownerStart.color, fort: true });
+			for (let k = pt.towns || 0; k > 0; k--)
+				townWishes.push({ owner: ownerStart.color, fort: false });
+		} else {
+			const scale = neutralTownScale(p);
+			for (let k = Math.round((pt.castles || 0) * scale); k > 0; k--)
+				townWishes.push({ owner: null, fort: true });
+			for (let k = Math.round((pt.towns || 0) * scale); k > 0; k--)
+				townWishes.push({ owner: null, fort: false });
+		}
 		for (let k = nt.castles || 0; k > 0; k--)
 			townWishes.push({ owner: null, fort: true });
 		for (let k = nt.towns || 0; k > 0; k--)
