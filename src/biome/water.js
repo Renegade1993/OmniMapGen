@@ -205,13 +205,17 @@ function inWaterBlock(m, W, H, x, y) {
  * Clean a raw mask in place: majority smoothing, thin water out, tiny ponds
  * out, then one land mass. Land pieces cut off from the main mass become
  * water when small and are bridged to it when large or when a start stands
- * on them. `forced` cells are always land.
+ * on them, except a piece holding an `apart` cell, which stays an island.
+ * `forced` cells are always land.
  */
 function settle(m, W, H, forced, startCells, opts = {}) {
 	const N = W * H;
 	// `wet` cells stay water whatever the rules below say (the straits between
 	// two players' islands); `connect` false keeps islands apart (no bridges)
 	const wet = opts.wet || null, connect = opts.connect !== false;
+	// `apart`: cells of ground the sea may leave on an island of its own, with no bridge to the
+	// main mass (the template's crossroads, when boats sail there: buildWaterPlan)
+	const apart = opts.apart || [];
 	const keepWet = c => !!(wet && wet[c]);
 	for (let round = 0; round < 2; round++) {
 		const next = m.slice();
@@ -287,17 +291,19 @@ function settle(m, W, H, forced, startCells, opts = {}) {
 			for (const c of startCells) if (lc.id[c] >= 0) { main = lc.id[c]; break; }
 			if (main < 0) main = lc.sizes.indexOf(Math.max(...lc.sizes));
 			const withStart = new Set(startCells.map(c => lc.id[c]).filter(k => k >= 0));
+			const held = new Set(apart.map(c => lc.id[c]).filter(k => k >= 0));
 			const islet = Math.max(30, Math.round(0.01 * N));
 			for (let k = 0; k < lc.sizes.length; k++) {
 				if (k === main) continue;
 				if (!withStart.has(k) && lc.sizes[k] < islet) {
 					for (let c = 0; c < N; c++) if (lc.id[c] === k && !forced[c]) m[c] = 1;
 					changed = true;
-				} else if (connect) {
+				} else if (connect && !held.has(k)) {
 					bridge(m, W, H, lc.id, k, main);
 					changed = true;
 				}
-				// islands: a start's island and any neutral island big enough stay
+				// islands: a start's island and any neutral island big enough stay,
+				// and so does an `apart` island (its way in is a boat)
 			}
 		}
 		if (!changed) break;
@@ -402,7 +408,10 @@ function relocateStarts(raw, starts, W, H) {
  * Build the surface water plan.
  *   starts: [{x, y}] town anchors on the surface.
  * Returns null when there is no water, else
- *   { mask: Uint8Array (1 = water), starts: [{x, y, moved?}], shape, coverage }.
+ *   { mask: Uint8Array (1 = water), starts: [{x, y, moved?, hub?}], shape, coverage, hubCells }.
+ * A start marked `hub` is the template's crossroads: kept dry like a start, and left on an
+ * island of its own, with no bridge, when boats sail there (waterAccess above None);
+ * hubCells are the cells of those left apart.
  * Deterministic in (W, H, starts, seed, levers); it draws from its own stream
  * so the planner's stream is untouched.
  */
@@ -415,7 +424,7 @@ function relocateStarts(raw, starts, W, H) {
  * in 160 with a bad pair, where its thin-land and thin-water rules undo each
  * other at the root of a one-cell strip.
  */
-function repairShore(m, W, H, forced, check, wet = null) {
+function repairShore(m, W, H, forced, check, wet = null, hold = false) {
 	// `check` is a maskcheck.js checker ({full, around}) or a plain function
 	// returning the bad cells of a whole mask
 	const full = typeof check === 'function' ? mm => check(mm) : mm => check.full(mm, W, H);
@@ -444,8 +453,9 @@ function repairShore(m, W, H, forced, check, wet = null) {
 					m[d] ^= 1;
 					const gain = around ? was - around(nx, ny) : total - count(full(m));
 					// island maps keep their island count exactly: no flip joins two
+					// (and a crossroads island held apart stays apart)
 					const after = pieces();
-					if (gain > 0 && (wet ? after === before : after <= before)) {
+					if (gain > 0 && (wet || hold ? after === before : after <= before)) {
 						total -= gain; done = true; improved = true;
 					} else m[d] ^= 1;
 				}
@@ -488,21 +498,33 @@ function buildWaterPlan(W, H, p, starts, seed, check = null) {
 		? relocateStarts(selectTop(s, target, null), base, W, H) : base.map(q => ({ ...q }));
 	const forced = forcedAround(moved, W, H, START_CLEAR);
 	const startCells = moved.map(q => q.y * W + q.x);
+	// The template's crossroads (a start the caller marks `hub`) may be left an island of its own,
+	// with no land bridge, when boats can sail there: a harbour setting above None. K, 2026-09-29,
+	// Jebus Cross with Mediterranean water: "I NEVER ASKED FOR A ROAD PATH OVER THE WATER. IT'S
+	// MEDITERANEAN, AND THEY CAN GET THERE BY BOAT." With None nobody could get there, so it stays
+	// bridged. waterHubBoats 0 (the generator's own fallback) bridges it whatever the setting.
+	const access = Math.round(Number.isFinite(p && p.waterAccess) ? p.waterAccess : 2);
+	const apart = !shape.islands && access >= 1 && !(p && p.waterHubBoats === 0)
+		? moved.filter(q => q.hub).map(q => q.y * W + q.x) : [];
 	// Cleaning loses water (thin arms, ponds) and bridging loses more, so
 	// aim the selection a little high and correct it from the measured result.
 	let k = target, mask = null, got = 0;
 	for (let it = 0; it < 4; it++) {
 		mask = selectTop(s, k, forced);
 		if (wet) for (let c = 0; c < N; c++) if (wet[c] && !forced[c]) mask[c] = 1;
-		settle(mask, W, H, forced, startCells, { wet, connect: !shape.islands });
+		settle(mask, W, H, forced, startCells, { wet, connect: !shape.islands, apart });
 		got = mask.reduce((a, v) => a + v, 0);
 		if (!got || Math.abs(got - target) <= Math.max(8, 0.01 * N)) break;
 		k = Math.max(1, Math.round(k * target / got));
 	}
-	const unfit = check ? repairShore(mask, W, H, forced, check, wet) : 0;
+	const unfit = check ? repairShore(mask, W, H, forced, check, wet, apart.length > 0) : 0;
 	got = mask.reduce((a, v) => a + v, 0);
+	// the crossroads cells the sea did leave on land of their own, for the planner
+	const pieces = components(mask, W, H, 0);
+	const mainPiece = startCells.length ? pieces.id[startCells[0]] : -1;
+	const hubCells = apart.filter(c => pieces.id[c] >= 0 && pieces.id[c] !== mainPiece);
 	return { mask, starts: moved, shape: shape.id, coverage: got / N, unfit,
-		islands: !!shape.islands };
+		islands: !!shape.islands, hubCells };
 }
 
 /**
@@ -511,8 +533,13 @@ function buildWaterPlan(W, H, p, starts, seed, check = null) {
  * piece its seed stands on; every other piece goes to the neighbour it shares
  * the most border with. Water then takes the zone of the nearest land, so a
  * coast is never a zone line and the zone of every cell stays a real index.
+ * `apart`: the cells of a crossroads island the sea left on land of its own
+ * (buildWaterPlan's hubCells). Its zone keeps the island, and keeps its own
+ * biggest other piece too: the seed stands on the island, so by the rule above
+ * the whole shore ring round the sea would go to the players' zones, and the
+ * crossroads would be left an island no template link reaches.
  */
-function settleZonesOnLand(zone, seeds, W, H, water) {
+function settleZonesOnLand(zone, seeds, W, H, water, apart = null) {
 	const N = W * H;
 	const core = new Uint8Array(N);
 	const byZone = new Map();
@@ -533,6 +560,47 @@ function settleZonesOnLand(zone, seeds, W, H, water) {
 			}
 		}
 		byZone.set(i, q.length);
+	}
+	for (const a of apart || []) {
+		const i = zone[a];
+		if (water[a] || i < 0 || i >= seeds.length) continue;
+		// the zone's ground round the island, then its biggest piece that is not core yet
+		const grow = c0 => {
+			const q = [c0];
+			core[c0] = 1;
+			for (let h = 0; h < q.length; h++) {
+				const c = q[h];
+				const x = c % W, y = (c / W) | 0;
+				for (const [dx, dy] of DIRS4) {
+					const nx = x + dx, ny = y + dy;
+					if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+					const d = ny * W + nx;
+					if (!core[d] && !water[d] && zone[d] === i) { core[d] = 1; q.push(d); }
+				}
+			}
+		};
+		// the seed is on the island only when the flood above already took it; a seed on the
+		// mainland leaves the island the one piece to add
+		if (!core[a]) { grow(a); continue; }
+		const mark = new Uint8Array(N);
+		let big = null;
+		for (let c0 = 0; c0 < N; c0++) {
+			if (water[c0] || core[c0] || mark[c0] || zone[c0] !== i) continue;
+			const q = [c0];
+			mark[c0] = 1;
+			for (let h = 0; h < q.length; h++) {
+				const c = q[h];
+				const x = c % W, y = (c / W) | 0;
+				for (const [dx, dy] of DIRS4) {
+					const nx = x + dx, ny = y + dy;
+					if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+					const d = ny * W + nx;
+					if (!mark[d] && !core[d] && !water[d] && zone[d] === i) { mark[d] = 1; q.push(d); }
+				}
+			}
+			if (!big || q.length > big.size) big = { size: q.length, cell: c0 };
+		}
+		if (big) grow(big.cell);
 	}
 	// stray land joins a neighbouring zone's core, growing inward
 	let moved = 0;

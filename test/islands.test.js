@@ -16,6 +16,11 @@
  *   - every player walks to a boat of its own (72x72 seed 7, Harbours Every
  *     zone, no portals: blue could reach only its shipyard, because the seal
  *     passes counted any harbour as a way off)
+ *   - a template's crossroads on Mediterranean water is an island of its own while
+ *     boats can sail there (Harbours above None) and bridged when they cannot; its
+ *     zone keeps the shore ring; harbours stand on ground the players walk to, never
+ *     on the island, and every player's hero gets there by boat (K, 2026-09-29: "I
+ *     NEVER ASKED FOR A ROAD PATH OVER THE WATER")
  */
 'use strict';
 
@@ -325,5 +330,191 @@ test('Islands 72x72, 2 players, seed 7, Every zone, no portals: every player wal
 		}
 		assert.ok(boats.some(b => ring(b).some(c => seen[c])), `${t.options.owner} walks to a boat`);
 	}
+	fs.rmSync(out, { force: true });
+});
+
+// K, 2026-09-29, Jebus Cross with Mediterranean water: the template's crossroads is kept dry in the
+// middle of the sea, and the "one land mass" rule bridged it to the shore with a land strip.
+// "I NEVER ASKED FOR A ROAD PATH OVER THE WATER. IT'S MEDITERANEAN, AND THEY CAN GET THERE BY BOAT."
+// With boats to sail there (Harbours above None) the crossroads is an island of its own.
+const hubStarts = (W, H) => [[4, 4], [W - 5, H - 5], [4, H - 5], [W - 5, 4]].map(([x, y]) => ({ x, y }))
+	.concat([{ x: W >> 1, y: H >> 1, hub: true }]);
+const MED = WATER_SHAPES.findIndex(s => s.id === 'mediterranean');
+
+// each dry cell's 4-connected piece (1-based, 0 on water) and how many pieces there are
+function pieces4(water, W, H) {
+	const label = new Int32Array(W * H);
+	let n = 0;
+	for (let c0 = 0; c0 < W * H; c0++) {
+		if (water[c0] || label[c0]) continue;
+		n++;
+		const q = [c0];
+		label[c0] = n;
+		for (let h = 0; h < q.length; h++) {
+			const c = q[h], x = c % W, y = (c / W) | 0;
+			for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]])
+				if (u >= 0 && v >= 0 && u < W && v < H && !water[v * W + u] && !label[v * W + u]) { label[v * W + u] = n; q.push(v * W + u); }
+		}
+	}
+	return { n, label };
+}
+
+test('the crossroads island is left apart while boats can sail there, and bridged when they cannot', () => {
+	const W = 72, H = 72, hub = (H >> 1) * W + (W >> 1);
+	for (const seed of [1, 2, 3]) {
+		const at = extra => buildWaterPlan(W, H, { waterCoverage: 0.3, waterShape: MED, ...extra }, hubStarts(W, H), seed);
+		const apart = at({ waterAccess: 2 });
+		assert.deepStrictEqual(apart.hubCells, [hub], `seed ${seed}: the crossroads is left apart`);
+		const { n, label } = pieces4(apart.mask, W, H);
+		assert.strictEqual(n, 2, `seed ${seed}: the mainland and the island, nothing else`);
+		assert.notStrictEqual(label[hub], label[4 * W + 4], `seed ${seed}: the island is a piece of its own`);
+		// with no boats (None), or with the generator's own fallback, it is bridged as before
+		for (const extra of [{ waterAccess: 0 }, { waterAccess: 2, waterHubBoats: 0 }]) {
+			const bridged = at(extra);
+			assert.deepStrictEqual(bridged.hubCells, [], `seed ${seed} ${JSON.stringify(extra)}: nothing left apart`);
+			assert.strictEqual(pieces4(bridged.mask, W, H).n, 1, `seed ${seed} ${JSON.stringify(extra)}: one land mass`);
+		}
+	}
+});
+
+test('the crossroads zone keeps the shore ring round the sea with its island', () => {
+	const W = 72, H = 72, N = W * H;
+	const plan = buildWaterPlan(W, H, { waterCoverage: 0.3, waterShape: MED, waterAccess: 2 }, hubStarts(W, H), 1);
+	const seeds = hubStarts(W, H).map(({ x, y }) => ({ x, y }));   // four corners, then the crossroads
+	const raw = new Int16Array(N);
+	for (let c = 0; c < N; c++) {
+		let best = 0, bd = Infinity;
+		seeds.forEach((s, i) => {
+			// the crossroads' zone is the template's biggest, so its cell is drawn wider
+			const d = Math.hypot(s.x - c % W, s.y - ((c / W) | 0)) / (i === 4 ? 1.5 : 1);
+			if (d < bd) { bd = d; best = i; }
+		});
+		raw[c] = best;
+	}
+	const land = (zone, i) => { let n = 0; for (let c = 0; c < N; c++) if (!plan.mask[c] && zone[c] === i) n++; return n; };
+	const wanted = land(raw, 4);
+	const kept = raw.slice(), lost = raw.slice();
+	settleZonesOnLand(kept, seeds, W, H, plan.mask, plan.hubCells);
+	settleZonesOnLand(lost, seeds, W, H, plan.mask);
+	// its seed stands on the island, so without the island held apart the whole ring goes to the
+	// players' zones and the crossroads is a 15 by 15 square no template link reaches
+	assert.ok(land(kept, 4) >= 0.9 * wanted, `held apart: ${land(kept, 4)} of ${wanted} cells kept`);
+	assert.ok(land(lost, 4) <= 250, `not held apart: only the island is left, ${land(lost, 4)} cells`);
+	// and it borders every player's zone
+	const touches = new Set();
+	for (let c = 0; c < N; c++) {
+		if (plan.mask[c] || kept[c] !== 4) continue;
+		for (const d of [c + 1, c + W]) if (d < N && !plan.mask[d] && kept[d] !== 4) touches.add(kept[d]);
+		for (const d of [c - 1, c - W]) if (d >= 0 && !plan.mask[d] && kept[d] !== 4) touches.add(kept[d]);
+	}
+	assert.deepStrictEqual([...touches].sort(), [0, 1, 2, 3], 'the ring borders all four player zones');
+});
+
+// a lake with a dry island at its middle, zone 1 (the crossroads) holding both; the start in zone 0
+function hubWorld(blockShores = false) {
+	const W = 64, H = 48;
+	const water = new Uint8Array(W * H), zone = new Int16Array(W * H), blocked = new Uint8Array(W * H);
+	for (let y = 0; y < H; y++)
+		for (let x = 0; x < W; x++) {
+			zone[y * W + x] = x < 16 ? 0 : x >= 48 ? 2 : 1;
+			if ((x - 32) ** 2 / 196 + (y - 24) ** 2 / 100 <= 1 && !(Math.abs(x - 32) <= 4 && Math.abs(y - 24) <= 4))
+				water[y * W + x] = 1;
+		}
+	for (let c = 0; c < W * H; c++) if (water[c]) blocked[c] |= OCCUPIED;
+	const isle = c => Math.abs(c % W - 32) <= 4 && Math.abs(((c / W) | 0) - 24) <= 4;
+	if (blockShores)
+		for (let c = 0; c < W * H; c++) {
+			if (water[c] || isle(c)) continue;
+			const x = c % W, y = (c / W) | 0;
+			for (let dy = -4; dy <= 4; dy++)
+				for (let dx = -4; dx <= 4; dx++) {
+					const u = x + dx, v = y + dy;
+					if (u >= 0 && v >= 0 && u < W && v < H && water[v * W + u]) blocked[c] |= OCCUPIED;
+				}
+		}
+	return { W, H, water, zone, blocked, isle, hub: 24 * W + 32 };
+}
+
+test('harbours stand where the players walk to, never on the crossroads island, and a boat sails to it', () => {
+	const { W, H, water, zone, blocked, isle, hub } = hubWorld();
+	const objects = [];
+	const harbours = placeHarbours({ W, H, l: 0, water, zone, blocked, rng: xorshift(4),
+		p: { waterAccess: 3 }, objects, towns: [{ x: 6, y: 24, l: 0 }], playerStarts: [{ x: 6, y: 24 }],
+		objectEntry: entry, islands: true, hubCells: [hub] });
+	assert.ok(harbours.length >= 1, 'a harbour');
+	for (const h of harbours) assert.ok(!h.boarding.some(isle), `${h.kind} boards from the mainland`);
+	for (const o of objects.filter(o => o.type === 'shipyard'))
+		for (const [x, y] of blockingCells(o.template, o.x, o.y)) assert.ok(!isle(y * W + x), 'no shipyard on the island');
+	// a boat from the mainland harbour lands on the island's own shore
+	const links = sailLinksFor(harbours, water, W, H);
+	assert.ok(links.some(([, shore]) => shore.some(isle)), 'the island is a landing for a boat');
+});
+
+test('an island no boat can sail from is refused, so the generator bridges it instead', () => {
+	const { W, H, water, zone, blocked, hub } = hubWorld(true);
+	assert.throws(() => placeHarbours({ W, H, l: 0, water, zone, blocked, rng: xorshift(4),
+		p: { waterAccess: 2 }, objects: [], towns: [], playerStarts: [{ x: 6, y: 24 }],
+		objectEntry: entry, hubCells: [hub] }), /crossroads island has no shore/);
+});
+
+for (const [access, apart] of [[2, true], [0, false]])
+test(`Jebus Cross with Mediterranean water at Harbours ${access}: the crossroads ${apart ? 'is an island every player sails to' : 'is bridged to the land'}`,
+{ timeout: 240000 }, () => {
+	const { spawnSync } = require('child_process');
+	const fs = require('fs');
+	const out = path.join(testTmp(), `vmapgen_hubisland_${access}.vmap`);
+	const r = spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'),
+		'--template', 'Jebus Cross', '--w', '72', '--h', '72', '--players', '4', '--seed', '3', '--out', out,
+		'--bio.waterShape', String(MED), '--bio.waterCoverage', '0.2', '--bio.waterAccess', String(access)],
+	{ encoding: 'utf8', timeout: 200000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
+	assert.strictEqual(r.status, 0, r.stderr.slice(-600));
+	const { readVmap } = require('../src/preview/render');
+	const { objects, levels } = readVmap(out);
+	const rows = levels[0].rows, H = rows.length, W = rows[0].length;
+	const wet = new Uint8Array(W * H);
+	for (let y = 0; y < H; y++)
+		for (let x = 0; x < W; x++) if (String(rows[y][x]).startsWith('wt')) wet[y * W + x] = 1;
+	// the ground as a hero walks it, 8-way, on the terrain alone
+	const piece = new Int32Array(W * H).fill(-1), size = [];
+	for (let c0 = 0; c0 < W * H; c0++) {
+		if (wet[c0] || piece[c0] >= 0) continue;
+		const q = [c0];
+		piece[c0] = size.length;
+		for (let h = 0; h < q.length; h++) {
+			const c = q[h], x = c % W, y = (c / W) | 0;
+			for (let dy = -1; dy <= 1; dy++)
+				for (let dx = -1; dx <= 1; dx++) {
+					const u = x + dx, v = y + dy;
+					if (u >= 0 && v >= 0 && u < W && v < H && !wet[v * W + u] && piece[v * W + u] < 0) { piece[v * W + u] = size.length; q.push(v * W + u); }
+				}
+		}
+		size.push(q.length);
+	}
+	const centre = (H >> 1) * W + (W >> 1);
+	if (!apart) {
+		assert.strictEqual(size.length, 1, 'one land mass, the crossroads bridged in');
+		assert.doesNotMatch(r.stderr, /left to boats/);
+		fs.rmSync(out, { force: true });
+		return;
+	}
+	assert.match(r.stderr, /the crossroads island is left to boats/);
+	assert.strictEqual(size.length, 2, 'the mainland and the crossroads island');
+	const isle = piece[centre];
+	assert.ok(size[isle] >= 150 && size[isle] <= 400, `the island is ${size[isle]} cells`);
+	// every player's hero gets there: walking, boarding a boat, buying one at a shipyard
+	const { towns, reachFrom } = sailReach(out);
+	assert.strictEqual(towns.length, 4);
+	for (const t of towns) {
+		const land = reachFrom(t);
+		let onIsle = 0;
+		for (let c = 0; c < W * H; c++) if (piece[c] === isle && land[c]) onIsle++;
+		assert.ok(onIsle >= 0.5 * size[isle], `${t.options.owner} reaches the island (${onIsle} of ${size[isle]} cells)`);
+	}
+	// what stands on it is kept, and no harbour is on it
+	assert.ok(objects.filter(o => (o.l || 0) === 0 && piece[o.y * W + o.x] === isle).length >= 5, 'the island has its treasure');
+	const harbours = objects.filter(o => o.type === 'shipyard' || o.type === 'boat');
+	assert.ok(harbours.length >= 2, 'harbours were placed');
+	for (const o of harbours.filter(o => o.type === 'shipyard'))
+		assert.notStrictEqual(piece[o.y * W + o.x], isle, 'no shipyard on the island');
 	fs.rmSync(out, { force: true });
 });

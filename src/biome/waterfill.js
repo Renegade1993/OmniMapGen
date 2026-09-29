@@ -114,8 +114,30 @@ function placeHarbours(ctx) {
 	const harbours = [];
 	const used = new Set();                          // water cells promised to a harbour
 	const boatUsed = [];
+	const onShore = new Set();                       // zones with land on a body big enough for a harbour
+	const sqDist = (c, t) => (c % W - t.x) ** 2 + (((c / W) | 0) - t.y) ** 2;
+	// A crossroads island the sea left apart (ctx.hubCells, water.js): a harbour goes where the
+	// players can walk to and never on the island, where it would lead nowhere
+	const hubCells = ctx.hubCells || [];
+	const landPiece = new Int32Array(hubCells.length ? W * H : 0).fill(-1);
+	if (hubCells.length) {
+		let k = 0;
+		for (let c0 = 0; c0 < W * H; c0++) {
+			if (water[c0] || landPiece[c0] >= 0) continue;
+			const q = [c0];
+			landPiece[c0] = k;
+			for (let h = 0; h < q.length; h++) {
+				const c = q[h], x = c % W, y = (c / W) | 0;
+				for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]])
+					if (u >= 0 && v >= 0 && u < W && v < H && !water[v * W + u] && landPiece[v * W + u] < 0) { landPiece[v * W + u] = k; q.push(v * W + u); }
+			}
+			k++;
+		}
+	}
+	const hubPiece = new Set(hubCells.map(c => landPiece[c]));
+	const ashore = c => !hubCells.length || !hubPiece.has(landPiece[c]);
 
-	const tryShipyard = (b, z) => {
+	const tryShipyard = (b, z, toward = null) => {
 		const tpl = shipyards[0].template;
 		// anchors: the three blocked cells sit on this zone's shore land
 		const cand = [];
@@ -130,12 +152,13 @@ function placeHarbours(ctx) {
 		}
 		const seen = new Set();
 		const order = cand.filter(c => !seen.has(c) && seen.add(c));
-		for (let i = order.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [order[i], order[j]] = [order[j], order[i]]; }
+		if (toward) order.sort((p, q) => sqDist(p, toward) - sqDist(q, toward) || p - q);
+		else for (let i = order.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [order[i], order[j]] = [order[j], order[i]]; }
 		for (const a of order) {
 			const ax = a % W, ay = (a / W) | 0;
 			if (!inMask(tpl, ax, ay, W, H) || !footprintFits(tpl, ax, ay, l, W, H, blocked)) continue;
 			const own = blockingCells(tpl, ax, ay).map(([u, v]) => v * W + u);
-			if (own.some(c => water[c] || zone[c] !== z || keep.has(c))) continue;
+			if (own.some(c => water[c] || zone[c] !== z || keep.has(c) || !ashore(c))) continue;
 			if (near(a, playerStarts, 4)) continue;
 			// a hero walks up to it from the row below
 			const [vx, vy] = visitableCells(tpl, ax, ay)[0];
@@ -179,7 +202,7 @@ function placeHarbours(ctx) {
 		return false;
 	};
 
-	const tryBoat = (b, z, landOk = d => zone[d] === z, relaxed = false) => {
+	const tryBoat = (b, z, landOk = d => zone[d] === z, relaxed = false, toward = null) => {
 		const tplEntry = boats[(rng() * boats.length) | 0];
 		const tpl = tplEntry.template;
 		const shore = [];
@@ -190,10 +213,11 @@ function placeHarbours(ctx) {
 					const u = x + dx, v = y + dy;
 					if (u < 0 || v < 0 || u >= W || v >= H) continue;
 					const d = v * W + u;
-					if (!water[d] && landOk(d) && free(d)) shore.push([d, c]);
+					if (!water[d] && landOk(d) && free(d) && ashore(d)) shore.push([d, c]);
 				}
 		}
-		for (let i = shore.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [shore[i], shore[j]] = [shore[j], shore[i]]; }
+		if (toward) shore.sort((p, q) => sqDist(p[0], toward) - sqDist(q[0], toward) || p[0] - q[0] || p[1] - q[1]);
+		else for (let i = shore.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [shore[i], shore[j]] = [shore[j], shore[i]]; }
 		for (const [land, w] of shore) {
 			if (used.has(w) || (!relaxed && near(land, playerStarts, 4))) continue;
 			if (!relaxed && boatUsed.some(q => Math.max(Math.abs(q % W - w % W), Math.abs(((q / W) | 0) - ((w / W) | 0))) < 6)) continue;
@@ -228,6 +252,7 @@ function placeHarbours(ctx) {
 			for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]])
 				if (u >= 0 && v >= 0 && u < W && v < H && !water[v * W + u]) shoreZones.add(zone[v * W + u]);
 		}
+		shoreZones.forEach(z => onShore.add(z));
 		for (const z of [...shoreZones].sort((a, c) => a - c)) {
 			const start = startZones.has(z), town = start || townZones.has(z);
 			const wantYard = town && (start || access >= 2);
@@ -238,6 +263,68 @@ function placeHarbours(ctx) {
 			if (wantBoat || wantYard) tryBoat(b, z);
 		}
 	});
+	// "Every biome" (access 3): a zone that touches no water of its own sails from the nearest shore of
+	// a zone beside it. K, 2026-09-29, Jebus Cross with a Mediterranean sea held inside the crossroads
+	// zone: the four player biomes touched no water and got nothing, and the one shipyard on a shore of
+	// hundreds of cells read as "no harbours anywhere".
+	if (access >= 3) {
+		const adj = new Map();
+		const landZones = new Set();
+		for (let c = 0; c < W * H; c++) {
+			if (water[c]) continue;
+			const za = zone[c];
+			landZones.add(za);
+			for (const d of [(c % W) + 1 < W ? c + 1 : -1, c + W < W * H ? c + W : -1]) {
+				if (d < 0 || water[d] || zone[d] === za) continue;
+				const zb = zone[d];
+				if (!adj.has(za)) adj.set(za, new Set());
+				if (!adj.has(zb)) adj.set(zb, new Set());
+				adj.get(za).add(zb);
+				adj.get(zb).add(za);
+			}
+		}
+		// where a zone's harbour is wanted: its starts, else the middle of its land
+		const anchorOf = z => {
+			let sx = 0, sy = 0, n = 0;
+			for (const s of playerStarts) if (zone[s.y * W + s.x] === z) { sx += s.x; sy += s.y; n++; }
+			if (!n)
+				for (let c = 0; c < W * H; c++)
+					if (!water[c] && zone[c] === z) { sx += c % W; sy += (c / W) | 0; n++; }
+			return n ? { x: sx / n, y: sy / n } : null;
+		};
+		for (const z of [...landZones].sort((a, c) => a - c)) {
+			if (onShore.has(z)) continue;
+			const start = startZones.has(z), town = start || townZones.has(z);
+			const wantYard = town && (start || access >= 2);
+			const wantBoat = access >= 3 || (start && access >= 1);
+			const anchor = anchorOf(z);
+			if (!anchor || !(wantYard || wantBoat)) continue;
+			// the shore nearest to it among the zones that share a border with it
+			let best = null;
+			for (const zz of adj.get(z) || []) {
+				if (!onShore.has(zz)) continue;
+				bodies.forEach((body, b) => {
+					if (body.size < MIN_BODY) return;
+					for (const c of body.cells) {
+						const x = c % W, y = (c / W) | 0;
+						for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+							if (u < 0 || v < 0 || u >= W || v >= H) continue;
+							const d = v * W + u;
+							if (water[d] || zone[d] !== zz || !ashore(d)) continue;
+							const dd = (u - anchor.x) ** 2 + (v - anchor.y) ** 2;
+							if (!best || dd < best.dd || (dd === best.dd && (zz < best.zz || (zz === best.zz && b < best.b))))
+								best = { b, zz, dd };
+						}
+					}
+				});
+			}
+			if (!best) continue;
+			const first = harbours.length;
+			const yard = wantYard && tryShipyard(best.b, best.zz, anchor);
+			if (!(yard && !(ctx.islands && start)) && (wantBoat || wantYard)) tryBoat(best.b, best.zz, undefined, false, anchor);
+			for (let k = first; k < harbours.length; k++) harbours[k].serves = z;
+		}
+	}
 	if (ctx.islands) {
 		// Every start's island must have a boat waiting on it: a shipyard
 		// alone strands any AI that cannot buy one. A start whose island got
@@ -276,10 +363,30 @@ function placeHarbours(ctx) {
 			if (!ok) throw new Error('An island start has no shore a boat can use; lower the amount of water or pick another water layout.');
 		}
 	}
+	if (hubCells.length) {
+		// The crossroads island is reached by boat: some harbour on ground the players walk to has
+		// to sail water that touches it. With none, one boat goes on any shore of that ground; with
+		// no room for that either, the caller bridges the island as it was before (generate.js).
+		const touchesHub = new Set();
+		for (let c = 0; c < W * H; c++) {
+			if (!water[c]) continue;
+			const x = c % W, y = (c / W) | 0;
+			for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]])
+				if (u >= 0 && v >= 0 && u < W && v < H && !water[v * W + u] && hubPiece.has(landPiece[v * W + u])) touchesHub.add(id[c]);
+		}
+		if (!harbours.some(h => touchesHub.has(h.body) && h.boarding.some(ashore))) {
+			let ok = false;
+			for (const b of [...touchesHub].sort((a, c) => a - c))
+				if (bodies[b].size >= MIN_BODY && !ok) ok = tryBoat(b, zone[hubCells[0]], ashore, true);
+			if (!ok) throw new Error('The crossroads island has no shore a boat can sail from; the island is bridged instead.');
+		}
+	}
+	const served = harbours.filter(h => h.serves !== undefined).length;
 	if (harbours.length)
 		console.error(`[gen] level ${l}: water harbours: `
 			+ `${harbours.filter(h => h.kind === 'shipyard').length} shipyard(s), `
-			+ `${harbours.filter(h => h.kind === 'boat').length} boat(s)`);
+			+ `${harbours.filter(h => h.kind === 'boat').length} boat(s)`
+			+ (served ? `, ${served} of them for zones off the shore` : ''));
 	return harbours;
 }
 

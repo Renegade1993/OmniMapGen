@@ -1002,7 +1002,7 @@ async function generateMap(params) {
 	const planWater = biomes => {
 		const plan = buildWaterPlan(params.mapW, params.mapH, biomes,
 			surfaceIdx.map(i => ({ ...players[i].townPos, ...waterOrigins.get(players[i].color) }))
-				.concat(hubAnchor ? [hubAnchor] : []),
+				.concat(hubAnchor ? [{ ...hubAnchor, hub: true }] : []),
 			params.seed || 1, shoreCheck);
 		surfaceIdx.forEach(i => { players[i].townPos = { ...players[i].townPos, ...waterOrigins.get(players[i].color) }; });
 		if (!plan) return null;
@@ -1015,6 +1015,8 @@ async function generateMap(params) {
 			players[i].townPos = { ...players[i].townPos, x: m.x, y: m.y };
 		});
 		console.error(`[gen] water: ${plan.shape}, ${(100 * plan.coverage).toFixed(1)}% of the surface`);
+		if (plan.hubCells && plan.hubCells.length)
+			console.error("[gen] water: the crossroads island is left to boats, no land bridge to it");
 		// the straits between islands are water whatever the amount says
 		const asked = Number(biomes.waterCoverage) || 0;
 		if (plan.islands && plan.coverage > asked + 0.03)
@@ -1486,7 +1488,9 @@ async function generateMap(params) {
 			// HotA's twelve more it made 1.4 to 2.0 times the corpus's portals)
 			monolithChannels: useMods && zonePlan ? modChannels(assetIndex.objects) : [],
 			waterMask: waterPlan ? waterPlan.mask : null, caveChecker,
-			waterIslands: !!(waterPlan && waterPlan.islands),
+			// a crossroads island left to boats is one more island the planner counts boats for
+			waterIslands: !!(waterPlan && (waterPlan.islands || (waterPlan.hubCells && waterPlan.hubCells.length))),
+			hubCells: waterPlan && waterPlan.hubCells ? waterPlan.hubCells : null,
 			layoutOnly: !!process.env.VMAPGEN_PLAN_ONLY },
 		terrainShortIds, tileIdsByShort, numTiles: tiles.length,
 		// pileCommon: the engine's common treasure pool (src/rmg/piles.js), for
@@ -1512,6 +1516,18 @@ async function generateMap(params) {
 		try {
 			planned = planOnce();
 		} catch (err) {
+			// A crossroads island left to boats that no boat can sail to is bridged to the land
+			// instead, as it was before boats were asked to reach it (waterHubBoats 0), and the
+			// map laid again: the water shape the player picked stays
+			if (waterPlan && waterPlan.hubCells && waterPlan.hubCells.length
+					&& /crossroads island has no shore|island start has no shore/.test(String(err && err.message))) {
+				biomeParams.waterHubBoats = 0;
+				waterPlan = planWater(biomeParams);
+				starts = makeStarts();
+				console.error('[gen] water accommodation: no boat could sail to the crossroads island; '
+					+ 'it is bridged to the land instead');
+				continue;
+			}
 			if (attempt >= 2 || !waterPlan || !/island start has no shore/.test(String(err && err.message))) throw err;
 			const was = (WATER_SHAPES[biomeParams.waterShape] || {}).label || 'Islands';
 			if (attempt === 0) {

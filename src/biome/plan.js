@@ -1603,11 +1603,12 @@ const isLandLink = c => !c.type || c.type === 'guarded' || c.type === 'wide';
  * VMAPGEN_LAYOUT_TRIES sets the count (default 8); VMAPGEN_LAYOUT_INIT=random
  * makes every start random. preset: a layout already made for this level (one
  * {x, y} per zone), tried first; generate.js passes the free layout its start
- * cells came from.
+ * cells came from. hubs: the cells of a crossroads island the sea left apart
+ * (water.js hubCells), whose zone keeps the shore ring round the sea with it.
  * Returns {seeds, zone, missing, links, sizeErr, k, tries}; k is -1 for the preset.
  */
 function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = null, seed = 1,
-	levelIndex = 0, p, tries: triesIn, preset = null, anchors = null }) {
+	levelIndex = 0, p, tries: triesIn, preset = null, anchors = null, hubs = null }) {
 	const weights = tplZones.map(z => Math.max(1, z.size || 10));
 	const want = weights.map(s => s * s / weights.reduce((a, v) => a + v * v, 0));
 	const wantedLinks = new Set(tplConns.filter(isLandLink).map(c => Math.min(c.a, c.b) * 100000 + Math.max(c.a, c.b)));
@@ -1633,7 +1634,7 @@ function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = 
 			for (const q of s)
 				if (water[q.y * W + q.x]) Object.assign(q, nearestLand(W, H, water, q.x, q.y));
 		const { zone: z } = partitionSeeded(W, H, s, weights, lrng, p);
-		if (water) settleZonesOnLand(z, s, W, H, water);
+		if (water) settleZonesOnLand(z, s, W, H, water, hubs);
 		const touching = new Set(biomeEdges(z, W, H, s.length, water)
 			.map(e => Math.min(e.a, e.b) * 100000 + Math.max(e.a, e.b)));
 		let missing = 0;
@@ -1767,7 +1768,8 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	if (tplZones && tplZones.length) {
 		const best = chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water,
 			seed: params.seed || 1, levelIndex, p,
-			preset: p.zonePlan.presetSeeds && p.zonePlan.presetSeeds[levelIndex], anchors: p.layoutAnchors || null });
+			preset: p.zonePlan.presetSeeds && p.zonePlan.presetSeeds[levelIndex], anchors: p.layoutAnchors || null,
+			hubs: water && p.hubCells && p.hubCells.length ? p.hubCells : null });
 		({ seeds, zone } = best);
 		if (best.tries > 1)
 			console.error(`[gen] level ${levelIndex}: ${best.k < 0 ? 'the free layout the starts came from' : `zone layout ${best.k + 1} of ${best.tries}`} kept, `
@@ -2649,7 +2651,8 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	gcTrace('before harbours');
 	const harbours = water ? placeHarbours({ W, H, l: levelIndex, water, zone, blocked,
 		rng: xorshift(((params.seed || 1) ^ 0x5eaf00d) >>> 0), p, objects, towns,
-		playerStarts, objectEntry, islands: !!p.waterIslands, keepClear: guardCells }) : [];
+		playerStarts, objectEntry, islands: !!p.waterIslands, keepClear: guardCells,
+		hubCells: p.hubCells && p.hubCells.length ? p.hubCells : null }) : [];
 
 	// Portal links (queue 27) go in with the towns. A portal border is all
 	// wall, so the monolith pair is the only way between its two zones, and

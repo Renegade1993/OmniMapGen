@@ -5,6 +5,8 @@
  * on a small lake: a town zone on the shore gets a shipyard whose launch tile
  * is this lake's water with a free boarding cell beside it; water objects sit
  * on the lake only, and every one can be reached by boat from that launch.
+ * At Every biome a zone that touches no water sails from the nearest shore of the
+ * zone beside it (K, 2026-09-29: "THERE'S NO FUCKING HARBORS ANYWHERE").
  */
 'use strict';
 
@@ -129,4 +131,66 @@ test('no harbours with waterAccess 0, and nothing on the water without one', () 
 	assert.strictEqual(harbours.length, 0);
 	assert.strictEqual(fillWater({ W, H, l: 0, water, harbours, rng: xorshift(7), p: {}, objects, objectEntry: entry }), 0);
 	assert.strictEqual(objects.length, 0);
+});
+
+// K, 2026-09-29, Jebus Cross with a Mediterranean sea held inside the crossroads zone: none of the
+// four player zones touched the water, so "Every biome" put one shipyard on a shore of hundreds of
+// cells, and the map read as "no harbours anywhere". A zone off the shore now sails from the
+// nearest shore of the zone beside it.
+function ringWorld() {
+	const W = 64, H = 48;
+	const water = new Uint8Array(W * H), zone = new Int16Array(W * H), blocked = new Uint8Array(W * H);
+	// zone 0 west, zone 2 east, zone 1 between them holding the whole lake
+	for (let y = 0; y < H; y++)
+		for (let x = 0; x < W; x++) {
+			zone[y * W + x] = x < 16 ? 0 : x >= 48 ? 2 : 1;
+			if ((x - 32) ** 2 / 144 + (y - 24) ** 2 / 64 <= 1) water[y * W + x] = 1;
+		}
+	for (let c = 0; c < W * H; c++) if (water[c]) blocked[c] |= OCCUPIED;
+	return { W, H, water, zone, blocked };
+}
+
+test('Every biome: a zone that touches no water sails from the nearest shore beside it', () => {
+	const { W, H, water, zone, blocked } = ringWorld();
+	const objects = [];
+	const harbours = placeHarbours({ W, H, l: 0, water, zone, blocked, rng: xorshift(3),
+		p: { waterAccess: 3 }, objects, towns: [], playerStarts: [{ x: 6, y: 24 }, { x: 57, y: 24 }],
+		objectEntry: entry });
+	const west = harbours.find(h => h.serves === 0), east = harbours.find(h => h.serves === 2);
+	assert.ok(west && east, 'a harbour for each start zone off the shore');
+	assert.strictEqual(west.kind, 'shipyard');
+	assert.strictEqual(east.kind, 'shipyard');
+	// on the side its zone lies, launching onto this lake, standing on the zone between
+	assert.ok(west.cell % W < 32, `the west start's shipyard launches on the west shore (x ${west.cell % W})`);
+	assert.ok(east.cell % W > 32, `the east start's shipyard launches on the east shore (x ${east.cell % W})`);
+	assert.ok(water[west.cell] && water[east.cell]);
+	const yards = objects.filter(o => o.type === 'shipyard');
+	assert.strictEqual(yards.length, 2);
+	for (const o of yards)
+		for (const [x, y] of blockingCells(o.template, o.x, o.y)) {
+			assert.ok(!water[y * W + x], 'on land');
+			assert.strictEqual(zone[y * W + x], 1, 'in the zone that owns the shore');
+		}
+	// the zone that owns the shore keeps its own boat, as before
+	assert.ok(harbours.some(h => h.serves === undefined && h.kind === 'boat' && h.zone === 1));
+});
+
+test('Every biome serves a town zone with a shipyard and a plain zone with a boat', () => {
+	const { W, H, water, zone, blocked } = ringWorld();
+	const harbours = placeHarbours({ W, H, l: 0, water, zone, blocked, rng: xorshift(5),
+		p: { waterAccess: 3 }, objects: [], towns: [{ x: 6, y: 24, l: 0 }], playerStarts: [], objectEntry: entry });
+	assert.strictEqual(harbours.find(h => h.serves === 0).kind, 'shipyard', 'the town zone');
+	assert.strictEqual(harbours.find(h => h.serves === 2).kind, 'boat', 'the plain zone');
+});
+
+test('below Every biome a zone off the shore gets nothing, as the engine\'s own rule has it', () => {
+	const { W, H, water, zone, blocked } = ringWorld();
+	for (const access of [1, 2]) {
+		const objects = [];
+		const harbours = placeHarbours({ W, H, l: 0, water, zone, blocked: blocked.slice(), rng: xorshift(3),
+			p: { waterAccess: access }, objects, towns: [], playerStarts: [{ x: 6, y: 24 }, { x: 57, y: 24 }],
+			objectEntry: entry });
+		assert.strictEqual(harbours.length, 0, `access ${access}: no start or town zone has a shore`);
+		assert.strictEqual(objects.length, 0);
+	}
 });

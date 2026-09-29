@@ -218,7 +218,7 @@ const KNOBS = [
 		min: 0, max: WATER_SHAPES.length - 1, step: 1,
 		stops: WATER_SHAPES.map((s, i) => [i, s.label]) },
 	{ key: 'waterAccess', page: 'water', label: 'Harbours',
-		help: 'Where heroes can get a boat. Starts: a shipyard at each start on the shore. Towns: a shipyard in every biome with a town on the shore, as the game\'s own generator does. Every biome: a boat in every other biome on the shore too. Lakes under 25 tiles get none; on Islands and Archipelago every player still starts with a shipyard and a boat.',
+		help: 'Where heroes can get a boat. Starts: a shipyard at each start on the shore. Towns: a shipyard in every biome with a town on the shore, as the game\'s own generator does. Every biome: a boat in every other biome on the shore too, and a biome that touches no water gets its harbour on the nearest shore beside it. Lakes under 25 tiles get none; on Islands and Archipelago every player still starts with a shipyard and a boat. From Starts up, a template\'s crossroads that the sea leaves alone in the middle is an island you sail to; at None a land strip joins it to the shore.',
 		min: 0, max: 3, step: 1, stops: [[0, 'None'], [1, 'Starts'], [2, 'Towns'], [3, 'Every biome']] },
 	{ key: 'waterTreasure', page: 'water', label: 'Treasure on the water',
 		help: 'How much treasure lies on the water: flotsam, sea chests, survivors, shipwrecks and derelict ships. 1x is the usual amount, 0 none.',

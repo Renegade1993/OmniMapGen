@@ -219,7 +219,7 @@
 	"vcmi.mapGen.waterShape.stop5": "Islands",
 	"vcmi.mapGen.waterShape.stop6": "Archipelago",
 	"vcmi.mapGen.waterAccess.hover": "Harbours",
-	"vcmi.mapGen.waterAccess.help": "{Harbours}\n\nWhere heroes can get a boat. Starts: a shipyard at each start on the shore. Towns: a shipyard in every biome with a town on the shore, as the game's own generator does. Every biome: a boat in every other biome on the shore too. Lakes under 25 tiles get none; on Islands and Archipelago every player still starts with a shipyard and a boat.",
+	"vcmi.mapGen.waterAccess.help": "{Harbours}\n\nWhere heroes can get a boat. Starts: a shipyard at each start on the shore. Towns: a shipyard in every biome with a town on the shore, as the game's own generator does. Every biome: a boat in every other biome on the shore too, and a biome that touches no water gets its harbour on the nearest shore beside it. Lakes under 25 tiles get none; on Islands and Archipelago every player still starts with a shipyard and a boat. From Starts up, a template's crossroads that the sea leaves alone in the middle is an island you sail to; at None a land strip joins it to the shore.",
 	"vcmi.mapGen.waterAccess.stop0": "None",
 	"vcmi.mapGen.waterAccess.stop1": "Starts",
 	"vcmi.mapGen.waterAccess.stop2": "Towns",
