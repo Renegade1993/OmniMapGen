@@ -294,3 +294,36 @@ test('starts take their level the engine\'s way: picked town up or down, random 
 	}
 	assert.strictEqual(below.size, 4, 'every random start lands below on some seed');
 });
+
+test('a template\'s crossroads zone is protected from water, K\'s standing rule (template beats water)',
+{ timeout: 300000 }, () => {
+	// K, 2026-09-28: "Priority: 1. Template 2. water/dungeon 3. other map
+	// preferences." Jebus Cross's zone 5 connects to every player start; under
+	// Mediterranean (sea in the middle, land around the edge) it used to fight
+	// the water for the map's centre with no protection at all, same as any
+	// other patch of land. generate.js now anchors a zone the template
+	// connects to every real start at the centroid of those starts and forces
+	// dry ground there the same way a player's own start already gets
+	// (forcedAround, water.js), so it settles near the centre it would
+	// naturally want rather than wherever water happened to spare.
+	const { spawnSync } = require('child_process');
+	const { readVmap } = require('../src/preview/render');
+	for (const seed of [1001, 2002]) {
+		const out = path.join(testTmp(), `vmapgen_hubanchor_${seed}.vmap`);
+		const args = [path.join(__dirname, '../src/main/generate-cli.js'),
+			'--w', '144', '--h', '144', '--players', '4', '--seed', String(seed), '--declaremods', '0',
+			'--template', 'Jebus Cross', '--out', out, '--bio.waterShape', '3', '--bio.waterCoverage', '0.2'];
+		const r = spawnSync(process.execPath, args, { encoding: 'utf8', timeout: 280000, cwd: path.join(__dirname, '..'),
+			windowsHide: true, env: genEnv() });
+		assert.strictEqual(r.status, 0, r.stderr.slice(-600));
+		assert.match(r.stderr, /template's crossroads zone anchored near/, 'the anchor fires for Jebus Cross');
+
+		const map = readVmap(out);
+		const neutral = map.objects.filter(o => /town/i.test(o.type) && !(o.options && o.options.owner));
+		const centre = 72;
+		const closest = Math.min(...neutral.map(t => Math.max(Math.abs(t.x - centre), Math.abs(t.y - centre))));
+		assert.ok(closest <= 25, `seed ${seed}: the crossroads castle landed ${closest} from centre, `
+			+ 'expected near it, not pushed to wherever water spared');
+		fs.rmSync(out, { force: true });
+	}
+});

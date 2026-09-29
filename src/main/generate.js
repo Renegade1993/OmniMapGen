@@ -960,10 +960,49 @@ async function generateMap(params) {
 	// is laid again from them)
 	const waterOrigins = new Map(surfaceIdx.map(i =>
 		[players[i].color, { x: players[i].townPos.x, y: players[i].townPos.y }]));
+	// K's standing architectural rule, 2026-09-28: "Priority: 1. Template 2.
+	// water/dungeon 3. other map preferences... the template should always win
+	// out over everything in 2." A zone the template connects to every real
+	// player start (Jebus Cross's crossroads is the example on the table) is
+	// the template's own defining centrepiece, not a generic preference water
+	// gets to override: give its natural spot the same forced-dry protection
+	// a player's own start already gets, so it fights for the map's centre
+	// before water claims it, not whatever scrap of land is left after.
+	// Appended after the real starts, never touched by the surfaceIdx-length
+	// loops that zip plan.starts back onto players by position below.
+	const hubAnchor = (() => {
+		if (!tplZonesEarly || players.length < 2) return null;
+		const conns = (loadTemplate(params.template).raw.connections || [])
+			.map(c => ({ a: parseInt(c.a, 10), b: parseInt(c.b, 10), type: c.type }))
+			.filter(c => c.type !== 'repulsive' && c.type !== 'forcePortal');
+		const startIds = new Set();
+		for (let i = 0; i < players.length; i++) { const z = ownerZone(i); if (z) startIds.add(z.id); }
+		if (startIds.size < 2) return null;
+		for (const z of tplZonesEarly) {
+			if (startIds.has(z.id)) continue;
+			const linked = new Set();
+			for (const c of conns) {
+				if (c.a === z.id && startIds.has(c.b)) linked.add(c.b);
+				if (c.b === z.id && startIds.has(c.a)) linked.add(c.a);
+			}
+			if (linked.size !== startIds.size) continue;
+			let x = 0, y = 0, n = 0;
+			for (let i = 0; i < players.length; i++) {
+				const oz = ownerZone(i);
+				if (oz && startIds.has(oz.id)) { x += players[i].townPos.x; y += players[i].townPos.y; n++; }
+			}
+			return n ? { x: Math.round(x / n), y: Math.round(y / n) } : null;
+		}
+		return null;
+	})();
+	if (hubAnchor)
+		console.error(`[gen] template's crossroads zone anchored near (${hubAnchor.x},${hubAnchor.y}), `
+			+ 'protected from water');
 	// the water plan for these settings, the starts moved inland where it covers them
 	const planWater = biomes => {
 		const plan = buildWaterPlan(params.mapW, params.mapH, biomes,
-			surfaceIdx.map(i => ({ ...players[i].townPos, ...waterOrigins.get(players[i].color) })),
+			surfaceIdx.map(i => ({ ...players[i].townPos, ...waterOrigins.get(players[i].color) }))
+				.concat(hubAnchor ? [hubAnchor] : []),
 			params.seed || 1, shoreCheck);
 		surfaceIdx.forEach(i => { players[i].townPos = { ...players[i].townPos, ...waterOrigins.get(players[i].color) }; });
 		if (!plan) return null;
