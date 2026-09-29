@@ -5079,39 +5079,65 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		else
 			console.error(`[gen] ${placed} subterranean gate pair(s) placed`);
 
-			// mainComponent only ever returns ONE region, so with two underground
-			// starts sitting in two separate components the loop above keeps
-			// landing every gate in whichever one wins the hasStart/size
-			// tie-break, leaving any other start's own zone with no way out at
-			// all - not hypothetical, a free-layout 4-player map hit exactly
-			// this (2026-09-29): red's underground zone got every gate, tan's
-			// own, smaller and separate, got none ("tan home 200, gate none").
-			// Check each underground start directly against what fillLevel
-			// itself will see (nearStarts + reachableUnion, the same pairing
-			// used there) and patch a dedicated link onto any this loop missed.
+			// The loop above reaches one underground region: mainComponent returns a
+			// single region, so with two underground starts in two separate
+			// components every gate lands in whichever wins the hasStart/size
+			// tie-break, and a start whose own ground meets no gate is shut in
+			// (free layout 4p 72x72 seed 1, 2026-09-29: "tan home 200, gate none",
+			// 213 of 5184 tiles reachable). Find those starts by flooding from the
+			// gates' own approach cells alone, then give each one guarded way out.
+			// That way out cannot keep the loop's rule of never standing inside a
+			// start's zone, since a shut-in start's ground may be nothing but its
+			// own zone. It is guarded at both ends, so it is no free passage past
+			// the start's doorways, and its far end never lands in another start's
+			// zone. (A first version tested the start's own cell, which its town
+			// blocks, so it patched every underground start and left unguarded
+			// gates standing in start zones; caught the same day.)
 			const ugStarts = startsOn(1);
-			const nearCells = s => {
-				const cells = [...(plans[1].entrances || [])];
+			const beside = (s, reached) => {
 				for (let dy = -3; dy <= 3; dy++)
 					for (let dx = -3; dx <= 3; dx++) {
 						const x = s.x + dx, y = s.y + dy;
-						if (x >= 0 && y >= 0 && x < W && y < H) cells.push(y * W + x);
+						if (x >= 0 && y >= 0 && x < W && y < H && reached[y * W + x]) return true;
 					}
-				return cells;
+				return false;
 			};
+			const startZone = (l, c) => plans[l].classes && plans[l].classes[plans[l].zone[c]] === BIOME_CLASS.PLAYER;
+			// a pile value, so it clears engineGuard's 2000 minimum strength at every monster
+			// strength setting (3500 gave none at Normal); startFairness evens it with the
+			// other starts' ways out afterwards
+			const SHUT_IN_GUARD = 7000;
 			let patched = 0;
 			for (const s of ugStarts) {
-				const reached = reachableUnion(W, H, 1, blocked, nearCells(s));
-				if (reached[s.y * W + s.x]) continue;   // already has a way out
+				const reached = reachableUnion(W, H, 1, blocked, plans[1].entrances || []);
+				if (beside(s, reached)) continue;   // its ground already meets a way in
 				const zi = plans[1].zone[s.y * W + s.x];
 				const reachSurface = mainComponent(W, H, 0, blocked, startsOn(0));
-				// try a gate first (needs the same x,y on both levels)
-				const cb = zoneCell(1, zi, null, underTpl);
-				const bx = cb >= 0 ? cb % W : -1, by = cb >= 0 ? (cb / W) | 0 : -1;
-				if (cb >= 0 && footprintFits(surfaceTpl, bx, by, 0, W, H, blocked)
-						&& entranceOpen(surfaceTpl, bx, by, 0, W, H, blocked, reachSurface)
-						&& conn[0].accepts(blockingCells(surfaceTpl, bx, by).map(([a, b]) => b * W + a))
-						&& conn[1].accepts(blockingCells(underTpl, bx, by).map(([a, b]) => b * W + a))) {
+				const zoneCells = [];
+				let zx = 0, zy = 0;
+				for (let i = 0; i < W * H; i++)
+					if (plans[1].zone[i] === zi) { zoneCells.push(i); zx += i % W; zy += (i / W) | 0; }
+				if (!zoneCells.length) continue;
+				zx = zx / zoneCells.length | 0; zy = zy / zoneCells.length | 0;
+				zoneCells.sort((a, b) => ((a % W - zx) ** 2 + (((a / W) | 0) - zy) ** 2)
+					- ((b % W - zx) ** 2 + (((b / W) | 0) - zy) ** 2));
+				const wallsOf = (tpl, x, y) => blockingCells(tpl, x, y).map(([a, b]) => b * W + a);
+				// a gate first (the same x,y on both levels): a cell of the start's own
+				// zone, nearest its centre, whose surface half is not in a start's zone
+				let gate = -1;
+				for (const c of zoneCells) {
+					const x = c % W, y = (c / W) | 0;
+					if (startZone(0, c)) continue;
+					if (!footprintFits(underTpl, x, y, 1, W, H, blocked)
+						|| !footprintFits(surfaceTpl, x, y, 0, W, H, blocked)) continue;
+					if (!inZone(underTpl, x, y, plans[1].zone, zi, W, H)) continue;
+					if (!entranceOpen(underTpl, x, y, 1, W, H, blocked, null)
+						|| !entranceOpen(surfaceTpl, x, y, 0, W, H, blocked, reachSurface)) continue;
+					if (!conn[0].accepts(wallsOf(surfaceTpl, x, y)) || !conn[1].accepts(wallsOf(underTpl, x, y))) continue;
+					gate = c; break;
+				}
+				if (gate >= 0) {
+					const bx = gate % W, by = (gate / W) | 0;
 					const pairId = `gate_${bx}_${by}`;
 					for (const l of [0, 1]) {
 						const tpl = l === 0 ? surfaceTpl : underTpl;
@@ -5125,24 +5151,33 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 						(plans[l].arrivals = plans[l].arrivals || []).push(...visitableCells(tpl, bx, by)
 							.filter(([a, b]) => a >= 0 && b >= 0 && a < W && b < H).map(([a, b]) => b * W + a));
 					}
+					const g1 = guardEnd(1, underTpl, bx, by, zi, SHUT_IN_GUARD);
+					const g0 = guardEnd(0, surfaceTpl, bx, by, plans[0].zone[gate], SHUT_IN_GUARD);
 					patched++;
-					console.error(`[gen] ${s.color}'s underground start had no way out; patched a dedicated gate at (${bx},${by})`);
+					console.error(`[gen] ${s.color}'s underground start met no way in; gave it a gate at (${bx},${by}), `
+						+ `guarded ${g1 && g0 ? 'at both ends' : g1 || g0 ? 'at one end' : 'NOWHERE (no guard cell fit)'}`);
 					continue;
 				}
-				// no matching x,y for a gate: a monolith pair needs no such match
+				// no x,y that suits both levels: a monolith pair needs no match
 				const ch = book.next() || book.shared();
-				const uCell = zoneCell(1, zi, null, ch.tpl);
+				const uCell = zoneCells.find(c => {
+					const x = c % W, y = (c / W) | 0;
+					return footprintFits(ch.tpl, x, y, 1, W, H, blocked) && inZone(ch.tpl, x, y, plans[1].zone, zi, W, H)
+						&& entranceOpen(ch.tpl, x, y, 1, W, H, blocked, null)
+						&& conn[1].accepts(wallsOf(ch.tpl, x, y));
+				});
 				let sCell = -1;
 				for (const c of order) {
 					const x = c % W, y = (c / W) | 0;
+					if (startZone(0, c)) continue;
 					if (!footprintFits(ch.tpl, x, y, 0, W, H, blocked)) continue;
 					if (!entranceOpen(ch.tpl, x, y, 0, W, H, blocked, reachSurface)) continue;
-					if (!conn[0].accepts(blockingCells(ch.tpl, x, y).map(([a, b]) => b * W + a))) continue;
+					if (!conn[0].accepts(wallsOf(ch.tpl, x, y))) continue;
 					sCell = c; break;
 				}
-				if (uCell < 0 || sCell < 0) {
-					console.error(`[gen] ${s.color}'s underground start has no way out, and no gate or `
-						+ 'monolith site could be found either - the map ships with this start isolated');
+				if (uCell === undefined || sCell < 0) {
+					console.error(`[gen] ${s.color}'s underground start met no way in, and no gate or monolith `
+						+ 'site could be found either: the map ships with this start shut in');
 					continue;
 				}
 				book.take(ch);
@@ -5160,11 +5195,14 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				(plans[1].entrances = plans[1].entrances || []).push(...approachCells(ch.tpl, ubx, uby, 1, W, H, blocked));
 				(plans[1].arrivals = plans[1].arrivals || []).push(...visitableCells(ch.tpl, ubx, uby)
 					.filter(([a, b]) => a >= 0 && b >= 0 && a < W && b < H).map(([a, b]) => b * W + a));
+				const g1 = guardEnd(1, ch.tpl, ubx, uby, zi, SHUT_IN_GUARD);
+				const g0 = guardEnd(0, ch.tpl, ends[0][0], ends[0][1], plans[0].zone[sCell], SHUT_IN_GUARD);
 				patched++;
-				console.error(`[gen] ${s.color}'s underground start had no way out; patched a dedicated monolith pair`);
+				console.error(`[gen] ${s.color}'s underground start met no way in; gave it a monolith pair, `
+					+ `guarded ${g1 && g0 ? 'at both ends' : g1 || g0 ? 'at one end' : 'NOWHERE (no guard cell fit)'}`);
 			}
 			if (patched)
-				console.error(`[gen] ${patched} underground start(s) patched with a dedicated link after the general pass missed them`);
+				console.error(`[gen] ${patched} shut-in underground start(s) given a guarded way out after the gate loop missed them`);
 
 	}
 
