@@ -99,13 +99,14 @@ function analyse(file, L) {
 				if (x >= 0 && y >= 0 && x < W && y < H) appr.push([x, y]);
 			}
 		const kind = /^(town|randomTown)$/.test(o.type) ? 'town' : o.type === 'mine' ? 'mine'
+			: /^monolith/.test(o.type) ? 'portal' : o.type === 'subterraneanGate' ? 'gate'
 			: DWELLING.test(o.type) ? 'dwelling' : /^(creatureBank|dragonUtopia|crypt|derelictShip|shipwreck)$/.test(o.type) ? 'bank'
 				: o.type === 'prison' ? 'prison' : /^(monster|randomMonster)/.test(o.type) ? 'monster' : 'other';
 		info.push({ o, l, vis, appr, kind });
 	}
 
 	// roads: entrances on a road, and road pieces that serve nothing
-	const R = { town: [0, 0, 0], mine: [0, 0, 0], dwelling: [0, 0, 0], bank: [0, 0, 0] };
+	const R = { town: [0, 0, 0], mine: [0, 0, 0], dwelling: [0, 0, 0], bank: [0, 0, 0], portal: [0, 0, 0], gate: [0, 0, 0] };
 	const roadPiece = new Map();      // "l:x,y" -> piece id
 	let pieceN = 0, roadCells = 0, landCells = 0;
 	for (let l = 0; l < nLev; l++) {
@@ -407,6 +408,7 @@ function mirror(wat, W, H) {
 const FIELDS = [
 	['road_town_at', 'towns with a road on or at the entrance'], ['road_mine_at', 'mines, same'],
 	['road_dwelling_at', 'dwellings, same'], ['road_bank_at', 'banks, same'],
+	['road_portal_at', 'portals (monoliths), same'], ['road_gate_at', 'subterranean gates, same'],
 	['road_town_near2', 'towns with a road within 2'], ['road_mine_near2', 'mines, same'],
 	['road_per1000', 'road tiles per 1000 land tiles'], ['road_idle_share', 'road tiles in pieces serving no building'],
 	['road_ends_stray_per1000', 'road ends in the open per 1000 land tiles'], ['road_ends_stray_share', 'share of road ends that are in the open'], ['road_thick_share', 'road tiles in a 2x2 block of road (loops and rungs)'], ['road_triangle_share', 'road tiles with two road neighbours that touch each other'], ['road_pieces_per1000', 'road pieces per 1000 land tiles'], ['road_largest_share', 'road tiles in the biggest piece'],
