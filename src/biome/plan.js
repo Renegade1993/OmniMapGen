@@ -28,7 +28,7 @@ const { fitCave } = require('./cavefit');
 const { placeHarbours, fillWater, sailLinksFor } = require('./waterfill');
 const { ZONE_CLASS, MONSTER_BAND, MINE_SUBTYPE, guardToLevel,
 	pileLoot } = require('../rmg/template');
-const { zoneTownTypes } = require('./zoneTowns');
+const { zoneTownTypes, townTemplate, townMods } = require('./zoneTowns');
 const { carveBoundaries, placeChokeGuards } = require('./boundaries');
 const { buildRoadNetwork, pruneOrphanRoads, approach: roadApproach } = require('./roadnet');
 const { planRoads, joinFailed, pruneTails } = require('./roadplan');
@@ -773,6 +773,92 @@ function openSealedPockets(barriers, W, H, levelIndex, blocked, playerStarts, li
 		}
 	}
 	return removed;
+}
+
+/**
+ * The entrance tile of every town, monolith and gate on level l joins the road that reaches it: when a
+ * road tile lies beside the entrance (the road planner stops on the ring of open ground round it) the tile
+ * itself carries road, and when the nearest road is up to three tiles off, the free tiles between join too.
+ * An entrance no road comes near stays as it is. Returns the tiles added.
+ */
+function gateStubs(plan, towns, l, W, H, blocked) {
+	const base = l * W * H, roads = plan.roadCells;
+	const ends = [];
+	for (const t of towns) for (const g of t.gates || []) ends.push(g);
+	for (const o of plan.objects)
+		if ((o.l || 0) === l && o.template && /^(subterraneanGate|monolithTwoWay)/.test(o.type))
+			for (const g of visitableCells(o.template, o.x, o.y)) ends.push(g);
+	let added = 0;
+	for (const [gx, gy] of ends) {
+		if (gx < 0 || gy < 0 || gx >= W || gy >= H) continue;
+		const g = gy * W + gx;
+		if (roads.has(g)) continue;
+		// the nearest road within three tiles over ground that is not an object's footprint
+		const prev = new Map([[g, -1]]);
+		const q = [[g, 0]];
+		let hit = -1;
+		for (let h = 0; h < q.length && hit < 0; h++) {
+			const [c, d] = q[h];
+			if (d >= 3) continue;
+			const x = c % W, y = (c / W) | 0;
+			for (let dy = -1; dy <= 1 && hit < 0; dy++)
+				for (let dx = -1; dx <= 1; dx++) {
+					if (!dx && !dy) continue;
+					const nx = x + dx, ny = y + dy;
+					if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+					const n = ny * W + nx;
+					if (prev.has(n)) continue;
+					if (roads.has(n)) { prev.set(n, c); hit = n; break; }
+					if (blocked[base + n] & OCCUPIED) continue;
+					prev.set(n, c);
+					q.push([n, d + 1]);
+				}
+		}
+		if (hit < 0) continue;
+		for (let c = prev.get(hit); c >= 0; c = prev.get(c)) if (!roads.has(c)) { roads.add(c); added++; }
+	}
+	return added;
+}
+
+/**
+ * Roads one tile wide: while any 2x2 block of road remains, one of its tiles goes, if the road tiles round it
+ * stay joined without it (so no road is cut and none ends up shorter than its neighbours reach). Returns the
+ * tiles dropped.
+ */
+function thinRoads(roads, W, H) {
+	const has = (x, y) => x >= 0 && y >= 0 && x < W && y < H && roads.has(y * W + x);
+	const joinedWithout = (x, y) => {
+		const nb = [];
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && has(x + dx, y + dy)) nb.push([x + dx, y + dy]);
+		if (nb.length < 2) return nb.length === 0 ? false : true;
+		// the neighbours, joined to each other through each other (8-way), with this tile left out
+		const seen = new Set([nb[0].join()]);
+		const q = [nb[0]];
+		for (let h = 0; h < q.length; h++)
+			for (const n of nb) {
+				if (seen.has(n.join())) continue;
+				if (Math.max(Math.abs(n[0] - q[h][0]), Math.abs(n[1] - q[h][1])) <= 1) { seen.add(n.join()); q.push(n); }
+			}
+		return seen.size === nb.length;
+	};
+	let dropped = 0;
+	for (let pass = 0; pass < 8; pass++) {
+		let changed = false;
+		const cells = [...roads].sort((a, b) => a - b);
+		for (const c of cells) {
+			const x = c % W, y = (c / W) | 0;
+			if (!roads.has(c)) continue;
+			let block = false;
+			for (const [ox, oy] of [[0, 0], [-1, 0], [0, -1], [-1, -1]])
+				if (has(x + ox, y + oy) && has(x + ox + 1, y + oy) && has(x + ox, y + oy + 1) && has(x + ox + 1, y + oy + 1)) block = true;
+			if (!block || !joinedWithout(x, y)) continue;
+			roads.delete(c);
+			dropped++;
+			changed = true;
+		}
+		if (!changed) break;
+	}
+	return dropped;
 }
 
 /** Each dry cell's piece of land, 8-connected as heroes walk (-1 on water). */
@@ -2439,6 +2525,27 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				+ `neutral town(s) for map area`);
 		}
 	}
+	// the faction of each town biome of a free layout (b -> bare id), for the fill's dwellings
+	const freeFaction = new Map();
+	// a faction's native terrain as this level paints it: the core terrain by name, dirt (surface) or
+	// subterranean (below) when the layer does not take it, null when the map has no such terrain
+	const nativeShort = native => {
+		if (!native) return null;
+		const name = String(native).slice(String(native).lastIndexOf(':') + 1).toLowerCase();
+		let id = null;
+		for (const [sid, t] of terrainInfo || [])
+			if (String(t.identifier).slice(String(t.identifier).lastIndexOf(':') + 1).toLowerCase() === name && terrainShortIds.includes(sid)) {
+				if (String(t.name).startsWith('core:')) { id = sid; break; }
+				id = id || sid;
+			}
+		if (!id) return null;
+		const layer = underground ? 'underground' : 'surface';
+		if (!((terrainInfo.get(id) || {}).allowedLayers || []).includes(layer)) {
+			const fb = layer === 'surface' ? 'dirt' : 'subterra';
+			for (const [sid, t2] of terrainInfo) if (t2.identifier === fb) { id = sid; break; }
+		}
+		return id;
+	};
 	for (const b of townZones) {
 		const cells = [];
 		for (let i = 0; i < zone.length; i++) if (zone[i] === b) cells.push(i);
@@ -2449,6 +2556,15 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			const d = i => (i % W - seed.x) ** 2 + (((i / W) | 0) - seed.y) ** 2;
 			return d(p) - d(q);
 		});
+		// A free layout's neutral town is a town of a faction rolled here, not the random-town placeholder the
+		// engine rolls at load: its biome takes the faction's native terrain and its dwellings are that
+		// faction's (K, 2026-09-30: castle dwellings beside Conflux; the engine's matchTerrainToTown does the same).
+		const tpF = objectPools && objectPools.towns;
+		let facB = null, townTpl = OBJECT_TEMPLATES.randomTown;
+		if (tpF && tpF.free && process.env.VMAPGEN_FREE_TOWNS !== '0') {
+			const cands = tpF.factions.filter(f => townTemplate(f, false, tpF.useMods));
+			if (cands.length) { facB = cands[(rng() * cands.length) | 0]; townTpl = townTemplate(facB, false, tpF.useMods); }
+		}
 		let done = false;
 		for (const i of cells) {
 			const x = i % W, y = (i / W) | 0;
@@ -2458,30 +2574,39 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			// second castle on day one.
 			if (playerStarts.some(s =>
 				Math.max(Math.abs(s.x - x), Math.abs(s.y - y)) < 12)) continue;
-			if (!footprintFits(OBJECT_TEMPLATES.randomTown, x, y, levelIndex,
+			if (!footprintFits(townTpl, x, y, levelIndex,
 					W, H, blocked)) continue;
-			if (!entranceOpen(OBJECT_TEMPLATES.randomTown, x, y, levelIndex,
+			if (!entranceOpen(townTpl, x, y, levelIndex,
 					W, H, blocked, null)) continue;
-			const walls = blockingCells(OBJECT_TEMPLATES.randomTown, x, y)
+			const walls = blockingCells(townTpl, x, y)
 				.map(([a, b2]) => b2 * W + a);
 			if (!townGuard.accepts(walls)) continue;
 			const np = playerStarts.length
 				? playerStarts.reduce((m, s) =>
 						(s.x - x) ** 2 + (s.y - y) ** 2 < (m.x - x) ** 2 + (m.y - y) ** 2 ? s : m)
 				: null;
-			const entry = objectEntry('randomTown', x, y, levelIndex,
-				OBJECT_TEMPLATES.randomTown, 'object',
-				np && np.color ? { alignmentToPlayer: np.color } : undefined);
+			const entry = facB
+				? objectEntry('town', x, y, levelIndex, townTpl, facB.bare, { hasFort: false })
+				: objectEntry('randomTown', x, y, levelIndex,
+					townTpl, 'object',
+					np && np.color ? { alignmentToPlayer: np.color } : undefined);
+			if (facB) {
+				const mods = townMods(facB, tpF.useMods);
+				if (mods.length) entry.mod = mods;
+				freeFaction.set(b, facB.bare);
+				const nt = nativeShort(facB.native);
+				if (nt) biomeTerrain[b] = nt;
+			}
 			objects.push(entry);
 			towns.push({ instanceName: entry.instanceName, x, y,
 				l: levelIndex,
-				gates: visitableCells(OBJECT_TEMPLATES.randomTown, x, y) });
-			footprintBlock(OBJECT_TEMPLATES.randomTown, x, y, levelIndex, W, H, blocked);
+				gates: visitableCells(townTpl, x, y) });
+			footprintBlock(townTpl, x, y, levelIndex, W, H, blocked);
 			townGuard.refresh();
 			// Same apron rule as a player start: the cells a hero steps on to
 			// open the gate stay reserved, so nothing seals the town in.
-			for (const [vx, vy] of visitableCells(OBJECT_TEMPLATES.randomTown, x, y))
-				for (const [dx, dy] of allowedDirs(OBJECT_TEMPLATES.randomTown)) {
+			for (const [vx, vy] of visitableCells(townTpl, x, y))
+				for (const [dx, dy] of allowedDirs(townTpl)) {
 					const nx = vx + dx, ny = vy + dy;
 					if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
 					reserveCell(blocked, levelIndex, W, H, ny * W + nx);
@@ -4207,7 +4332,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// entire underground was unreachable.
 	return { zone, seeds, gateSites, gateSitesHere, classes, biomeTerrain, barriers, roadCells, roadFailed, objects, openings,
 		guards, doorGuards, rng, p, levelIndex, playerStarts, alignPlayers, towns,
-		objectPools, openMask, zoneMeta, zdist, rim, harbours, links, sailLinks,
+		objectPools, openMask, zoneMeta, zdist, rim, harbours, links, sailLinks, freeFaction,
 		stats: layoutStats(zone, seeds, tplZones, tplConns, unfulfilled, forced, W, H, water, openMask, landCells) };
 }
 
@@ -4368,6 +4493,10 @@ function fillLevel(plan, W, H, blocked) {
 				[BIOME_CLASS.STANDARD, near.slice(p.zoneCells)]);
 		}
 		// the zone's doorway guards stand on its edge, so its far part pays for them
+		// the faction of the town this biome belongs to, when it has one: a start's, or the free layout's own rolled
+		// neutral town (towns phase); K's rule: a town biome's dwellings are its town's (content.js)
+		const startHere = !plan.zoneMeta && playerStarts.find(s => zone[s.y * W + s.x] === b);
+		const biomeFaction = plan.zoneMeta ? null : (startHere && startHere.faction) || (plan.freeFaction && plan.freeFaction.get(b)) || null;
 		parts.forEach(([cls, cells], i) =>
 			objects.push(...fillBiome(cls, cells, blocked, W, H,
 				levelIndex, rng, { ...p, doorGuards: i === parts.length - 1 && plan.doorGuards ? plan.doorGuards.get(b) || 0 : 0 },
@@ -4375,7 +4504,8 @@ function fillLevel(plan, W, H, blocked) {
 				biomeTerrain[b], reachable, connectivity,
 				plan.zoneMeta && plan.zoneMeta[b]
 					&& { ...plan.zoneMeta[b], minesDone: starterDone.get(b) || {} }, plan.openMask,
-				plan.zdist && plan.zdist[b], i === 0 ? starterMines.get(b) || [] : [])));
+				plan.zdist && plan.zdist[b], i === 0 ? starterMines.get(b) || [] : [],
+				parts.length === 1 || i === 0 ? biomeFaction : null)));
 	}
 	return plan;
 }
@@ -5298,6 +5428,18 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 					for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) near(vx, vy, 1);
 			tails = pruneTails(plans[l].roadCells, dest, W, H);
 		}
+		// The road runs onto the entrance itself. K, 2026-09-30: "Roads still aren't touching entry points for
+		// the buildings they are supposed to interface with." In the 71 real maps the road is ON the visitable
+		// tile of 1076 of 1078 towns and of 72% of monolith ends and 81% of gates (tools/map_metrics.js,
+		// roadAtEntrance); ours stopped one tile short on every one, on the open ground the road planner reaches
+		// (roadnet.js approach). So wherever a road reached the ground beside an entrance, or within three tiles
+		// of it, the entrance tile joins it (gateStubs).
+		// Real roads are one tile wide: none of the 71 real maps has a 2x2 block of road, and ours had 5% of road tiles in
+		// one, where the tile art draws rungs and loops between them (K: "8-looping road chunk that goes nowhere").
+		const thinned = process.env.VMAPGEN_THIN_ROADS === '0' ? 0 : thinRoads(plans[l].roadCells, W, H);
+		if (thinned) console.error(`[gen] level ${l}: ${thinned} road tile(s) dropped to keep roads one tile wide`);
+		const stubs = process.env.VMAPGEN_GATE_STUBS === '0' ? 0 : gateStubs(plans[l], here, l, W, H, blocked);
+		if (stubs) console.error(`[gen] level ${l}: ${stubs} road tile(s) joined town gates, monoliths and gates to their entrances`);
 		if (added || orphans || tails)
 			console.error(`[gen] level ${l}: ${plans[l].roadCells.size} road cells `
 				+ `(${before} before the town net, +${added} from it) `

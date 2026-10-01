@@ -1031,7 +1031,9 @@ async function generateMap(params) {
 	// own level and its own town, placed by hand below.
 	const makeStarts = () => players
 		.map((p, i) => ({ ...p.townPos, color: p.color, owner: i + 1,
-			native: nativeOf(p.pinnedFaction) }))
+			native: nativeOf(p.pinnedFaction),
+			// the faction the start's town will be, bare (a free layout's dwellings follow it)
+			faction: p.pinnedFaction ? String(p.pinnedFaction).slice(String(p.pinnedFaction).lastIndexOf(':') + 1).toLowerCase() : null }))
 		.filter((_, i) => i !== observerIndex);
 	let starts = makeStarts();
 
@@ -1268,6 +1270,19 @@ async function generateMap(params) {
 	// its own town type's), and its price and odds: its rmg value and rarity
 	// when it has them, else its creature's AI value x weekly growth at odds 40.
 	// Core's creatures carry neither figure in their configs; CRTRAITS.TXT does.
+	// The faction of every dwelling, by the creature it produces: a town biome gets its own town's dwellings
+	// and no others (K, 2026-09-30: "CASTLE UNIT GENERATION RIGHT NEXT TO CONFLUX"). Keyed "type|subtype".
+	const dwellingFactions = new Map();
+	{
+		const bareF = s => String(s || '').slice(String(s || '').lastIndexOf(':') + 1).toLowerCase();
+		const note = (d, scope) => {
+			const o = assetIndex.objects.get(d.id || `core:${d.type}.${d.subtype}`);
+			const cre = o && o.creature && resolveCreature(scope, o.creature);
+			if (cre && cre.faction) dwellingFactions.set(`${d.type}|${d.subtype}`, bareF(cre.faction));
+		};
+		for (const d of DWELLING_POOL) note(d, 'core');
+		for (const d of dwellings) note(d, d.mod);
+	}
 	const h3Traits = h3CreatureTraits([roots.userDir, roots.installDir]);
 	const engineDwellings = [];
 	{
@@ -1495,15 +1510,15 @@ async function generateMap(params) {
 		terrainShortIds, tileIdsByShort, numTiles: tiles.length,
 		// pileCommon: the engine's common treasure pool (src/rmg/piles.js), for
 		// template zones' piles with VMAPGEN_TPL_PILE_MODEL=engine
-		objectPools: { banks, dwellings, engineDwellings, coreBanks, chests, terrainNames,
+		objectPools: { banks, dwellings, engineDwellings, dwellingFactions, coreBanks, chests, terrainNames,
 			pileCommon: require('../rmg/piles').commonPool(assetIndex.objects, useMods,
 				h3TerrainRows([roots.userDir, roots.installDir].filter(Boolean))), ...(concreteGuards ? { guards: guardPool(registry) } : {}),
 			...(themeDwellings ? { themeDwellings } : {}),
 			...(themeBanks && themeBanks.pool.length ? { themeBanks } : {}),
 			// a template zone's towns: concrete, of the factions it allows
-			...(zonePlan ? { towns: { factions: factionsForTowns, useMods,
+			...({ towns: { factions: factionsForTowns, useMods, free: !zonePlan,
 				pinned: new Map(players.filter(p => p.pinnedFaction).map(p =>
-					[p.color, factionsForTowns.find(f => f.id === p.pinnedFaction)]).filter(([, f]) => f)) } } : {}) },
+					[p.color, factionsForTowns.find(f => f.id === p.pinnedFaction)]).filter(([, f]) => f)) } }) },
 		terrainInfo: assetIndex.terrains,
 	});
 	// Never refused (K, 2026-09-27): an islands layout that leaves a start's

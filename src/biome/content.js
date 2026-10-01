@@ -27,6 +27,8 @@ const {
 	SEER_ARTIFACTS, emptyRewardable,
 } = require('./economy');
 const { zoneTownTypes, townTemplate, townMods } = require('./zoneTowns');
+const { artFor } = require('./terrainArt');
+const TERRAIN_ART = process.env.VMAPGEN_TERRAIN_ART !== '0';
 // the weights of the core bank and dwelling pools, which fill.banks and
 // fill.dwellings are calibrated against (the banks proper and the utopia; the
 // Crypt joined the draw later and adds its own share on top)
@@ -386,6 +388,14 @@ const GUARD_CHANCE = {
 	creatureBank: 0.14,
 	resource: 0.22,
 };
+
+/**
+ * The shares of the richest loot a monster stands over in the 71 real maps (tools/map_metrics.js guarded_*:
+ * relics 0.69, majors 0.65, Pandora's boxes 0.58). Ours ran 0.37, 0.36 and 0.38 because the budget was spent by
+ * chance across every guardable object; K, 2026-09-30: "High loot isn't being properly gated by monsters". These
+ * are guarded first, each with that chance, and the rest of the budget goes on as before.
+ */
+const HIGH_LOOT_GUARDED = { randomArtifactRelic: 0.69, randomArtifactMajor: 0.65, pandoraBox: 0.58 };
 
 /** Share of the monster budget spent guarding objects rather than roaming. */
 const OBJECT_GUARD_SHARE = 0.75;
@@ -1316,7 +1326,7 @@ function objectEntry(type, x, y, l, tpl, opts, subtype = 'object') {
  * pre-game castle pick through owner/alignmentToPlayer chains).
  * players: [{x,y,color}] for alignmentToPlayer on neutral towns.
  */
-function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], players = [], objectPools = {}, terrain = 'gr', reachable = null, connectivity = null, zoneMeta = null, openMask = null, zoneDist = null, preplaced = []) {
+function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], players = [], objectPools = {}, terrain = 'gr', reachable = null, connectivity = null, zoneMeta = null, openMask = null, zoneDist = null, preplaced = [], zoneFaction = null) {
 	const p = { ...BIOME_DEFAULTS, ...params };
 	// A template zone overrides the free-running densities: its treasure bands
 	// become a loot multiplier and its monsters field a guard one. Both are
@@ -1429,8 +1439,35 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		? (objectPools.__fillStat || (objectPools.__fillStat = {})) : null;
 	// onlyPick: draw from pickFrom alone, never from the rest of the zone (an
 	// object that belongs beside another or nowhere)
+	// K, 2026-09-30: "Lots of instances of prisons being placed directly in front of other adventure map
+	// buildings". Real maps leave a prison within one tile of another building 6% of the time and within two
+	// 9% (tools/map_metrics.js); ours was 22% and 40%. So a prison keeps two tiles from every building placed
+	// before it on the level (and the buildings placed after keep their own approach clear as ever).
+	const bld = (objectPools.__bld || (objectPools.__bld = {}))[l] || (objectPools.__bld[l] = new Set());
+	const NOT_BUILDING = /^(monster|randomMonster|resource|randomResource|randomArtifact|artifact|spellScroll|treasureChest|campfire|pandoraBox|prison|seaChest|flotsam|obelisk)/;
+	const registerBuilding = (type, tpl, x, y) => {
+		if (NOT_BUILDING.test(type) || !visitableCells(tpl, x, y).length) return;
+		for (const [a, b] of blockingCells(tpl, x, y)) bld.add(b * W + a);
+		for (const [a, b] of visitableCells(tpl, x, y)) bld.add(b * W + a);
+	};
+	for (const t of towns) if ((t.l || 0) === l) for (const [gx, gy] of t.gates || []) bld.add(gy * W + gx);
+	const PRISON_GAP = process.env.VMAPGEN_PRISON_GAP === '0' ? -1 : 2;
+	const nearBuilding = (tpl, x, y, r) => {
+		for (const [a, b] of blockingCells(tpl, x, y).concat(visitableCells(tpl, x, y)))
+			for (let dy = -r; dy <= r; dy++)
+				for (let dx = -r; dx <= r; dx++)
+					if (bld.has((b + dy) * W + a + dx)) return true;
+		return false;
+	};
 	const put = (type, tpl, opts, subtype, tryBudget = 32, pickFrom = null,
 			noEdge = false, onlyPick = false) => {
+		// the art real maps put on this zone's ground, or none: a frost well or a lean-to never stands
+		// on dirt or lava (terrainArt.js; VMAPGEN_TERRAIN_ART=0 turns it off)
+		if (TERRAIN_ART) {
+			const art = artFor(type, subtype, tpl, terrain, rng);
+			if (art === null) { if (fillStat) { const k = 'terrain|' + type; fillStat[k] = (fillStat[k] || 0) + 1; } return null; }
+			tpl = art;
+		}
 		const sliverBind = SLIVER_RULE
 			&& rng() < (SLIVER_SHARE[sliverClass(type)] || 0);
 		for (let tries = 0; tries < tryBudget && free.length; tries++) {
@@ -1491,6 +1528,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// two starts with no fight between them.
 			if (zoneMeta && MONSTER_TYPE.test(type) && reachOnReserved(tpl, x, y, l, W, H, blocked)) { rej('road'); continue; }
 			const walls = blockingCells(tpl, x, y).map(([a, b]) => b * W + a);
+			if (type === 'prison' && PRISON_GAP > 0 && nearBuilding(tpl, x, y, PRISON_GAP)) { rej('prisonGap'); continue; }
 			// Item 21: on a bound placement, a draw that would leave a one-cell
 			// sliver beside the object is refused for the first three quarters
 			// of the budget, so the object lands flush against blocking or out
@@ -1531,6 +1569,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			out.push(entry);
 			footprintBlock(tpl, x, y, l, W, H, blocked);
 			markApproach(tpl, x, y, l, W, H, blocked);
+			registerBuilding(type, tpl, x, y);
 			if (connectivity) connectivity.refresh();
 			if (GUARD_CHANCE[type]) guardable.push({ entry, tpl });
 			return entry;
@@ -2051,11 +2090,33 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const TIER_BANDS = {
 		[BIOME_CLASS.PLAYER]:    [1, 4],
 		[BIOME_CLASS.TOWN]:      [1, 3],
-		[BIOME_CLASS.HIGH_LOOT]: [4, 7],
+		[BIOME_CLASS.HIGH_LOOT]: [5, 7],
 		[BIOME_CLASS.STANDARD]:  [2, 5],
 		[BIOME_CLASS.LOW_LOOT]:  [1, 4],
 	};
 	const [tierLo, tierHi] = TIER_BANDS[cls] || TIER_BANDS[BIOME_CLASS.STANDARD];
+
+	// K, 2026-09-30: "Creature generation structures should either: be located in a town biome, in which case
+	// they should be a generation structure for the biome's town; be located in a regular open loot area, in
+	// which case they should be completely random; be located in a high loot open loot area in which case they
+	// should be higher tiers (say 5-7); be based on a map template specific parameter, in which case the
+	// parameter stands." A zone with a town of a known faction draws that faction's dwellings only (the nearest
+	// level it has when it has none of the one asked); any other zone draws from every faction.
+	const zf = zoneFaction || (zoneMeta && zoneMeta.faction && zoneMeta.faction !== 'neutral' ? zoneMeta.faction : null);
+	const dwellingFaction = d => (objectPools.dwellingFactions && objectPools.dwellingFactions.get(`${d.type}|${d.subtype}`)) || null;
+	const pickDwellingFor = lvl => {
+		if (!zf || !objectPools.dwellingFactions) return pickDwelling(lvl, rng, objectPools.dwellings);
+		const pool = DWELLING_POOL.concat(objectPools.dwellings || []).filter(d => dwellingFaction(d) === zf);
+		if (!pool.length) return pickDwelling(lvl, rng, objectPools.dwellings);
+		let near = pool.filter(d => d.level === lvl);
+		if (!near.length) {
+			const gap = Math.min(...pool.map(d => Math.abs(d.level - lvl)));
+			near = pool.filter(d => Math.abs(d.level - lvl) === gap);
+		}
+		let roll = rng() * near.reduce((a, d) => a + (d.weight || 1), 0);
+		for (const d of near) { roll -= d.weight || 1; if (roll <= 0) return d; }
+		return near[0];
+	};
 
 	// The count grows with the pool, as the bank count does and for the same
 	// reason: fill.dwellings is calibrated on the core pool alone, and each
@@ -2191,7 +2252,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// dwelling subtype where the corpus has seventy. Mostly concrete,
 		// drawn from the level band the placeholder would have rolled; a
 		// thin placeholder share keeps the faction-following variety.
-		if (rng() < 0.85) {
+		if (zf || rng() < 0.85) {
 			const lvl = Math.max(1, Math.min(7,
 				tierLo + ((rng() * (tierHi - tierLo + 1)) | 0)));
 			// a creature theme (--theme) draws its share from the family's
@@ -2199,7 +2260,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			const th = objectPools.themeDwellings;
 			const d = th && th.pool.length && rng() < th.share
 				? nearestLevelDwelling(th.pool, lvl, rng)
-				: pickDwelling(lvl, rng, objectPools.dwellings);
+				: pickDwellingFor(lvl);
 			const e = d && put(d.type, d.tpl, undefined, d.subtype, 40,
 				fitAnchors(d.tpl), true);
 			if (e) {
@@ -2733,14 +2794,25 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			}
 		}
 	} else {
+		// the richest loot first: each relic, major artifact and Pandora's box is guarded at the real maps' rate
+		const guardedHere = new Set();
+		if (process.env.VMAPGEN_HIGH_LOOT_GUARD !== '0')
+			for (const g of ranked) {
+				const share = HIGH_LOOT_GUARDED[g.entry.type];
+				if (!share || guardContextWeight(g.entry.type, p) <= 0) continue;
+				if (rng() < Math.min(1, share * guardContextWeight(g.entry.type, p)) && postGuard(g)) { posted++; guardedHere.add(g); }
+			}
 		for (const g of ranked) {
 			if (posted >= wantGuards) break;
+			if (guardedHere.has(g)) continue;
 			if (postGuard(g)) posted++;
 		}
 		// whatever the guard pass could not place still roams, so the monster
 		// count stays on the calibrated budget
+		// K, 2026-09-30: "high tier monsters standing by serving no purpose". A real map's monster of level 5 to 7
+		// stands on the approach to something 97% of the time; ours roamed at 82%. What roams is a low tier.
 		for (let i = guardBudget - posted; i > 0; i--) {
-			const tier = creepTier(cls, rng, monsterShift);
+			const tier = process.env.VMAPGEN_ROAM_CAP === '0' ? creepTier(cls, rng, monsterShift) : Math.min(4, creepTier(cls, rng, monsterShift));
 			put(`randomMonsterLevel${tier}`, monsterTpl, monsterOptions(tier, p, rng));
 		}
 	}

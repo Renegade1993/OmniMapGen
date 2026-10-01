@@ -1,0 +1,10362 @@
+{
+ "_provenance": "read from 71 real maps in corpus/MapsArchive/RandomMaps by tools/harvest_object_terrains.js; per art (lowercase animation): the object it was on and how many times it stood on each core terrain",
+ "totals": {
+  "sand": 6234,
+  "snow": 7427,
+  "rough": 3348,
+  "grass": 5597,
+  "dirt": 4739,
+  "swamp": 3229,
+  "lava": 1908,
+  "subterra": 10456,
+  "rock": 67
+ },
+ "art": {
+  "hota/crates/crates09": {
+   "type": "abandonedBoat",
+   "subtype": "abandonedBoat",
+   "n": 20,
+   "terrains": {
+    "sand": 20
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "hota/pillars/avlcof01": {
+   "type": "rubble",
+   "subtype": "rubble",
+   "n": 47,
+   "terrains": {
+    "sand": 47
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "avlflk30": {
+   "type": "frozenLake",
+   "subtype": "object",
+   "n": 396,
+   "terrains": {
+    "snow": 393,
+    "rough": 2,
+    "grass": 1
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "hota/highlands/hotastatic/spruces/avlhpn10": {
+   "type": "spruces",
+   "subtype": "spruces",
+   "n": 6,
+   "terrains": {
+    "snow": 2,
+    "sand": 1,
+    "grass": 3
+   },
+   "mask": [
+    "VVVVV",
+    "VBBVV",
+    "VVBBV"
+   ]
+  },
+  "hota/dunes/avlmtdn5": {
+   "type": "barchanDunes",
+   "subtype": "barchanDunes",
+   "n": 86,
+   "terrains": {
+    "sand": 86
+   },
+   "mask": [
+    "VBBV",
+    "VVBB"
+   ]
+  },
+  "hota/pillars/avlcod04": {
+   "type": "pillars",
+   "subtype": "pillars",
+   "n": 57,
+   "terrains": {
+    "sand": 56,
+    "rough": 1
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "BB"
+   ]
+  },
+  "hota/trees/avlspl09": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 188,
+   "terrains": {
+    "sand": 181,
+    "rough": 3,
+    "dirt": 1,
+    "grass": 1,
+    "snow": 2
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBBV"
+   ]
+  },
+  "hota/trees/avlspl14": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 630,
+   "terrains": {
+    "sand": 630
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VBBB",
+    "VVBB"
+   ]
+  },
+  "hota/dunes/avlmtdn4": {
+   "type": "barchanDunes",
+   "subtype": "barchanDunes",
+   "n": 245,
+   "terrains": {
+    "sand": 225,
+    "rough": 12,
+    "grass": 1,
+    "dirt": 1,
+    "snow": 5,
+    "swamp": 1
+   },
+   "mask": [
+    "VVBB",
+    "VBBB",
+    "VBBV"
+   ]
+  },
+  "hota/dunes/avlmtdn3": {
+   "type": "barchanDunes",
+   "subtype": "barchanDunes",
+   "n": 276,
+   "terrains": {
+    "sand": 274,
+    "rough": 1,
+    "grass": 1
+   },
+   "mask": [
+    "VBBV",
+    "VBBB",
+    "VVBB"
+   ]
+  },
+  "hota/trees/avlspl12": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 115,
+   "terrains": {
+    "sand": 115
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VVBB"
+   ]
+  },
+  "hota/pillars/avlcof03": {
+   "type": "rubble",
+   "subtype": "rubble",
+   "n": 39,
+   "terrains": {
+    "sand": 38,
+    "rough": 1
+   },
+   "mask": [
+    "VV",
+    "BB"
+   ]
+  },
+  "hota/highlands/hotastatic/waterfall/avlwtf01": {
+   "type": "highlandsWaterfalls",
+   "subtype": "waterfalls",
+   "n": 19,
+   "terrains": {
+    "snow": 3,
+    "swamp": 1,
+    "dirt": 2,
+    "grass": 8,
+    "sand": 4,
+    "rough": 1
+   },
+   "mask": [
+    "VVBVV",
+    "VBBBV",
+    "VBBBV",
+    "VVVVV"
+   ]
+  },
+  "avlflk20": {
+   "type": "frozenLake",
+   "subtype": "object",
+   "n": 277,
+   "terrains": {
+    "snow": 277
+   },
+   "mask": [
+    "BBB"
+   ]
+  },
+  "hota/trees/avlspl13": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 586,
+   "terrains": {
+    "sand": 507,
+    "rough": 25,
+    "dirt": 12,
+    "snow": 27,
+    "grass": 8,
+    "swamp": 7
+   },
+   "mask": [
+    "VVVV",
+    "VVBB",
+    "VBBB",
+    "VBBV"
+   ]
+  },
+  "hota/trees/avlspl11": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 106,
+   "terrains": {
+    "sand": 102,
+    "lava": 1,
+    "snow": 3
+   },
+   "mask": [
+    "VVVV",
+    "VVBB",
+    "VBBV"
+   ]
+  },
+  "hota/highlands/hotastatic/spruces/avlhpn11": {
+   "type": "spruces",
+   "subtype": "spruces",
+   "n": 11,
+   "terrains": {
+    "snow": 1,
+    "lava": 1,
+    "dirt": 3,
+    "sand": 4,
+    "grass": 1,
+    "rough": 1
+   },
+   "mask": [
+    "VVVVV",
+    "VBBVV",
+    "VBBBV",
+    "VVBBV"
+   ]
+  },
+  "hota/dunes/avlmtdn2": {
+   "type": "barchanDunes",
+   "subtype": "barchanDunes",
+   "n": 147,
+   "terrains": {
+    "lava": 2,
+    "sand": 131,
+    "snow": 6,
+    "grass": 5,
+    "rough": 3
+   },
+   "mask": [
+    "VVBBBV",
+    "VBBBBB",
+    "VBBBBB",
+    "VBBBVV"
+   ]
+  },
+  "hota/highlands/hotastatic/spruces/avlhpn12": {
+   "type": "spruces",
+   "subtype": "spruces",
+   "n": 34,
+   "terrains": {
+    "rough": 2,
+    "swamp": 2,
+    "grass": 10,
+    "dirt": 6,
+    "sand": 12,
+    "snow": 2
+   },
+   "mask": [
+    "0VVVVV",
+    "0VVBBV",
+    "VVBBBV",
+    "0VBBVV"
+   ]
+  },
+  "hota/ruinedobjects/tpdestr3": {
+   "type": "crumbledCamp",
+   "subtype": "crumbledCamp",
+   "n": 89,
+   "terrains": {
+    "rough": 47,
+    "dirt": 42
+   },
+   "mask": [
+    "VVV",
+    "BBB"
+   ]
+  },
+  "hota/wasteland/vanillastatic/mountains/avlmtwl7": {
+   "type": "wstNaturalArch",
+   "subtype": "wstNaturalArch",
+   "n": 4,
+   "terrains": {
+    "sand": 1,
+    "grass": 2,
+    "snow": 1
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBVB"
+   ]
+  },
+  "hota/dunes/avlmtdn1": {
+   "type": "barchanDunes",
+   "subtype": "barchanDunes",
+   "n": 163,
+   "terrains": {
+    "sand": 163
+   },
+   "mask": [
+    "VVBBBV",
+    "VBBBBB",
+    "VBBBBB",
+    "VVVBBB"
+   ]
+  },
+  "hota/trees/avrdtr01": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 336,
+   "terrains": {
+    "dirt": 35,
+    "rough": 210,
+    "grass": 71,
+    "swamp": 20
+   },
+   "mask": [
+    "VVVV",
+    "VVBB",
+    "VBBB",
+    "VBBV"
+   ]
+  },
+  "hota/volcano/avlvol60": {
+   "type": "volcanicVent",
+   "subtype": "volcanicVent",
+   "n": 7,
+   "terrains": {
+    "lava": 7
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBBB"
+   ]
+  },
+  "hota/animals/rooster_02": {
+   "type": "rooster",
+   "subtype": "rooster",
+   "n": 170,
+   "terrains": {
+    "dirt": 44,
+    "grass": 86,
+    "rough": 39,
+    "snow": 1
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "hota/trees/avrdtr05": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 62,
+   "terrains": {
+    "rough": 33,
+    "dirt": 12,
+    "grass": 15,
+    "swamp": 2
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VVBB"
+   ]
+  },
+  "hota/trees/avrdtr06": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 54,
+   "terrains": {
+    "rough": 27,
+    "grass": 22,
+    "dirt": 4,
+    "swamp": 1
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VVBB"
+   ]
+  },
+  "avllk1r": {
+   "type": "lakeDUPLICATE",
+   "subtype": "object",
+   "n": 281,
+   "terrains": {
+    "rough": 281
+   },
+   "mask": [
+    "VBBV",
+    "BBBB"
+   ]
+  },
+  "hota/trees/avrdtr04": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 76,
+   "terrains": {
+    "dirt": 8,
+    "rough": 40,
+    "grass": 22,
+    "sand": 1,
+    "swamp": 5
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBBV"
+   ]
+  },
+  "hota/trees/avrdtr02": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 382,
+   "terrains": {
+    "rough": 211,
+    "dirt": 49,
+    "grass": 86,
+    "swamp": 36
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VBBB",
+    "VVBB"
+   ]
+  },
+  "hota/ruinedobjects/tpdestr2": {
+   "type": "abandonedFountains",
+   "subtype": "abandonedFountains",
+   "n": 186,
+   "terrains": {
+    "dirt": 159,
+    "rough": 27
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBB"
+   ]
+  },
+  "hota/trees/avlswt24": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 31,
+   "terrains": {
+    "rough": 18,
+    "grass": 8,
+    "dirt": 4,
+    "swamp": 1
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/animals/rooster_01": {
+   "type": "chicken",
+   "subtype": "chicken",
+   "n": 162,
+   "terrains": {
+    "rough": 28,
+    "dirt": 42,
+    "grass": 90,
+    "snow": 1,
+    "swamp": 1
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "hota/pillars/avlcom06": {
+   "type": "rubble",
+   "subtype": "rubble",
+   "n": 54,
+   "terrains": {
+    "sand": 54
+   },
+   "mask": [
+    "VVV",
+    "BBB"
+   ]
+  },
+  "hota/trees/avlswt23": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 25,
+   "terrains": {
+    "dirt": 6,
+    "grass": 4,
+    "rough": 15
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "avlxds05": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 306,
+   "terrains": {
+    "sand": 304,
+    "grass": 1,
+    "dirt": 1
+   },
+   "mask": [
+    "BV",
+    "BB"
+   ]
+  },
+  "hota/animals/frog_03": {
+   "type": "frog",
+   "subtype": "frog",
+   "n": 23,
+   "terrains": {
+    "swamp": 22,
+    "rough": 1
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "hota/trees/avlspl03": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 311,
+   "terrains": {
+    "sand": 311
+   },
+   "mask": [
+    "VB",
+    "VB"
+   ]
+  },
+  "avlxds07": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 62,
+   "terrains": {
+    "sand": 62
+   },
+   "mask": [
+    "BBB"
+   ]
+  },
+  "hota/highlands/hotastatic/spruces/avlhpn08": {
+   "type": "spruces",
+   "subtype": "spruces",
+   "n": 6,
+   "terrains": {
+    "sand": 3,
+    "rough": 2,
+    "dirt": 1
+   },
+   "mask": [
+    "VVVVV",
+    "VVBBV",
+    "VBBVV"
+   ]
+  },
+  "decorations/forth3": {
+   "type": "mdtFortressHomes",
+   "subtype": "object",
+   "n": 86,
+   "terrains": {
+    "swamp": 86
+   },
+   "mask": [
+    "VVV",
+    "VBB"
+   ]
+  },
+  "hota/animals/frog_01": {
+   "type": "frogs",
+   "subtype": "frogs",
+   "n": 75,
+   "terrains": {
+    "swamp": 75
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "decorations/forth2": {
+   "type": "mdtFortressHomes",
+   "subtype": "object",
+   "n": 79,
+   "terrains": {
+    "swamp": 78,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB"
+   ]
+  },
+  "avlxds02": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 106,
+   "terrains": {
+    "sand": 106
+   },
+   "mask": [
+    "BB",
+    "BB"
+   ]
+  },
+  "decorations/forth5": {
+   "type": "mdtFortressHomes",
+   "subtype": "object",
+   "n": 79,
+   "terrains": {
+    "swamp": 78,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB"
+   ]
+  },
+  "avlxds06": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 100,
+   "terrains": {
+    "sand": 100
+   },
+   "mask": [
+    "BB",
+    "BB"
+   ]
+  },
+  "avlxds03": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 85,
+   "terrains": {
+    "sand": 85
+   },
+   "mask": [
+    "VV",
+    "BB"
+   ]
+  },
+  "hota/crates/crates08": {
+   "type": "abandonedBoat",
+   "subtype": "abandonedBoat",
+   "n": 8,
+   "terrains": {
+    "sand": 8
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "hota/highlands/hotastatic/spruces/avlhpn06": {
+   "type": "spruces",
+   "subtype": "spruces",
+   "n": 19,
+   "terrains": {
+    "swamp": 2,
+    "dirt": 3,
+    "grass": 4,
+    "sand": 6,
+    "rough": 2,
+    "snow": 1,
+    "lava": 1
+   },
+   "mask": [
+    "VVV",
+    "VBV",
+    "VBV"
+   ]
+  },
+  "avlmd3r0": {
+   "type": "mound",
+   "subtype": "object",
+   "n": 98,
+   "terrains": {
+    "rough": 97,
+    "grass": 1
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "avlxds04": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 112,
+   "terrains": {
+    "sand": 112
+   },
+   "mask": [
+    "BB",
+    "BB"
+   ]
+  },
+  "hota/trees/avlswn02": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 78,
+   "terrains": {
+    "swamp": 70,
+    "dirt": 4,
+    "rough": 2,
+    "snow": 2
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "BBBV",
+    "VBVV"
+   ]
+  },
+  "avlswtr9": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 74,
+   "terrains": {
+    "swamp": 63,
+    "dirt": 8,
+    "rough": 2,
+    "snow": 1
+   },
+   "mask": [
+    "VVVVVV",
+    "VBBVBB",
+    "VVBBBV"
+   ]
+  },
+  "hota/trees/avlswn03": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 66,
+   "terrains": {
+    "swamp": 60,
+    "dirt": 1,
+    "snow": 4,
+    "rough": 1
+   },
+   "mask": [
+    "VBV",
+    "VBV",
+    "VBV",
+    "VBV"
+   ]
+  },
+  "hota/trees/avlswn01": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 63,
+   "terrains": {
+    "swamp": 52,
+    "dirt": 2,
+    "rough": 2,
+    "snow": 3,
+    "lava": 3,
+    "grass": 1
+   },
+   "mask": [
+    "VBV",
+    "VBV"
+   ]
+  },
+  "decorations/forth1": {
+   "type": "mdtFortressHomes",
+   "subtype": "object",
+   "n": 68,
+   "terrains": {
+    "swamp": 66,
+    "dirt": 2
+   },
+   "mask": [
+    "VVV",
+    "VBB"
+   ]
+  },
+  "avlxds11": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 18,
+   "terrains": {
+    "sand": 18
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "avlswtr2": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 17,
+   "terrains": {
+    "swamp": 17
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VVBB"
+   ]
+  },
+  "avlswtr6": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 84,
+   "terrains": {
+    "swamp": 74,
+    "dirt": 3,
+    "snow": 3,
+    "rough": 4
+   },
+   "mask": [
+    "VBV",
+    "VBV"
+   ]
+  },
+  "hota/dunes/avlmtdn6": {
+   "type": "barchanDunes",
+   "subtype": "barchanDunes",
+   "n": 64,
+   "terrains": {
+    "sand": 58,
+    "rough": 3,
+    "grass": 2,
+    "snow": 1
+   },
+   "mask": [
+    "VVBB",
+    "VBBV"
+   ]
+  },
+  "hota/pillars/avlcof02": {
+   "type": "rubble",
+   "subtype": "rubble",
+   "n": 52,
+   "terrains": {
+    "sand": 50,
+    "rough": 2
+   },
+   "mask": [
+    "VBB",
+    "BBV"
+   ]
+  },
+  "avlswtr8": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 17,
+   "terrains": {
+    "swamp": 17
+   },
+   "mask": [
+    "VBB",
+    "VBB"
+   ]
+  },
+  "avlmd1r0": {
+   "type": "mound",
+   "subtype": "object",
+   "n": 90,
+   "terrains": {
+    "rough": 89,
+    "grass": 1
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "decorations/forth6": {
+   "type": "mdtFortressHomes",
+   "subtype": "object",
+   "n": 78,
+   "terrains": {
+    "swamp": 77,
+    "grass": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB"
+   ]
+  },
+  "decorations/forth4": {
+   "type": "mdtFortressHomes",
+   "subtype": "object",
+   "n": 70,
+   "terrains": {
+    "swamp": 70
+   },
+   "mask": [
+    "VVV",
+    "VBB"
+   ]
+  },
+  "avlmd2d0": {
+   "type": "mound",
+   "subtype": "object",
+   "n": 73,
+   "terrains": {
+    "dirt": 73
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "hota/wasteland/hotastatic/lakes/avlwll02": {
+   "type": "limestoneLake",
+   "subtype": "limestoneLake",
+   "n": 7,
+   "terrains": {
+    "grass": 6,
+    "rough": 1
+   },
+   "mask": [
+    "VBBV"
+   ]
+  },
+  "avlmd1d0": {
+   "type": "mound",
+   "subtype": "object",
+   "n": 86,
+   "terrains": {
+    "dirt": 86
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "hota/ruinedobjects/avtcvrui": {
+   "type": "crumbledEdifice",
+   "subtype": "crumbledEdifice",
+   "n": 58,
+   "terrains": {
+    "dirt": 25,
+    "rough": 33
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBBB"
+   ]
+  },
+  "hota/ruinedobjects/tpdestr4": {
+   "type": "abandonedFountains",
+   "subtype": "abandonedFountains",
+   "n": 108,
+   "terrains": {
+    "dirt": 90,
+    "rough": 18
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "avmswsn0": {
+   "type": "mine",
+   "subtype": "sawmill",
+   "n": 116,
+   "terrains": {
+    "snow": 116
+   },
+   "mask": [
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn2pink0": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith35",
+   "n": 31,
+   "terrains": {
+    "snow": 8,
+    "subterra": 14,
+    "rough": 2,
+    "dirt": 1,
+    "grass": 4,
+    "swamp": 2
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmorsn0": {
+   "type": "mine",
+   "subtype": "orePit",
+   "n": 115,
+   "terrains": {
+    "snow": 115
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxmn2o0": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith2",
+   "n": 87,
+   "terrains": {
+    "sand": 4,
+    "swamp": 9,
+    "grass": 20,
+    "snow": 7,
+    "subterra": 20,
+    "dirt": 13,
+    "rough": 12,
+    "lava": 2
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxrlly0": {
+   "type": "rallyFlag",
+   "subtype": "rallyFlag",
+   "n": 322,
+   "terrains": {
+    "snow": 56,
+    "dirt": 41,
+    "subterra": 115,
+    "swamp": 18,
+    "grass": 45,
+    "rough": 13,
+    "lava": 28,
+    "sand": 6
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxl1sh0": {
+   "type": "shrineOfMagicLevel1",
+   "subtype": "shrineOfMagicLevel1",
+   "n": 1132,
+   "terrains": {
+    "snow": 162,
+    "dirt": 131,
+    "subterra": 365,
+    "swamp": 65,
+    "grass": 241,
+    "rough": 45,
+    "lava": 107,
+    "sand": 16
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxoblp": {
+   "type": "obelisk",
+   "subtype": "object",
+   "n": 67,
+   "terrains": {
+    "snow": 67
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxmn8b0": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith32",
+   "n": 37,
+   "terrains": {
+    "snow": 3,
+    "lava": 4,
+    "sand": 3,
+    "subterra": 22,
+    "grass": 3,
+    "swamp": 1,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/warehouses/avwrhsgm": {
+   "type": "warehouses",
+   "subtype": "gemsWarehouse",
+   "n": 69,
+   "terrains": {
+    "lava": 5,
+    "subterra": 28,
+    "grass": 9,
+    "dirt": 10,
+    "rough": 2,
+    "snow": 9,
+    "swamp": 5,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avggobl0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "goblinBarracks",
+   "n": 6,
+   "terrains": {
+    "rough": 3,
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxmn5b0": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith29",
+   "n": 75,
+   "terrains": {
+    "dirt": 9,
+    "swamp": 2,
+    "subterra": 31,
+    "grass": 14,
+    "rough": 5,
+    "sand": 5,
+    "snow": 5,
+    "lava": 4
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn11b": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith44",
+   "n": 5,
+   "terrains": {
+    "rough": 1,
+    "dirt": 2,
+    "lava": 1,
+    "grass": 1
+   },
+   "mask": [
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmorro0": {
+   "type": "mine",
+   "subtype": "orePit",
+   "n": 39,
+   "terrains": {
+    "rough": 39
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmcrys0": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 23,
+   "terrains": {
+    "grass": 23
+   },
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsgzbo0": {
+   "type": "learningStone",
+   "subtype": "learningStone",
+   "n": 519,
+   "terrains": {
+    "rough": 20,
+    "swamp": 30,
+    "dirt": 74,
+    "subterra": 204,
+    "grass": 128,
+    "lava": 48,
+    "sand": 11,
+    "snow": 4
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmore0": {
+   "type": "mine",
+   "subtype": "orePit",
+   "n": 125,
+   "terrains": {
+    "grass": 125
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmsulf0": {
+   "type": "mine",
+   "subtype": "sulfurDune",
+   "n": 287,
+   "terrains": {
+    "dirt": 59,
+    "swamp": 19,
+    "lava": 9,
+    "subterra": 89,
+    "grass": 49,
+    "sand": 13,
+    "snow": 38,
+    "rough": 11
+   },
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxmn7b0": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith31",
+   "n": 48,
+   "terrains": {
+    "lava": 5,
+    "sand": 3,
+    "swamp": 2,
+    "subterra": 20,
+    "dirt": 6,
+    "grass": 7,
+    "snow": 4,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxmn2g0": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith45",
+   "n": 87,
+   "terrains": {
+    "grass": 15,
+    "rough": 12,
+    "dirt": 14,
+    "subterra": 21,
+    "snow": 13,
+    "lava": 6,
+    "swamp": 4,
+    "sand": 2
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn2y0": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith38",
+   "n": 23,
+   "terrains": {
+    "grass": 4,
+    "dirt": 4,
+    "snow": 2,
+    "lava": 5,
+    "subterra": 5,
+    "swamp": 1,
+    "rough": 2
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn12b": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith41",
+   "n": 12,
+   "terrains": {
+    "rough": 1,
+    "sand": 2,
+    "lava": 2,
+    "snow": 1,
+    "subterra": 3,
+    "dirt": 2,
+    "swamp": 1
+   },
+   "mask": [
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgelv0": {
+   "type": "mine",
+   "subtype": "gemPond",
+   "n": 11,
+   "terrains": {
+    "lava": 11
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmsawg0": {
+   "type": "mine",
+   "subtype": "sawmill",
+   "n": 125,
+   "terrains": {
+    "grass": 125
+   },
+   "mask": [
+    "VVVVV",
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmsawr0": {
+   "type": "mine",
+   "subtype": "sawmill",
+   "n": 39,
+   "terrains": {
+    "rough": 39
+   },
+   "mask": [
+    "VVVVV",
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn2b0": {
+   "type": "monolithTwoWay",
+   "subtype": "hotaMonolithsBlack",
+   "n": 30,
+   "terrains": {
+    "grass": 4,
+    "dirt": 3,
+    "subterra": 15,
+    "lava": 3,
+    "snow": 4,
+    "rough": 1
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn9b0": {
+   "type": "monolithTwoWay",
+   "subtype": "hotaPortalChartreuse",
+   "n": 17,
+   "terrains": {
+    "grass": 6,
+    "snow": 2,
+    "rough": 1,
+    "subterra": 6,
+    "swamp": 1,
+    "lava": 1
+   },
+   "mask": [
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/hillfort/miniftdr": {
+   "type": "miniHillFort",
+   "subtype": "miniHillFort",
+   "n": 43,
+   "terrains": {
+    "dirt": 24,
+    "subterra": 19
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "haven/adventure-map/chesthaven01": {
+   "type": "chestHaven01",
+   "subtype": "seaBarrel",
+   "n": 1598,
+   "terrains": {
+    "dirt": 243,
+    "snow": 242,
+    "subterra": 558,
+    "grass": 253,
+    "rough": 82,
+    "lava": 123,
+    "sand": 21,
+    "swamp": 76
+   },
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "desertdefs/mines/desertcrystalm": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 3,
+   "terrains": {
+    "sand": 3
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmcrvo0": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 15,
+   "terrains": {
+    "lava": 15
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn20b": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith39",
+   "n": 13,
+   "terrains": {
+    "swamp": 2,
+    "subterra": 5,
+    "snow": 2,
+    "grass": 2,
+    "lava": 1,
+    "dirt": 1
+   },
+   "mask": [
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn10b": {
+   "type": "monolithTwoWay",
+   "subtype": "hotaPortalTurquoise",
+   "n": 5,
+   "terrains": {
+    "dirt": 2,
+    "subterra": 1,
+    "swamp": 1,
+    "grass": 1
+   },
+   "mask": [
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxmn6b0": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith30",
+   "n": 58,
+   "terrains": {
+    "snow": 11,
+    "subterra": 23,
+    "lava": 6,
+    "dirt": 5,
+    "grass": 5,
+    "rough": 1,
+    "sand": 4,
+    "swamp": 3
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "kremlin/map/dwellings/bogatyrbank": {
+   "type": "rusBogatyrBank",
+   "subtype": "rusBogatyrBank",
+   "n": 13,
+   "terrains": {
+    "lava": 2,
+    "snow": 1,
+    "subterra": 5,
+    "grass": 3,
+    "dirt": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmcrdr0": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 60,
+   "terrains": {
+    "dirt": 60
+   },
+   "mask": [
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/shrines/4lvlxshrn": {
+   "type": "shrineOfMagicLevel1",
+   "subtype": "shrineOfMagicMystery",
+   "n": 286,
+   "terrains": {
+    "swamp": 16,
+    "sand": 21,
+    "subterra": 100,
+    "lava": 14,
+    "snow": 36,
+    "grass": 37,
+    "dirt": 44,
+    "rough": 18
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn19p": {
+   "type": "monolithTwoWay",
+   "subtype": "hotaPortalPink",
+   "n": 9,
+   "terrains": {
+    "lava": 1,
+    "snow": 1,
+    "grass": 3,
+    "subterra": 3,
+    "swamp": 1
+   },
+   "mask": [
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgesn0": {
+   "type": "mine",
+   "subtype": "gemPond",
+   "n": 39,
+   "terrains": {
+    "snow": 39
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmalch0": {
+   "type": "mine",
+   "subtype": "alchemistLab",
+   "n": 243,
+   "terrains": {
+    "rough": 10,
+    "dirt": 58,
+    "subterra": 83,
+    "grass": 49,
+    "lava": 12,
+    "sand": 13,
+    "swamp": 18
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgerf0": {
+   "type": "mine",
+   "subtype": "gemPond",
+   "n": 81,
+   "terrains": {
+    "sand": 15,
+    "subterra": 58,
+    "rough": 8
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "haven/adventure-map/pirateflag": {
+   "type": "chestHaven02",
+   "subtype": "seaBarrel",
+   "n": 291,
+   "terrains": {
+    "swamp": 230,
+    "sand": 61
+   },
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn2t0": {
+   "type": "monolithTwoWay",
+   "subtype": "hotaMonolithsTurquoise",
+   "n": 23,
+   "terrains": {
+    "sand": 2,
+    "dirt": 4,
+    "grass": 2,
+    "subterra": 10,
+    "snow": 2,
+    "lava": 3
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn2rd": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith36",
+   "n": 26,
+   "terrains": {
+    "rough": 2,
+    "subterra": 12,
+    "swamp": 2,
+    "snow": 3,
+    "lava": 4,
+    "dirt": 3
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxmn2p0": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith3",
+   "n": 81,
+   "terrains": {
+    "lava": 8,
+    "grass": 16,
+    "subterra": 24,
+    "dirt": 10,
+    "rough": 9,
+    "swamp": 3,
+    "snow": 8,
+    "sand": 3
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxschl0": {
+   "type": "scholar",
+   "subtype": "scholar",
+   "n": 510,
+   "terrains": {
+    "grass": 84,
+    "subterra": 186,
+    "snow": 70,
+    "dirt": 66,
+    "lava": 34,
+    "swamp": 29,
+    "rough": 29,
+    "sand": 12
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmcrgr0": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 30,
+   "terrains": {
+    "grass": 30
+   },
+   "mask": [
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxoblw": {
+   "type": "obelisk",
+   "subtype": "object",
+   "n": 85,
+   "terrains": {
+    "grass": 85
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "fairy/map/banks/crystalgarden3": {
+   "type": "fairyCrstPool",
+   "subtype": "object",
+   "n": 12,
+   "terrains": {
+    "grass": 12
+   },
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmwwhl0": {
+   "type": "waterWheel",
+   "subtype": "waterWheel",
+   "n": 167,
+   "terrains": {
+    "grass": 85,
+    "swamp": 26,
+    "dirt": 56
+   },
+   "mask": [
+    "VVV",
+    "BBB",
+    "BBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/monoliths/avxmn2bl": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith34",
+   "n": 27,
+   "terrains": {
+    "grass": 5,
+    "subterra": 14,
+    "swamp": 1,
+    "sand": 1,
+    "snow": 2,
+    "lava": 1,
+    "dirt": 1,
+    "rough": 2
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxwlsn0": {
+   "type": "magicWell",
+   "subtype": "magicWell",
+   "n": 63,
+   "terrains": {
+    "snow": 63
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmlean0": {
+   "type": "leanTo",
+   "subtype": "leanTo",
+   "n": 243,
+   "terrains": {
+    "snow": 243
+   },
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/wagon/hatel": {
+   "type": "wagon",
+   "subtype": "wagon",
+   "n": 289,
+   "terrains": {
+    "dirt": 35,
+    "snow": 45,
+    "subterra": 71,
+    "grass": 71,
+    "swamp": 17,
+    "rough": 15,
+    "lava": 27,
+    "sand": 8
+   },
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmalcs0": {
+   "type": "mine",
+   "subtype": "alchemistLab",
+   "n": 38,
+   "terrains": {
+    "snow": 38
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmsawd0": {
+   "type": "mine",
+   "subtype": "sawmill",
+   "n": 108,
+   "terrains": {
+    "dirt": 108
+   },
+   "mask": [
+    "VVVVV",
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/warehouses/avwrhsgl": {
+   "type": "warehouses",
+   "subtype": "goldWarehouse",
+   "n": 104,
+   "terrains": {
+    "lava": 12,
+    "subterra": 42,
+    "grass": 12,
+    "snow": 14,
+    "sand": 2,
+    "rough": 8,
+    "swamp": 6,
+    "dirt": 8
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avswtch0": {
+   "type": "witchHut",
+   "subtype": "witchHut",
+   "n": 205,
+   "terrains": {
+    "dirt": 40,
+    "subterra": 70,
+    "swamp": 15,
+    "grass": 35,
+    "lava": 19,
+    "rock": 7,
+    "rough": 15,
+    "sand": 3,
+    "snow": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmordr0": {
+   "type": "mine",
+   "subtype": "orePit",
+   "n": 108,
+   "terrains": {
+    "dirt": 108
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "adcfra": {
+   "type": "campfire",
+   "subtype": "campfire",
+   "n": 1047,
+   "terrains": {
+    "grass": 392,
+    "swamp": 130,
+    "dirt": 337,
+    "rough": 188
+   },
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/prison/avxprsn1": {
+   "type": "prison",
+   "subtype": "prison",
+   "n": 429,
+   "terrains": {
+    "dirt": 40,
+    "subterra": 146,
+    "lava": 9,
+    "rock": 34,
+    "snow": 30,
+    "grass": 49,
+    "sand": 60,
+    "rough": 42,
+    "swamp": 19
+   },
+   "mask": [
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "ava0128": {
+   "type": "pandoraBox",
+   "subtype": "object",
+   "n": 3199,
+   "terrains": {
+    "sand": 457,
+    "subterra": 1416,
+    "lava": 126,
+    "grass": 234,
+    "swamp": 122,
+    "dirt": 247,
+    "snow": 238,
+    "rough": 359
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxcflv0": {
+   "type": "campfire",
+   "subtype": "campfire",
+   "n": 182,
+   "terrains": {
+    "lava": 182
+   },
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/stone/udrock08": {
+   "type": "stone",
+   "subtype": "stone",
+   "n": 18,
+   "terrains": {
+    "subterra": 18
+   },
+   "mask": [
+    "VV",
+    "BB"
+   ]
+  },
+  "hota/stone/udrock05": {
+   "type": "stone",
+   "subtype": "stone",
+   "n": 24,
+   "terrains": {
+    "subterra": 24
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "hota/stone/udrock06": {
+   "type": "stone",
+   "subtype": "stone",
+   "n": 17,
+   "terrains": {
+    "subterra": 17
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "decorations/dngnhom2": {
+   "type": "mdtDungeonHomes",
+   "subtype": "objects",
+   "n": 107,
+   "terrains": {
+    "subterra": 107
+   },
+   "mask": [
+    "VVV",
+    "VBB"
+   ]
+  },
+  "decorations/dngnhom3": {
+   "type": "mdtDungeonHomes",
+   "subtype": "objects",
+   "n": 93,
+   "terrains": {
+    "subterra": 93
+   },
+   "mask": [
+    "VVV",
+    "VBB"
+   ]
+  },
+  "hota/stone/udrock02": {
+   "type": "stone",
+   "subtype": "stone",
+   "n": 32,
+   "terrains": {
+    "subterra": 32
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "decorations/dngnhom1": {
+   "type": "mdtDungeonHomes",
+   "subtype": "objects",
+   "n": 104,
+   "terrains": {
+    "subterra": 104
+   },
+   "mask": [
+    "VVV",
+    "VBB"
+   ]
+  },
+  "hota/stone/udrock03": {
+   "type": "stone",
+   "subtype": "stone",
+   "n": 22,
+   "terrains": {
+    "subterra": 22
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "hota/stone/udrock04": {
+   "type": "stone",
+   "subtype": "stone",
+   "n": 29,
+   "terrains": {
+    "subterra": 29
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "hota/stone/udrock07": {
+   "type": "stone",
+   "subtype": "stone",
+   "n": 19,
+   "terrains": {
+    "subterra": 19
+   },
+   "mask": [
+    "VV",
+    "BB"
+   ]
+  },
+  "hota/ruinedobjects/avbhou01": {
+   "type": "abandonedHouse",
+   "subtype": "abandonedHouse",
+   "n": 11,
+   "terrains": {
+    "lava": 11
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBB"
+   ]
+  },
+  "hota/ruinedobjects/avbhou02": {
+   "type": "abandonedHouse",
+   "subtype": "abandonedHouse",
+   "n": 6,
+   "terrains": {
+    "lava": 6
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBB"
+   ]
+  },
+  "hota/ruinedobjects/avbhou03": {
+   "type": "abandonedHouse",
+   "subtype": "abandonedHouse",
+   "n": 10,
+   "terrains": {
+    "lava": 9,
+    "grass": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBB"
+   ]
+  },
+  "hota/mound/avlsnh02": {
+   "type": "mound",
+   "subtype": "object",
+   "n": 225,
+   "terrains": {
+    "snow": 225
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "hota/mound/avlsnh03": {
+   "type": "mound",
+   "subtype": "object",
+   "n": 204,
+   "terrains": {
+    "snow": 204
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "hota/mound/avlsnh04": {
+   "type": "mound",
+   "subtype": "object",
+   "n": 221,
+   "terrains": {
+    "snow": 221
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "avlflk10": {
+   "type": "frozenLake",
+   "subtype": "object",
+   "n": 165,
+   "terrains": {
+    "snow": 165
+   },
+   "mask": [
+    "BBBBB",
+    "BBBBB"
+   ]
+  },
+  "hota/mound/avlsnh01": {
+   "type": "mound",
+   "subtype": "object",
+   "n": 58,
+   "terrains": {
+    "snow": 56,
+    "grass": 1,
+    "swamp": 1
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "avlmd1g0": {
+   "type": "mound",
+   "subtype": "object",
+   "n": 175,
+   "terrains": {
+    "grass": 175
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "avlmd2g0": {
+   "type": "mound",
+   "subtype": "object",
+   "n": 161,
+   "terrains": {
+    "grass": 161
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "avstmpl0": {
+   "type": "temple",
+   "subtype": "temple",
+   "n": 316,
+   "terrains": {
+    "subterra": 113,
+    "dirt": 38,
+    "snow": 52,
+    "grass": 54,
+    "swamp": 15,
+    "lava": 30,
+    "rough": 14
+   },
+   "mask": [
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsgrdn0": {
+   "type": "gardenOfRevelation",
+   "subtype": "gardenOfRevelation",
+   "n": 208,
+   "terrains": {
+    "subterra": 108,
+    "grass": 56,
+    "dirt": 32,
+    "swamp": 12
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgosb0": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 123,
+   "terrains": {
+    "subterra": 123
+   },
+   "mask": [
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxfgld": {
+   "type": "freelancersGuild",
+   "subtype": "object",
+   "n": 281,
+   "terrains": {
+    "subterra": 100,
+    "dirt": 34,
+    "snow": 49,
+    "grass": 37,
+    "swamp": 16,
+    "lava": 28,
+    "sand": 5,
+    "rough": 12
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgrefg0": {
+   "type": "refugeeCamp",
+   "subtype": "object",
+   "n": 189,
+   "terrains": {
+    "subterra": 82,
+    "dirt": 21,
+    "lava": 12,
+    "grass": 30,
+    "rough": 14,
+    "snow": 15,
+    "swamp": 8,
+    "sand": 7
+   },
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxdend0": {
+   "type": "denOfThieves",
+   "subtype": "object",
+   "n": 168,
+   "terrains": {
+    "subterra": 119,
+    "rough": 18,
+    "lava": 24,
+    "sand": 6,
+    "snow": 1
+   },
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/subgates/haexit01": {
+   "type": "subterraneanGate",
+   "subtype": "object",
+   "n": 42,
+   "terrains": {
+    "subterra": 42
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avtcave": {
+   "type": "subterraneanGate",
+   "subtype": "object",
+   "n": 113,
+   "terrains": {
+    "dirt": 27,
+    "grass": 37,
+    "swamp": 11,
+    "lava": 26,
+    "rough": 12
+   },
+   "mask": [
+    "VVVV",
+    "VVBV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxdent": {
+   "type": "denOfThieves",
+   "subtype": "object",
+   "n": 106,
+   "terrains": {
+    "dirt": 38,
+    "grass": 53,
+    "swamp": 15
+   },
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgpeas": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hovel",
+   "n": 30,
+   "terrains": {
+    "subterra": 20,
+    "rough": 2,
+    "grass": 3,
+    "lava": 5
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "fairy/map/banks/divinationhut": {
+   "type": "divinationHut",
+   "subtype": "object",
+   "n": 38,
+   "terrains": {
+    "dirt": 3,
+    "subterra": 19,
+    "snow": 3,
+    "grass": 4,
+    "swamp": 2,
+    "lava": 6,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmcrsu0": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 76,
+   "terrains": {
+    "subterra": 76
+   },
+   "mask": [
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsmerc0": {
+   "type": "mercenaryCamp",
+   "subtype": "mercenaryCamp",
+   "n": 309,
+   "terrains": {
+    "dirt": 38,
+    "subterra": 102,
+    "snow": 51,
+    "swamp": 19,
+    "grass": 62,
+    "lava": 20,
+    "sand": 8,
+    "rough": 9
+   },
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxwelr0": {
+   "type": "magicWell",
+   "subtype": "magicWell",
+   "n": 195,
+   "terrains": {
+    "subterra": 133,
+    "rough": 18,
+    "lava": 36,
+    "sand": 8
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxpllr0": {
+   "type": "pillarOfFire",
+   "subtype": "pillarOfFire",
+   "n": 126,
+   "terrains": {
+    "subterra": 126
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgdemn0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "demonGate",
+   "n": 16,
+   "terrains": {
+    "subterra": 3,
+    "lava": 12,
+    "swamp": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgefre0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "fireLake",
+   "n": 8,
+   "terrains": {
+    "subterra": 3,
+    "dirt": 1,
+    "lava": 4
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsschm0": {
+   "type": "schoolOfMagic",
+   "subtype": "schoolOfMagic",
+   "n": 376,
+   "terrains": {
+    "subterra": 146,
+    "snow": 50,
+    "grass": 72,
+    "lava": 31,
+    "swamp": 15,
+    "rough": 16,
+    "dirt": 41,
+    "sand": 5
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxredw": {
+   "type": "redwoodObservatory",
+   "subtype": "redwoodObservatory",
+   "n": 198,
+   "terrains": {
+    "dirt": 54,
+    "grass": 70,
+    "swamp": 19,
+    "rough": 19,
+    "lava": 29,
+    "sand": 7
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsidol0": {
+   "type": "idolOfFortune",
+   "subtype": "idolOfFortune",
+   "n": 283,
+   "terrains": {
+    "subterra": 129,
+    "grass": 55,
+    "swamp": 18,
+    "dirt": 39,
+    "rough": 13,
+    "lava": 29
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgboar": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "boarGlen",
+   "n": 9,
+   "terrains": {
+    "subterra": 7,
+    "rough": 1,
+    "lava": 1
+   },
+   "mask": [
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/seerhut/avxseec0": {
+   "type": "seerHut",
+   "subtype": "seerHutHota1",
+   "n": 49,
+   "terrains": {
+    "subterra": 8,
+    "dirt": 12,
+    "lava": 5,
+    "sand": 1,
+    "rough": 4,
+    "snow": 10,
+    "grass": 7,
+    "swamp": 2
+   },
+   "mask": [
+    "VVV",
+    "VBV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxoblg": {
+   "type": "obelisk",
+   "subtype": "object",
+   "n": 68,
+   "terrains": {
+    "dirt": 68
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxtomb0": {
+   "type": "warriorTomb",
+   "subtype": "warriorTomb",
+   "n": 201,
+   "terrains": {
+    "subterra": 83,
+    "lava": 12,
+    "grass": 20,
+    "dirt": 14,
+    "rough": 34,
+    "sand": 9,
+    "snow": 20,
+    "swamp": 9
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxl2sh0": {
+   "type": "shrineOfMagicLevel2",
+   "subtype": "shrineOfMagicLevel2",
+   "n": 283,
+   "terrains": {
+    "subterra": 109,
+    "snow": 38,
+    "grass": 42,
+    "rough": 14,
+    "lava": 27,
+    "dirt": 32,
+    "sand": 7,
+    "swamp": 14
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxaltar": {
+   "type": "altarOfSacrifice",
+   "subtype": "object",
+   "n": 242,
+   "terrains": {
+    "subterra": 94,
+    "snow": 44,
+    "grass": 28,
+    "dirt": 19,
+    "rough": 10,
+    "lava": 28,
+    "sand": 5,
+    "swamp": 14
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxoblk": {
+   "type": "obelisk",
+   "subtype": "object",
+   "n": 172,
+   "terrains": {
+    "subterra": 159,
+    "sand": 13
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxtvrn0": {
+   "type": "tavern",
+   "subtype": "object",
+   "n": 212,
+   "terrains": {
+    "subterra": 94,
+    "swamp": 17,
+    "grass": 36,
+    "lava": 24,
+    "sand": 5,
+    "rough": 12,
+    "dirt": 24
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgdevl0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "forsakenPalace",
+   "n": 15,
+   "terrains": {
+    "subterra": 4,
+    "lava": 9,
+    "dirt": 1,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgmumy": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "tombOfCurses",
+   "n": 6,
+   "terrains": {
+    "subterra": 5,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsaxis0": {
+   "type": "starAxis",
+   "subtype": "starAxis",
+   "n": 335,
+   "terrains": {
+    "dirt": 57,
+    "subterra": 112,
+    "snow": 49,
+    "swamp": 16,
+    "grass": 45,
+    "lava": 30,
+    "sand": 7,
+    "rough": 19
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/warehouses/avwrhswd": {
+   "type": "warehouses",
+   "subtype": "woodWarehouse",
+   "n": 70,
+   "terrains": {
+    "subterra": 28,
+    "snow": 6,
+    "dirt": 11,
+    "lava": 5,
+    "grass": 13,
+    "rough": 3,
+    "swamp": 3,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/colosseumofthemagi/avsmgarn": {
+   "type": "colosseumOfTheMagi",
+   "subtype": "colosseumOfTheMagi",
+   "n": 105,
+   "terrains": {
+    "subterra": 32,
+    "grass": 17,
+    "snow": 17,
+    "lava": 7,
+    "dirt": 19,
+    "swamp": 7,
+    "sand": 3,
+    "rough": 3
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxwelg0": {
+   "type": "magicWell",
+   "subtype": "magicWell",
+   "n": 171,
+   "terrains": {
+    "dirt": 66,
+    "swamp": 21,
+    "grass": 84
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/map/avcnbksm": {
+   "type": "warMachineFactory",
+   "subtype": "cannonYard",
+   "n": 74,
+   "terrains": {
+    "subterra": 30,
+    "dirt": 12,
+    "grass": 12,
+    "swamp": 6,
+    "snow": 9,
+    "lava": 3,
+    "rough": 1,
+    "sand": 1
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVBV",
+    "VVBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmorsb0": {
+   "type": "mine",
+   "subtype": "orePit",
+   "n": 92,
+   "terrains": {
+    "subterra": 92
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "highlands/map/dwellings/highlands8": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "highlandsLevel8",
+   "n": 4,
+   "terrains": {
+    "subterra": 2,
+    "snow": 1,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgovo0": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 14,
+   "terrains": {
+    "lava": 14
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxstbl0": {
+   "type": "stables",
+   "subtype": "stables",
+   "n": 141,
+   "terrains": {
+    "dirt": 50,
+    "grass": 78,
+    "rough": 13
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxmn4b0": {
+   "type": "monolithTwoWay",
+   "subtype": "monolith4",
+   "n": 70,
+   "terrains": {
+    "dirt": 9,
+    "subterra": 34,
+    "swamp": 3,
+    "grass": 8,
+    "rough": 8,
+    "sand": 1,
+    "snow": 6,
+    "lava": 1
+   },
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmsawl0": {
+   "type": "mine",
+   "subtype": "sawmill",
+   "n": 125,
+   "terrains": {
+    "subterra": 92,
+    "lava": 33
+   },
+   "mask": [
+    "VVVVV",
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "highlands/map/dwellings/highlands7": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "highlandsLevel7",
+   "n": 10,
+   "terrains": {
+    "subterra": 4,
+    "snow": 2,
+    "sand": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxmktb0": {
+   "type": "blackMarket",
+   "subtype": "object",
+   "n": 205,
+   "terrains": {
+    "subterra": 89,
+    "lava": 14,
+    "grass": 26,
+    "dirt": 22,
+    "rough": 14,
+    "sand": 16,
+    "snow": 17,
+    "swamp": 7
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/seerhut/avxsees0": {
+   "type": "seerHut",
+   "subtype": "seerHutHota4",
+   "n": 35,
+   "terrains": {
+    "subterra": 7,
+    "grass": 7,
+    "snow": 5,
+    "swamp": 6,
+    "dirt": 7,
+    "lava": 2,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "preserve/map/dwellings/avgpre7": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "preserveLevel7",
+   "n": 11,
+   "terrains": {
+    "subterra": 7,
+    "rough": 2,
+    "grass": 2
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "highlands/map/dwellings/highlands6": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "highlandsLevel6",
+   "n": 9,
+   "terrains": {
+    "subterra": 2,
+    "snow": 5,
+    "sand": 2
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/warehouses/avwrhsor": {
+   "type": "warehouses",
+   "subtype": "oreWarehouse",
+   "n": 86,
+   "terrains": {
+    "subterra": 29,
+    "snow": 10,
+    "swamp": 8,
+    "grass": 12,
+    "dirt": 15,
+    "lava": 8,
+    "rough": 3,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avslibr0": {
+   "type": "libraryOfEnlightenment",
+   "subtype": "libraryOfEnlightenment",
+   "n": 152,
+   "terrains": {
+    "lava": 9,
+    "subterra": 68,
+    "grass": 15,
+    "rough": 23,
+    "sand": 21,
+    "dirt": 11,
+    "swamp": 5
+   },
+   "mask": [
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/warehouses/avwrhscr": {
+   "type": "warehouses",
+   "subtype": "crystalWarehouse",
+   "n": 73,
+   "terrains": {
+    "subterra": 26,
+    "snow": 7,
+    "grass": 16,
+    "rough": 4,
+    "dirt": 12,
+    "lava": 4,
+    "swamp": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "dwellings/inferno/maplustchambers": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mdtLustChambers",
+   "n": 7,
+   "terrains": {
+    "lava": 5,
+    "subterra": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/hillfort/miniftlv": {
+   "type": "miniHillFort",
+   "subtype": "miniHillFort",
+   "n": 9,
+   "terrains": {
+    "lava": 9
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgrocs0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cliffNest",
+   "n": 18,
+   "terrains": {
+    "subterra": 8,
+    "rough": 10
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgogre0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "ogreFort",
+   "n": 8,
+   "terrains": {
+    "subterra": 4,
+    "rough": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsarna0": {
+   "type": "arena",
+   "subtype": "arena",
+   "n": 159,
+   "terrains": {
+    "subterra": 48,
+    "snow": 24,
+    "swamp": 12,
+    "grass": 25,
+    "lava": 12,
+    "dirt": 24,
+    "rough": 9,
+    "sand": 5
+   },
+   "mask": [
+    "VVV",
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avghell0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "kennels",
+   "n": 12,
+   "terrains": {
+    "lava": 11,
+    "subterra": 1
+   },
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/subgates/avtcave2": {
+   "type": "subterraneanGate",
+   "subtype": "object",
+   "n": 35,
+   "terrains": {
+    "snow": 35
+   },
+   "mask": [
+    "VVBV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avggogs0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hallOfSins",
+   "n": 11,
+   "terrains": {
+    "lava": 8,
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avswar20": {
+   "type": "schoolOfWar",
+   "subtype": "schoolOfWar",
+   "n": 262,
+   "terrains": {
+    "subterra": 78,
+    "snow": 43,
+    "dirt": 34,
+    "lava": 26,
+    "sand": 4,
+    "rough": 18,
+    "grass": 44,
+    "swamp": 15
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "BBBB",
+    "VBAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/idoloffortune/avsidls0": {
+   "type": "idolOfFortune",
+   "subtype": "idolOfFortune",
+   "n": 54,
+   "terrains": {
+    "snow": 54
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/witchhut/avswtcs0": {
+   "type": "witchHut",
+   "subtype": "witchHut",
+   "n": 35,
+   "terrains": {
+    "snow": 35
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/skeletontransformer/avxsktrs": {
+   "type": "skeletonTransformer",
+   "subtype": "skeletonTransformer",
+   "n": 79,
+   "terrains": {
+    "subterra": 70,
+    "dirt": 9
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/warehouses/avwrhsmc": {
+   "type": "warehouses",
+   "subtype": "mercuryWarehouse",
+   "n": 67,
+   "terrains": {
+    "snow": 10,
+    "subterra": 27,
+    "lava": 3,
+    "grass": 12,
+    "dirt": 7,
+    "rough": 5,
+    "sand": 2,
+    "swamp": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsuniv0": {
+   "type": "university",
+   "subtype": "object",
+   "n": 28,
+   "terrains": {
+    "snow": 4,
+    "grass": 7,
+    "subterra": 8,
+    "lava": 3,
+    "dirt": 3,
+    "swamp": 2,
+    "sand": 1
+   },
+   "mask": [
+    "VBBBV",
+    "VBBBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "highlands/map/dwellings/highlands5": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "highlandsLevel5",
+   "n": 4,
+   "terrains": {
+    "subterra": 1,
+    "snow": 2,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgsieg0": {
+   "type": "warMachineFactory",
+   "subtype": "object",
+   "n": 111,
+   "terrains": {
+    "snow": 16,
+    "subterra": 42,
+    "dirt": 24,
+    "lava": 9,
+    "swamp": 4,
+    "grass": 11,
+    "rough": 5
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsmarl": {
+   "type": "marlettoTower",
+   "subtype": "marlettoTower",
+   "n": 338,
+   "terrains": {
+    "snow": 49,
+    "subterra": 99,
+    "swamp": 23,
+    "grass": 61,
+    "dirt": 49,
+    "lava": 37,
+    "sand": 9,
+    "rough": 11
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxreds0": {
+   "type": "redwoodObservatory",
+   "subtype": "redwoodObservatory",
+   "n": 50,
+   "terrains": {
+    "snow": 50
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmwwsn0": {
+   "type": "waterWheel",
+   "subtype": "waterWheel",
+   "n": 63,
+   "terrains": {
+    "snow": 63
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "BBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgcycl0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cyclopsCave",
+   "n": 16,
+   "terrains": {
+    "subterra": 4,
+    "rough": 12
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/learningstone/avsgzbs0": {
+   "type": "learningStone",
+   "subtype": "learningStone",
+   "n": 92,
+   "terrains": {
+    "snow": 92
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxpssn": {
+   "type": "tradingPost",
+   "subtype": "object",
+   "n": 27,
+   "terrains": {
+    "snow": 27
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgmage0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mageTower",
+   "n": 32,
+   "terrains": {
+    "snow": 15,
+    "grass": 6,
+    "sand": 4,
+    "dirt": 5,
+    "subterra": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/tavern/avxtvrs0": {
+   "type": "tavern",
+   "subtype": "object",
+   "n": 56,
+   "terrains": {
+    "snow": 56
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/denofthieves/avxdens0": {
+   "type": "denOfThieves",
+   "subtype": "object",
+   "n": 54,
+   "terrains": {
+    "snow": 54
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxseer0": {
+   "type": "seerHut",
+   "subtype": "0",
+   "n": 46,
+   "terrains": {
+    "subterra": 8,
+    "lava": 4,
+    "grass": 11,
+    "snow": 11,
+    "dirt": 8,
+    "rough": 1,
+    "swamp": 3
+   },
+   "mask": [
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/treeofknowledge/avxtrks0": {
+   "type": "treeOfKnowledge",
+   "subtype": "treeOfKnowledge",
+   "n": 27,
+   "terrains": {
+    "snow": 27
+   },
+   "mask": [
+    "VBV",
+    "VBV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw7": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "summoningWhirpool",
+   "n": 11,
+   "terrains": {
+    "subterra": 7,
+    "grass": 1,
+    "sand": 1,
+    "lava": 2
+   },
+   "mask": [
+    "VVV",
+    "VBV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avtmyst0": {
+   "type": "mysticalGarden",
+   "subtype": "mysticalGarden",
+   "n": 272,
+   "terrains": {
+    "swamp": 60,
+    "grass": 212
+   },
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxl3sh0": {
+   "type": "shrineOfMagicLevel3",
+   "subtype": "shrineOfMagicLevel3",
+   "n": 195,
+   "terrains": {
+    "subterra": 65,
+    "grass": 28,
+    "rough": 16,
+    "lava": 11,
+    "swamp": 13,
+    "dirt": 27,
+    "sand": 8,
+    "snow": 27
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw6": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "yuanTiPalace",
+   "n": 13,
+   "terrains": {
+    "subterra": 9,
+    "snow": 1,
+    "lava": 2,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VBV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgbkni0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hallOfDarkness",
+   "n": 24,
+   "terrains": {
+    "subterra": 9,
+    "dirt": 10,
+    "sand": 3,
+    "rough": 2
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVVV",
+    "VVBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/birthingpit": {
+   "type": "creatureGeneratorSpecial",
+   "subtype": "birthingPit",
+   "n": 7,
+   "terrains": {
+    "subterra": 6,
+    "lava": 1
+   },
+   "mask": [
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw10": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "reef",
+   "n": 9,
+   "terrains": {
+    "subterra": 7,
+    "sand": 1,
+    "lava": 1
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw11": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "waterdeepPool",
+   "n": 7,
+   "terrains": {
+    "subterra": 4,
+    "snow": 1,
+    "sand": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgdfly0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "serpentFlyHive",
+   "n": 13,
+   "terrains": {
+    "swamp": 2,
+    "snow": 1,
+    "subterra": 5,
+    "rough": 4,
+    "grass": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw5": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "coralCavern",
+   "n": 15,
+   "terrains": {
+    "subterra": 8,
+    "snow": 1,
+    "grass": 2,
+    "sand": 3,
+    "lava": 1
+   },
+   "mask": [
+    "VVV",
+    "VBV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsfntn0": {
+   "type": "fountainOfFortune",
+   "subtype": "fountainOfFortune",
+   "n": 100,
+   "terrains": {
+    "grass": 46,
+    "swamp": 18,
+    "dirt": 36
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgbone0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dragonVault",
+   "n": 19,
+   "terrains": {
+    "subterra": 7,
+    "dirt": 11,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw12": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "crimsonPool",
+   "n": 6,
+   "terrains": {
+    "subterra": 6
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsring0": {
+   "type": "faerieRing",
+   "subtype": "faerieRing",
+   "n": 107,
+   "terrains": {
+    "grass": 50,
+    "swamp": 16,
+    "dirt": 41
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsclvs0": {
+   "type": "swanPond",
+   "subtype": "swanPond",
+   "n": 16,
+   "terrains": {
+    "swamp": 16
+   },
+   "mask": [
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avglich0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mausoleum",
+   "n": 16,
+   "terrains": {
+    "subterra": 3,
+    "sand": 1,
+    "dirt": 10,
+    "swamp": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw3": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "reefTunnel",
+   "n": 8,
+   "terrains": {
+    "subterra": 7,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VBV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxfyth0": {
+   "type": "fountainOfYouth",
+   "subtype": "fountainOfYouth",
+   "n": 77,
+   "terrains": {
+    "grass": 37,
+    "swamp": 14,
+    "dirt": 26
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/mines/avmsaws0": {
+   "type": "mine",
+   "subtype": "sawmill",
+   "n": 34,
+   "terrains": {
+    "swamp": 34
+   },
+   "mask": [
+    "VVVVV",
+    "VBBBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/warehouses/avwrhssf": {
+   "type": "warehouses",
+   "subtype": "sulfurWarehouse",
+   "n": 57,
+   "terrains": {
+    "swamp": 5,
+    "grass": 7,
+    "subterra": 18,
+    "dirt": 10,
+    "lava": 2,
+    "sand": 4,
+    "rough": 1,
+    "snow": 10
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmorsw0": {
+   "type": "mine",
+   "subtype": "orePit",
+   "n": 34,
+   "terrains": {
+    "swamp": 34
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsclvg0": {
+   "type": "swanPond",
+   "subtype": "swanPond",
+   "n": 52,
+   "terrains": {
+    "grass": 52
+   },
+   "mask": [
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxoblb": {
+   "type": "obelisk",
+   "subtype": "object",
+   "n": 24,
+   "terrains": {
+    "swamp": 24
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgbasl0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "basiliskPit",
+   "n": 11,
+   "terrains": {
+    "swamp": 3,
+    "subterra": 4,
+    "rough": 1,
+    "grass": 3
+   },
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxcfds0": {
+   "type": "campfire",
+   "subtype": "campfire",
+   "n": 991,
+   "terrains": {
+    "subterra": 908,
+    "sand": 83
+   },
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxcfsn0": {
+   "type": "campfire",
+   "subtype": "campfire",
+   "n": 344,
+   "terrains": {
+    "snow": 344
+   },
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmwndd0": {
+   "type": "windmill",
+   "subtype": "windmill",
+   "n": 206,
+   "terrains": {
+    "dirt": 39,
+    "subterra": 78,
+    "lava": 21,
+    "rock": 4,
+    "rough": 6,
+    "grass": 50,
+    "swamp": 7,
+    "sand": 1
+   },
+   "mask": [
+    "VVVVV",
+    "VVVVV",
+    "VVVAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmwmsn0": {
+   "type": "windmill",
+   "subtype": "windmill",
+   "n": 35,
+   "terrains": {
+    "snow": 35
+   },
+   "mask": [
+    "VVVVV",
+    "VVVVV",
+    "VVVAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/trees/avrdtr03": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 79,
+   "terrains": {
+    "grass": 26,
+    "rough": 32,
+    "dirt": 13,
+    "swamp": 8
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBBV"
+   ]
+  },
+  "hota/trees/avlswt25": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 27,
+   "terrains": {
+    "grass": 5,
+    "dirt": 6,
+    "rough": 14,
+    "swamp": 2
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/trees/avlswt20": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 22,
+   "terrains": {
+    "grass": 7,
+    "dirt": 3,
+    "rough": 12
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/trees/avlswt26": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 30,
+   "terrains": {
+    "grass": 4,
+    "rough": 18,
+    "dirt": 8
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "shallowscraters/xvisl01": {
+   "type": "shallowsisland",
+   "subtype": "object",
+   "n": 22,
+   "terrains": {
+    "dirt": 4,
+    "grass": 12,
+    "lava": 1,
+    "snow": 3,
+    "sand": 1,
+    "rough": 1
+   },
+   "mask": [
+    "VBV",
+    "BBB",
+    "BBV"
+   ]
+  },
+  "hota/trees/avlswt22": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 29,
+   "terrains": {
+    "dirt": 5,
+    "rough": 19,
+    "grass": 4,
+    "swamp": 1
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/trees/avlswt21": {
+   "type": "hotaMaples",
+   "subtype": "hotaMaples",
+   "n": 33,
+   "terrains": {
+    "dirt": 2,
+    "grass": 11,
+    "rough": 17,
+    "swamp": 3
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "shallowstoxicmountains/xaltgrmt3": {
+   "type": "shallowsisland",
+   "subtype": "object",
+   "n": 7,
+   "terrains": {
+    "rough": 1,
+    "grass": 4,
+    "lava": 1,
+    "snow": 1
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBBV"
+   ]
+  },
+  "shallowscraters/xavlmtvo2": {
+   "type": "shallowsisland",
+   "subtype": "object",
+   "n": 5,
+   "terrains": {
+    "dirt": 1,
+    "grass": 4
+   },
+   "mask": [
+    "VVVVVV",
+    "0VBBBB",
+    "0BBBBB",
+    "0BBBVV"
+   ]
+  },
+  "avlskul0": {
+   "type": "skull",
+   "subtype": "object",
+   "n": 62,
+   "terrains": {
+    "rough": 53,
+    "sand": 7,
+    "dirt": 1,
+    "grass": 1
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "avlmd2r0": {
+   "type": "mound",
+   "subtype": "object",
+   "n": 21,
+   "terrains": {
+    "rough": 21
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "avxseeb0": {
+   "type": "seerHut",
+   "subtype": "2",
+   "n": 38,
+   "terrains": {
+    "subterra": 8,
+    "snow": 9,
+    "grass": 8,
+    "dirt": 7,
+    "swamp": 3,
+    "rough": 1,
+    "rock": 1,
+    "lava": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgogr0": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 12,
+   "terrains": {
+    "grass": 12
+   },
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/dwellings/avgfngrm": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "ziggurat",
+   "n": 4,
+   "terrains": {
+    "subterra": 4
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avggolm0": {
+   "type": "creatureGeneratorSpecial",
+   "subtype": "golemFactory",
+   "n": 21,
+   "terrains": {
+    "grass": 2,
+    "snow": 8,
+    "sand": 5,
+    "subterra": 1,
+    "dirt": 4,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgtitn0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cloudTemple",
+   "n": 36,
+   "terrains": {
+    "grass": 1,
+    "lava": 1,
+    "snow": 18,
+    "subterra": 7,
+    "sand": 2,
+    "dirt": 6,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VBV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgnaga0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "goldenPavilion",
+   "n": 30,
+   "terrains": {
+    "grass": 1,
+    "snow": 14,
+    "subterra": 11,
+    "sand": 1,
+    "dirt": 3
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVBB",
+    "VVBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "dwellings/tower/mapdragonfactory": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mdtDragonFactory",
+   "n": 39,
+   "terrains": {
+    "grass": 2,
+    "snow": 18,
+    "subterra": 6,
+    "sand": 7,
+    "rough": 1,
+    "dirt": 5
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxtrek0": {
+   "type": "treeOfKnowledge",
+   "subtype": "treeOfKnowledge",
+   "n": 53,
+   "terrains": {
+    "grass": 32,
+    "dirt": 21
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/factory/mapobjects/dwellings/avgworm": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "factoryLevel5",
+   "n": 7,
+   "terrains": {
+    "subterra": 6,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "kremlin/map/dwellings/leshyglade": {
+   "type": "rusLeshyGrade",
+   "subtype": "rusLeshyGrade",
+   "n": 4,
+   "terrains": {
+    "grass": 3,
+    "rough": 1
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avggeni0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfWishes",
+   "n": 48,
+   "terrains": {
+    "grass": 1,
+    "snow": 23,
+    "subterra": 9,
+    "sand": 9,
+    "dirt": 6
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "kremlin/map/dwellings/covenhill": {
+   "type": "rusCoven",
+   "subtype": "rusCovenHill",
+   "n": 5,
+   "terrains": {
+    "grass": 5
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVVV",
+    "VABB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgtrog0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "warren",
+   "n": 22,
+   "terrains": {
+    "subterra": 19,
+    "dirt": 3
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avggdrg0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dragonCliffs",
+   "n": 22,
+   "terrains": {
+    "subterra": 9,
+    "grass": 9,
+    "sand": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "cathedral/creatures/dwellings/avwcath07": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cathedralLevel7",
+   "n": 19,
+   "terrains": {
+    "grass": 1,
+    "dirt": 8,
+    "subterra": 5,
+    "swamp": 3,
+    "sand": 2
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avg2uni": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "unicornGlade",
+   "n": 19,
+   "terrains": {
+    "subterra": 12,
+    "grass": 5,
+    "lava": 1,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/hillfort/minifort": {
+   "type": "miniHillFort",
+   "subtype": "miniHillFort",
+   "n": 15,
+   "terrains": {
+    "grass": 15
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "dwellings/rampart/maptreehouse": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mdtTreehouse",
+   "n": 12,
+   "terrains": {
+    "subterra": 7,
+    "grass": 4,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "cathedral/creatures/dwellings/avwcath06": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cathedralLevel6",
+   "n": 7,
+   "terrains": {
+    "grass": 1,
+    "dirt": 5,
+    "subterra": 1
+   },
+   "mask": [
+    "VVV",
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "courtyard/map/lv2": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "alchemyTower",
+   "n": 5,
+   "terrains": {
+    "subterra": 3,
+    "grass": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgelf0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "homestead",
+   "n": 12,
+   "terrains": {
+    "subterra": 5,
+    "sand": 3,
+    "grass": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgmant0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "manticoreLair",
+   "n": 16,
+   "terrains": {
+    "subterra": 13,
+    "dirt": 3
+   },
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgmino0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "labyrinth",
+   "n": 19,
+   "terrains": {
+    "subterra": 15,
+    "dirt": 4
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgrdrg0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dragonCave",
+   "n": 24,
+   "terrains": {
+    "subterra": 12,
+    "dirt": 12
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "haven/adventure-map/hav06map": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "havD06B",
+   "n": 15,
+   "terrains": {
+    "subterra": 11,
+    "lava": 2,
+    "sand": 2
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "dwellings/dungeon/mapprimevalmaw": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mdtPrimevalMaw",
+   "n": 19,
+   "terrains": {
+    "subterra": 11,
+    "dirt": 8
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "haven/adventure-map/hav07map": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "havD07",
+   "n": 13,
+   "terrains": {
+    "subterra": 8,
+    "grass": 1,
+    "sand": 3,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avggrem0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "workshop",
+   "n": 13,
+   "terrains": {
+    "snow": 9,
+    "lava": 2,
+    "subterra": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxpost0": {
+   "type": "tradingPostDUPLICATE",
+   "subtype": "object",
+   "n": 93,
+   "terrains": {
+    "dirt": 37,
+    "grass": 56
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "haven/adventure-map/hav05map": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "havD05",
+   "n": 10,
+   "terrains": {
+    "subterra": 7,
+    "lava": 1,
+    "snow": 1,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/wateringplace/avwtplce": {
+   "type": "wateringPlace",
+   "subtype": "wateringPlace",
+   "n": 13,
+   "terrains": {
+    "rough": 13
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmcrrf0": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 12,
+   "terrains": {
+    "rough": 12
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "desertdefs/fountainofyouth": {
+   "type": "fountainOfYouth",
+   "subtype": "fountainOfYouth",
+   "n": 17,
+   "terrains": {
+    "rough": 11,
+    "sand": 6
+   },
+   "mask": [
+    "VVVV",
+    "VVBB",
+    "VBAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "haven/adventure-map/hav04map": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "havD04",
+   "n": 6,
+   "terrains": {
+    "subterra": 2,
+    "sand": 3,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgwght0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "tombOfSouls",
+   "n": 20,
+   "terrains": {
+    "dirt": 13,
+    "subterra": 4,
+    "swamp": 3
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVVV",
+    "VVAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxwtrh0": {
+   "type": "wateringHole",
+   "subtype": "wateringHole",
+   "n": 15,
+   "terrains": {
+    "rough": 15
+   },
+   "mask": [
+    "VVVV",
+    "AAAA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxpstr0": {
+   "type": "tradingPostDUPLICATE",
+   "subtype": "object",
+   "n": 13,
+   "terrains": {
+    "rough": 13
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxoblo": {
+   "type": "obelisk",
+   "subtype": "object",
+   "n": 18,
+   "terrains": {
+    "rough": 18
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgdwrf0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dwarfCottage",
+   "n": 6,
+   "terrains": {
+    "grass": 3,
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgedr0": {
+   "type": "mine",
+   "subtype": "gemPond",
+   "n": 55,
+   "terrains": {
+    "dirt": 55
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/crates/crates10": {
+   "type": "sack",
+   "subtype": "sack",
+   "n": 16,
+   "terrains": {
+    "sand": 16
+   },
+   "mask": [
+    "VV",
+    "BB"
+   ]
+  },
+  "hota/trees/avlspl10": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 91,
+   "terrains": {
+    "sand": 90,
+    "rough": 1
+   },
+   "mask": [
+    "VBBV",
+    "VBBV",
+    "VVBB"
+   ]
+  },
+  "avlspit0": {
+   "type": "sandPit",
+   "subtype": "object",
+   "n": 112,
+   "terrains": {
+    "sand": 111,
+    "grass": 1
+   },
+   "mask": [
+    "BBB"
+   ]
+  },
+  "hota/trees/avlspl04": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 13,
+   "terrains": {
+    "sand": 13
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/highlands/hotastatic/spruces/avlhpn07": {
+   "type": "spruces",
+   "subtype": "spruces",
+   "n": 5,
+   "terrains": {
+    "dirt": 1,
+    "snow": 1,
+    "grass": 2,
+    "sand": 1
+   },
+   "mask": [
+    "VVVVV",
+    "VVBBV",
+    "VBBVV"
+   ]
+  },
+  "avxobly": {
+   "type": "obelisk",
+   "subtype": "object",
+   "n": 43,
+   "terrains": {
+    "lava": 43
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "asylum/map/dwellings/avg179": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "asylumLevel2",
+   "n": 5,
+   "terrains": {
+    "subterra": 5
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "asylum/map/dwellings/avg185": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "asylumLevel5",
+   "n": 7,
+   "terrains": {
+    "subterra": 7
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "asylum/map/dwellings/avg181": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "asylumLevel3",
+   "n": 6,
+   "terrains": {
+    "subterra": 6
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgpit0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hellHole",
+   "n": 11,
+   "terrains": {
+    "lava": 7,
+    "dirt": 1,
+    "sand": 1,
+    "subterra": 2
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avghalf": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "thatchedHut",
+   "n": 3,
+   "terrains": {
+    "lava": 2,
+    "subterra": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmorlv0": {
+   "type": "mine",
+   "subtype": "orePit",
+   "n": 33,
+   "terrains": {
+    "lava": 33
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avggarg0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "parapet",
+   "n": 18,
+   "terrains": {
+    "snow": 16,
+    "subterra": 1,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxseey0": {
+   "type": "seerHut",
+   "subtype": "1",
+   "n": 52,
+   "terrains": {
+    "snow": 14,
+    "rock": 1,
+    "rough": 2,
+    "lava": 5,
+    "grass": 6,
+    "dirt": 10,
+    "subterra": 12,
+    "swamp": 2
+   },
+   "mask": [
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "asylum/map/dwellings/avg189": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "asylumLevel7",
+   "n": 5,
+   "terrains": {
+    "subterra": 5
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgtrll": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "trollBridge",
+   "n": 5,
+   "terrains": {
+    "dirt": 1,
+    "subterra": 3,
+    "swamp": 1
+   },
+   "mask": [
+    "VVV",
+    "VBV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "cathedral/creatures/dwellings/avwcath04": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cathedralLevel4",
+   "n": 16,
+   "terrains": {
+    "lava": 2,
+    "rough": 1,
+    "dirt": 9,
+    "subterra": 3,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "cathedral/creatures/dwellings/avwcath02": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cathedralLevel2",
+   "n": 8,
+   "terrains": {
+    "lava": 1,
+    "dirt": 7
+   },
+   "mask": [
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgimp0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "impCrucible",
+   "n": 12,
+   "terrains": {
+    "lava": 11,
+    "subterra": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "fairy/map/dwellings/dwelling-7": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "ftDragonRoost",
+   "n": 3,
+   "terrains": {
+    "subterra": 2,
+    "grass": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmcrds0": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 9,
+   "terrains": {
+    "sand": 9
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "desertdefs/subterragate2": {
+   "type": "subterraneanGate",
+   "subtype": "object",
+   "n": 59,
+   "terrains": {
+    "sand": 6,
+    "subterra": 49,
+    "rock": 4
+   },
+   "mask": [
+    "VBBV",
+    "VBBV",
+    "VAVV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxosis0": {
+   "type": "oasis",
+   "subtype": "oasis",
+   "n": 6,
+   "terrains": {
+    "sand": 6
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/hillfort/miniftsd": {
+   "type": "miniHillFort",
+   "subtype": "miniHillFort",
+   "n": 14,
+   "terrains": {
+    "sand": 14
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "desertdefs/idoloffortune": {
+   "type": "idolOfFortune",
+   "subtype": "idolOfFortune",
+   "n": 7,
+   "terrains": {
+    "sand": 7
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/mysticalgarden/avtmystd": {
+   "type": "mysticalGarden",
+   "subtype": "mysticalGarden",
+   "n": 116,
+   "terrains": {
+    "dirt": 116
+   },
+   "mask": [
+    "VBV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgharp0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "harpyLoft",
+   "n": 13,
+   "terrains": {
+    "subterra": 9,
+    "dirt": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxprmd0": {
+   "type": "pyramid",
+   "subtype": "pyramid",
+   "n": 15,
+   "terrains": {
+    "sand": 15
+   },
+   "mask": [
+    "VV",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "desertdefs/temple": {
+   "type": "temple",
+   "subtype": "temple",
+   "n": 7,
+   "terrains": {
+    "sand": 7
+   },
+   "mask": [
+    "VBV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "desertdefs/campfire": {
+   "type": "campfire",
+   "subtype": "desertCampfire",
+   "n": 96,
+   "terrains": {
+    "sand": 96
+   },
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "courtyard/map/lv4": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "arsenal",
+   "n": 12,
+   "terrains": {
+    "grass": 4,
+    "subterra": 7,
+    "swamp": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "courtyard/map/lv6": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "arbours",
+   "n": 19,
+   "terrains": {
+    "grass": 14,
+    "subterra": 5
+   },
+   "mask": [
+    "VVV",
+    "VVB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "courtyard/map/lv1": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "marbleHall",
+   "n": 9,
+   "terrains": {
+    "subterra": 4,
+    "grass": 5
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapdefspavilion/scarabaltar": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "scarabAltar",
+   "n": 8,
+   "terrains": {
+    "subterra": 6,
+    "lava": 2
+   },
+   "mask": [
+    "VVV",
+    "VVA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/factory/mapobjects/dwellings/avgcoatl": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "factoryLevel7",
+   "n": 4,
+   "terrains": {
+    "subterra": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/factory/mapobjects/dwellings/avgdread": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "factoryLevel7-2",
+   "n": 11,
+   "terrains": {
+    "subterra": 6,
+    "snow": 1,
+    "sand": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/dwellings/avglprch": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "alehouse",
+   "n": 3,
+   "terrains": {
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VVB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgold0": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 15,
+   "terrains": {
+    "grass": 15
+   },
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "deathvalley/adventure-map/dwelling-6": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dvHallOfDarkness",
+   "n": 12,
+   "terrains": {
+    "grass": 3,
+    "lava": 1,
+    "snow": 3,
+    "subterra": 2,
+    "sand": 2,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "deathvalley/adventure-map/dwelling-3": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dvPyramid",
+   "n": 6,
+   "terrains": {
+    "grass": 2,
+    "lava": 1,
+    "snow": 1,
+    "sand": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/trees/tpmtree2": {
+   "type": "predatoryPlant",
+   "subtype": "predatoryPlant",
+   "n": 7,
+   "terrains": {
+    "swamp": 7
+   },
+   "mask": [
+    "VV",
+    "VB",
+    "VB"
+   ]
+  },
+  "hota/trees/tpmtree3": {
+   "type": "predatoryPlant",
+   "subtype": "predatoryPlant",
+   "n": 8,
+   "terrains": {
+    "swamp": 8
+   },
+   "mask": [
+    "VV",
+    "VB",
+    "VB"
+   ]
+  },
+  "hota/trees/tpmtree1": {
+   "type": "predatoryPlant",
+   "subtype": "predatoryPlant",
+   "n": 8,
+   "terrains": {
+    "swamp": 8
+   },
+   "mask": [
+    "VV",
+    "BB",
+    "VB"
+   ]
+  },
+  "hota/trees/tpmtree5": {
+   "type": "predatoryPlant",
+   "subtype": "predatoryPlant",
+   "n": 5,
+   "terrains": {
+    "swamp": 5
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/carnivorousplant/avswplnt": {
+   "type": "carnivorousPlant",
+   "subtype": "carnivorousPlant",
+   "n": 42,
+   "terrains": {
+    "swamp": 42
+   },
+   "mask": [
+    "VBB",
+    "VBB"
+   ]
+  },
+  "avg2ela": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfAir",
+   "n": 9,
+   "terrains": {
+    "subterra": 4,
+    "grass": 4,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "dwellings/stronghold/mapziggurat": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mdtZiggurat",
+   "n": 13,
+   "terrains": {
+    "rough": 8,
+    "subterra": 5
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgpixie": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "magicLantern",
+   "n": 4,
+   "terrains": {
+    "subterra": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avg2elw": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfWater",
+   "n": 7,
+   "terrains": {
+    "subterra": 4,
+    "dirt": 1,
+    "grass": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgangl0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "portalOfGlory",
+   "n": 19,
+   "terrains": {
+    "subterra": 4,
+    "grass": 12,
+    "rock": 2,
+    "rough": 1
+   },
+   "mask": [
+    "VVVV",
+    "VBAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "dwellings/castle/mapcathedral": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mdtCathedral",
+   "n": 16,
+   "terrains": {
+    "dirt": 2,
+    "grass": 9,
+    "subterra": 4,
+    "rough": 1
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVBB",
+    "VVBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgfdrg": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "magicForest",
+   "n": 70,
+   "terrains": {
+    "subterra": 67,
+    "sand": 3
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgazur": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "frozenCliffs",
+   "n": 77,
+   "terrains": {
+    "subterra": 77
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgcavl0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "trainingGrounds",
+   "n": 24,
+   "terrains": {
+    "dirt": 1,
+    "subterra": 7,
+    "grass": 15,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgcdrg": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "crystalCavern",
+   "n": 74,
+   "terrains": {
+    "subterra": 74
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgpike0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "guardhouse",
+   "n": 8,
+   "terrains": {
+    "dirt": 1,
+    "grass": 7
+   },
+   "mask": [
+    "VVV",
+    "VBV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avggrff0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "griffinTower",
+   "n": 15,
+   "terrains": {
+    "subterra": 2,
+    "grass": 12,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgrust": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "sulfurousLair",
+   "n": 48,
+   "terrains": {
+    "subterra": 46,
+    "sand": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgelp": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfThought",
+   "n": 13,
+   "terrains": {
+    "subterra": 8,
+    "lava": 1,
+    "grass": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgems0": {
+   "type": "mine",
+   "subtype": "gemPond",
+   "n": 66,
+   "terrains": {
+    "grass": 49,
+    "swamp": 17
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgcent0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "centaurStables",
+   "n": 4,
+   "terrains": {
+    "grass": 2,
+    "subterra": 2
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgelem0": {
+   "type": "creatureGeneratorSpecial",
+   "subtype": "elementalConflux",
+   "n": 4,
+   "terrains": {
+    "subterra": 3,
+    "grass": 1
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgswor0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "barracks",
+   "n": 23,
+   "terrains": {
+    "grass": 20,
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgpega0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "enchantedSpring",
+   "n": 10,
+   "terrains": {
+    "grass": 6,
+    "sand": 2,
+    "subterra": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "dwellings/conflux/mapdrownedhall": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mdtDrownedHall",
+   "n": 7,
+   "terrains": {
+    "subterra": 5,
+    "grass": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgunic0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "unicornGladeBig",
+   "n": 6,
+   "terrains": {
+    "grass": 4,
+    "subterra": 2
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "cathedral/creatures/dwellings/avwcath03": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cathedralLevel3",
+   "n": 18,
+   "terrains": {
+    "subterra": 5,
+    "dirt": 11,
+    "sand": 2
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avg2elf": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfFire",
+   "n": 11,
+   "terrains": {
+    "subterra": 5,
+    "lava": 2,
+    "grass": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avg2ele": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "altarOfEarth",
+   "n": 11,
+   "terrains": {
+    "subterra": 8,
+    "dirt": 2,
+    "grass": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgskel0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cursedTemple",
+   "n": 17,
+   "terrains": {
+    "dirt": 11,
+    "subterra": 6
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "cathedral/creatures/dwellings/avwcath05": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cathedralLevel5",
+   "n": 17,
+   "terrains": {
+    "subterra": 7,
+    "dirt": 9,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapdefspavilion/tomb": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "anubisTomb",
+   "n": 8,
+   "terrains": {
+    "subterra": 7,
+    "snow": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgodr0": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 42,
+   "terrains": {
+    "dirt": 42
+   },
+   "mask": [
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapdefspavilion/wadjetnest": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "wadjetNest",
+   "n": 4,
+   "terrains": {
+    "subterra": 3,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avsclvd0": {
+   "type": "swanPond",
+   "subtype": "swanPond",
+   "n": 34,
+   "terrains": {
+    "dirt": 34
+   },
+   "mask": [
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "dwellings/necropolis/mapwolfcave": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mdtWolfCave",
+   "n": 25,
+   "terrains": {
+    "dirt": 15,
+    "sand": 2,
+    "subterra": 6,
+    "rough": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/iceblock/tpicecr1": {
+   "type": "iceBlock",
+   "subtype": "iceBlock",
+   "n": 220,
+   "terrains": {
+    "snow": 220
+   },
+   "mask": [
+    "VV",
+    "BB"
+   ]
+  },
+  "hota/iceblock/tpicecr3": {
+   "type": "iceBlock",
+   "subtype": "iceBlock",
+   "n": 176,
+   "terrains": {
+    "snow": 176
+   },
+   "mask": [
+    "VV",
+    "BB"
+   ]
+  },
+  "hota/iceblock/tpicecr2": {
+   "type": "iceBlock",
+   "subtype": "iceBlock",
+   "n": 177,
+   "terrains": {
+    "snow": 176,
+    "grass": 1
+   },
+   "mask": [
+    "VV",
+    "BB"
+   ]
+  },
+  "dunes dunes/dune4": {
+   "type": "dunesMt",
+   "subtype": "object",
+   "n": 6,
+   "terrains": {
+    "grass": 1,
+    "dirt": 2,
+    "lava": 2,
+    "snow": 1
+   },
+   "mask": [
+    "VVBB",
+    "VBBB",
+    "VBBV"
+   ]
+  },
+  "hota/hillfort/miniftsn": {
+   "type": "miniHillFort",
+   "subtype": "miniHillFort",
+   "n": 19,
+   "terrains": {
+    "snow": 19
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgwyvn0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "wyvernNest",
+   "n": 15,
+   "terrains": {
+    "snow": 1,
+    "rough": 7,
+    "subterra": 3,
+    "grass": 1,
+    "swamp": 3
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avggorg0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "gorgonLair",
+   "n": 20,
+   "terrains": {
+    "snow": 1,
+    "rough": 10,
+    "subterra": 4,
+    "swamp": 4,
+    "grass": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "courtyard/map/lv7": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "scaryCavity",
+   "n": 12,
+   "terrains": {
+    "rough": 2,
+    "grass": 5,
+    "subterra": 5
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "shallowsmountains/xfdtd0003": {
+   "type": "searocks",
+   "subtype": "object",
+   "n": 13,
+   "terrains": {
+    "grass": 1,
+    "lava": 4,
+    "snow": 2,
+    "sand": 4,
+    "dirt": 2
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBBV"
+   ]
+  },
+  "shallowstoxicmountains/xaltgrmt1": {
+   "type": "shallowsisland",
+   "subtype": "object",
+   "n": 6,
+   "terrains": {
+    "grass": 3,
+    "sand": 1,
+    "lava": 2
+   },
+   "mask": [
+    "VVVVVV",
+    "VBBBBB",
+    "VBBBBB",
+    "VBBBVV"
+   ]
+  },
+  "avgzomb0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "graveyard",
+   "n": 9,
+   "terrains": {
+    "dirt": 5,
+    "subterra": 4
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "preserve/map/dwellings/avgpre5": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "preserveLevel5",
+   "n": 6,
+   "terrains": {
+    "grass": 3,
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "preserve/map/dwellings/avgpre6": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "preserveLevel6",
+   "n": 6,
+   "terrains": {
+    "grass": 2,
+    "sand": 1,
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "BBB",
+    "BBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "haven/adventure-map/hav06_1map": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "havD06",
+   "n": 6,
+   "terrains": {
+    "lava": 1,
+    "sand": 3,
+    "subterra": 1,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgmonk0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "monastery",
+   "n": 10,
+   "terrains": {
+    "grass": 10
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/highlands/hotastatic/spruces/avlhpn09": {
+   "type": "spruces",
+   "subtype": "spruces",
+   "n": 3,
+   "terrains": {
+    "sand": 1,
+    "rough": 2
+   },
+   "mask": [
+    "VVVVV",
+    "VBBVV",
+    "VVBBV"
+   ]
+  },
+  "hota/trees/avlspl08": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 9,
+   "terrains": {
+    "sand": 9
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/pillars/avlcod01": {
+   "type": "pillars",
+   "subtype": "pillars",
+   "n": 4,
+   "terrains": {
+    "sand": 4
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "VB"
+   ]
+  },
+  "avgbhld0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "pillarOfEyes",
+   "n": 15,
+   "terrains": {
+    "dirt": 7,
+    "subterra": 8
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/hillfort/miniftrg": {
+   "type": "miniHillFort",
+   "subtype": "miniHillFort",
+   "n": 11,
+   "terrains": {
+    "rough": 11
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avghydr0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hydraPond",
+   "n": 19,
+   "terrains": {
+    "rough": 10,
+    "swamp": 4,
+    "grass": 5
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "desertdefs/mines/desertgoldm": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 18,
+   "terrains": {
+    "sand": 18
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "dwellings/fortress/mapswamphut": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mdtSwampHut",
+   "n": 22,
+   "terrains": {
+    "rough": 7,
+    "swamp": 6,
+    "subterra": 5,
+    "grass": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw9": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "ancientWhirpool",
+   "n": 8,
+   "terrains": {
+    "sand": 4,
+    "rock": 1,
+    "subterra": 2,
+    "grass": 1
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVVV",
+    "VVVV",
+    "VVBV",
+    "VVAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgorf0": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 19,
+   "terrains": {
+    "rough": 19
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgbhmt0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "behemothCrag",
+   "n": 26,
+   "terrains": {
+    "rough": 16,
+    "subterra": 7,
+    "grass": 3
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgcros0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "archersTower",
+   "n": 8,
+   "terrains": {
+    "grass": 7,
+    "subterra": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgwolf0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "wolfPen",
+   "n": 6,
+   "terrains": {
+    "rough": 3,
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VBV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgorcg0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "orcTower",
+   "n": 6,
+   "terrains": {
+    "rough": 3,
+    "subterra": 2,
+    "grass": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/mines/avmgddn0": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 14,
+   "terrains": {
+    "sand": 14
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgmdsa0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "medusaChapel",
+   "n": 14,
+   "terrains": {
+    "dirt": 6,
+    "subterra": 8
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/iceblock/tpicecr4": {
+   "type": "iceBlock",
+   "subtype": "iceBlock",
+   "n": 36,
+   "terrains": {
+    "snow": 36
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/pillars/avlcof04": {
+   "type": "rubble",
+   "subtype": "rubble",
+   "n": 3,
+   "terrains": {
+    "sand": 3
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/trees/avlyuc60": {
+   "type": "yuccaTrees",
+   "subtype": "yuccaTrees2",
+   "n": 13,
+   "terrains": {
+    "sand": 13
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "avmgosn0": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 30,
+   "terrains": {
+    "snow": 30
+   },
+   "mask": [
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmcrsn0": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 30,
+   "terrains": {
+    "snow": 30
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgods0": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 25,
+   "terrains": {
+    "sand": 25
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "desertdefs/treeofknowledge": {
+   "type": "treeOfKnowledge",
+   "subtype": "desertTreeOfKnowledge",
+   "n": 11,
+   "terrains": {
+    "sand": 11
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VVA"
+   ],
+   "visitableFrom": [
+    "+++",
+    "+-+",
+    "+++"
+   ]
+  },
+  "highlands/map/dwellings/highlands4": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "highlandsLevel4",
+   "n": 8,
+   "terrains": {
+    "snow": 5,
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/libraryofenlightenment/avslibs0": {
+   "type": "libraryOfEnlightenment",
+   "subtype": "libraryOfEnlightenment",
+   "n": 12,
+   "terrains": {
+    "snow": 12
+   },
+   "mask": [
+    "VVVVV",
+    "VBBBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/trees/avlspl05": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 8,
+   "terrains": {
+    "sand": 8
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/trees/avlspl07": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 7,
+   "terrains": {
+    "sand": 7
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "avgvamp0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "estate",
+   "n": 7,
+   "terrains": {
+    "sand": 5,
+    "subterra": 1,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/seerhut/avxseee0": {
+   "type": "seerHut",
+   "subtype": "seerHutHota2",
+   "n": 45,
+   "terrains": {
+    "rough": 2,
+    "dirt": 7,
+    "grass": 10,
+    "snow": 9,
+    "subterra": 12,
+    "rock": 2,
+    "lava": 1,
+    "sand": 1,
+    "swamp": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avlswt06": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 6,
+   "terrains": {
+    "swamp": 6
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "avlswt07": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 6,
+   "terrains": {
+    "swamp": 6
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "avlswt11": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 3,
+   "terrains": {
+    "swamp": 3
+   },
+   "mask": [
+    "V",
+    "B"
+   ]
+  },
+  "avlswt17": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 14,
+   "terrains": {
+    "swamp": 10,
+    "rough": 4
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "avlswt00": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 14,
+   "terrains": {
+    "swamp": 14
+   },
+   "mask": [
+    "V",
+    "B"
+   ]
+  },
+  "avlswt15": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 8,
+   "terrains": {
+    "swamp": 8
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "avlswt19": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 5,
+   "terrains": {
+    "swamp": 5
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "avlswt05": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 8,
+   "terrains": {
+    "swamp": 8
+   },
+   "mask": [
+    "V",
+    "B"
+   ]
+  },
+  "avlswt01": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 6,
+   "terrains": {
+    "swamp": 5,
+    "snow": 1
+   },
+   "mask": [
+    "V",
+    "B"
+   ]
+  },
+  "avgtree0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dendroidArches",
+   "n": 5,
+   "terrains": {
+    "grass": 3,
+    "subterra": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avglzrd0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "lizardDen",
+   "n": 3,
+   "terrains": {
+    "subterra": 1,
+    "lava": 1,
+    "grass": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgshrp": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "treetopTower",
+   "n": 4,
+   "terrains": {
+    "subterra": 3,
+    "lava": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapdefspavilion/caveoffear": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "caveOfFear",
+   "n": 9,
+   "terrains": {
+    "subterra": 9
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapdefspavilion/sekhetaltar": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "sekhmetAltar",
+   "n": 5,
+   "terrains": {
+    "subterra": 4,
+    "swamp": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapdefspavilion/sphinxgarnison": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "sphinxGarnison",
+   "n": 7,
+   "terrains": {
+    "subterra": 6,
+    "swamp": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "adventure-map/rfgd5": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "rfgDwelling5",
+   "n": 7,
+   "terrains": {
+    "subterra": 6,
+    "lava": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgrog": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "rogueCavern",
+   "n": 6,
+   "terrains": {
+    "subterra": 6
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgench": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "enchantersHollow",
+   "n": 8,
+   "terrains": {
+    "subterra": 4,
+    "dirt": 1,
+    "sand": 2,
+    "snow": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "adventure-map/rfgd4": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "rfgDwelling4",
+   "n": 7,
+   "terrains": {
+    "subterra": 3,
+    "rock": 1,
+    "lava": 1,
+    "sand": 1,
+    "snow": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avgnomd": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "nomadTent",
+   "n": 13,
+   "terrains": {
+    "subterra": 8,
+    "lava": 3,
+    "dirt": 1,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "adventure-map/rfgd7a": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "rfgDwelling7",
+   "n": 15,
+   "terrains": {
+    "subterra": 11,
+    "dirt": 1,
+    "sand": 1,
+    "snow": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "adventure-map/rfgd3": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "rfgDwelling3",
+   "n": 4,
+   "terrains": {
+    "subterra": 3,
+    "lava": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "adventure-map/rfgd6a": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "rfgDwelling6",
+   "n": 6,
+   "terrains": {
+    "subterra": 4,
+    "lava": 1,
+    "snow": 1
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avggnll0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "gnollHut",
+   "n": 3,
+   "terrains": {
+    "rough": 1,
+    "swamp": 2
+   },
+   "mask": [
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avlswt10": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 12,
+   "terrains": {
+    "swamp": 12
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "hota/animals/frog_02": {
+   "type": "frog",
+   "subtype": "frog",
+   "n": 19,
+   "terrains": {
+    "swamp": 19
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "avlswt14": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 10,
+   "terrains": {
+    "swamp": 10
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "avlswt12": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 7,
+   "terrains": {
+    "swamp": 7
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "avlswt02": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 7,
+   "terrains": {
+    "swamp": 7
+   },
+   "mask": [
+    "V",
+    "B"
+   ]
+  },
+  "avlswt08": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 8,
+   "terrains": {
+    "swamp": 7,
+    "grass": 1
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "avlswt16": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 12,
+   "terrains": {
+    "swamp": 12
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "avlswt04": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 6,
+   "terrains": {
+    "swamp": 6
+   },
+   "mask": [
+    "V",
+    "B"
+   ]
+  },
+  "avlswt09": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 4,
+   "terrains": {
+    "swamp": 4
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "avlswtr5": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 25,
+   "terrains": {
+    "swamp": 21,
+    "snow": 2,
+    "lava": 1,
+    "rough": 1
+   },
+   "mask": [
+    "VVBBVV",
+    "VBBVBV"
+   ]
+  },
+  "avlswtr7": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 26,
+   "terrains": {
+    "swamp": 26
+   },
+   "mask": [
+    "VVBV",
+    "VBBB"
+   ]
+  },
+  "avlswtr1": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 7,
+   "terrains": {
+    "swamp": 6,
+    "snow": 1
+   },
+   "mask": [
+    "VVVV",
+    "VVBB",
+    "VBBV"
+   ]
+  },
+  "avlswtr4": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 57,
+   "terrains": {
+    "swamp": 55,
+    "dirt": 2
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VBBB",
+    "VVBV"
+   ]
+  },
+  "adventure-map/rfgd6b": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "rfgDwelling6B",
+   "n": 11,
+   "terrains": {
+    "subterra": 8,
+    "lava": 1,
+    "dirt": 1,
+    "snow": 1
+   },
+   "mask": [
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/cove/mapobjects/dwellings/towerza": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "towerOfTheSeas",
+   "n": 14,
+   "terrains": {
+    "swamp": 10,
+    "dirt": 3,
+    "subterra": 1
+   },
+   "mask": [
+    "00VV",
+    "00VV",
+    "VVVV",
+    "0VVV",
+    "00BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmcrsw0": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 10,
+   "terrains": {
+    "swamp": 10
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/cove/mapobjects/dwellings/nimphfo": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "waterfall",
+   "n": 6,
+   "terrains": {
+    "swamp": 3,
+    "dirt": 1,
+    "subterra": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/cove/mapobjects/dwellings/swshcamp": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "shack",
+   "n": 7,
+   "terrains": {
+    "swamp": 3,
+    "dirt": 1,
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VBV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/cove/mapobjects/dwellings/hasphtpl": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "whirpool",
+   "n": 8,
+   "terrains": {
+    "swamp": 4,
+    "subterra": 4
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VVVV",
+    "VVAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/cove/mapobjects/dwellings/nestas": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "nest",
+   "n": 9,
+   "terrains": {
+    "swamp": 5,
+    "lava": 3,
+    "subterra": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "adventure-map/rfgd7b": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "rfgDwelling7B",
+   "n": 10,
+   "terrains": {
+    "subterra": 10
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/cove/mapobjects/dwellings/fortnix": {
+   "type": "creatureGeneratorSpecial",
+   "subtype": "nixFortLarge",
+   "n": 11,
+   "terrains": {
+    "swamp": 7,
+    "dirt": 1,
+    "lava": 1,
+    "subterra": 2
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/cove/mapobjects/dwellings/haspwtpl": {
+   "type": "creatureGeneratorSpecial",
+   "subtype": "whirpoolLarge",
+   "n": 9,
+   "terrains": {
+    "swamp": 5,
+    "dirt": 2,
+    "subterra": 2
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/cove/mapobjects/dwellings/fortnixr": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "nixFort",
+   "n": 14,
+   "terrains": {
+    "swamp": 12,
+    "subterra": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/hillfort/miniftsw": {
+   "type": "miniHillFort",
+   "subtype": "miniHillFort",
+   "n": 9,
+   "terrains": {
+    "swamp": 9
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/cove/mapobjects/dwellings/fregat": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "frigate",
+   "n": 12,
+   "terrains": {
+    "swamp": 7,
+    "lava": 1,
+    "subterra": 4
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/mines/mntswpgl": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 6,
+   "terrains": {
+    "swamp": 6
+   },
+   "mask": [
+    "VBBV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw4": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hotWaterIncubator",
+   "n": 3,
+   "terrains": {
+    "subterra": 3
+   },
+   "mask": [
+    "VVBV",
+    "VVAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw2": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "shellShelter",
+   "n": 3,
+   "terrains": {
+    "subterra": 1,
+    "sand": 1,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VVB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/pillars/avlcod02": {
+   "type": "pillars",
+   "subtype": "pillars",
+   "n": 3,
+   "terrains": {
+    "sand": 3
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/trees/avlyuc50": {
+   "type": "yuccaTrees",
+   "subtype": "yuccaTrees2",
+   "n": 8,
+   "terrains": {
+    "sand": 8
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "hota/factory/mapobjects/dwellings/avgguns": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "factoryLevel6",
+   "n": 3,
+   "terrains": {
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmswds0": {
+   "type": "mine",
+   "subtype": "sawmill",
+   "n": 6,
+   "terrains": {
+    "sand": 6
+   },
+   "mask": [
+    "VVVVV",
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/factory/mapobjects/dwellings/avgauto": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "factoryLevel4",
+   "n": 7,
+   "terrains": {
+    "subterra": 6,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmords0": {
+   "type": "mine",
+   "subtype": "orePit",
+   "n": 6,
+   "terrains": {
+    "sand": 6
+   },
+   "mask": [
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "desertdefs/subterragate3": {
+   "type": "subterraneanGate",
+   "subtype": "object",
+   "n": 57,
+   "terrains": {
+    "sand": 3,
+    "subterra": 45,
+    "rock": 9
+   },
+   "mask": [
+    "VBBV",
+    "VBBV",
+    "VAVV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avltrro2": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 3,
+   "terrains": {
+    "rough": 3
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VVBB"
+   ]
+  },
+  "avltrro0": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 4,
+   "terrains": {
+    "rough": 4
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VVBB"
+   ]
+  },
+  "avltro09": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 3,
+   "terrains": {
+    "rough": 3
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "avxsanc0": {
+   "type": "sanctuary",
+   "subtype": "object",
+   "n": 9,
+   "terrains": {
+    "grass": 5,
+    "rough": 1,
+    "snow": 1,
+    "dirt": 1,
+    "lava": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "deathvalley/adventure-map/dwelling-7": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dvTemple",
+   "n": 3,
+   "terrains": {
+    "lava": 1,
+    "snow": 1,
+    "subterra": 1
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avtwagn0": {
+   "type": "wagon",
+   "subtype": "wagon",
+   "n": 20,
+   "terrains": {
+    "rough": 20
+   },
+   "mask": [
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avxprsn0": {
+   "type": "prison",
+   "subtype": "prison",
+   "n": 749,
+   "terrains": {
+    "grass": 69,
+    "lava": 24,
+    "swamp": 38,
+    "dirt": 80,
+    "sand": 122,
+    "subterra": 280,
+    "snow": 70,
+    "rough": 66
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avlswt13": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 3,
+   "terrains": {
+    "swamp": 3
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "avlman20": {
+   "type": "mandrake",
+   "subtype": "object",
+   "n": 8,
+   "terrains": {
+    "swamp": 8
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "avlman40": {
+   "type": "mandrake",
+   "subtype": "object",
+   "n": 15,
+   "terrains": {
+    "swamp": 15
+   },
+   "mask": [
+    "BBB"
+   ]
+  },
+  "hota/bulwark/mapobjects/static/avlglc04": {
+   "type": "glacier",
+   "subtype": "glacier",
+   "n": 190,
+   "terrains": {
+    "snow": 181,
+    "dirt": 2,
+    "rough": 2,
+    "grass": 3,
+    "sand": 2
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBBV"
+   ]
+  },
+  "hota/bulwark/mapobjects/static/avlglc03": {
+   "type": "glacier",
+   "subtype": "glacier",
+   "n": 279,
+   "terrains": {
+    "snow": 279
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VVBB"
+   ]
+  },
+  "hota/bulwark/mapobjects/static/avlglc05": {
+   "type": "glacier",
+   "subtype": "glacier",
+   "n": 65,
+   "terrains": {
+    "snow": 65
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VVBB"
+   ]
+  },
+  "hota/bulwark/mapobjects/static/avlglc02": {
+   "type": "glacier",
+   "subtype": "glacier",
+   "n": 259,
+   "terrains": {
+    "snow": 252,
+    "dirt": 3,
+    "grass": 3,
+    "swamp": 1
+   },
+   "mask": [
+    "VVVVVV",
+    "VVBBBB",
+    "VBBBBB",
+    "VBBBVV"
+   ]
+  },
+  "hota/bulwark/mapobjects/static/avlglc01": {
+   "type": "glacier",
+   "subtype": "glacier",
+   "n": 271,
+   "terrains": {
+    "snow": 271
+   },
+   "mask": [
+    "VVVVVV",
+    "VBBBBV",
+    "VBBBBB",
+    "VVVBBB"
+   ]
+  },
+  "hota/highlands/hotastatic/waterfall/avlwtf00": {
+   "type": "highlandsWaterfalls",
+   "subtype": "waterfalls",
+   "n": 3,
+   "terrains": {
+    "snow": 1,
+    "grass": 1,
+    "dirt": 1
+   },
+   "mask": [
+    "VVVVV",
+    "VVBBV",
+    "VBBBV",
+    "VVVVV"
+   ]
+  },
+  "hota/wasteland/hotastatic/bones/jaws": {
+   "type": "jaw",
+   "subtype": "jaw",
+   "n": 114,
+   "terrains": {
+    "sand": 113,
+    "swamp": 1
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "hota/bulwark/mapobjects/static/avlglc06": {
+   "type": "glacier",
+   "subtype": "glacier",
+   "n": 53,
+   "terrains": {
+    "snow": 53
+   },
+   "mask": [
+    "VVVV",
+    "VVBB",
+    "VBBV"
+   ]
+  },
+  "hota/wasteland/vanillastatic/bones/avlskul3": {
+   "type": "skull",
+   "subtype": "hotaSkulls",
+   "n": 13,
+   "terrains": {
+    "sand": 13
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "hota/trees/avlyuc40": {
+   "type": "yuccaTrees",
+   "subtype": "yuccaTrees2",
+   "n": 7,
+   "terrains": {
+    "sand": 7
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "hota/animals/pig": {
+   "type": "pig",
+   "subtype": "pig",
+   "n": 95,
+   "terrains": {
+    "rough": 25,
+    "grass": 35,
+    "dirt": 34,
+    "sand": 1
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "hota/bulwark/mapobjects/interactive/avmtrap0a": {
+   "type": "trapperLodge",
+   "subtype": "trapperLodge",
+   "n": 141,
+   "terrains": {
+    "snow": 141
+   },
+   "mask": [
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/bulwark/mapobjects/dwellings/avgmmth0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mammothStalls",
+   "n": 7,
+   "terrains": {
+    "snow": 6,
+    "subterra": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapdefspavilion/village": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "whipperVillage",
+   "n": 3,
+   "terrains": {
+    "sand": 1,
+    "subterra": 2
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/mines/avmcrdn0": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 4,
+   "terrains": {
+    "sand": 4
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "shallowsmountains/xfdtd0001": {
+   "type": "searocks",
+   "subtype": "object",
+   "n": 3,
+   "terrains": {
+    "lava": 2,
+    "snow": 1
+   },
+   "mask": [
+    "VVVVVV",
+    "VVBBBB",
+    "VBBBBB",
+    "BBBBVV"
+   ]
+  },
+  "hota/stonysphere/udrock01": {
+   "type": "stonySphere",
+   "subtype": "stonySphere",
+   "n": 3,
+   "terrains": {
+    "subterra": 3
+   },
+   "mask": [
+    "VB"
+   ]
+  },
+  "mapdefspavilion/tent": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "camelTent",
+   "n": 4,
+   "terrains": {
+    "subterra": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avlxds01": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 112,
+   "terrains": {
+    "sand": 112
+   },
+   "mask": [
+    "BB",
+    "BB"
+   ]
+  },
+  "avlxds09": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 44,
+   "terrains": {
+    "sand": 44
+   },
+   "mask": [
+    "BBB"
+   ]
+  },
+  "hota/trees/avlspl02": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 12,
+   "terrains": {
+    "sand": 12
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/trees/avlspl01": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 14,
+   "terrains": {
+    "sand": 14
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/wasteland/vanillastatic/bones/avlskul2": {
+   "type": "skull",
+   "subtype": "hotaSkulls",
+   "n": 16,
+   "terrains": {
+    "sand": 16
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "avlxds12": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 16,
+   "terrains": {
+    "sand": 16
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "hota/wasteland/vanillastatic/bones/avlskul1": {
+   "type": "skull",
+   "subtype": "hotaSkulls",
+   "n": 16,
+   "terrains": {
+    "sand": 16
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "avlxds10": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 15,
+   "terrains": {
+    "sand": 15
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "avlxds08": {
+   "type": "desertHills",
+   "subtype": "object",
+   "n": 45,
+   "terrains": {
+    "sand": 45
+   },
+   "mask": [
+    "BBB"
+   ]
+  },
+  "hota/wasteland/vanillastatic/bones/avlwcsk0": {
+   "type": "skull",
+   "subtype": "hotaSkulls",
+   "n": 10,
+   "terrains": {
+    "sand": 10
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "hota/trees/avlspl06": {
+   "type": "palms",
+   "subtype": "palms",
+   "n": 14,
+   "terrains": {
+    "sand": 14
+   },
+   "mask": [
+    "VV",
+    "VB"
+   ]
+  },
+  "courtyard/map/lv5": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dodoBurgh",
+   "n": 9,
+   "terrains": {
+    "grass": 5,
+    "subterra": 4
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "courtyard/map/lv3": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "furnace",
+   "n": 5,
+   "terrains": {
+    "grass": 4,
+    "subterra": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/bulwark/mapobjects/dwellings/avgjotn0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "frosthome",
+   "n": 6,
+   "terrains": {
+    "snow": 6
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/bulwark/mapobjects/dwellings/avgkbl01": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "colliery",
+   "n": 8,
+   "terrains": {
+    "snow": 2,
+    "subterra": 6
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/bulwark/mapobjects/mines/avmgosn1": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 16,
+   "terrains": {
+    "snow": 16
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/bulwark/mapobjects/dwellings/avgyeti0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "mountainEmbassy",
+   "n": 5,
+   "terrains": {
+    "snow": 5
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avmgosw0": {
+   "type": "mine",
+   "subtype": "goldMine",
+   "n": 9,
+   "terrains": {
+    "swamp": 9
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/bulwark/mapobjects/dwellings/avgagrl0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "frigidSpur",
+   "n": 5,
+   "terrains": {
+    "snow": 4,
+    "lava": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/tribaltotem": {
+   "type": "idolOfFortune",
+   "subtype": "tribalTotem",
+   "n": 746,
+   "terrains": {
+    "dirt": 95,
+    "lava": 71,
+    "grass": 99,
+    "swamp": 42,
+    "subterra": 284,
+    "snow": 130,
+    "rough": 21,
+    "sand": 4
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/stones/avlrk5s0": {
+   "type": "pileOfStones",
+   "subtype": "pileOfStones",
+   "n": 38,
+   "terrains": {
+    "swamp": 38
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "avlswtr3": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 10,
+   "terrains": {
+    "swamp": 10
+   },
+   "mask": [
+    "VVVV",
+    "VVBB",
+    "VBBV"
+   ]
+  },
+  "avlswtr0": {
+   "type": "treesDUPLICATE",
+   "subtype": "object",
+   "n": 13,
+   "terrains": {
+    "swamp": 13
+   },
+   "mask": [
+    "VVVV",
+    "VBBV",
+    "VVBB"
+   ]
+  },
+  "deathvalley/adventure-map/dwelling-5": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "dvAbode",
+   "n": 3,
+   "terrains": {
+    "snow": 2,
+    "subterra": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/hillfort/miniftsb": {
+   "type": "miniHillFort",
+   "subtype": "miniHillFort",
+   "n": 38,
+   "terrains": {
+    "subterra": 38
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "preserve/map/dwellings/avgpre4": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "preserveLevel4",
+   "n": 6,
+   "terrains": {
+    "rough": 1,
+    "subterra": 3,
+    "grass": 2
+   },
+   "mask": [
+    "VVV",
+    "BBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/trees/tpmtree6": {
+   "type": "predatoryPlant",
+   "subtype": "predatoryPlant",
+   "n": 4,
+   "terrains": {
+    "swamp": 4
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/trees/tpmtree4": {
+   "type": "predatoryPlant",
+   "subtype": "predatoryPlant",
+   "n": 3,
+   "terrains": {
+    "swamp": 3
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "VB"
+   ]
+  },
+  "hota/shrub/avls05s1": {
+   "type": "plant",
+   "subtype": "plant",
+   "n": 14,
+   "terrains": {
+    "swamp": 14
+   },
+   "mask": [
+    "BB"
+   ]
+  },
+  "avgfbrd": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "pyre",
+   "n": 14,
+   "terrains": {
+    "subterra": 7,
+    "lava": 3,
+    "grass": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/stones/avlrk6s0": {
+   "type": "stone",
+   "subtype": "stone",
+   "n": 10,
+   "terrains": {
+    "swamp": 9,
+    "grass": 1
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "highlands/map/dwellings/avgbuls02": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "bulwarkExtra",
+   "n": 6,
+   "terrains": {
+    "snow": 3,
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "desertdefs/subterragate1": {
+   "type": "subterraneanGate",
+   "subtype": "object",
+   "n": 47,
+   "terrains": {
+    "subterra": 43,
+    "rock": 1,
+    "sand": 3
+   },
+   "mask": [
+    "VVVVV",
+    "VBBBV",
+    "VBBBV",
+    "VBABV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "cathedral/creatures/dwellings/avwcath01": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "cathedralLevel1",
+   "n": 9,
+   "terrains": {
+    "dirt": 9
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "BBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "preserve/map/dwellings/avgpre3": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "preserveLevel3",
+   "n": 5,
+   "terrains": {
+    "subterra": 2,
+    "grass": 3
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "preserve/map/dwellings/avgpre1": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "preserveLevel1",
+   "n": 10,
+   "terrains": {
+    "subterra": 6,
+    "grass": 4
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "highlands/map/dwellings/highlands2": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "highlandsLevel2",
+   "n": 4,
+   "terrains": {
+    "subterra": 2,
+    "snow": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/mines/mntswpcr": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 8,
+   "terrains": {
+    "swamp": 8
+   },
+   "mask": [
+    "VVVV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/wasteland/hotastatic/lakes/avlwloi3": {
+   "type": "tarPit",
+   "subtype": "tarPit",
+   "n": 3,
+   "terrains": {
+    "rough": 3
+   },
+   "mask": [
+    "VBBBBBV",
+    "VBBBBVV"
+   ]
+  },
+  "mapobjects/beastmastershut": {
+   "type": "beastmastersHut",
+   "subtype": "beastmastersHut",
+   "n": 185,
+   "terrains": {
+    "sand": 10,
+    "subterra": 64,
+    "grass": 23,
+    "snow": 30,
+    "rough": 19,
+    "lava": 10,
+    "dirt": 21,
+    "swamp": 8
+   },
+   "mask": [
+    "VVV",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/bulwark/mapobjects/mines/avmcrsn1": {
+   "type": "mine",
+   "subtype": "crystalCavern",
+   "n": 10,
+   "terrains": {
+    "snow": 10
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/bulwark/mapobjects/interactive/avxseeka0": {
+   "type": "seerHut",
+   "subtype": "seersHutIgloo",
+   "n": 15,
+   "terrains": {
+    "snow": 15
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw1": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "spawningPool",
+   "n": 4,
+   "terrains": {
+    "lava": 2,
+    "subterra": 1,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VVA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "avlman10": {
+   "type": "mandrake",
+   "subtype": "object",
+   "n": 3,
+   "terrains": {
+    "swamp": 3
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "avlmoss0": {
+   "type": "moss",
+   "subtype": "object",
+   "n": 4,
+   "terrains": {
+    "swamp": 4
+   },
+   "mask": [
+    "B"
+   ]
+  },
+  "ice object/icetomb": {
+   "type": "warriorTomb",
+   "subtype": "warriorTomb",
+   "n": 3,
+   "terrains": {
+    "snow": 3
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "ice object/iceuniv1": {
+   "type": "university",
+   "subtype": "object",
+   "n": 3,
+   "terrains": {
+    "snow": 3
+   },
+   "mask": [
+    "VVVVV",
+    "VBBBV",
+    "VBBBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "ice object/warehouse04": {
+   "type": "warehouses",
+   "subtype": "oreWarehouse",
+   "n": 3,
+   "terrains": {
+    "snow": 3
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "abyss/map/abyssdw8": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "shelter",
+   "n": 3,
+   "terrains": {
+    "subterra": 3
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "hota/bulwark/mapobjects/dwellings/avgvori0": {
+   "type": "creatureGeneratorCommon",
+   "subtype": "hallOfTheBold",
+   "n": 3,
+   "terrains": {
+    "snow": 3
+   },
+   "mask": [
+    "VVV",
+    "VVB",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "meadland/decorations/statue/avlr07u0": {
+   "type": "statue",
+   "subtype": "statue",
+   "n": 3,
+   "terrains": {
+    "snow": 1,
+    "sand": 2
+   },
+   "mask": [
+    "B",
+    "B"
+   ]
+  },
+  "mapobjects/bearidol": {
+   "type": "bearIdol",
+   "subtype": "bearIdol",
+   "n": 77,
+   "terrains": {
+    "swamp": 5,
+    "dirt": 16,
+    "snow": 17,
+    "grass": 10,
+    "subterra": 17,
+    "lava": 8,
+    "sand": 3,
+    "rough": 1
+   },
+   "mask": [
+    "VB",
+    "BA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/fountainofspeed": {
+   "type": "fountainOfSpeed",
+   "subtype": "fountainOfSpeed",
+   "n": 82,
+   "terrains": {
+    "swamp": 4,
+    "dirt": 9,
+    "snow": 11,
+    "grass": 6,
+    "lava": 10,
+    "subterra": 35,
+    "sand": 3,
+    "rough": 4
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/totemoflife": {
+   "type": "totemOfLife",
+   "subtype": "totemOfLife",
+   "n": 79,
+   "terrains": {
+    "dirt": 20,
+    "swamp": 5,
+    "snow": 27,
+    "grass": 7,
+    "lava": 7,
+    "subterra": 10,
+    "sand": 3
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/siegeworkshop": {
+   "type": "siegeWorkshop",
+   "subtype": "default",
+   "n": 10,
+   "terrains": {
+    "swamp": 1,
+    "snow": 5,
+    "lava": 1,
+    "dirt": 1,
+    "subterra": 2
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "BAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/divinationtower": {
+   "type": "divinationTower",
+   "subtype": "divinationTower",
+   "n": 11,
+   "terrains": {
+    "swamp": 3,
+    "dirt": 1,
+    "subterra": 3,
+    "grass": 2,
+    "lava": 1,
+    "snow": 1
+   },
+   "mask": [
+    "VV",
+    "VB",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/ancientteacher": {
+   "type": "ancientTeacher",
+   "subtype": "ancientTeacher",
+   "n": 76,
+   "terrains": {
+    "snow": 10,
+    "dirt": 18,
+    "grass": 3,
+    "sand": 9,
+    "subterra": 23,
+    "lava": 4,
+    "swamp": 4,
+    "rough": 5
+   },
+   "mask": [
+    "VVV",
+    "VVB",
+    "VVA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/smugglerscart": {
+   "type": "smugglersCart",
+   "subtype": "default",
+   "n": 37,
+   "terrains": {
+    "swamp": 3,
+    "dirt": 7,
+    "grass": 3,
+    "subterra": 13,
+    "lava": 4,
+    "sand": 2,
+    "snow": 3,
+    "rough": 2
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/heroicshrine": {
+   "type": "heroicShrine",
+   "subtype": "heroicShrine",
+   "n": 120,
+   "terrains": {
+    "snow": 9,
+    "dirt": 8,
+    "sand": 30,
+    "subterra": 38,
+    "rough": 20,
+    "swamp": 9,
+    "lava": 6
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/greatacademyofmagic": {
+   "type": "greatAcademyOfMagic",
+   "subtype": "default",
+   "n": 6,
+   "terrains": {
+    "dirt": 3,
+    "subterra": 2,
+    "snow": 1
+   },
+   "mask": [
+    "VVVV",
+    "VVBB",
+    "VVBB",
+    "VVAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/templeofrandom": {
+   "type": "templeOfRandom",
+   "subtype": "templeOfRandom",
+   "n": 45,
+   "terrains": {
+    "dirt": 9,
+    "snow": 9,
+    "grass": 4,
+    "lava": 6,
+    "subterra": 9,
+    "sand": 1,
+    "rough": 1,
+    "swamp": 6
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/spymasterden": {
+   "type": "spymasterDen",
+   "subtype": "default",
+   "n": 29,
+   "terrains": {
+    "snow": 4,
+    "subterra": 12,
+    "sand": 2,
+    "dirt": 4,
+    "lava": 2,
+    "grass": 2,
+    "rough": 3
+   },
+   "mask": [
+    "VVV",
+    "VBB",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/dwarvenwarren": {
+   "type": "dwarvenWarren",
+   "subtype": "dwarvenWarren",
+   "n": 24,
+   "terrains": {
+    "snow": 5,
+    "dirt": 5,
+    "grass": 1,
+    "subterra": 10,
+    "swamp": 1,
+    "sand": 1,
+    "rough": 1
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBBV",
+    "BBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/greatacademyofwar": {
+   "type": "greatAcademyOfWar",
+   "subtype": "default",
+   "n": 4,
+   "terrains": {
+    "lava": 2,
+    "subterra": 2
+   },
+   "mask": [
+    "VVVV",
+    "VVVV",
+    "VBBV",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/veteranshall": {
+   "type": "veteransHall",
+   "subtype": "veteransHall",
+   "n": 112,
+   "terrains": {
+    "sand": 26,
+    "dirt": 8,
+    "subterra": 42,
+    "rough": 22,
+    "swamp": 8,
+    "lava": 4,
+    "snow": 2
+   },
+   "mask": [
+    "VV",
+    "VA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/statueofthegoddess": {
+   "type": "statueOfTheGoddess",
+   "subtype": "default",
+   "n": 7,
+   "terrains": {
+    "sand": 2,
+    "dirt": 1,
+    "subterra": 2,
+    "rough": 1,
+    "swamp": 1
+   },
+   "mask": [
+    "VVVVV",
+    "VVBBB",
+    "VVBBB",
+    "VVVBV",
+    "VVVAV"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "mapobjects/grandmastershall": {
+   "type": "grandmastersHall",
+   "subtype": "grandmastersHall",
+   "n": 22,
+   "terrains": {
+    "sand": 1,
+    "subterra": 12,
+    "lava": 9
+   },
+   "mask": [
+    "VVVV",
+    "VVBV",
+    "VBBB",
+    "VBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  }
+ }
+}
