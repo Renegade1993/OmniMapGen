@@ -46,3 +46,4 @@ dist-classic-atbegin-api4/
 tools/rmgdump/out/
 tools/rmgdump/build.log
 tools/rmgdump/vcmi-snapshot/
+__pycache__/
