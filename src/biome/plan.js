@@ -2046,6 +2046,18 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			spec: z,
 		};
 	});
+	// The engine counts a zone for a faction once per TOWN placed in it (TownPlacer registerZone), and its total
+	// is the zones that registered, not the template's: a zone with no town (Coldshadow's neutral junctions)
+	// counts for nobody, and the dwellings it prices run at 1 x, not at the 3 x the all-zones count gave them,
+	// which priced the Azure and Crystal Dragon dwellings out of its piles (harness, 2026-10-01).
+	if (zoneMeta) {
+		const townsOf = m => m.towns.length + (m.ownerColor ? 1 : 0);
+		const total = zoneMeta.reduce((a, m) => a + townsOf(m), 0);
+		for (const m of zoneMeta) {
+			m.totalZones = total || 1;
+			m.nativeZones = zoneMeta.reduce((a, o) => a + (o.faction === m.faction ? townsOf(o) : 0), 0);
+		}
+	}
 
 	const edges = biomeEdges(zone, W, H, seeds.length, water);
 	let connections;

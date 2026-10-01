@@ -149,7 +149,7 @@ function zonePool(common, opts = {}, rng = Math.random) {
 		const mod = 1 + native / total + native / 2;
 		for (const d of opts.dwellings || []) {
 			if (d.fromRmg && d.value > maxValue) continue;
-			add({ key: 'dwelling', type: 'dwelling', value: Math.floor(d.value * mod), probability: d.prob, large: true }, Infinity);
+			add({ key: 'dwelling', type: 'dwelling', value: Math.floor(d.value * mod), probability: d.prob, large: true, dw: d.dw }, Infinity);
 		}
 		// addPandoraBoxes
 		for (let i = 1; i < 5; i++) {

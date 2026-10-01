@@ -190,12 +190,18 @@ function h3CreatureTraits(roots) {
 	const text = findResource(roots, 'Data', DATA_LODS, 'CRTRAITS.TXT');
 	if (!text) return out;
 	const lines = text.toString('latin1').split(/\r?\n/).slice(2);
-	lines.forEach((line, i) => {
+	// The key is the creature's row among the creatures, which is its id: the file's physical lines are not, since
+	// a wrapped description leaves lines of its own (one of them with a blank name and 24 fields, before the Imp),
+	// so keying by physical line gave every creature past the Gold Dragon another creature's price (found by the
+	// engine-against-ours harness, 2026-10-01: the neutral dragons' dwellings priced at another creature's).
+	let row = -1;
+	for (const line of lines) {
 		const f = line.split('\t');
-		if (f.length < 12 || !f[0]) return;
+		if (f.length < 12 || !f[0] || !f[0].trim()) continue;
+		row++;
 		const aiValue = parseInt(f[10], 10), growth = parseInt(f[11], 10);
-		if (aiValue > 0 && growth > 0) out.set(i, { aiValue, growth });
-	});
+		if (aiValue > 0 && growth > 0) out.set(row, { aiValue, growth });
+	}
 	return out;
 }
 
