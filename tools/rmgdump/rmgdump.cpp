@@ -39,25 +39,25 @@
 #define protected public
 
 #include "StdInc.h"
-#include "../../../VCMI/source/lib/GameLibrary.h"
-#include "../../../VCMI/source/lib/VCMIDirs.h"
-#include "../../../VCMI/source/lib/filesystem/Filesystem.h"
-#include "../../../VCMI/source/lib/filesystem/CMemoryBuffer.h"
-#include "../../../VCMI/source/lib/json/JsonNode.h"
-#include "../../../VCMI/source/lib/mapping/CMap.h"
-#include "../../../VCMI/source/lib/mapping/MapFormatJson.h"
-#include "../../../VCMI/source/lib/mapObjects/CGObjectInstance.h"
-#include "../../../VCMI/source/lib/callback/EditorCallback.h"
-#include "../../../VCMI/source/lib/rmg/CMapGenOptions.h"
-#include "../../../VCMI/source/lib/rmg/CMapGenerator.h"
-#include "../../../VCMI/source/lib/rmg/CRmgTemplate.h"
-#include "../../../VCMI/source/lib/rmg/CRmgTemplateStorage.h"
-#include "../../../VCMI/source/lib/rmg/RmgMap.h"
-#include "../../../VCMI/source/lib/rmg/Zone.h"
-#include "../../../VCMI/source/lib/rmg/RmgArea.h"
-#include "../../../VCMI/source/lib/entities/faction/CFaction.h"
-#include "../../../VCMI/source/lib/CConsoleHandler.h"
-#include "../../../VCMI/source/lib/logging/CBasicLogConfigurator.h"
+#include "lib/GameLibrary.h"
+#include "lib/VCMIDirs.h"
+#include "lib/filesystem/Filesystem.h"
+#include "lib/filesystem/CMemoryBuffer.h"
+#include "lib/json/JsonNode.h"
+#include "lib/mapping/CMap.h"
+#include "lib/mapping/MapFormatJson.h"
+#include "lib/mapObjects/CGObjectInstance.h"
+#include "lib/callback/EditorCallback.h"
+#include "lib/rmg/CMapGenOptions.h"
+#include "lib/rmg/CMapGenerator.h"
+#include "lib/rmg/CRmgTemplate.h"
+#include "lib/rmg/CRmgTemplateStorage.h"
+#include "lib/rmg/RmgMap.h"
+#include "lib/rmg/Zone.h"
+#include "lib/rmg/RmgArea.h"
+#include "lib/entities/faction/CFaction.h"
+#include "lib/CConsoleHandler.h"
+#include "lib/logging/CBasicLogConfigurator.h"
 
 VCMI_LIB_USING_NAMESPACE
 
@@ -122,7 +122,18 @@ static void runJob(const JsonNode & job, double & seconds)
 	opt.setWidth((si32)job["w"].Integer());
 	opt.setHeight((si32)job["h"].Integer());
 	opt.setLevels(job["levels"].isNull() ? 1 : (int)job["levels"].Integer());
-	opt.setMapTemplate(job["template"].String());
+	// The storage is keyed "scope:name", so getTemplate("Jebus Cross") finds nothing, the options then hold no
+	// template, and the engine rolls a random one (found 2026-10-01: the first tier-1 grid ran the wrong
+	// template on every map). Find the template by its name and hand over the pointer; refuse when absent.
+	{
+		const CRmgTemplate * wanted = nullptr;
+		for(const auto * t : LIBRARY->tplh->getTemplates())
+			if(t->getName() == job["template"].String())
+				wanted = t;
+		if(!wanted)
+			throw std::runtime_error("no template named " + job["template"].String());
+		opt.setMapTemplate(wanted);
+	}
 	opt.setHumanOrCpuPlayerCount((si8)job["players"].Integer());
 	if(!job["humans"].isNull())
 		opt.setHumanOrCpuPlayerCount((si8)job["players"].Integer());
@@ -186,7 +197,22 @@ static void runJob(const JsonNode & job, double & seconds)
 	}
 	std::ofstream z(out + ".zones.json");
 	z << "{\"template\":\"" << esc(job["template"].String()) << "\",\"seed\":" << seed << ",\"w\":" << opt.getWidth()
-	  << ",\"h\":" << opt.getHeight() << ",\"levels\":" << opt.getLevels() << ",\"zones\":[";
+	  << ",\"h\":" << opt.getHeight() << ",\"levels\":" << opt.getLevels();
+	// the template the engine really ran, and its own zone ids (a request can be answered with another template)
+	if(const auto * used = opt.getMapTemplate())
+	{
+		z << ",\"templateUsed\":\"" << esc(used->getName()) << "\",\"templateUsedId\":\"" << esc(used->getId()) << "\",\"templateZones\":[";
+		bool fz = true;
+		for(const auto & tz : used->getZones())
+		{
+			if(!fz)
+				z << ",";
+			fz = false;
+			z << "{\"id\":" << tz.first << ",\"type\":\"" << zoneTypeName(tz.second->getType()) << "\"}";
+		}
+		z << "]";
+	}
+	z << ",\"playersOut\":" << (int)opt.getHumanOrCpuPlayerCount() << ",\"zones\":[";
 	bool first = true;
 	for(const auto & kv : zoneSnapshot)
 	{

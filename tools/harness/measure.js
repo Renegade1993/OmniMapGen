@@ -66,8 +66,10 @@ function measureRun(side, base, L) {
 	}
 	for (const c of Object.keys(classes)) classes[c] = 1000 * classes[c] / Math.max(1, land);
 	const zones = {};
+	let tpl = null;
 	if (side === 'engine') {
 		const z = JSON.parse(fs.readFileSync(base + '.zones.json', 'utf8'));
+		tpl = { asked: z.template, used: z.templateUsed || null, zones: z.templateZones || null };
 		for (const q of z.zones) {
 			const objs = {};
 			for (const [k, n] of Object.entries(q.objects || {})) {
@@ -103,7 +105,7 @@ function measureRun(side, base, L) {
 			zones[id].objects[k] = (zones[id].objects[k] || 0) + 1;
 		}
 	}
-	return { side, w: W, h: H, levels: levels.length, land, map, classes, zones, hist };
+	return { side, w: W, h: H, levels: levels.length, land, map, classes, zones, hist, tpl };
 }
 
 module.exports = { measureRun, keyOf, classOf };

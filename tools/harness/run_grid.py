@@ -113,6 +113,10 @@ def main():
     a = ap.parse_args()
     a.out = os.path.abspath(a.out)
     a.grid = os.path.abspath(a.grid)
+    os.makedirs(a.out, exist_ok=True)
+    # under pythonw there is no console, so no Ctrl-C can reach it (a console-attached start was ended by one)
+    if sys.stdout is None or sys.stderr is None:
+        sys.stdout = sys.stderr = open(os.path.join(a.out, "run.stdout"), "a", buffering=1)
     grid = json.load(open(a.grid, encoding="utf8"))
     os.makedirs(os.path.join(a.out, "engine"), exist_ok=True)
     os.makedirs(os.path.join(a.out, "ours"), exist_ok=True)
