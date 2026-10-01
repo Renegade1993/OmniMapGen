@@ -48,6 +48,7 @@ def main():
     ap.add_argument("--stop-at", required=True)
     ap.add_argument("--lanes", type=int, default=2)
     ap.add_argument("--wait-for", default=None)
+    ap.add_argument("--only-side", default=None)
     ap.add_argument("grids", nargs="+")
     a = ap.parse_args()
     end = stop_dt(a.stop_at)
@@ -77,6 +78,8 @@ def main():
         cmd = [sys.executable.replace("python.exe", "pythonw.exe") if sys.executable.endswith("python.exe") else sys.executable,
                os.path.join(HERE, "run_grid.py"), "--grid", os.path.join(H, "grids", g + ".json"), "--out", out,
                "--lanes", str(a.lanes), "--stop-at", a.stop_at]
+        if a.only_side:
+            cmd += ["--only-side", a.only_side]
         p = subprocess.Popen(cmd, creationflags=NOWIN, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         while p.poll() is None:
             if datetime.datetime.now() >= end + datetime.timedelta(minutes=10):

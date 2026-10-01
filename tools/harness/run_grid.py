@@ -35,6 +35,7 @@ PYISO = os.path.join(PROJECT, "! LLM Files", "Tools", "isolation", "python")
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
 log_lock = threading.Lock()
+OURS_ENV = {}  # --ours-env KEY=VALUE: extra environment for our generator only (an A/B of one switch)
 
 
 def log(out, line):
@@ -87,7 +88,9 @@ def run_ours(job, seed, run, out, timeout):
             "--bio.waterContent", str(job["water"]), "--bio.monsterStrength", str(job["monsters"] + 1)]
     if job["levels"] >= 2:
         args += ["--underground", "1"]
-    env = guard_env({"VMAPGEN_ZONE_DUMP": base + ".zonedump.json"})
+    # the user folder holds the game data (CRTRAITS, terrain and monster tables) the generator reads, as it does under the game;
+    # without it ours falls back to the zone model and loses its pools (found 2026-10-01: tier 1 first run lacked it)
+    env = guard_env({"VMAPGEN_ZONE_DUMP": base + ".zonedump.json", "VCMI_USER_DIR": os.path.join(RMGRUN, "userdata"), **OURS_ENV})
     t0 = time.time()
     try:
         r = subprocess.run(args, env=env, capture_output=True, text=True, timeout=timeout, cwd=MAPGEN,
@@ -110,7 +113,9 @@ def main():
     ap.add_argument("--ours-timeout", type=int, default=400)
     ap.add_argument("--only-side", choices=["engine", "ours"], default=None)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--ours-env", action="append", default=[])
     a = ap.parse_args()
+    OURS_ENV.update(dict(kv.split("=", 1) for kv in a.ours_env))
     a.out = os.path.abspath(a.out)
     a.grid = os.path.abspath(a.grid)
     os.makedirs(a.out, exist_ok=True)

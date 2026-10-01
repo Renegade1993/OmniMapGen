@@ -175,7 +175,7 @@ const TPL_RICH_MIN = Number(process.env.VMAPGEN_TPL_RICH_MIN) || 10000;
 // to place, always lands; a guarded one at 0.70, at 0.50 in a band from
 // TPL_RICH_MIN. The fit read guard levels 1-7 at 0.80-1.08 of the corpus and
 // its chests at 0.95, where the rate model's maps hold 0.50.
-const TPL_PILE_MODEL = process.env.VMAPGEN_TPL_PILE_MODEL || 'uniform';
+const TPL_PILE_MODEL = process.env.VMAPGEN_TPL_PILE_MODEL || 'engine';
 // VMAPGEN_TPL_PILE_VALUES=engine: the uniform model's pile guards sized on the
 // values the engine's piles reach (fillBiome)
 const TPL_PILE_VALUES = process.env.VMAPGEN_TPL_PILE_VALUES || 'uniform';
@@ -2165,9 +2165,9 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		return pileZonePool(objectPools.pileCommon, {
 			maxValue: bands.reduce((a, b) => Math.max(a, b.max || 0), 0),
 			dwellings: (objectPools.engineDwellings || []).filter(d => d.faction === faction)
-				.map(d => ({ value: d.value, prob: d.prob, fromRmg: d.fromRmg })),
+				.map(d => ({ value: d.value, prob: d.prob, fromRmg: d.fromRmg, dw: d })),
 			creatures: (objectPools.guards || GUARD_POOL).filter(c => bare(c.faction) === faction),
-			nativeZones: zoneMeta.nativeZones || 1, totalZones: zoneMeta.totalZones || 1,
+			nativeZones: zoneMeta.nativeZones ?? 1, totalZones: zoneMeta.totalZones || 1,
 			// the objects with a template for this ground (piles.js groundsOf)
 			terrain: ((objectPools.terrainNames && objectPools.terrainNames.get(terrain)) || {}).name || null,
 		}, rng);
@@ -2213,11 +2213,24 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				+ `${pileSim.landed.reduce((a, x) => a + x.objects.filter(o => o.type === 'treasureChest').length, 0)} chests`);
 	}
 	let dwellPicks = null;
-	if (zoneMeta && zoneMeta.spec && process.env.VMAPGEN_TPL_DWELL_MODEL !== 'zone'
+	if (pileSim && process.env.VMAPGEN_TPL_DWELL_MODEL !== 'zone') {
+		// the engine's piles decide the dwellings as they decide everything else the zone holds (TreasurePlacer::
+		// addDwellings puts them in the same pool): a dwelling too cheap for the zone's rich bands still lands as
+		// the remainder of a pile, which the one-draw model below never gave (Coldshadow's neutral junctions, whose
+		// Crystal, Azure, Rust and Fairy dragon dwellings it dropped; harness, 2026-10-01)
+		const drawn = pileSim.landed.flatMap(pl => pl.objects.filter(o => o.type === 'dwelling' && o.dw));
+		const want = drawn.length * (p.dwellingLever ?? 1);
+		const th = objectPools.themeDwellings;
+		dwellPicks = [];
+		for (let n = Math.floor(want) + (rng() < want % 1 ? 1 : 0), i = 0; n > 0; n--, i++) {
+			const d = drawn[i % drawn.length].dw;
+			dwellPicks.push(th && th.pool.length && rng() < th.share ? nearestLevelDwelling(th.pool, d.level || 1, rng) || d : d);
+		}
+	} else if (zoneMeta && zoneMeta.spec && process.env.VMAPGEN_TPL_DWELL_MODEL !== 'zone'
 			&& objectPools.engineDwellings && objectPools.engineDwellings.length) {
 		const bands = zoneMeta.spec.treasure || [];
 		const maxV = bands.reduce((a, b) => Math.max(a, b.max || 0), 0);
-		const mod = 1 + (zoneMeta.nativeZones || 1) / (zoneMeta.totalZones || 1) + (zoneMeta.nativeZones || 1) / 2;
+		const mod = 1 + (zoneMeta.nativeZones ?? 1) / (zoneMeta.totalZones || 1) + (zoneMeta.nativeZones ?? 1) / 2;
 		const own = objectPools.engineDwellings
 			.filter(d => d.faction === (zoneMeta.faction || 'neutral') && !(d.fromRmg && d.value > maxV))
 			.map(d => ({ d, v: d.value * mod, odds: d.prob / 100 }));
