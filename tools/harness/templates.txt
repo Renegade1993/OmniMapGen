@@ -1,0 +1,93 @@
+TEMPLATE	2SM0k	vcmi:2SM0k	2	1-2	36,36,1	72,72,2	0,1,2,	8
+TEMPLATE	2SM2a	vcmi:2SM2a	2		36,36,1	36,36,2	0,1,2,	4
+TEMPLATE	2SM2b	vcmi:2SM2b	2		36,36,1	72,72,2	0,1,2,	6
+TEMPLATE	2SM2b(2)	vcmi:2SM2b(2)	2-4		36,36,1	72,72,2	0,1,2,	6
+TEMPLATE	2SM2c	vcmi:2SM2c	2		36,36,1	36,36,2	0,1,2,	6
+TEMPLATE	2SM2f	vcmi:2SM2f	2		36,36,1	108,108,1	0,1,2,	6
+TEMPLATE	2SM2f(2)	vcmi:2SM2f(2)	2-4		36,36,1	108,108,1	0,1,2,	6
+TEMPLATE	2SM2h	vcmi:2SM2h	2		36,36,1	72,72,2	0,1,2,	5
+TEMPLATE	2SM2h(2)	vcmi:2SM2h(2)	2-4		36,36,1	72,72,2	0,1,2,	5
+TEMPLATE	2SM2i	vcmi:2SM2i	2		36,36,1	72,72,2	0,1,2,	5
+TEMPLATE	2SM2i(2)	vcmi:2SM2i(2)	2	1-2	36,36,1	72,72,2	0,1,2,	5
+TEMPLATE	2SM4d	vcmi:2SM4d	2		36,36,1	108,108,2	0,1,2,	10
+TEMPLATE	2SM4d(2)	vcmi:2SM4d(2)	2-4		72,72,1	108,108,2	0,1,2,	10
+TEMPLATE	2SM4d(3)	vcmi:2SM4d(3)	2-6		72,72,1	108,108,2	0,1,2,	10
+TEMPLATE	3SB0b	vcmi:3SB0b	2	1	36,36,1	72,72,2	0,1,2,	8
+TEMPLATE	3SB0c	vcmi:3SB0c	2	1	36,36,2	72,72,2	0,1,2,	10
+TEMPLATE	3SM3d	vcmi:3SM3d	2-3		72,72,1	72,72,2	0,1,2,	14
+TEMPLATE	4SM0d	vcmi:4SM0d	2-4		36,36,1	108,108,2	0,1,2,	9
+TEMPLATE	4SM0f	vcmi:4SM0f	2-4		36,36,1	72,72,1	0,1,2,	8
+TEMPLATE	4SM0g	vcmi:4SM0g	2-4		36,36,1	72,72,1	0,1,2,	8
+TEMPLATE	4SM4e	vcmi:4SM4e	2-4		36,36,2	108,108,1	0,1,2,	12
+TEMPLATE	5SB0a	vcmi:5SB0a	2-3	2	36,36,1	72,72,2	0,1,2,	9
+TEMPLATE	5SB0b	vcmi:5SB0b	2-3	2	36,36,1	72,72,2	0,1,2,	7
+TEMPLATE	6LM10	vcmi:6LM10	2-6		108,108,1	144,144,2	0,1,2,	25
+TEMPLATE	6LM10a	vcmi:6LM10a	2-8		144,144,2	180,180,2	0,1,2,	25
+TEMPLATE	6SM0b	vcmi:6SM0b	2-6		36,36,2	72,72,2	0,1,2,	10
+TEMPLATE	6SM0d	vcmi:6SM0d	2-6		36,36,1	72,72,2	0,1,2,	6
+TEMPLATE	6SM0e	vcmi:6SM0e	2-6		72,72,1	72,72,2	0,1,2,	14
+TEMPLATE	7SB0b	vcmi:7SB0b	2-6	1	36,36,1	108,108,1	0,1,2,	7
+TEMPLATE	7SB0c	vcmi:7SB0c	2-7	2-6	36,36,2	108,108,1	0,1,2,	7
+TEMPLATE	8MM0e	vcmi:8MM0e	2-8		72,72,1	72,72,2	0,1,2,	9
+TEMPLATE	8MM6	vcmi:8MM6	2-8		72,72,2	144,144,2	0,1,2,	26
+TEMPLATE	8MM6a	vcmi:8MM6a	2-8		144,144,2	144,144,2	0,1,2,	26
+TEMPLATE	8SM0c	vcmi:8SM0c	2-8		72,72,1	108,108,1	0,1,2,	13
+TEMPLATE	8SM0f	vcmi:8SM0f	2-8		36,36,2	72,72,2	0,1,2,	12
+TEMPLATE	8XM12	vcmi:8XM12	2-8		144,144,1	180,180,2	0,1,2,	33
+TEMPLATE	8XM12a	vcmi:8XM12a	2-8		144,144,2	144,144,2	0,1,2,	33
+TEMPLATE	8XM8	vcmi:8XM8	2-8		108,108,1	180,180,2	0,1,2,	48
+TEMPLATE	Around A Marsh	vcmi:Around A Marsh	2-4		144,144,1	144,144,1	0,1,2,	12
+TEMPLATE	Balance L	vcmi:Balance L	2		108,108,1	108,108,1	0,1,2,	10
+TEMPLATE	Balance M	vcmi:Balance M	2		72,72,1	72,72,2	0,1,2,	10
+TEMPLATE	Balance XL	vcmi:Balance XL	2		144,144,1	108,108,2	0,1,2,	12
+TEMPLATE	Blockbuster L	vcmi:Blockbuster L	2		108,108,1	108,108,1	0,1,2,	8
+TEMPLATE	Blockbuster M	vcmi:Blockbuster M	2		72,72,1	72,72,1	0,1,2,	7
+TEMPLATE	Blockbuster XL	vcmi:Blockbuster XL	2		144,144,1	144,144,1	0,1,2,	8
+TEMPLATE	Clash of Dragons	vcmi:Clash of Dragons	2		108,108,2	252,252,2	0,1,2,	18
+TEMPLATE	Coldshadow's Fantasy	vcmi:Coldshadow's Fantasy	2-8	2	144,144,2	252,252,2	0,1,2,	21
+TEMPLATE	Cube	vcmi:Cube	2		72,72,2	144,144,2	0,1,2,	8
+TEMPLATE	Diamond	vcmi:Diamond	2-8		108,108,2	108,108,2	0,1,2,	16
+TEMPLATE	Dwarven Tunnels	vcmi:Dwarven Tunnels	2-4		72,72,2	144,144,2	0,1,2,	18
+TEMPLATE	Extreme II L	vcmi:Extreme II L	2		108,108,1	108,108,1	0,1,2,	10
+TEMPLATE	Extreme II XL	vcmi:Extreme II XL	2		144,144,1	216,216,1	0,1,2,	10
+TEMPLATE	Extreme L	vcmi:Extreme L	2		108,108,1	108,108,1	0,1,2,	12
+TEMPLATE	Extreme XL	vcmi:Extreme XL	2		144,144,1	216,216,1	0,1,2,	12
+TEMPLATE	Fear	vcmi:Fear	2		72,72,2	108,108,2	0,1,2,	13
+TEMPLATE	Frozen Dragons	vcmi:Frozen Dragons	2		144,144,1	144,144,1	0,1,2,	16
+TEMPLATE	Gauntlet Road	vcmi:Gauntlet Road	2		72,72,1	108,108,2	0,1,2,	9
+TEMPLATE	Gimlis Revenge	vcmi:Gimlis Revenge	2		72,72,1	108,108,1	0,1,2,	8
+TEMPLATE	Golem Foundry	vcmi:Golem Foundry	2-4		72,72,1	144,144,1	0,1,2,	9
+TEMPLATE	Golems Aplenty	vcmi:Golems Aplenty	2-4		36,36,1	108,108,2	0,1,2,	7
+TEMPLATE	Guerilla	vcmi:Guerilla	2		144,144,2	144,144,2	0,1,2,	28
+TEMPLATE	Headquarters	vcmi:Headquarters	2-7		108,108,1	108,108,2	0,1,2,	9
+TEMPLATE	HyperCube	vcmi:HyperCube	2		108,108,2	108,108,2	0,1,2,	20
+TEMPLATE	Jebus Cross	vcmi:Jebus Cross	2-4		108,108,1	144,144,1	0,1,2,	5
+TEMPLATE	Long Run M	vcmi:Long Run M	2		72,72,1	72,72,2	0,1,2,	9
+TEMPLATE	Long Run XL	vcmi:Long Run XL	2		108,108,1	144,144,2	0,1,2,	9
+TEMPLATE	Marathon XL	vcmi:Marathon XL	2		144,144,1	144,144,1	0,1,2,	23
+TEMPLATE	Marathon XXL	vcmi:Marathon XXL	2		144,144,2	252,252,2	0,1,2,	23
+TEMPLATE	Meeting in Muzgob	vcmi:Meeting in Muzgob	2-6	2	108,108,1	144,144,2	0,1,2,	17
+TEMPLATE	Mini Nostalgia	vcmi:Mini Nostalgia	2-8		108,108,1	144,144,2	0,1,2,	15
+TEMPLATE	Monk's Retreat	vcmi:Monk's Retreat	2-6		108,108,1	144,144,2	0,1,2,	9
+TEMPLATE	Newcomers	vcmi:Newcomers	2-3	1	72,72,2	144,144,2	0,1,2,	14
+TEMPLATE	Nostalgia	vcmi:Nostalgia	2-8		144,144,2	180,180,2	0,1,2,	24
+TEMPLATE	Oceans Eleven	vcmi:Oceans Eleven	2		72,72,2	108,108,2	0,1,2,	11
+TEMPLATE	Panic	vcmi:Panic	2		72,72,2	108,108,2	0,1,2,	13
+TEMPLATE	Poor Jebus	vcmi:Poor Jebus	2-4		72,72,1	144,144,2	0,1,2,	5
+TEMPLATE	Ready or Not	vcmi:Ready or Not	2-3		72,72,1	144,144,2	0,1,2,	10
+TEMPLATE	Reckless	vcmi:Reckless	2		108,108,1	144,144,2	0,1,2,	9
+TEMPLATE	Roadrunner	vcmi:Roadrunner	2		144,144,1	144,144,1	0,1,2,	8
+TEMPLATE	Schaafworld	vcmi:Schaafworld	2		108,108,1	144,144,1	0,1,2,	3
+TEMPLATE	Skirmish L	vcmi:Skirmish L	2		72,72,2	108,108,1	0,1,2,	7
+TEMPLATE	Skirmish M	vcmi:Skirmish M	2		72,72,1	72,72,1	0,1,2,	7
+TEMPLATE	Small Ring	vcmi:Small Ring	2-8		36,36,1	36,36,2	0,1,2,	8
+TEMPLATE	South of Hell	vcmi:South of Hell	2	1	72,72,2	108,108,2	0,1,2,	11
+TEMPLATE	Speed 1	vcmi:Speed 1	2-6		72,72,1	72,72,1	0,1,2,	7
+TEMPLATE	Speed 2	vcmi:Speed 2	2		72,72,1	72,72,1	0,1,2,	6
+TEMPLATE	Spider	vcmi:Spider	2-8		144,144,2	180,180,2	0,1,2,	24
+TEMPLATE	SuperSlam	vcmi:SuperSlam	2		108,108,1	144,144,1	0,1,2,	6
+TEMPLATE	Three Crowns	vcmi:Three Crowns	3		72,72,1	144,144,2	0,1,2,	10
+TEMPLATE	Triad L	vcmi:Triad L	2-3		108,108,1	108,108,1	0,1,2,	13
+TEMPLATE	Triad XL	vcmi:Triad XL	3		144,144,1	144,144,1	0,1,2,	13
+TEMPLATE	Vortex	vcmi:Vortex	2-4		144,144,1	144,144,1	0,1,2,	9
+TEMPLATE	Worlds at War	vcmi:Worlds at War	2	3	72,72,2	144,144,2	0,1,2,	17
