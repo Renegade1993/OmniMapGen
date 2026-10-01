@@ -44,12 +44,16 @@ function load(side, name) {
 
 const names = side => fs.existsSync(path.join(RUN, side)) ? fs.readdirSync(path.join(RUN, side)).filter(f => f.endsWith('.vmap')).map(f => f.slice(0, -5)) : [];
 const groups = new Map();
+let wrongTemplate = 0;
 for (const side of ['engine', 'ours'])
 	for (const n of names(side)) {
 		const g = n.replace(/_s\d+$/, '');
 		if (ONLY && !ONLY.test(g)) continue;
 		if (!groups.has(g)) groups.set(g, { engine: [], ours: [] });
 		const m = load(side, n);
+		// an engine map made by another template than the one asked for (a request the engine answers with a random
+		// one) is not this group's map
+		if (m && side === 'engine' && (!m.tpl || !m.tpl.used || m.tpl.used !== m.tpl.asked)) { wrongTemplate++; continue; }
 		if (m) groups.get(g)[side].push(m);
 	}
 
@@ -121,4 +125,4 @@ for (const [k, r] of [...rep].sort((a, b) => b[1].groups.size - a[1].groups.size
 
 fs.writeFileSync(path.join(RUN, 'report.txt'), out.join('\n') + '\n');
 fs.writeFileSync(path.join(RUN, 'findings.json'), JSON.stringify(findings, null, 1));
-console.log(`${groups.size} groups, ${findings.length} flagged gaps -> ${path.join(RUN, 'report.txt')}`);
+console.log(`${groups.size} groups, ${findings.length} flagged gaps, ${wrongTemplate} engine maps set aside (wrong or unknown template) -> ${path.join(RUN, 'report.txt')}`);
