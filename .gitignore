@@ -43,3 +43,5 @@ dist-classic/
 dist-atbegin/
 dist-classic-atbegin/
 dist-classic-atbegin-api4/
+tools/rmgdump/out/
+tools/rmgdump/build.log
