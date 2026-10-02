@@ -35,6 +35,7 @@ PYISO = os.path.join(PROJECT, "! LLM Files", "Tools", "isolation", "python")
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 
 log_lock = threading.Lock()
+GEN_ROOT = None  # --gen-root DIR: a frozen copy of the generator (src, package.json, node_modules) our side runs from
 OURS_ENV = {}  # --ours-env KEY=VALUE: extra environment for our generator only (an A/B of one switch)
 
 
@@ -81,7 +82,7 @@ def run_ours(job, seed, run, out, timeout):
     base = os.path.join(out, "ours", run)
     if os.path.exists(base + ".vmap") and os.path.exists(base + ".zonedump.json"):
         return "skip"
-    args = ["node", os.path.join(MAPGEN, "src", "main", "generate-cli.js"), "--out", base + ".vmap",
+    args = ["node", os.path.join(GEN_ROOT or MAPGEN, "src", "main", "generate-cli.js"), "--out", base + ".vmap",
             "--template", job["template"], "--w", str(job["w"]), "--h", str(job["h"]), "--players", str(job["players"]),
             "--seed", str(seed), "--accommodate", "size,players,humans,underground", "--declaremods", "0",
             "--factions", ",".join(["random"] * job["players"]),
@@ -93,7 +94,7 @@ def run_ours(job, seed, run, out, timeout):
     env = guard_env({"VMAPGEN_ZONE_DUMP": base + ".zonedump.json", "VCMI_USER_DIR": os.path.join(RMGRUN, "userdata"), **OURS_ENV})
     t0 = time.time()
     try:
-        r = subprocess.run(args, env=env, capture_output=True, text=True, timeout=timeout, cwd=MAPGEN,
+        r = subprocess.run(args, env=env, capture_output=True, text=True, timeout=timeout, cwd=GEN_ROOT or MAPGEN,
                            creationflags=NO_WINDOW)
         with open(base + ".log", "w", encoding="utf8") as fh:
             fh.write(r.stdout + r.stderr)
@@ -104,6 +105,7 @@ def run_ours(job, seed, run, out, timeout):
 
 
 def main():
+    global GEN_ROOT
     ap = argparse.ArgumentParser()
     ap.add_argument("--grid", required=True)
     ap.add_argument("--out", required=True)
@@ -114,8 +116,10 @@ def main():
     ap.add_argument("--only-side", choices=["engine", "ours"], default=None)
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--ours-env", action="append", default=[])
+    ap.add_argument("--gen-root", default=None)
     a = ap.parse_args()
     OURS_ENV.update(dict(kv.split("=", 1) for kv in a.ours_env))
+    GEN_ROOT = os.path.abspath(a.gen_root) if a.gen_root else None
     a.out = os.path.abspath(a.out)
     a.grid = os.path.abspath(a.grid)
     os.makedirs(a.out, exist_ok=True)

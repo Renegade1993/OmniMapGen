@@ -49,6 +49,7 @@ def main():
     ap.add_argument("--lanes", type=int, default=2)
     ap.add_argument("--wait-for", default=None)
     ap.add_argument("--only-side", default=None)
+    ap.add_argument("--gen-root", default=None)
     ap.add_argument("--gate-gb", type=float, default=20)
     ap.add_argument("--brake-gb", type=float, default=4)
     ap.add_argument("grids", nargs="+")
@@ -82,6 +83,8 @@ def main():
                "--lanes", str(a.lanes), "--stop-at", a.stop_at]
         if a.only_side:
             cmd += ["--only-side", a.only_side]
+        if a.gen_root:
+            cmd += ["--gen-root", a.gen_root]
         p = subprocess.Popen(cmd, creationflags=NOWIN, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         while p.poll() is None:
             if commit_free_gb() < a.brake_gb:
