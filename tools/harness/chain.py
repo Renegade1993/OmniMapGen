@@ -49,6 +49,8 @@ def main():
     ap.add_argument("--lanes", type=int, default=2)
     ap.add_argument("--wait-for", default=None)
     ap.add_argument("--only-side", default=None)
+    ap.add_argument("--gate-gb", type=float, default=20)
+    ap.add_argument("--brake-gb", type=float, default=4)
     ap.add_argument("grids", nargs="+")
     a = ap.parse_args()
     end = stop_dt(a.stop_at)
@@ -68,8 +70,8 @@ def main():
     for g in a.grids:
         if over():
             break
-        while commit_free_gb() < 20 and not over():
-            log(f"free commit {commit_free_gb():.1f} GB under 20, waiting")
+        while commit_free_gb() < a.gate_gb and not over():
+            log(f"free commit {commit_free_gb():.1f} GB under {a.gate_gb:g}, waiting")
             time.sleep(60)
         if over():
             break
@@ -82,6 +84,11 @@ def main():
             cmd += ["--only-side", a.only_side]
         p = subprocess.Popen(cmd, creationflags=NOWIN, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         while p.poll() is None:
+            if commit_free_gb() < a.brake_gb:
+                # the brake: under it the grid is stopped (its lanes end with it) and the gate waits for memory again
+                log(f"free commit {commit_free_gb():.1f} GB under the brake {a.brake_gb:g}, stopping {g}")
+                p.kill()
+                break
             if datetime.datetime.now() >= end + datetime.timedelta(minutes=10):
                 p.kill(); log("killed run_grid past stop time")
                 break
