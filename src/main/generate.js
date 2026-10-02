@@ -25,7 +25,7 @@ const { themePool, applyGuardTheme, concretizeGuards, rollPlaceholders, creature
 const { evenStarts } = require('./startFairness');
 const { DWELLING_POOL, CORE_BANKS, bankRate, chestTemplate, registerTerrainBarriers, clearTerrainBarriers } = require('../biome/economy');
 const TEMPLATE_THEMES = require('../biome/templateThemes.json');
-const { h3ArtifactTemplates, h3MonsterTemplates, h3CreatureTraits, h3TerrainRows } = require('../parser/h3data');
+const { h3ArtifactTemplates, h3MonsterTemplates, h3CreatureTraits, h3TerrainRows, h3ObjectTemplates } = require('../parser/h3data');
 const { phase, resetPhases } = require('./phases');
 const { giveArtifactsTheirArt } = require('./artifactArt');
 const { townFactions, zoneTownTypes, pickStartFaction } = require('../biome/zoneTowns');
@@ -1513,6 +1513,16 @@ async function generateMap(params) {
 		objectPools: { banks, dwellings, engineDwellings, dwellingFactions, coreBanks, chests, terrainNames,
 			pileCommon: require('../rmg/piles').commonPool(assetIndex.objects, useMods,
 				h3TerrainRows([roots.userDir, roots.installDir].filter(Boolean))), ...(concreteGuards ? { guards: guardPool(registry) } : {}),
+			// the game's own template for a core object the engine's piles can draw and ours has no art for
+			// (class id, subtype): OBJECTS.TXT, read once a class
+			h3Tpl: (() => {
+				const byClass = new Map();
+				return (cls, sub) => {
+					if (!(cls >= 0)) return null;
+					if (!byClass.has(cls)) byClass.set(cls, h3ObjectTemplates([roots.userDir, roots.installDir].filter(Boolean), cls));
+					return byClass.get(cls).get(sub) || null;
+				};
+			})(),
 			...(themeDwellings ? { themeDwellings } : {}),
 			...(themeBanks && themeBanks.pool.length ? { themeBanks } : {}),
 			// a template zone's towns: concrete, of the factions it allows

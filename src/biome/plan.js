@@ -2037,6 +2037,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			// any other zone's rolled town type, which its terrain follows
 			townType: zoneTownType[tplZones.indexOf(z)] || null,
 			faction: zoneFaction[zi],
+			zoneCount: tplZones.length,
 			nativeZones: zoneFaction.filter(f => f === zoneFaction[zi]).length,
 			totalZones: (p.zonePlan && p.zonePlan.zones && p.zonePlan.zones.length) || tplZones.length,
 			loot: pileLoot(z),

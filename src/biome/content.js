@@ -22,7 +22,7 @@ const {
 	mineTemplate, pileTemplate, chestTemplate, campfireTemplate,
 	CLASS_MINES, CORE_BANKS, bankBandWeight, bandEligibility, bankEligAt, BONUS_POOL, pickBonus, STRUCTURES, STRUCTURE_SUBTYPE,
 	SPELL_SCROLL, pandoraTemplate, prisonTemplate, obeliskTemplate,
-	pandoraOptions, prisonOptions, makePrisonHeroPool,
+	pandoraOptions, prisonOptions, makePrisonHeroPool, SPECIALS,
 	UTIL_POOL, pickUtil, DWELLING_POOL, pickDwelling, PILE_KINDS, seerHutOptions,
 	SEER_ARTIFACTS, emptyRewardable,
 } = require('./economy');
@@ -175,6 +175,10 @@ const TPL_RICH_MIN = Number(process.env.VMAPGEN_TPL_RICH_MIN) || 10000;
 // to place, always lands; a guarded one at 0.70, at 0.50 in a band from
 // TPL_RICH_MIN. The fit read guard levels 1-7 at 0.80-1.08 of the corpus and
 // its chests at 0.95, where the rate model's maps hold 0.50.
+// The engine's piles draw the Dragon Utopia as often as any bank of its rarity, but its 7x7 footprint leaves many
+// of them nowhere to stand: the engine's maps hold 0.35 of what its piles drew (harness, Coldshadow's 144x144 x2,
+// 15.5 on the map against 44 drawn; VMAPGEN_UTOPIA_LAND overrides).
+const UTOPIA_LAND = Number(process.env.VMAPGEN_UTOPIA_LAND) || 0.35;
 const TPL_PILE_MODEL = process.env.VMAPGEN_TPL_PILE_MODEL || 'engine';
 // VMAPGEN_TPL_PILE_VALUES=engine: the uniform model's pile guards sized on the
 // values the engine's piles reach (fillBiome)
@@ -1892,6 +1896,100 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	}
 
 
+	// First, with VMAPGEN_TPL_PILE_MODEL=engine, the zone's treasure piles as
+	// the engine builds them (TPL_PILE_MODEL above): the pool its piles draw
+	// from (TreasurePlacer::addAllPossibleObjects, with this zone's faction's
+	// dwellings and creature boxes), and band by band, richest first, every pile
+	// the density asks for, spending the pool's zone limits; the ones the zone
+	// has room for land at their class's share. A landed pile's guard is sized
+	// on what the pile is worth; the chests pass below takes their chests.
+	let pileSim = null;
+	// the pool this zone's piles draw from, as TreasurePlacer builds it
+	// (piles.js zonePool): the engine model's piles, and with
+	// VMAPGEN_TPL_PILE_VALUES=engine the uniform model's pile values
+	const makePilePool = () => {
+		const bands = zoneMeta.spec.treasure || [];
+		const bare = f => String(f || 'neutral').toLowerCase().replace(/^.*:/, '');
+		const faction = zoneMeta.faction || 'neutral';
+		return pileZonePool(objectPools.pileCommon, {
+			maxValue: bands.reduce((a, b) => Math.max(a, b.max || 0), 0),
+			dwellings: (objectPools.engineDwellings || []).filter(d => d.faction === faction)
+				.map(d => ({ value: d.value, prob: d.prob, fromRmg: d.fromRmg, dw: d })),
+			creatures: (objectPools.guards || GUARD_POOL).filter(c => bare(c.faction) === faction),
+			nativeZones: zoneMeta.nativeZones ?? 1, totalZones: zoneMeta.totalZones || 1,
+			// ObjectDistributor::distributePrisons: the heroes the map can still imprison (the roster less 16 a player
+			// kept for hiring) are shared across all its zones, ceil(left / zones left) each
+			prisons: Math.ceil(Math.max(0, SPECIALS.prison.heroes.length - 16 * Math.max(1, players.length)) / Math.max(1, zoneMeta.zoneCount || 1)),
+			// the objects with a template for this ground (piles.js groundsOf)
+			terrain: ((objectPools.terrainNames && objectPools.terrainNames.get(terrain)) || {}).name || null,
+		}, rng);
+	};
+	if (zoneMeta && zoneMeta.spec && TPL_PILE_MODEL === 'engine' && objectPools.pileCommon) {
+		const bands = zoneMeta.spec.treasure || [];
+		const pool = makePilePool();
+		const gIdx = 1 + (zoneMeta.monsterShift || 0) + Math.max(-2, Math.min(2, Math.round(p.monsterStrength || 0)));
+		const gPool = objectPools.guards ? zoneGuardPool(objectPools.guards, zoneMeta.spec) : undefined;
+		const guarded = zoneMeta.spec.monsters !== 'none';
+		pileSim = { landed: [] };
+		// VMAPGEN_PILE_TRACE: every candidate pile's contents by landing class
+		// (open, guarded, rich), landed or not, for fitting the three shares
+		const tally = process.env.VMAPGEN_PILE_TRACE ? { open: {}, guarded: {}, rich: {} } : null;
+		for (const { band, byDensity, want } of templatePiles(bands, cells.length)) {
+			let made = 0, empty = 0;
+			while (made < byDensity && empty < byDensity) {
+				const pile = preparePile(pool, band, rng);
+				if (!pile.objects.length) { empty++; continue; }
+				if (made < want) {
+					const guard = guarded ? engineGuard(pile.value, gIdx, rng, false, gPool) : null;
+					if (guard && gPool) guard.concrete = true;
+					const cls = !guard ? 'open' : band.min >= TPL_RICH_MIN ? 'rich' : 'guarded';
+					const share = cls === 'open' ? TPL_PILE_LAND_OPEN : cls === 'rich' ? TPL_PILE_LAND_RICH : TPL_PILE_LAND_GUARDED;
+					if (tally) {
+						const t = tally[cls];
+						t.piles = (t.piles || 0) + 1;
+						if (guard) t['guardLvl' + guard.level] = (t['guardLvl' + guard.level] || 0) + 1;
+						for (const o of pile.objects) {
+							const k = o.type === 'pandoraBox' || o.type === 'resource' ? `${o.type}:${o.key}` : o.type;
+							t[k] = (t[k] || 0) + 1;
+						}
+					}
+					if (rng() < share) pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects });
+				}
+				made++;
+			}
+		}
+		if (tally) console.error(`[pilejson] ${JSON.stringify({ zone: zoneMeta.spec.id, cells: cells.length, tally })}`);
+		if (process.env.VMAPGEN_PILE_TRACE)
+			console.error(`[pile] zone ${zoneMeta.spec.id} engine piles: ${pileSim.landed.length} landed, `
+				+ `${pileSim.landed.filter(x => x.guard).length} guarded, `
+				+ `${pileSim.landed.reduce((a, x) => a + x.objects.filter(o => o.type === 'treasureChest').length, 0)} chests`);
+	}
+
+	// What the engine's piles landed in this zone, by object type: what the zone holds, in the kinds and numbers its
+	// template's bands ask for (a rich band draws the dear kinds, a poor one the cheap). The rate models these
+	// replace were fitted to maps pooled across templates, which cannot tell a zone of one band from another's
+	// (VMAPGEN_PILE_CONTENT=0 returns them). Harness, 2026-10-01: ours held 0.1 of the engine's magic wells,
+	// mystical gardens, campfires and sanctuaries per zone and 5 x its Pandora's boxes.
+	const pileMan = pileSim && process.env.VMAPGEN_PILE_CONTENT !== '0' ? new Map() : null;
+	if (pileMan)
+		for (const pl of pileSim.landed)
+			for (const o of pl.objects) {
+				if (!pileMan.has(o.type)) pileMan.set(o.type, []);
+				pileMan.get(o.type).push(o);
+			}
+	// the zone's loot multiplier (plan.js zoneMeta.loot) is how the rate models scaled a zone; the piles carry it in
+	// their own bands, so only the player's lever remains of p.xDensity
+	const lootDiv = zoneMeta && zoneMeta.loot > 0 ? zoneMeta.loot : 1;
+	// What the engine's maps hold of each kind against what its piles draw (harness, 8 templates x 8 seeds, ours with
+	// every other class within 7% of the engine's): the engine abandons some piles it cannot place, more of the
+	// piles with a Pandora's box, and keeps 0.8 of its open loot
+	const PILE_KEPT = { randomArtifactTreasure: 0.8, randomArtifactMinor: 0.8, randomArtifactMajor: 0.8, randomArtifactRelic: 0.8,
+		treasureChest: 0.8, spellScroll: 0.8, campfire: 0.8, pandoraBox: 0.7 };
+	const manCount = (type, lever = 1) => {
+		const n = ((pileMan && pileMan.get(type)) || []).length * lever * (PILE_KEPT[type] ?? 1);
+		return Math.floor(n) + (rng() < n % 1 ? 1 : 0);
+	};
+
 	// The utility long tail goes BEFORE scenery for the same reason mines
 	// do: the four-to-seven-cell masks (schoolOfWar, arena, mercenaryCamp,
 	// libraryOfEnlightenment) need open ground, and drawing after the packs
@@ -1909,7 +2007,25 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// the small masks the cells the 4x4 needed and produced
 	// fits|schoolOfWar:40+ rejections on traced maps.
 	const landmark = [];
-	for (let i = rare(fill.utils); i > 0; i--) {
+	if (pileMan) {
+		// the zone's own landed buildings, each as the pile drew it: the utilities and the bonus buildings that
+		// have a template here (a kind with none yet is left, see the harness's missing-kinds list)
+		for (const type of pileMan.keys()) {
+			if (type === 'crypt') continue;   // from the bank draw below, where the engine's piles put it
+			const u = UTIL_POOL.find(x => x.type === type && !x.pair && type !== 'monolithTwoWay');
+			const b = BONUS_POOL.find(x => x.type === type);
+			let e = u || b;
+			if (!e) {
+				// a core kind with no art of ours: the game's own template for it (OBJECTS.TXT), the kind as drawn
+				const o = pileMan.get(type)[0];
+				const t = o.core && objectPools.h3Tpl ? objectPools.h3Tpl(o.classIndex, o.subIndex) : null;
+				if (!t || /^(resource|randomResource|treasureChest|campfire|pandoraBox|prison|obelisk|spellScroll|seerHut|randomArtifact|creatureBank|dragonUtopia|crypt|dwelling|monolith|subterraneanGate|mine|witchHut|learningStone|scholar|waterWheel|windmill|mysticalGarden)/.test(type)) continue;
+				e = { type, subtype: o.subtype, tpl: t, generic: true };
+			}
+			for (let n = manCount(type, b ? p.bonusDensity : 1); n > 0; n--) landmark.push(e);
+		}
+	}
+	for (let i = pileMan ? 0 : rare(fill.utils); i > 0; i--) {
 		const u = pickUtil(rng);
 		if (fillStat) {
 			const k = 'draw|' + u.type + (u.pair ? '(pair)' : '');
@@ -1925,7 +2041,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		if (u.type === 'crypt') continue;
 		landmark.push(u);
 	}
-	for (let i = Math.round(scale * fill.bonuses * p.bonusDensity); i > 0; i--) {
+	for (let i = pileMan ? 0 : Math.round(scale * fill.bonuses * p.bonusDensity); i > 0; i--) {
 		const b = pickBonus(rng);
 		if (fillStat) {
 			const k = 'bdraw|' + b.type;
@@ -1952,7 +2068,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				o.subtype, 40, fitAnchors(o.tpl), true)
 			: put(o.type, o.tpl,
 				o.type === 'seerHut' ? seerHutOptions(rng)
-					: (o.type === 'crypt' || o.type === 'redwoodObservatory')
+					: (o.type === 'crypt' || o.type === 'redwoodObservatory' || o.generic)
 						? emptyRewardable() : undefined,
 				o.subtype, 40, fitAnchors(o.tpl), true);
 		if (!e) owed.push(o);
@@ -2147,71 +2263,6 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// lower (0.6-0.7x): the corpus's own players started Tower and Dungeon, and
 	// the lens rolls starts at random. VMAPGEN_TPL_DWELL_MODEL=zone is the old.
 	//
-	// First, with VMAPGEN_TPL_PILE_MODEL=engine, the zone's treasure piles as
-	// the engine builds them (TPL_PILE_MODEL above): the pool its piles draw
-	// from (TreasurePlacer::addAllPossibleObjects, with this zone's faction's
-	// dwellings and creature boxes), and band by band, richest first, every pile
-	// the density asks for, spending the pool's zone limits; the ones the zone
-	// has room for land at their class's share. A landed pile's guard is sized
-	// on what the pile is worth; the chests pass below takes their chests.
-	let pileSim = null;
-	// the pool this zone's piles draw from, as TreasurePlacer builds it
-	// (piles.js zonePool): the engine model's piles, and with
-	// VMAPGEN_TPL_PILE_VALUES=engine the uniform model's pile values
-	const makePilePool = () => {
-		const bands = zoneMeta.spec.treasure || [];
-		const bare = f => String(f || 'neutral').toLowerCase().replace(/^.*:/, '');
-		const faction = zoneMeta.faction || 'neutral';
-		return pileZonePool(objectPools.pileCommon, {
-			maxValue: bands.reduce((a, b) => Math.max(a, b.max || 0), 0),
-			dwellings: (objectPools.engineDwellings || []).filter(d => d.faction === faction)
-				.map(d => ({ value: d.value, prob: d.prob, fromRmg: d.fromRmg, dw: d })),
-			creatures: (objectPools.guards || GUARD_POOL).filter(c => bare(c.faction) === faction),
-			nativeZones: zoneMeta.nativeZones ?? 1, totalZones: zoneMeta.totalZones || 1,
-			// the objects with a template for this ground (piles.js groundsOf)
-			terrain: ((objectPools.terrainNames && objectPools.terrainNames.get(terrain)) || {}).name || null,
-		}, rng);
-	};
-	if (zoneMeta && zoneMeta.spec && TPL_PILE_MODEL === 'engine' && objectPools.pileCommon) {
-		const bands = zoneMeta.spec.treasure || [];
-		const pool = makePilePool();
-		const gIdx = 1 + (zoneMeta.monsterShift || 0) + Math.max(-2, Math.min(2, Math.round(p.monsterStrength || 0)));
-		const gPool = objectPools.guards ? zoneGuardPool(objectPools.guards, zoneMeta.spec) : undefined;
-		const guarded = zoneMeta.spec.monsters !== 'none';
-		pileSim = { landed: [] };
-		// VMAPGEN_PILE_TRACE: every candidate pile's contents by landing class
-		// (open, guarded, rich), landed or not, for fitting the three shares
-		const tally = process.env.VMAPGEN_PILE_TRACE ? { open: {}, guarded: {}, rich: {} } : null;
-		for (const { band, byDensity, want } of templatePiles(bands, cells.length)) {
-			let made = 0, empty = 0;
-			while (made < byDensity && empty < byDensity) {
-				const pile = preparePile(pool, band, rng);
-				if (!pile.objects.length) { empty++; continue; }
-				if (made < want) {
-					const guard = guarded ? engineGuard(pile.value, gIdx, rng, false, gPool) : null;
-					if (guard && gPool) guard.concrete = true;
-					const cls = !guard ? 'open' : band.min >= TPL_RICH_MIN ? 'rich' : 'guarded';
-					const share = cls === 'open' ? TPL_PILE_LAND_OPEN : cls === 'rich' ? TPL_PILE_LAND_RICH : TPL_PILE_LAND_GUARDED;
-					if (tally) {
-						const t = tally[cls];
-						t.piles = (t.piles || 0) + 1;
-						if (guard) t['guardLvl' + guard.level] = (t['guardLvl' + guard.level] || 0) + 1;
-						for (const o of pile.objects) {
-							const k = o.type === 'pandoraBox' || o.type === 'resource' ? `${o.type}:${o.key}` : o.type;
-							t[k] = (t[k] || 0) + 1;
-						}
-					}
-					if (rng() < share) pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects });
-				}
-				made++;
-			}
-		}
-		if (tally) console.error(`[pilejson] ${JSON.stringify({ zone: zoneMeta.spec.id, cells: cells.length, tally })}`);
-		if (process.env.VMAPGEN_PILE_TRACE)
-			console.error(`[pile] zone ${zoneMeta.spec.id} engine piles: ${pileSim.landed.length} landed, `
-				+ `${pileSim.landed.filter(x => x.guard).length} guarded, `
-				+ `${pileSim.landed.reduce((a, x) => a + x.objects.filter(o => o.type === 'treasureChest').length, 0)} chests`);
-	}
 	let dwellPicks = null;
 	if (pileSim && process.env.VMAPGEN_TPL_DWELL_MODEL !== 'zone') {
 		// the engine's piles decide the dwellings as they decide everything else the zone holds (TreasurePlacer::
@@ -2301,6 +2352,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// they draw from open cells (noEdge) rather than the mass-edge pool.
 	const skillPool = FILL_TYPES.skillStructures;
 	const skillW = skillPool.reduce((a, s) => a + s.w, 0);
+	if (pileMan) {
+		for (const s of skillPool) for (let n = manCount(s.type); n > 0; n--) put(s.type, s.tpl, undefined, s.subtype, 40, fitAnchors(s.tpl), true);
+		for (const g of FILL_TYPES.resourceGenerators) for (let n = manCount(g.type); n > 0; n--) put(g.type, g.tpl, undefined, g.subtype, 40, fitAnchors(g.tpl), true);
+	} else {
 	for (let i = rare(fill.skills); i > 0; i--) {
 		let roll = rng() * skillW, s = skillPool[0];
 		for (const e of skillPool) { roll -= e.w; if (roll <= 0) { s = e; break; } }
@@ -2309,6 +2364,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	for (let i = rare(fill.generators); i > 0; i--) {
 		const g = FILL_TYPES.resourceGenerators[(rng() * FILL_TYPES.resourceGenerators.length) | 0];
 		put(g.type, g.tpl, undefined, g.subtype, 40, fitAnchors(g.tpl), true);
+	}
 	}
 	// Creature banks ("dungeon structures"): concrete mod-aware ids from the
 	// live index - no placeholder type exists in the engine. Emission carries
@@ -2437,9 +2493,15 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		if (!zoneMeta && FREE_ZONE_BANDS[cls] && process.env.VMAPGEN_FREE_BANK_BANDS === '1')
 			eligWeight = mixByAdmission(FREE_ZONE_BANDS[cls].map(band => ({ band, count: band.density })));
 	}
-	const bankCount = bankDraws.length;
-	for (const band of bankPool.length ? bankDraws : []) {
-		const pick = pickBank(band);
+	// a zone with landed piles takes the banks they drew, each as drawn (kind and number); the rate model above
+	// stands for a zone with none (a free layout)
+	const bankPicks = pileMan ? ['creatureBank', 'dragonUtopia', 'crypt'].flatMap(t => (pileMan.get(t) || []).filter(() => t !== 'dragonUtopia' || rng() < UTOPIA_LAND).map(o => {
+		const sub = String(o.key).slice(String(o.key).lastIndexOf('.') + 1);
+		return bankPool.find(x => x.b.subtype === sub && (x.b.type || 'creatureBank') === t) || null;
+	})).filter(Boolean) : null;
+	const bankCount = pileMan ? bankPicks.length : bankDraws.length;
+	for (const band of pileMan ? bankPicks : bankPool.length ? bankDraws : []) {
+		const pick = pileMan ? band : pickBank(band);
 		if (!pick) continue;
 		const b = pick.b;
 		const e = put(b.type || 'creatureBank', pick.tpl.raw, b.rewardable ? emptyRewardable() : undefined,
@@ -2478,7 +2540,13 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// zone distance caps at 3: the corpus far-band mix (~26% relics) is the
 	// target, and a graph deeper than three hops does not make it deeper.
 	const zd = Math.min(3, zoneDist == null ? 0 : Math.min(zoneDist, 3));
-	const artifactCount = Math.round(area * p.artifactDensity * fill.artifacts * 10);
+	const artifactCount = pileMan ? 0 : Math.round(area * p.artifactDensity * fill.artifacts * 10);
+	if (pileMan)
+		for (const t of ART_TIERS)
+			for (let n = manCount(t.type, p.artifactDensity / BIOME_DEFAULTS.artifactDensity / lootDiv); n > 0; n--) {
+				if (rng() < 0.03) put('artifact', OBJECT_TEMPLATES.randomArtifact, undefined, SEER_ARTIFACTS[(rng() * SEER_ARTIFACTS.length) | 0]);
+				else put(t.type, t.tpl);
+			}
 	for (let i = 0; i < artifactCount; i++) {
 		// ~3% of artifacts write concrete (type 'artifact', subtype a named
 		// id) rather than tier placeholders - same pool the seer-hut quests
@@ -2498,7 +2566,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// 3.55 per 1000 cells. The spell has to be named, because an unresolvable
 	// identifier falls back to spell 0 rather than to a random one.
 	if (SPELL_SCROLL && SPELL_SCROLL.spells.length)
-		for (let i = Math.round(scale * fill.scrolls * p.pickupDensity); i > 0; i--) {
+		for (let i = pileMan ? manCount('spellScroll', p.pickupDensity / lootDiv) : Math.round(scale * fill.scrolls * p.pickupDensity); i > 0; i--) {
 			const spell = SPELL_SCROLL.spells[(rng() * SPELL_SCROLL.spells.length) | 0];
 			put(SPELL_SCROLL.type, SPELL_SCROLL.tpl, { spell }, SPELL_SCROLL.subtype);
 		}
@@ -2518,7 +2586,18 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	};
 	// the resources already lying beside the mines are the first concrete piles
 	let besideLeft = mineExtras;
-	for (let i = Math.round(scale * fill.piles * p.resourceDensity); i > 0; i--) {
+	if (pileMan) {
+		// the piles' own resources, each kind as drawn
+		const lever = p.resourceDensity / lootDiv;
+		for (const o of pileMan.get('resource') || []) {
+			if (rng() >= lever && lever < 1) continue;
+			const kind = String(o.key).slice(String(o.key).lastIndexOf('.') + 1);
+			if (besideLeft > 0) { besideLeft--; continue; }
+			put('resource', pileTemplate(kind), undefined, kind);
+		}
+		for (let n = manCount('randomResource', lever); n > 0; n--) put('randomResource', pileTpl, undefined, 'randomResource');
+	}
+	for (let i = pileMan ? 0 : Math.round(scale * fill.piles * p.resourceDensity); i > 0; i--) {
 		if (PILE_KINDS && rng() < 0.667) {
 			const kind = pickKind();
 			if (besideLeft > 0) { besideLeft--; continue; }
@@ -2553,7 +2632,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// lever scales the count
 		const drawn = pileSim.landed.flatMap(pl => pl.objects.filter(o => o.type === 'treasureChest'));
 		const bySubtype = new Map(chestPool.map(e => [e.c.subtype, e]));
-		const want = drawn.length * p.pickupDensity;
+		const want = drawn.length * p.pickupDensity / (pileMan ? lootDiv : 1);
 		const n = Math.floor(want) + (rng() < want % 1 ? 1 : 0);
 		for (let i = 0; i < n && drawn.length; i++) {
 			const key = String(drawn[i % drawn.length].key);
@@ -2568,7 +2647,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		}
 	}
 	const fireTpl = campfireTemplate();
-	for (let i = Math.round(scale * fill.campfires * p.pickupDensity); i > 0; i--)
+	for (let i = pileMan ? manCount('campfire', p.pickupDensity / lootDiv) : Math.round(scale * fill.campfires * p.pickupDensity); i > 0; i--)
 		put('campfire', fireTpl, undefined, 'campfire');
 
 	// One-visit buildings are placed with the utilities above the scenery
@@ -2590,19 +2669,19 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// live. Multiplying the underground rates reproduces that split.
 	const uMul = l > 0 ? { pandora: 3, prison: 3, obelisk: 2.5 } : null;
 	const pandoraTpl = pandoraTemplate();
-	for (let i = rare(fill.pandoras * (uMul ? uMul.pandora : 1)); i > 0; i--)
+	for (let i = pileMan ? manCount('pandoraBox') : rare(fill.pandoras * (uMul ? uMul.pandora : 1)); i > 0; i--)
 		put('pandoraBox', pandoraTpl, pandoraOptions(rng));
-	if (fill.prisons) {
+	if (fill.prisons || (pileMan && pileMan.has('prison'))) {
 		if (!objectPools.prisonHeroes)
 			objectPools.prisonHeroes = makePrisonHeroPool(players.length, rng);
-		for (let i = rare(fill.prisons * (uMul ? uMul.prison : 1)); i > 0; i--) {
+		for (let i = pileMan ? manCount('prison') : rare(fill.prisons * (uMul ? uMul.prison : 1)); i > 0; i--) {
 			const hero = objectPools.prisonHeroes.pop();
 			if (!hero) break;
 			put('prison', prisonTemplate(), prisonOptions(hero, rng), 'prison');
 		}
 	}
 	const obeliskTpl = obeliskTemplate(terrain);
-	for (let i = rare(fill.obelisks * (uMul ? uMul.obelisk : 1)); i > 0; i--)
+	for (let i = pileMan ? manCount('obelisk') : rare(fill.obelisks * (uMul ? uMul.obelisk : 1)); i > 0; i--)
 		if (put('obelisk', obeliskTpl))
 			objectPools.obeliskCount = (objectPools.obeliskCount || 0) + 1;
 
@@ -2768,10 +2847,23 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// TPL_PILE_SHARE is what then lands, measured against the corpus with
 		// the fidelity lens.
 		let next = 0;
-		const postPileGuard = guard => {
+		const usedTarget = new Set();
+		const postPileGuard = (guard, pile = null) => {
 			if (process.env.VMAPGEN_PILE_TRACE) console.error(`[pile]   guard level ${guard.level} strength ${guard.strength}`);
 			let done = false;
-			while (!done && next < byPiles.length) done = postGuard(byPiles[next++], guard);
+			// the guard stands by what its pile is worth most in: an artifact pile's guard by an artifact, a
+			// Pandora's box's by a box (our objects are not clustered into piles, so the nearest thing to the engine's
+			// pile is the placed object of the pile's dearest kind); with none left, by the next in the ranking
+			const top = pile && pile.objects && pile.objects.length ? pile.objects.reduce((a, o) => (o.value > a.value ? o : a)) : null;
+			if (top) {
+				const k = byPiles.findIndex((g, j) => !usedTarget.has(j) && g.entry.type === top.type);
+				if (k >= 0) { usedTarget.add(k); done = postGuard(byPiles[k], guard); }
+			}
+			while (!done && next < byPiles.length) {
+				if (usedTarget.has(next)) { next++; continue; }
+				usedTarget.add(next);
+				done = postGuard(byPiles[next++], guard);
+			}
 			// more guarded piles than objects to stand by: the guard still
 			// stands in the zone
 			if (!done) {
@@ -2786,7 +2878,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		if (pileSim) {
 			// the engine's piles (VMAPGEN_TPL_PILE_MODEL=engine, above): each
 			// landed pile's guard, sized on what that pile is worth
-			for (const pl of pileSim.landed) if (pl.guard) postPileGuard(pl.guard);
+			for (const pl of pileSim.landed) if (pl.guard) postPileGuard(pl.guard, pl);
 		} else {
 			// VMAPGEN_TPL_PILE_VALUES=engine: each pile sized on what a pile the
 			// engine builds in that band is worth (piles.js preparePile: objects

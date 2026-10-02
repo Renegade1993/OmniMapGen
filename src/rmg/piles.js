@@ -77,7 +77,8 @@ function commonPool(objects, useMods = true, h3rows = null) {
 				&& t.allowedTerrains[0] === 'water';
 			water = tpls.every(onWater) ? 'only' : 'never';
 		}
-		out.push({ key, type: o.type, value: o.rmg.value, probability: o.rmg.rarity || 0,
+		out.push({ key, type: o.type, subtype: o.subtype, core, classIndex: o.classIndex, subIndex: o.subIndex,
+			value: o.rmg.value, probability: o.rmg.rarity || 0,
 			zoneLimit: o.rmg.zoneLimit, mapLimit: o.rmg.mapLimit, large, water, terrains: groundsOf(o, h3rows) });
 	}
 	return out;
