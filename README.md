@@ -19,8 +19,8 @@ mods: towns, mines, guards by level, treasure, creature banks and dwellings per 
 
 ## Installing it in the game
 
-OmniMapGen is a VCMI mod. It needs a client with the map generator framework, which Dead Man's
-Boots (DMB) has, at its addon API level 4. Install and enable it from DMB's launcher like any other
+OmniMapGen is a random map generator add-on for Dead Man's Boots' map generator framework. It needs
+Dead Man's Boots (DMB) at its addon API level 4. Install and enable it from DMB's launcher like any other
 mod; the launcher also turns on the VCMI Extras submod (extendedLobby) whose lobby art the tab
 draws with. Or unzip `omnimapgen.zip` from the latest release into the `Mods` folder of your
 game's user folder and enable it in the launcher. The mod carries its own Node runtime; nothing
