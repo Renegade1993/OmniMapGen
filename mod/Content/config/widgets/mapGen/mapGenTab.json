@@ -49,7 +49,7 @@
 			"mineGuardWeight": 1,
 			"subterraneanGateRatio": 1,
 			"subterraneanNarrow": 0.6,
-			"undergroundStarts": 1,
+			"undergroundStarts": 4,
 			"subterraneanOpen": 0.57,
 			"decorDensity": 1,
 			"rivers": 1,
@@ -66,7 +66,7 @@
 			"underground": 0,
 			"players": 4,
 			"humans": 1,
-			"template": "",
+			"template": "Coldshadow's Fantasy",
 			"declareMods": 0
 		},
 		"preset": "nostalgia"

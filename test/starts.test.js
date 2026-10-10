@@ -103,13 +103,19 @@ test('36x36, 8 players, seed 2: every start walks out of its zone and is topped 
 	fs.rmSync(out, { force: true });
 });
 
-test('Islands 72x72, 4 players, seed 1: balancing lifts every start to its target', { timeout: 240000 }, () => {
+// seeds 1 to 3: a seed whose starts all meet their target runs no balancing (seed 1 after the islands start-road fix, 2026-10-09), so the
+// test needs one seed where it ran, and every start it ran on lifted
+test('Islands 72x72, 4 players, seeds 1-3: balancing lifts every start to its target', { timeout: 480000 }, () => {
 	const shape = WATER_SHAPES.findIndex(s => s.id === 'islands');
-	const { r, out } = generate(['--w', '72', '--h', '72', '--players', '4', '--seed', '1',
-		'--bio.waterCoverage', '0.35', '--bio.waterShape', String(shape)], { VMAPGEN_PARITY_DEBUG: '1' });
-	assert.strictEqual(r.status, 0, r.stderr.slice(-600));
-	toppedUp(r.stderr);
-	fs.rmSync(out, { force: true });
+	let ran = 0;
+	for (const seed of ['1', '2', '3']) {
+		const { r, out } = generate(['--w', '72', '--h', '72', '--players', '4', '--seed', seed,
+			'--bio.waterCoverage', '0.35', '--bio.waterShape', String(shape)], { VMAPGEN_PARITY_DEBUG: '1' });
+		assert.strictEqual(r.status, 0, r.stderr.slice(-600));
+		if (r.stderr.split('\n').some(l => l.startsWith('[parity] '))) { toppedUp(r.stderr); ran++; }
+		fs.rmSync(out, { force: true });
+	}
+	assert.ok(ran > 0, 'some start was below target on one of the seeds, so balancing ran');
 });
 
 test('72x72, 4 players, seed 5: every start walks to a sawmill and an ore pit of its own', { timeout: 240000 }, () => {

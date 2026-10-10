@@ -30,7 +30,7 @@ const DIRS8 = [[0, -1], [1, 0], [0, 1], [-1, 0], [1, -1], [1, 1], [-1, 1], [-1, 
  * Existing road is cheap so branches share a trunk. Returns the path as an
  * array of cell indices, or null.
  */
-function route(sources, targets, W, H, blocked, l, roadCells, dirs) {
+function route(sources, targets, W, H, blocked, l, roadCells, dirs, allow = null) {
 	const base = l * W * H;
 	const N = W * H;
 	const dist = new Float64Array(N).fill(Infinity);
@@ -67,6 +67,8 @@ function route(sources, targets, W, H, blocked, l, roadCells, dirs) {
 			if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
 			const n = ny * W + nx;
 			if (seen[n] || (blocked[base + n] & OCCUPIED)) continue;
+			// allow (optional): the cells a road may use, e.g. one zone's own ground (roadplan.js joinFailed)
+			if (allow && !allow(n)) continue;
 			// Trunk preference: corpus roads are a few big nets (largest
 			// component holds ~52% of road cells), ours ran 41.8% under
 			// 0.25 with the balance spread over shards. 0.12 makes a join

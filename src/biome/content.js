@@ -87,6 +87,35 @@ const { singleTemplate, dominoTemplate, trominoTemplate, mergedTemplate,
 	DECOR_BLOCKED_SHARE,
 	DECOR_BLOCKED_SHARE_UNDERGROUND } = require('./decor');
 const DECOR_TYPE_SET = new Set(DECOR_TYPES);
+// Pockets (Opus Map Vision, 2026-10-01, branch opus-coldshadow). The engine's guard stands on the only way into the
+// pile it guards (TreasurePlacer; ObjectManager::addGuard puts it on the entrance and the pile's border is blocked).
+// Ours used to refuse to take a target's last open approach and posted the guard beside it, so a hero walked round
+// it (tools/mapsight: 49% of our guards beside loot a hero walks around, the engine 2%; high loot sealed 8% against
+// 76%). With pockets on, a pile's guard may take the last approach, and the target's other approach tiles get a
+// one-tile obstacle each, so the guard is the way in. VMAPGEN_SEAL_POCKETS=0 is the old placement.
+const SEAL_POCKETS = process.env.VMAPGEN_SEAL_POCKETS !== '0';
+const POCKET_LOOT = /^(randomArtifact|artifact$|pandoraBox$|spellScroll$)/;
+const NOOK_T = {}; const RING_T = {}; if (process.env.VMAPGEN_RING_TRACE) process.on('exit', () => console.error('[ring] ' + JSON.stringify(RING_T))); if (process.env.VMAPGEN_NOOK_TRACE) process.on('exit', () => console.error('[nook] ' + JSON.stringify(NOOK_T)));
+const SEAL_TRACE = process.env.VMAPGEN_SEAL_TRACE ? {} : null;
+const SEAL_ABSORB = process.env.VMAPGEN_SEAL_ABSORB !== '0';
+const SEAL_TIGHT = process.env.VMAPGEN_SEAL_TIGHT !== '0';
+const SEAL_MODEL = process.env.VMAPGEN_SEAL_MODEL || 'ring';
+const SEAL_SPOT = process.env.VMAPGEN_SEAL_SPOT !== '0';
+const SEAL_MOVE = process.env.VMAPGEN_SEAL_MOVE !== '0';
+const SEAL_RESITE = process.env.VMAPGEN_SEAL_RESITE !== '0';
+const SEAL_GATHER = process.env.VMAPGEN_SEAL_GATHER !== '0';
+const SEAL_LOOK = Math.max(1, Number(process.env.VMAPGEN_SEAL_LOOK || 8));
+// With pockets, pile guards go to the dearest unguarded things first (the engine's strongest guards stand in front of
+// its richest piles; ours posted them by the pile's kind and most landed on resources: 175 of 421 on a Coldshadow map,
+// 9 of 92 dwellings guarded). Lower is dearer.
+// Dwellings first (VMAPGEN_DWELLING_FIRST=0 puts relics first as before): the engine's dwelling shares its guard with a
+// pile of treasure (0.82 of them on Coldshadow's Fantasy), so one guard on a dwelling with the zone's dear pickups
+// gathered beside it seals both; relics first left 0.21 of our dwellings with no guard at all (2026-10-02).
+const DWELLING_FIRST = process.env.VMAPGEN_DWELLING_FIRST !== '0';
+const POCKET_RANK = { randomArtifactRelic: DWELLING_FIRST ? 1.5 : 1, creatureGeneratorCommon: DWELLING_FIRST ? 1 : 2, creatureGeneratorSpecial: DWELLING_FIRST ? 1 : 2, randomDwelling: DWELLING_FIRST ? 1 : 2,
+	pandoraBox: 3, dragonUtopia: 3, randomArtifactMajor: 4, creatureBank: 5, spellScroll: 6, artifact: 6, randomArtifactMinor: 7,
+	prison: 8, randomArtifactTreasure: 9, treasureChest: 10, campfire: 11, randomResource: 12, resource: 12 };
+if (SEAL_TRACE) process.on('exit', () => console.error('[seal] ' + JSON.stringify(SEAL_TRACE)));
 
 /*
  * Cave content density. Measured 2026-09-24 per floor cell of carved levels
@@ -184,8 +213,33 @@ const TPL_PILE_MODEL = process.env.VMAPGEN_TPL_PILE_MODEL || 'engine';
 // values the engine's piles reach (fillBiome)
 const TPL_PILE_VALUES = process.env.VMAPGEN_TPL_PILE_VALUES || 'uniform';
 const TPL_PILE_LAND_OPEN = Number(process.env.VMAPGEN_TPL_PILE_LAND_OPEN) || 1.0;
-const TPL_PILE_LAND_GUARDED = Number(process.env.VMAPGEN_TPL_PILE_LAND_GUARDED) || 0.70;
+// 0.70 to 0.85 on 2026-10-02, against 12 engine maps made with K's own mods (.tmp\opus-seeing\eng_k.py, rmgrun-k):
+// start zones' guards per 100 tiles 0.67-1.39 against 1.06-1.54, now 0.93-1.52
+const TPL_PILE_LAND_GUARDED = Number(process.env.VMAPGEN_TPL_PILE_LAND_GUARDED) || 0.85;
 const TPL_PILE_LAND_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_RICH) || 0.50;
+// by zone role (K, 2026-10-02: treasure biomes nearly bare; tools/geometry/zonefill.js against the engine's same zones):
+// a treasure zone lands every rich pile (high loot per 100 open tiles 1.2-2.2 -> 2.9-4.8, the engine's 2.3-7.4), a
+// junction keeps the share above (all landed it overshot: 6.5-9 against the engine's 0.8-5.8). A rule of the registry.
+// 1.0 to 0.70 the same evening, measured per zone tile against the engine with K's mods (an open-tile count moves with
+// our scenery and had misled): treasure zones 10-16 guards 1.3x the engine's, now 1.0-1.1x
+const TPL_PILE_LAND_RICH_TREASURE = Number(process.env.VMAPGEN_TPL_PILE_LAND_RICH_TREASURE) || 0.70;
+// Measured per zone tile, not per open tile (an open-tile count moves with our scenery): the engine lands about half of
+// the piles of a band from 50000 in every zone role (Coldshadow's Fantasy 144 L2, 28 engine maps against 5 of ours:
+// zone 21 guards 1.23 a 100 tiles against our 2.31, zones 17-20 1.0 against 1.4, at the shares above). Bands below keep
+// the role's share. A rule of the registry.
+const TPL_VERY_RICH_MIN = Number(process.env.VMAPGEN_TPL_VERY_RICH_MIN) || 50000;
+const TPL_PILE_LAND_VERY_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_VERY_RICH) || 0.45;
+// a treasure zone's piles from 50000 (Coldshadow's central zone 21): 1.4x the engine's high loot and 1.2x its guards at 0.45
+// once the kept shares went (2026-10-03)
+const TPL_PILE_LAND_VERY_RICH_TREASURE = Number(process.env.VMAPGEN_TPL_PILE_LAND_VERY_RICH_TREASURE) || 0.33;
+// The engine places a zone's richest band first (createTreasures, at a distance from every object that falls as the
+// bands add up), and a band placed after one from 50000 finds the room taken: Coldshadow's junctions 17-20 held 3.7x
+// the engine's chests and 1.4x its guards with their 10000-15000 band landing like any other. That band, and any
+// after a band from 50000, lands at this share of its own in a zone that is not a treasure zone (Coldshadow's central
+// treasure zone 21, whose 20000-60000 band follows two from 100000, fell to half the engine's guards with it) (2026-10-03).
+// A rule of the registry.
+const TPL_PILE_LAND_AFTER_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_AFTER_RICH) || 0.3;
+const TPL_PILE_LAND_CHEAP_AFTER_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_CHEAP_AFTER_RICH) || 0.6;
 /**
  * The treasure piles a template zone lands, band by band, richest first, as
  * TreasurePlacer::createTreasures asks for them: floor(tiles * density / 400)
@@ -193,7 +247,11 @@ const TPL_PILE_LAND_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_RICH) || 0.5
  * squared reading), times the share the engine actually lands.
  * Returns [{ band, want, count }] in that order.
  */
-function templatePiles(bands, cellCount) {
+// richScale: the rich bands (min 50000 and up) counted on that many times the cells. A one-level map puts the zones
+// the template forces underground on the surface beside all the others, each with about half the room the engine's
+// map gives it (the engine still writes them on a level of their own), so their dragon dwellings came out 8 to 21
+// against the engine's 18 to 28 (Coldshadow's Fantasy, 2026-10-02).
+function templatePiles(bands, cellCount, richScale = 1) {
 	const linearRoom = process.env.VMAPGEN_PILE_ROOM === 'linear';
 	const out = [];
 	let totalDensity = 0;
@@ -202,8 +260,9 @@ function templatePiles(bands, cellCount) {
 		if (!totalDensity) continue;
 		const minDistance = Math.max(1, Math.sqrt(Math.min(t.min, 30000) / 10 / totalDensity));
 		const d = linearRoom ? minDistance : Math.sqrt(minDistance);
-		const byDensity = Math.floor(cellCount * (t.density || 0) / 400);
-		const byRoom = Math.floor(cellCount / (d * d));
+		const cc = t.min >= 50000 ? cellCount * richScale : cellCount;
+		const byDensity = Math.floor(cc * (t.density || 0) / 400);
+		const byRoom = Math.floor(cc / (d * d));
 		const want = Math.min(byDensity, byRoom);
 		const share = t.min >= TPL_RICH_MIN ? TPL_PILE_SHARE_RICH : TPL_PILE_SHARE;
 		out.push({ band: t, want, count: Math.round(want * share), d, byDensity, byRoom });
@@ -268,6 +327,44 @@ function engineGuard(value, idx, rng, zoneGuard = false, pool = GUARD_POOL) {
 	return { level: Math.min(7, c.level), amount: Math.max(1, amount), creature: c.id, strength: s };
 }
 /**
+ * The strength (amount x AI value) the engine's own maps put on a guard by what it stands over: the medians over its Coldshadow's Fantasy
+ * maps (mapsight guards, 2026-10-06; Pandora's boxes 21k where ours stood at 13k: K, "a lot of pandora boxes aren't guarded as well as they
+ * are in vcmi templates"). A guard posted after the pile passes (guardDearLoot, the approach closing) takes its strength from here, not from
+ * the nearest guard of its zone, which in a junction zone is a 100k dragon stack.
+ */
+/** A prison's experience by the value its pile drew it at (randomMap.json prisons; piles.js PRISON_VALUES). */
+/** The nearest another guard may stand to a guard, in tiles (Chebyshev): the engine's stacks on 20 Coldshadow maps, nearest other stack p10 4,
+ * median 5, crowded (within 2) 0.1%. Used by the guard register here and by guardDearLoot and the approach closing (plan.js, approachclose.js). */
+const GUARD_GAP = 4;
+const PRISON_TIER_EXP = { 2500: 0, 5000: 5000, 10000: 15000, 20000: 90000, 30000: 500000 };
+// prisons by experience: the medians of the guards beside the engine's prisons of that tier on 20 Coldshadow maps (prison_tiers.js, 2026-10-08)
+const LOOT_GUARD_STRENGTH = { randomArtifactRelic: 65000, pandoraBox: 21000, randomArtifactMajor: 11000, artifact: 17000, spellScroll: 5000,
+	dwelling: 8000, dragonDwelling: 50000, prison90000: 61000, prison500000: 80000,
+	// the engine's gold mine guards: medians 2.2k (computer starts) to 5.9k (junctions) on 20 Coldshadow maps (mine_guards.js, 2026-10-08)
+	goldMine: 4000 };
+function lootGuard(kind, p, rng, pool = GUARD_POOL) {
+	const base = LOOT_GUARD_STRENGTH[kind];
+	if (!base) return null;
+	// the Monster tier lever moves the strength as it moves the engine's table (index 1 at Normal)
+	const sAt = (v, i) => Math.floor(Math.max(0, (v - GUARD_V1[i]) * GUARD_M1[i])) + Math.floor(Math.max(0, (v - GUARD_V2[i]) * GUARD_M2[i]));
+	const i = Math.max(0, Math.min(4, 1 + Math.max(-2, Math.min(2, Math.round(Number(p && p.monsterStrength) || 0)))));
+	const s = Math.floor(base * (0.6 + 0.8 * rng()) * (sAt(20000, i) / sAt(20000, 1)));
+	if (s < MIN_GUARD_STRENGTH) return null;
+	const ok = pool.filter(c => Math.floor(c.aiValue * (c.advMin + c.advMax) / 2) < s && s < c.aiValue * 100);
+	const c = ok.length ? ok[(rng() * ok.length) | 0] : AZURE;
+	let amount = Math.floor(s / c.aiValue);
+	if (amount >= 4) amount = Math.floor(amount * (0.75 + rng() * 0.5));
+	return { level: Math.min(7, c.level), amount: Math.max(1, amount), creature: c.id, strength: s };
+}
+/** A template link's guard strength times p.linkGuardScale (plan.js linkGuardScale: a map smaller than the
+ * template's own smallest), never below LINK_GUARD_MIN, under which engineGuard places no guard at all. */
+const LINK_GUARD_MIN = 5000;
+function scaledLinkGuard(strength, p) {
+	const f = (p && p.linkGuardScale) || 1;
+	if (!(strength > 0) || f >= 1) return strength;
+	return Math.max(Math.min(strength, LINK_GUARD_MIN), Math.round(strength * f));
+}
+/**
  * The guards a template zone allows, as ZoneOptions::getMonsterTypes decides
  * them: creatures of an allowedMonsters faction (every faction when the list
  * is empty, CRmgTemplate.cpp:1028-1032) and not of a bannedMonsters one.
@@ -292,6 +389,11 @@ function nearestLevelDwelling(pool, level, rng) {
 	let roll = rng() * near.reduce((a, d) => a + (d.weight || 1), 0);
 	for (const d of near) { roll -= d.weight || 1; if (roll <= 0) return d; }
 	return near[near.length - 1];
+}
+/** A template guard's count (the engine's own rule for its value) follows the Stack size lever too; 1x leaves it as it is. */
+function scaledAmount(n, p) {
+	const s = p && Number.isFinite(p.stackScale) ? p.stackScale : 1;
+	return s === 1 ? n : Math.max(1, Math.round(n * s));
 }
 function monsterOptions(tier, p, rng) {
 	const s = p && Number.isFinite(p.stackScale) ? p.stackScale : 1;
@@ -391,6 +493,9 @@ const GUARD_CHANCE = {
 	mine: 0.16,
 	creatureBank: 0.14,
 	resource: 0.22,
+	// pockets (SEAL_POCKETS): the engine guards its scroll and placed-artifact piles too
+	spellScroll: 0.40,
+	artifact: 0.50,
 };
 
 /**
@@ -479,7 +584,7 @@ const FILL_TYPES = {
 	],
 };
 
-function pickArtifactTier(richness, rng, zd = 0) {
+function pickArtifactTier(richness, rng, zd = 0, lean = 1) {
 	// Corpus tier split measured 2026-09-22 (census): treasure ~26%, minor
 	// ~45%, major ~38%, relic ~2% overall. The FAR field is a different
 	// animal: pooled 32+ bands carry 114 treasure / 2839 minor / 2936 major
@@ -493,8 +598,8 @@ function pickArtifactTier(richness, rng, zd = 0) {
 	const w = [
 		(0.65 - richness * 0.4) / (1 + zd),       // treasure thins out
 		1,                                        // minor
-		0.65 * (1 + zd * 0.2),                    // major
-		0.10 + richness * 0.05 + zd * 0.20,       // relic, rare near home
+		0.65 * (1 + zd * 0.2) * lean,             // major
+		(0.10 + richness * 0.05 + zd * 0.20) * lean, // relic, rare near home
 	];
 	const total = w[0] + w[1] + w[2] + w[3];
 	let roll = rng() * total;
@@ -1089,7 +1194,21 @@ function makeConnectivityGuard(blocked, l, W, H, tolerance = 2, preferred = -1) 
 				blocked[base + c] |= OCCUPIED;
 				newly.push(c);
 			}
-			const after = floodFrom(blocked, l, W, H, pickSeed(), scratch);
+			let after = floodFrom(blocked, l, W, H, pickSeed(), scratch);
+			// the seed may stand in a pocket a placement made without accepts() closed (a guard set in a walled pile's mouth): every flood
+			// from it then came out small and every town and mine after it was refused (bank pockets, 144x144 seed 1: 7 of 17 towns,
+			// 2026-10-09). Before refusing, judge from the largest region left and seed there.
+			if (after < count - lost - tolerance) {
+				const seen = new Uint8Array(W * H);
+				let bestSize = 0, bestSeed = -1;
+				for (let i = 0; i < W * H; i++) {
+					if (seen[i] || (blocked[base + i] & OCCUPIED)) continue;
+					const n = floodFrom(blocked, l, W, H, i, scratch);
+					for (let k = 0; k < W * H; k++) if (scratch[k]) seen[k] = 1;
+					if (n > bestSize) { bestSize = n; bestSeed = i; }
+				}
+				if (bestSize >= count - lost - tolerance && bestSeed >= 0) { seedCell = bestSeed; after = floodFrom(blocked, l, W, H, seedCell, scratch); }
+			}
 			for (const c of newly) blocked[base + c] &= ~OCCUPIED;
 			if (after < count - lost - tolerance) return false;
 			pending = after;                      // reuse this flood on refresh
@@ -1109,8 +1228,23 @@ function makeConnectivityGuard(blocked, l, W, H, tolerance = 2, preferred = -1) 
 				seedCell = pickSeed();
 				return;
 			}
+			const was = count;
 			seedCell = pickSeed();
 			count = floodFrom(blocked, l, W, H, seedCell, flags);
+			// a placement made without accepts() (a guard, a rock wall) can close the seed into a pocket, and the guard then
+			// defends the pocket and refuses whatever touches the real ground: on a 108 two-level map its region fell to 556
+			// tiles and every town and mine of three zones found no room (2026-10-04). Re-seed on the largest region.
+			if (count < was / 2) {
+				const seen = new Uint8Array(W * H);
+				let bestSize = count, bestSeed = seedCell;
+				for (let i = 0; i < W * H; i++) {
+					if (seen[i] || (blocked[base + i] & OCCUPIED)) continue;
+					const n = floodFrom(blocked, l, W, H, i, scratch);
+					for (let k = 0; k < W * H; k++) if (scratch[k]) seen[k] = 1;
+					if (n > bestSize) { bestSize = n; bestSeed = i; }
+				}
+				if (bestSeed !== seedCell) { seedCell = bestSeed; count = floodFrom(blocked, l, W, H, seedCell, flags); }
+			}
 		},
 	};
 }
@@ -1125,7 +1259,29 @@ function makeConnectivityGuard(blocked, l, W, H, tolerance = 2, preferred = -1) 
  * RESERVED stays off-limits to everything: a door cell behind a monster is
  * still a door that has to work before the monster is dead.
  */
+// K, 2026-10-08: "can you spot the outcasts and school of magic? both are placed improperly close to the top map edge ... We should not place at the
+// top grid row, anything taller than one tile, and anything taller than two grid tiles at the top two, and so on". An object is drawn up and to the
+// left of its anchor over its whole mask (the visible-only V cells too), so one that is visited (a building, a dwelling, a pickup, a monster) stands
+// where all of it is on the map: anchor row at least height - 1, anchor column at least width - 1 (the lead's extension to the left edge; K may veto
+// it). Plain scenery keeps the old test: the border's mountains and trees cross the edge on the engine's maps too. Every path through here.
+const EDGE_DIMS = new WeakMap();
+function edgeDims(tpl) {
+	let d = EDGE_DIMS.get(tpl);
+	if (d === undefined) {
+		const m = tpl.mask || [];
+		d = m.some(r => r.includes('A')) ? { h: m.length, w: Math.max(...m.map(r => r.length)) } : null;
+		EDGE_DIMS.set(tpl, d);
+	}
+	return d;
+}
+/** the anchor puts a visited object's picture over the top or left edge (footprintFits refuses it) */
+function crossesEdge(tpl, x, y) {
+	const ed = tpl && tpl.mask ? edgeDims(tpl) : null;
+	return !!(ed && (y - (ed.h - 1) < 0 || x - (ed.w - 1) < 0));
+}
 function footprintFits(tpl, x, y, l, W, H, blocked, soft = false) {
+	const ed = tpl && tpl.mask ? edgeDims(tpl) : null;
+	if (ed && (y - (ed.h - 1) < 0 || x - (ed.w - 1) < 0)) return false;
 	const veto = soft ? (OCCUPIED | RESERVED) : (OCCUPIED | RESERVED | APPROACH);
 	for (const [fx, fy] of blockingCells(tpl, x, y)) {
 		if (fx < 0 || fy < 0 || fx >= W || fy >= H) return false;
@@ -1317,6 +1473,7 @@ function objectEntry(type, x, y, l, tpl, opts, subtype = 'object') {
 		template,
 	};
 	if (opts) entry.options = opts;
+	if (process.env.VMAPGEN_SRC_TRACE && /^randomMonster/.test(type)) entry.__src = new Error().stack.split('\n').slice(2, 6).map(x => (/at (\S+)/.exec(x) || [])[1]).join('<');
 	return entry;
 }
 
@@ -1332,6 +1489,7 @@ function objectEntry(type, x, y, l, tpl, opts, subtype = 'object') {
  */
 function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], players = [], objectPools = {}, terrain = 'gr', reachable = null, connectivity = null, zoneMeta = null, openMask = null, zoneDist = null, preplaced = [], zoneFaction = null) {
 	const p = { ...BIOME_DEFAULTS, ...params };
+	let userGuardDensity = 1;
 	// A template zone overrides the free-running densities: its treasure bands
 	// become a loot multiplier and its monsters field a guard one. Both are
 	// already resolved by the caller against the template's own median.
@@ -1339,6 +1497,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		p.resourceDensity *= zoneMeta.loot;
 		p.pickupDensity   *= zoneMeta.loot;
 		p.artifactDensity *= zoneMeta.loot;
+		userGuardDensity = p.guardDensity;     // the Monster count slider, before the zone's own monsters field scales it
 		p.guardDensity    *= zoneMeta.guardScale;
 		// The engine builds its dwellings into the treasure piles, so a rich
 		// zone holds more of them: the dwelling density follows the zone's
@@ -1406,6 +1565,34 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	};
 	const out = [];
 
+	// A creature's map sprite is 64x64, bottom-right on its tile (tools/harness/creature_extents.js: 130 of 141 core creatures cover
+	// the tile to the left and the tile above, the rest one of them), so a monster hides what stands on those tiles and the tile
+	// diagonally up and left (K, 2026-10-04: "multi-grid creatures improperly placed clipping onto loot"; a fire horse over a chest).
+	// A monster is therefore never put where one of those tiles holds another object, and nothing else is put where an earlier
+	// monster's sprite reaches; a guard takes the side of its target that leaves the target clear. The last quarter of a placement's
+	// tries takes whatever fits, so counts do not fall. VMAPGEN_MONSTER_CLIP=0 turns it off.
+	const CLIP_RULE = process.env.VMAPGEN_MONSTER_CLIP !== '0';
+	const CLIP_D = [[0, 0], [-1, 0], [0, -1], [-1, -1]];     // its own tile too: a guard may stand on a pickup (footprintFits soft), which is the fire horse on the chest
+	const solidAt = new Set(), shadowAt = new Set();
+	let clipSynced = 0;
+	const clipSync = () => {
+		for (; clipSynced < out.length; clipSynced++) {
+			const o = out[clipSynced];
+			if (!o.template || !o.template.mask) continue;
+			if (/^(monster|randomMonster)/.test(o.type))
+				for (const [dx, dy] of CLIP_D) { const sx = o.x + dx, sy = o.y + dy; if (sx >= 0 && sy >= 0 && sx < W && sy < H) shadowAt.add(sy * W + sx); }
+			for (const [cx, cy] of footprintCells(o.template, o.x, o.y)) if (cx >= 0 && cy >= 0 && cx < W && cy < H) solidAt.add(cy * W + cx);
+		}
+	};
+	const monsterClips = (x, y) => {
+		clipSync();
+		return CLIP_D.some(([dx, dy]) => x + dx >= 0 && y + dy >= 0 && solidAt.has((y + dy) * W + x + dx));
+	};
+	const inMonsterShadow = (tpl, x, y) => {
+		clipSync();
+		return footprintCells(tpl, x, y).some(([cx, cy]) => shadowAt.has(cy * W + cx));
+	};
+
 	const nearest = (list, x, y) => {
 		let best = null, bd = Infinity;
 		for (const t of list) {
@@ -1456,6 +1643,105 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	};
 	for (const t of towns) if ((t.l || 0) === l) for (const [gx, gy] of t.gates || []) bld.add(gy * W + gx);
 	const PRISON_GAP = process.env.VMAPGEN_PRISON_GAP === '0' ? -1 : 2;
+	// K, 2026-10-04: "the fuck is this prison stacking" (108x108 one level: 13 prisons, 1.11 a 1000 tiles against the engine's 0.6 to
+	// 0.77, two pairs side by side). A prison keeps PRISON_SPACING tiles from every other prison on its level, and a level holds at most
+	// PRISON_RATE of them to a 1000 tiles. VMAPGEN_PRISON_SPACING=0 and VMAPGEN_PRISON_RATE=0 are the old placement.
+	const PRISON_SPACING = process.env.VMAPGEN_PRISON_SPACING !== undefined ? Number(process.env.VMAPGEN_PRISON_SPACING) : 8;
+	const PRISON_RATE = process.env.VMAPGEN_PRISON_RATE !== undefined ? Number(process.env.VMAPGEN_PRISON_RATE) : 0.77;
+	const prisonsHere = (objectPools.__prisons || (objectPools.__prisons = {}))[l] || (objectPools.__prisons[l] = []);
+	const prisonBlocked = (x, y) => (PRISON_RATE > 0 && prisonsHere.length >= Math.ceil(PRISON_RATE * W * H / 1000))
+		|| (PRISON_SPACING > 0 && prisonsHere.some(([a, b]) => Math.max(Math.abs(a - x), Math.abs(b - y)) < PRISON_SPACING));
+	// Guard spacing (the lead, 2026-10-08: close the gap on monsters, blockers and loot). The engine's stacks stand 4 or more tiles apart
+	// (nearest other stack p10 4, median 5, crowded 0.1% on 20 Coldshadow maps); ours stood 2 and 3 apart (27 to 43% crowded), because each
+	// object took its own guard beside it wherever it lay. Every guard tile laid or held on a level is registered: guardNear counts the 5x5
+	// round each, guardAt keeps the tiles. A guard, a held guard tile or a walled pile whose guard tile would stand in another's 5x5 takes
+	// another place first, and an object that already has a guard beside its visiting tile passes its pile's guard to the next object.
+	const GREG = objectPools.__guardReg || (objectPools.__guardReg = {});
+	const guardReg = GREG[l] || (GREG[l] = { near: new Uint16Array(W * H), tight: new Uint16Array(W * H), at: new Set() });
+	const guardNear = guardReg.near, guardTight = guardReg.tight, guardAt = guardReg.at;
+	// a stack keeps GUARD_GAP - 1 tiles of ground between it and the next (nearest other stack 4 tiles off, the engine's p10)
+	const holdGuard = (x, y) => {
+		if (guardAt.has(y * W + x)) return;
+		guardAt.add(y * W + x);
+		const R = GUARD_GAP - 1;
+		for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H) { guardNear[v * W + u]++; if (Math.abs(dx) <= 2 && Math.abs(dy) <= 2) guardTight[v * W + u]++; } }
+	};
+	const guardCrowd = (x, y) => x >= 0 && y >= 0 && x < W && y < H && guardNear[y * W + x] > 0 && !(guardAt.has(y * W + x) && guardNear[y * W + x] === 1);
+	// within 2 of another stack: the crowding the engine never shows (the first choice keeps GUARD_GAP, the second at least 3)
+	const guardTightAt = (x, y) => x >= 0 && y >= 0 && x < W && y < H && guardTight[y * W + x] > 0 && !(guardAt.has(y * W + x) && guardTight[y * W + x] === 1);
+	const guardBeside = (tpl, x, y) => visitableCells(tpl, x, y).some(([vx, vy]) => {
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (guardAt.has((vy + dy) * W + vx + dx)) return true;
+		return false;
+	});
+	const lootNook = (x, y) => {
+		let walls = 0;
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+			if (!dx && !dy) continue;
+			const u = x + dx, v = y + dy;
+			if (u < 0 || v < 0 || u >= W || v >= H) { walls++; continue; }
+			const f = blocked[l * W * H + v * W + u];
+			if (f & RESERVED) return false;
+			if ((f & OCCUPIED) || (openMask && !openMask[v * W + u])) walls++;   // a cave's rock is its open mask's zero
+		}
+		return walls >= (openMask ? 7 : 5);   // in a cave, a dead end: the guard's tile is its only way in
+	};
+	// The engine's test for a guarded pile (TreasurePlacer): every free tile round it but the guard's can be walled, none of them a
+	// road, a door or another object's way in, and the guard's tile has a way out. Returns the walls it needs, or -1.
+	const floorAt = c => !openMask || openMask[c];
+	const lootZone = new Set(cells);
+	let closableHow = null;
+	const closable = (x, y) => {
+		closableHow = null;
+		if (x < 2 || y < 2 || x >= W - 2 || y >= H - 2) return -1;
+		const ring = [];
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (dx || dy) ring.push((y + dy) * W + x + dx);
+		const freeRing = ring.filter(c => floorAt(c) && !(blocked[l * W * H + c] & OCCUPIED));
+		if (!freeRing.length) return -1;
+		const inRing = new Set(ring); inRing.add(y * W + x);
+		const exit = g => { const gx = g % W, gy = (g / W) | 0;
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const c = (gy + dy) * W + gx + dx;
+				if ((dx || dy) && !inRing.has(c) && floorAt(c) && !(blocked[l * W * H + c] & OCCUPIED)) return true; }
+			return false; };
+		const wallable = c => !(blocked[l * W * H + c] & (RESERVED | APPROACH)) && lootZone.has(c);
+		let best = -1;
+		for (const g of freeRing) {
+			if ((blocked[l * W * H + g] & RESERVED) || !exit(g)) continue;
+			const others = freeRing.filter(c => c !== g);
+			if (others.every(wallable) && (best < 0 || others.length < best)) { best = others.length; closableHow = { g, others }; }
+		}
+		return best;
+	};
+	// The same test for an object wider than a tile or entered from fewer sides than a pickup (a prison is two tiles and is not entered from
+	// above): the ring is every tile beside its footprint, and the guard's tile one it can be entered from. closable() treated a prison as a
+	// one-tile pickup, so its walls could shut the sides it is entered from and the sweep dropped it as unreachable (9 of 11 prisons on a
+	// 144x144 one level, 2026-10-08, when prisons first went through putLoot).
+	const closableFor = (tpl, x, y) => {
+		closableHow = null;
+		if (x < 2 || y < 2 || x >= W - 2 || y >= H - 2) return -1;
+		const foot = new Set(blockingCells(tpl, x, y).map(([a, b]) => b * W + a));
+		for (const c of foot) { const cx = c % W, cy = (c / W) | 0; if (cx < 2 || cy < 2 || cx >= W - 2 || cy >= H - 2) return -1; }
+		const ringSet = new Set();
+		for (const c of foot) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = c + dy * W + dx; if (!foot.has(n)) ringSet.add(n); }
+		const ring = [...ringSet];
+		const freeRing = ring.filter(c => floorAt(c) && !(blocked[l * W * H + c] & OCCUPIED));
+		if (!freeRing.length) return -1;
+		const ways = new Set();
+		for (const [vx, vy] of visitableCells(tpl, x, y)) for (const [dx, dy] of allowedDirs(tpl)) { const c = (vy + dy) * W + vx + dx; if (!foot.has(c)) ways.add(c); }
+		const inRing = new Set([...ringSet, ...foot]);
+		const exit = g => { const gx = g % W, gy = (g / W) | 0;
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const c = (gy + dy) * W + gx + dx;
+				if ((dx || dy) && !inRing.has(c) && floorAt(c) && !(blocked[l * W * H + c] & OCCUPIED)) return true; }
+			return false; };
+		const wallable = c => !(blocked[l * W * H + c] & (RESERVED | APPROACH)) && lootZone.has(c);
+		let best = -1;
+		for (const g of freeRing) {
+			if (!ways.has(g) || (blocked[l * W * H + g] & RESERVED) || !exit(g)) continue;
+			const others = freeRing.filter(c => c !== g);
+			if (others.every(wallable) && (best < 0 || others.length < best)) { best = others.length; closableHow = { g, others }; }
+		}
+		return best;
+	};
+	const plainPickup = tpl => blockingCells(tpl, 0, 0).length === 1 && (!tpl.visitableFrom || tpl.visitableFrom.join('') === '++++-++++');
 	const nearBuilding = (tpl, x, y, r) => {
 		for (const [a, b] of blockingCells(tpl, x, y).concat(visitableCells(tpl, x, y)))
 			for (let dy = -r; dy <= r; dy++)
@@ -1468,12 +1754,18 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// the art real maps put on this zone's ground, or none: a frost well or a lean-to never stands
 		// on dirt or lava (terrainArt.js; VMAPGEN_TERRAIN_ART=0 turns it off)
 		if (TERRAIN_ART) {
-			const art = artFor(type, subtype, tpl, terrain, rng);
+			let art = artFor(type, subtype, tpl, terrain, rng);
+			// A dwelling keeps its own art where real maps never stood it: the game's object table allows the creature
+			// generators on any land (OBJECTS.TXT rows 17.62-65, the neutral dragons' among them), and the corpus rule
+			// threw out every dragon dwelling of a one-level Coldshadow's Fantasy, whose dragon zones move from the
+			// underground to dirt (K, 2026-10-01: no dragons above ground). VMAPGEN_DWELL_ANY_GROUND=0 refuses as before.
+			if (art === null && /^creatureGenerator/.test(type) && process.env.VMAPGEN_DWELL_ANY_GROUND !== '0') art = tpl;
 			if (art === null) { if (fillStat) { const k = 'terrain|' + type; fillStat[k] = (fillStat[k] || 0) + 1; } return null; }
 			tpl = art;
 		}
 		const sliverBind = SLIVER_RULE
 			&& rng() < (SLIVER_SHARE[sliverClass(type)] || 0);
+		let edgeSkips = 0;
 		for (let tries = 0; tries < tryBudget && free.length; tries++) {
 			const usePick = pickFrom && pickFrom.length && (onlyPick || tries < tryBudget - 4);
 			if (onlyPick && !usePick) break;
@@ -1518,8 +1810,14 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			};
 			if (blocked[l * W * H + i] & 1) { rej('flag'); continue; }
 			const x = i % W, y = (i / W) | 0;
+			// an anchor the top-edge rule refuses costs no try (bounded): a zone along the top or left edge of a small map drew mostly such anchors
+			// and was left nearly empty (36x36, three zones of about 220 tiles with 2 objects each, 2026-10-08)
+			// (template zones only: the free layout's start balancing ran short with it on 36x36, 8 players, seed 2, the fill leaving its starts no room)
+			if (crossesEdge(tpl, x, y)) { if (zoneMeta && edgeSkips++ < tryBudget * 6) tries--; rej('edge'); continue; }
 			if (!footprintFits(tpl, x, y, l, W, H, blocked,
 					REMOVABLE_TYPES.has(type))) { rej('fits'); continue; }
+			if (CLIP_RULE && tries < tryBudget * 0.75
+					&& (MONSTER_TYPE.test(type) ? monsterClips(x, y) : inMonsterShadow(tpl, x, y))) { rej('clip'); continue; }
 			// An object whose entrance has no open ground beside it is
 			// scenery. Checking here rather than after the fact keeps the
 			// count honest: the object is simply placed somewhere else.
@@ -1531,8 +1829,16 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// measured with them there, and on 36x36 for eight the rule left
 			// two starts with no fight between them.
 			if (zoneMeta && MONSTER_TYPE.test(type) && reachOnReserved(tpl, x, y, l, W, H, blocked)) { rej('road'); continue; }
+			if (MONSTER_TYPE.test(type) && ((tries < tryBudget * 0.5 && guardCrowd(x, y)) || (tries < tryBudget * 0.9 && guardTightAt(x, y)))) { rej('crowd'); continue; }
 			const walls = blockingCells(tpl, x, y).map(([a, b]) => b * W + a);
+			// The engine lays a guarded pile only where its walls close (TreasurePlacer); ours walls it after, and a wall a road,
+			// a door or another object needs stays open. In a template zone valuable loot takes a nook first (five or more of its
+			// eight neighbours already blocked, no road or door beside it), for the first three quarters of its tries, so its
+			// pocket has little left to wall (K, 2026-10-04: "loot out in the open without guards being appropriately backed by
+			// blocker art").
+			if (zoneMeta && POCKET_LOOT.test(type) && tries < tryBudget * 0.75 && closable(x, y) < 0) { rej('nook'); if (process.env.VMAPGEN_NOOK_TRACE) { const k = 'L' + l + (openMask ? 'cave' : ''); NOOK_T[k] = (NOOK_T[k] || 0) + 1; } continue; }
 			if (type === 'prison' && PRISON_GAP > 0 && nearBuilding(tpl, x, y, PRISON_GAP)) { rej('prisonGap'); continue; }
+			if (type === 'prison' && prisonBlocked(x, y)) { rej('prisonSpacing'); continue; }
 			// Item 21: on a bound placement, a draw that would leave a one-cell
 			// sliver beside the object is refused for the first three quarters
 			// of the budget, so the object lands flush against blocking or out
@@ -1574,10 +1880,14 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			footprintBlock(tpl, x, y, l, W, H, blocked);
 			markApproach(tpl, x, y, l, W, H, blocked);
 			registerBuilding(type, tpl, x, y);
+			if (type === 'prison') prisonsHere.push([x, y]);
+			if (MONSTER_TYPE.test(type)) holdGuard(x, y);
 			if (connectivity) connectivity.refresh();
 			if (GUARD_CHANCE[type]) guardable.push({ entry, tpl });
+			if (fillStat) fillStat['placed|' + type] = (fillStat['placed|' + type] || 0) + 1;
 			return entry;
 		}
+		if (fillStat) fillStat['gaveup|' + type] = (fillStat['gaveup|' + type] || 0) + 1;
 		return null;
 	};
 
@@ -1688,6 +1998,40 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	 * snapshot taken at first draw - entries stale as later objects land,
 	 * which put() re-validates, and anchors it uses are consumed.
 	 */
+	// a guard can stand before an object anchored here: its approach tiles open, nothing reserved within two of them
+	const guardableAt = (tpl, x, y) => {
+		const base = l * W * H;
+		const appr = [];
+		for (const [vx, vy] of visitableCells(tpl, x, y)) for (const [dx, dy] of allowedDirs(tpl)) appr.push([vx + dx, vy + dy]);
+		if (!appr.length) return false;
+		for (const [ax, ay] of appr) {
+			if (ax < 2 || ay < 2 || ax >= W - 2 || ay >= H - 2) return false;
+			if (blocked[base + ay * W + ax] & (OCCUPIED | RESERVED)) return false;
+			for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (blocked[base + (ay + dy) * W + ax + dx] & RESERVED) return false;
+		}
+		return true;
+	};
+	// every approach tile of an object anchored here has four open neighbours or fewer, not counting the object's own
+	// footprint (the guard and the pile then take one or two more: a spur's end)
+	const nookAt = (tpl, x, y) => {
+		const base = l * W * H;
+		const own = new Set(blockingCells(tpl, x, y).map(([a, b]) => b * W + a));
+		const appr = [];
+		for (const [vx, vy] of visitableCells(tpl, x, y)) for (const [dx, dy] of allowedDirs(tpl)) { const c = (vy + dy) * W + vx + dx; if (!own.has(c)) appr.push(c); }
+		if (!appr.length) return false;
+		return appr.every(c => {
+			const cx = c % W, cy = (c / W) | 0;
+			let n = 0;
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				if (!dx && !dy) continue;
+				const nx = cx + dx, ny = cy + dy;
+				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+				const k = ny * W + nx;
+				if (!own.has(k) && !(blocked[base + k] & OCCUPIED)) n++;
+			}
+			return n <= 4;
+		});
+	};
 	const fitAnchors = tpl => {
 		let s = fitCache.get(tpl);
 		if (!s) {
@@ -1852,6 +2196,19 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	};
 	// the start's own mines, placed before the fill (plan.js placeStarterMines)
 	for (const e of preplaced) if (e.type === 'mine') besideMine(e);
+	// the zone's free tiles nearest its centre, and those farthest from every object placed so far (towns, mines,
+	// everything in `out`, the start's mines), for the mines' placement below
+	const zcx = cells.reduce((a, c) => a + c % W, 0) / Math.max(1, cells.length), zcy = cells.reduce((a, c) => a + ((c / W) | 0), 0) / Math.max(1, cells.length);
+	const nearCentre = k => free.slice().sort((a, b) => ((a % W - zcx) ** 2 + (((a / W) | 0) - zcy) ** 2) - ((b % W - zcx) ** 2 + (((b / W) | 0) - zcy) ** 2)).slice(0, k);
+	const farthestFromObjects = k => {
+		const pts = [];
+		for (const o of [...out, ...preplaced, ...towns]) if (o && (o.l || 0) === l && Number.isFinite(o.x)) pts.push([o.x, o.y]);
+		if (!pts.length) return free.slice(0, k);
+		const d = c => { const x = c % W, y = (c / W) | 0; let m = Infinity; for (const [px, py] of pts) { const v = Math.max(Math.abs(px - x), Math.abs(py - y)); if (v < m) m = v; } return m; };
+		const scored = free.map(c => [c, d(c)]);
+		scored.sort((a, b) => b[1] - a[1]);
+		return scored.slice(0, k).map(([c]) => c);
+	};
 	if (zoneMeta) {
 		// A template zone gets the mines it lists and no others, as the
 		// engine's MinePlacer does; a zone listing none used to draw its
@@ -1870,7 +2227,18 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			const mt = mineTemplate(subtype, terrain);
 			for (let i = done[res] || 0; i < count; i++) {
 				asked++;
-				const e = put('mine', mt, undefined, subtype, 48, earlyEdge)
+				// Where the engine puts them (MinePlacer, ObjectManager): a zone's first wood and first ore mine close to
+				// its centre (closer than 12 tiles preferred), every other mine on the free tile farthest from every
+				// object already down (OptimizeType::DISTANCE). Laid on random wall-side tiles, 0.74 of our towns had a
+				// mine within 10 tiles against the engine's 0.44 (mapsight score, 2026-10-02). VMAPGEN_MINE_SPREAD=0
+				// is the old draw.
+				let pick = earlyEdge;
+				if (process.env.VMAPGEN_MINE_SPREAD !== '0') {
+					const close = (res === 'wood' || res === 'ore') && i === 0;
+					pick = close ? nearCentre(14) : farthestFromObjects(16);
+				}
+				const e = put('mine', mt, undefined, subtype, 48, pick)
+					|| put('mine', mt, undefined, subtype, 48, earlyEdge)
 					|| put('mine', mt, undefined, subtype, 40, fitAnchors(mt), true);
 				if (!e) missed++;
 				else besideMine(e);
@@ -1934,7 +2302,15 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// VMAPGEN_PILE_TRACE: every candidate pile's contents by landing class
 		// (open, guarded, rich), landed or not, for fitting the three shares
 		const tally = process.env.VMAPGEN_PILE_TRACE ? { open: {}, guarded: {}, rich: {} } : null;
-		for (const { band, byDensity, want } of templatePiles(bands, cells.length)) {
+		let afterRich = false, afterRichBand = false;
+		for (const { band, byDensity, want } of templatePiles(bands, cells.length, (zoneMeta && zoneMeta.richScale) || 1)) {
+			// a band under TPL_RICH_MIN placed after a richer one (a treasure zone's cheap last band: 1.5x the engine's chests
+			// and random resources, 1.1x its guards) lands at TPL_PILE_LAND_CHEAP_AFTER_RICH of its share
+			const later = afterRich && zoneMeta.spec.type !== 'treasure' ? TPL_PILE_LAND_AFTER_RICH
+				: afterRichBand && band.min < TPL_RICH_MIN ? TPL_PILE_LAND_CHEAP_AFTER_RICH : 1;
+			if (band.min >= TPL_VERY_RICH_MIN) afterRich = true;
+			const followsRich = afterRichBand;
+			if (band.min >= TPL_RICH_MIN) afterRichBand = true;
 			let made = 0, empty = 0;
 			while (made < byDensity && empty < byDensity) {
 				const pile = preparePile(pool, band, rng);
@@ -1943,7 +2319,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					const guard = guarded ? engineGuard(pile.value, gIdx, rng, false, gPool) : null;
 					if (guard && gPool) guard.concrete = true;
 					const cls = !guard ? 'open' : band.min >= TPL_RICH_MIN ? 'rich' : 'guarded';
-					const share = cls === 'open' ? TPL_PILE_LAND_OPEN : cls === 'rich' ? TPL_PILE_LAND_RICH : TPL_PILE_LAND_GUARDED;
+					const share = cls === 'open' ? TPL_PILE_LAND_OPEN : cls === 'rich' ? (band.min >= TPL_VERY_RICH_MIN ? (zoneMeta.spec.type === 'treasure' ? TPL_PILE_LAND_VERY_RICH_TREASURE : TPL_PILE_LAND_VERY_RICH) : zoneMeta.spec.type === 'treasure' ? TPL_PILE_LAND_RICH_TREASURE : TPL_PILE_LAND_RICH) : TPL_PILE_LAND_GUARDED;
 					if (tally) {
 						const t = tally[cls];
 						t.piles = (t.piles || 0) + 1;
@@ -1953,12 +2329,35 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 							t[k] = (t[k] || 0) + 1;
 						}
 					}
-					if (rng() < share) pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects });
+					const holdsDwelling = pile.objects.some(o => o.dw || /^creatureGenerator/.test(o.type || ''));
+					// a pile holding a dwelling keeps its band's share: the later-band cuts (TPL_PILE_LAND_AFTER_RICH and the cheap
+					// band's) model piles abandoned for room, and Coldshadow's junctions carry their neutral dragon dwellings in their
+					// last band: cut, the dragons came out 4-9 a map against the engine's 8-14 (K's mods, 2026-10-03).
+					// VMAPGEN_TPL_PILE_LAND_DWELLING=cut applies the cuts to them too.
+					const landP = holdsDwelling && process.env.VMAPGEN_TPL_PILE_LAND_DWELLING !== 'cut' ? share : share * later;
+					if (rng() < landP) pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects, followsRich });
 				}
 				made++;
 			}
 		}
 		if (tally) console.error(`[pilejson] ${JSON.stringify({ zone: zoneMeta.spec.id, cells: cells.length, tally })}`);
+		// A map far below its template's smallest size (K, 2026-10-08: "fewer guards and fewer piles is fine if absolutely necessary"): the template's
+		// link and gate guards stay one per connection however small the map, and on a 36x36 Coldshadow's Fantasy a stack stood on every 13 walkable
+		// tiles (the engine's own 144x144, 32), so guards crowded whatever their placement (25% of stacks within 2 of another). Below SMALL_F of the
+		// template's tiles (a 36x36: 3% one level, 6% two) a zone keeps sqrt(f / 0.3) of its landed piles, half at least; on a 72x72 (13%) the cut
+		// gained 0.5 points of crowding for 37% of the piles, so it stops at 10%; the cheapest go, each with its guard.
+		const SMALL_F = 0.1;
+		const lv = p.zonePlan && p.zonePlan.perLevel ? p.zonePlan.perLevel.length : 1;
+		const f = p.zonePlan && p.zonePlan.minTiles ? W * H * lv / p.zonePlan.minTiles : 1;
+		if (f < SMALL_F && pileSim.landed.length > 1) {
+			const keep = Math.max(0.5, Math.sqrt(f / 0.3));
+			const n = pileSim.landed.length, k = Math.max(1, Math.round(n * keep));
+			const order = pileSim.landed.map((x, i) => i).sort((a, b) => pileSim.landed[b].value - pileSim.landed[a].value);
+			const kept = new Set(order.slice(0, k));
+			const cut = objectPools.__smallCut || (objectPools.__smallCut = { piles: 0, guards: 0, of: 0, f });
+			cut.of += n; cut.piles += n - k; cut.guards += pileSim.landed.filter((x, i) => !kept.has(i) && x.guard).length;
+			pileSim.landed = pileSim.landed.filter((x, i) => kept.has(i));
+		}
 		if (process.env.VMAPGEN_PILE_TRACE)
 			console.error(`[pile] zone ${zoneMeta.spec.id} engine piles: ${pileSim.landed.length} landed, `
 				+ `${pileSim.landed.filter(x => x.guard).length} guarded, `
@@ -1971,11 +2370,15 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// (VMAPGEN_PILE_CONTENT=0 returns them). Harness, 2026-10-01: ours held 0.1 of the engine's magic wells,
 	// mystical gardens, campfires and sanctuaries per zone and 5 x its Pandora's boxes.
 	const pileMan = pileSim && process.env.VMAPGEN_PILE_CONTENT !== '0' ? new Map() : null;
+	// the pile each drawn object came from (a prison takes its pile's guard below)
+	const pileOf = new Map();
 	if (pileMan)
 		for (const pl of pileSim.landed)
 			for (const o of pl.objects) {
 				if (!pileMan.has(o.type)) pileMan.set(o.type, []);
-				pileMan.get(o.type).push(o);
+				const item = { ...o, bandMin: pl.band ? pl.band.min : 0, followsRich: !!pl.followsRich };
+				pileOf.set(item, pl);
+				pileMan.get(o.type).push(item);
 			}
 	// the zone's loot multiplier (plan.js zoneMeta.loot) is how the rate models scaled a zone; the piles carry it in
 	// their own bands, so only the player's lever remains of p.xDensity
@@ -1984,9 +2387,21 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// every other class within 7% of the engine's): the engine abandons some piles it cannot place, more of the
 	// piles with a Pandora's box, and keeps 0.8 of its open loot
 	const PILE_KEPT = { randomArtifactTreasure: 0.8, randomArtifactMinor: 0.8, randomArtifactMajor: 0.8, randomArtifactRelic: 0.8,
-		treasureChest: 0.8, spellScroll: 0.8, campfire: 0.8, pandoraBox: 0.7 };
+		treasureChest: 0.62, spellScroll: 0.8, campfire: 0.8, pandoraBox: 0.7 };   // chests 0.62 after the 93-template run (1.31 of the engine's at 0.8)
 	const manCount = (type, lever = 1) => {
-		const n = ((pileMan && pileMan.get(type)) || []).length * lever * (PILE_KEPT[type] ?? 1);
+		// the kept share falls on the piles of the rich bands (from TPL_RICH_MIN) and of any band placed after one in its zone
+		// (a treasure zone's cheap last band held 1.5x the engine's chests and random resources, 2026-10-03): the engine abandons the piles it
+		// cannot place, and those are the big ones in crowded rich zones. Applied to every pile it left the start zones with
+		// 0.4-0.7 of the engine's Pandora's boxes, scrolls and major artifacts (K's mods, 2026-10-03). VMAPGEN_PILE_KEPT=0
+		// keeps everything, =all applies it to every band as before.
+		// Off by default since 2026-10-03: the landing shares (TPL_PILE_LAND_*) now carry the engine's abandoned piles, and
+		// the kept shares on top counted them twice (10 seeds against the engine with K's mods: high loot 0.82-0.84 of the
+		// engine's in every zone type with them, 0.87-1.08 without; classfit error 1.31 -> 1.10). =rich and =all bring them back.
+		const keptMode = process.env.VMAPGEN_PILE_KEPT || '0';
+		const list = (pileMan && pileMan.get(type)) || [];
+		const kept = keptMode === '0' ? list.length
+			: list.reduce((a, o) => a + (keptMode === 'all' || o.bandMin >= TPL_RICH_MIN || o.followsRich ? (PILE_KEPT[type] ?? 1) : 1), 0);
+		const n = kept * lever;
 		return Math.floor(n) + (rng() < n % 1 ? 1 : 0);
 	};
 
@@ -2018,7 +2433,16 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			if (!e) {
 				// a core kind with no art of ours: the game's own template for it (OBJECTS.TXT), the kind as drawn
 				const o = pileMan.get(type)[0];
-				const t = o.core && objectPools.h3Tpl ? objectPools.h3Tpl(o.classIndex, o.subIndex) : null;
+				let t = o.core && objectPools.h3Tpl ? objectPools.h3Tpl(o.classIndex, o.subIndex) : null;
+				// a mod's kind: its own template, one allowed on this zone's ground (K, 2026-10-02: "a lot of mod content is
+				// missing"; every mod kind the piles drew was dropped here, the engine's maps with his mods hold 0.2-0.7 of
+				// each a 1000 tiles of start zone)
+				if (!t && !o.core && o.tpls && o.tpls.length) {
+					const tn = String(((objectPools.terrainNames && objectPools.terrainNames.get(terrain)) || {}).name || '').toLowerCase();
+					const ok = x => !x.allowedTerrains || !x.allowedTerrains.length || x.allowedTerrains.some(a => String(a).slice(String(a).lastIndexOf(':') + 1).toLowerCase() === tn);
+					const m = o.tpls.find(ok);
+					if (m) t = { animation: m.animation, mask: m.mask, visitableFrom: m.visitableFrom };
+				}
 				if (!t || /^(resource|randomResource|treasureChest|campfire|pandoraBox|prison|obelisk|spellScroll|seerHut|randomArtifact|creatureBank|dragonUtopia|crypt|dwelling|monolith|subterraneanGate|mine|witchHut|learningStone|scholar|waterWheel|windmill|mysticalGarden)/.test(type)) continue;
 				e = { type, subtype: o.subtype, tpl: t, generic: true };
 			}
@@ -2220,8 +2644,24 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// level it has when it has none of the one asked); any other zone draws from every faction.
 	const zf = zoneFaction || (zoneMeta && zoneMeta.faction && zoneMeta.faction !== 'neutral' ? zoneMeta.faction : null);
 	const dwellingFaction = d => (objectPools.dwellingFactions && objectPools.dwellingFactions.get(`${d.type}|${d.subtype}`)) || null;
+	// K, 2026-10-08: "creature generation dwellings in town zones (and HARD AND FAST RULE FOR PLAYER START TOWNS) do not match the biome's town ...
+	// for neutral towns, probably 50%/50% related or 75%/25% related, favoring the biome town's own". A player start's zone takes its town's
+	// dwellings only; a neutral town's zone takes them three times in four and another town's faction the fourth (the lead's pick of 75/25).
+	// Zones without a town keep the faction they had. Always on.
+	const ownShare = zoneMeta ? (zoneMeta.ownerColor ? 1 : (zoneMeta.towns && zoneMeta.towns.length ? 0.75 : 1))
+		: (Number.isFinite(p.dwellOwnShare) ? p.dwellOwnShare : 1);
+	const otherFaction = d => { const f = dwellingFaction(d); return !!f && f !== zf && f !== 'neutral'; };
+	// a dwelling of another town's faction near the level of the one it stands in for
+	const otherDwelling = (lvl, pool) => {
+		const cands = pool.filter(otherFaction);
+		if (!cands.length) return null;
+		const gap = Math.min(...cands.map(d => Math.abs((d.level || 1) - lvl)));
+		const near = cands.filter(d => Math.abs((d.level || 1) - lvl) === gap);
+		return near[(rng() * near.length) | 0];
+	};
 	const pickDwellingFor = lvl => {
 		if (!zf || !objectPools.dwellingFactions) return pickDwelling(lvl, rng, objectPools.dwellings);
+		if (ownShare < 1 && rng() >= ownShare) { const o = otherDwelling(lvl, DWELLING_POOL.concat(objectPools.dwellings || [])); if (o) return o; }
 		const pool = DWELLING_POOL.concat(objectPools.dwellings || []).filter(d => dwellingFaction(d) === zf);
 		if (!pool.length) return pickDwelling(lvl, rng, objectPools.dwellings);
 		let near = pool.filter(d => d.level === lvl);
@@ -2286,7 +2726,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			.filter(d => d.faction === (zoneMeta.faction || 'neutral') && !(d.fromRmg && d.value > maxV))
 			.map(d => ({ d, v: d.value * mod, odds: d.prob / 100 }));
 		dwellPicks = [];
-		for (const { band, count } of own.length ? templatePiles(bands, cells.length) : []) {
+		for (const { band, count } of own.length ? templatePiles(bands, cells.length, (zoneMeta && zoneMeta.richScale) || 1) : []) {
 			const w = own.map(x => x.odds * bandEligibility(x.v, band));
 			const Z = w.reduce((a, b) => a + b, 0);
 			if (!(Z > 0)) continue;
@@ -2300,14 +2740,200 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			}
 		}
 	}
+	// a neutral town's zone: one in four of its drawn dwellings from another town's faction (ownShare above)
+	if (dwellPicks && zf && ownShare < 1 && objectPools.engineDwellings) {
+		const others = objectPools.engineDwellings.filter(d => d.tpl && d.faction !== zf && d.faction !== 'neutral');
+		for (let i = 0; i < dwellPicks.length; i++) {
+			if (rng() < ownShare || !others.length) continue;
+			const lvl = dwellPicks[i].level || 1;
+			const gap = Math.min(...others.map(d => Math.abs((d.level || 1) - lvl)));
+			const near = others.filter(d => Math.abs((d.level || 1) - lvl) === gap);
+			dwellPicks[i] = near[(rng() * near.length) | 0];
+		}
+	}
 	const dwellExpect = scale * fill.dwellings * p.dwellingDensity
 		* dwellPoolWeight / CORE_DWELLING_WEIGHT * (zoneMeta ? 1 : FREE_DWELL_SCALE);
+	// The template's signature dwellings: the neutral dwellings its rich zones (a band from 50000) can draw, worth that
+	// much or more (Coldshadow's Crystal, Azure, Faerie and Rust dragon dwellings). plan.js ensureSignatureDwelling keeps
+	// one on every map. A small map's zone merge can fold the zones that carry them into a town zone, whose dwellings
+	// are its town's (36x36 one level, 2026-10-03), so the candidates come from the pool, not from what landed.
+	if (zoneMeta && zoneMeta.spec && (zoneMeta.spec.treasure || []).some(t => (t.min || 0) >= TPL_VERY_RICH_MIN)) {
+		(objectPools.__richZones || (objectPools.__richZones = new Set())).add(zoneMeta.spec.id);
+		if (!objectPools.__sigCands) {
+			const maxV = (zoneMeta.spec.treasure || []).reduce((m, t) => Math.max(m, t.max || 0), 0);
+			const neutral = (objectPools.engineDwellings || []).filter(d => d.faction === 'neutral' && d.tpl && d.value <= maxV * 2);
+			// worth a quarter of the most valuable or more: K's mods give the four dragons 26433 to 78845 and the next 3072
+			const best = neutral.reduce((m, d) => Math.max(m, d.value || 0), 0);
+			objectPools.__sigCands = neutral.filter(d => (d.value || 0) >= best / 4);
+			if (process.env.VMAPGEN_SIG_TRACE) console.error('[sig] neutral dwellings by value: ' + neutral.slice().sort((x, y) => y.value - x.value).slice(0, 14).map(d => `${d.subtype}=${d.value}`).join(' '));
+		}
+		const own = dwellPicks && dwellPicks.find(d => objectPools.__sigCands.includes(d));
+		if (own && !objectPools.__sigDw) objectPools.__sigDw = own;
+	}
+	// the level's rock as the cave checker reads it (1 = rock), for pocket walls closed as rock (putLoot, sealTarget)
+	const caveRock = openMask && p.caveChecker ? Uint8Array.from(openMask, v => (v ? 0 : 1)) : null;
+	// rock that closes a pile's pocket: the later passes that shape the cave for its art (cavefit.js) do not open it again
+	const sealRock = c => { (openMask.sealed || (openMask.sealed = new Uint8Array(W * H)))[c] = 1; };
+	// valuable loot in a template zone draws first from the zone's nooks (lootNook), where its pocket closes
+	// tiles inside walled piles kept for the zone's cheap loot (putLoot, intoSlot); VMAPGEN_CHEAP_SLOTS=0 walls them all
+	// underground, in a zone of 300 tiles or more: on the surface of one-level maps the slots shut zones off (36x36 seed 3; 144 one level
+	// 5p seed 749107, an idle start zone swept empty, MapGen Dev's sweep), cause not found
+	const cheapSlots = [], CHEAP_SLOTS = openMask && cells.length >= 300 ? Number(process.env.VMAPGEN_CHEAP_SLOTS ?? 2) : 0;
+	// a cheap pickup into the next free slot of a walled pile, or null
+	const intoSlot = (type, tpl, opts, subtype) => {
+		// the art real maps put on this ground, as put takes it (terrainArt.js)
+		if (TERRAIN_ART) { const art = artFor(type, subtype, tpl, terrain, rng); if (art === null) return null; tpl = art; }
+		while (cheapSlots.length) {
+			const c = cheapSlots.shift(), x = c % W, y = (c / W) | 0;
+			if (blocked[l * W * H + c] & OCCUPIED) continue;
+			if (!footprintFits(tpl, x, y, l, W, H, blocked, true)) continue;
+			// the fill's connectivity counts a pickup as a wall: a slot some way still runs through stays empty
+			if (connectivity && !connectivity.accepts([c])) continue;
+			const entry = objectEntry(type, x, y, l, tpl, opts, subtype || 'object');
+			out.push(entry);
+			footprintBlock(tpl, x, y, l, W, H, blocked);
+			markApproach(tpl, x, y, l, W, H, blocked);
+			if (connectivity) connectivity.refresh();
+			const fi = free.indexOf(c);
+			if (fi >= 0) free.splice(fi, 1);
+			RING_T.slotFilled = (RING_T.slotFilled || 0) + 1;
+			return entry;
+		}
+		return null;
+	};
+	const putCheap = (type, tpl, opts, subtype) => intoSlot(type, tpl, opts, subtype) || put(type, tpl, opts, subtype);
+	// within: only these anchors, and only where the pocket closes with its guard's tile clear of the other stacks (a template dwelling, below)
+	const putLoot = (type, tpl, opts, subtype, within = null) => {
+		// the free layout walls a dwelling's pocket too (within); its loose loot keeps the old draw
+		if (!zoneMeta && !within) return put(type, tpl, opts, subtype);
+		const how = new Map();
+		const nook = plainPickup(tpl) ? closable : (x, y) => closableFor(tpl, x, y);
+		const spots = (within || free).filter(c => { const k = nook(c % W, (c / W) | 0); if (k >= 0) how.set(c, closableHow); return k >= 0; });
+		const spaced = spots.filter(c => { const g = how.get(c).g; return !guardCrowd(g % W, (g / W) | 0); });
+		const spaced3 = spaced.length ? spaced : spots.filter(c => { const g = how.get(c).g; return !guardTightAt(g % W, (g / W) | 0); });
+		if (within && !spaced3.length) return null;
+		const e = within ? put(type, tpl, opts, subtype, 40, spaced3, true, true)
+			: put(type, tpl, opts, subtype, 32, spaced3.length ? spaced3 : spots.length ? spots : null);
+		if (process.env.VMAPGEN_RING_TRACE) { RING_T.calls = (RING_T.calls || 0) + 1; RING_T['spots ' + (spots.length ? 'some' : 'none')] = (RING_T['spots ' + (spots.length ? 'some' : 'none')] || 0) + 1; if (e) RING_T.placed = (RING_T.placed || 0) + 1; if (e && how.has(e.y * W + e.x)) RING_T.closable = (RING_T.closable || 0) + 1; }
+		// the engine lays the pile, its guard's tile and the wall round it as one: the ring's other free tiles are walled now,
+		// before later objects take them, and the guard's tile is kept as an approach
+		if (e && how.has(e.y * W + e.x)) {
+			e.__walled = [e.x, e.y];
+			const note = (w, k) => { RING_T[k] = (RING_T[k] || 0) + 1; (e.__ringLog || (e.__ringLog = [])).push([w % W, (w / W) | 0, k]); };
+			const { g, others } = how.get(e.y * W + e.x);
+			// one tile closed, as rock in a cave or with a one-tile obstacle; false when it stays open
+			const wall = w => {
+				// in a cave the wall closes as rock where the rock's art fits no worse (as sealTarget does)
+				if (caveRock && process.env.VMAPGEN_SEAL_ROCK !== '0' && openMask[w] && (!connectivity || connectivity.accepts([w]))) {
+					const wx = w % W, wy = (w / W) | 0;
+					const was = p.caveChecker.around(caveRock, W, H, wx, wy, 2);
+					caveRock[w] = 1;
+					if (p.caveChecker.around(caveRock, W, H, wx, wy, 2) <= was) {
+						openMask[w] = 0; sealRock(w);
+						blocked[l * W * H + w] |= OCCUPIED;
+						if (connectivity) connectivity.refresh();
+						note(w, 'rock');
+						const fi = free.indexOf(w);
+						if (fi >= 0) free.splice(fi, 1);
+						return true;
+					}
+					caveRock[w] = 0;
+				}
+				let st = singleTemplate(terrain, rng);
+				// a mod terrain has no one-tile art (highlands, dunes, wasteland, sand: K's 252 had 33 of 54 dear piles open in a
+				// highlands zone, 2026-10-05): on the surface a core one-tile piece stands in, and the scenery retile redraws it in
+				// the zone's own sets with the same blocked tile (retile.js keeps blocked cells identical)
+				if ((!st || !st.tpl.mask || st.tpl.mask.length !== 1 || st.tpl.mask[0].length !== 1) && !caveRock && process.env.VMAPGEN_RING_STANDIN !== '0') {
+					const alt = singleTemplate('dt', rng);
+					if (alt && alt.tpl.mask && alt.tpl.mask.length === 1 && alt.tpl.mask[0].length === 1) st = alt;
+				}
+				if (!st || !st.tpl.mask || st.tpl.mask.length !== 1 || st.tpl.mask[0].length !== 1) {
+					// a mod terrain has no one-tile art: in a cave the tile closes as rock all the same
+					if (caveRock && openMask[w] && (!connectivity || connectivity.accepts([w]))) {
+						caveRock[w] = 1; openMask[w] = 0; sealRock(w);
+						blocked[l * W * H + w] |= OCCUPIED;
+						if (connectivity) connectivity.refresh();
+						note(w, 'rock, no art');
+						const fi = free.indexOf(w);
+						if (fi >= 0) free.splice(fi, 1);
+						return true;
+					}
+					note(w, 'noArt ' + terrain); return false;
+				}
+				if (connectivity && !connectivity.accepts([w])) { note(w, 'refused'); return false; }
+				note(w, 'walls');
+				const rw = objectEntry(st.type, w % W, (w / W) | 0, l, st.tpl, {}, st.subtype);
+				rw.__ring = true;
+				out.push(rw);
+				footprintBlock(st.tpl, w % W, (w / W) | 0, l, W, H, blocked);
+				if (connectivity) connectivity.refresh();
+				const fi = free.indexOf(w);
+				if (fi >= 0) free.splice(fi, 1);
+				return true;
+			};
+			// The engine's pile is several objects behind one guard (TreasurePlacer): up to two ring tiles beside the guard's tile
+			// stay free for the cheap loot laid later (cheapSlots), each walled on its outer side, so the guard covers them too.
+			// Without them the guard covered the dear object alone and the zone's cheap loot lay open (low loot open 71% -> 84%
+			// against the engine's 64%, 2026-10-05).
+			const P = e.y * W + e.x;
+			const near = (a, b) => Math.max(Math.abs(a % W - b % W), Math.abs(((a / W) | 0) - ((b / W) | 0))) <= 1;
+			const slots = [], extra = [];
+			for (const sl of others) {
+				if (slots.length >= CHEAP_SLOTS || !near(sl, g)) continue;
+				const sx = sl % W, sy = (sl / W) | 0, outer = [];
+				let ok = true;
+				for (let dy = -1; dy <= 1 && ok; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const n = (sy + dy) * W + sx + dx;
+					if ((!dx && !dy) || near(n, P) || near(n, g) || extra.includes(n)) continue;
+					if (!floorAt(n) || (blocked[l * W * H + n] & OCCUPIED)) continue;
+					if ((blocked[l * W * H + n] & (RESERVED | APPROACH)) || !lootZone.has(n)) { ok = false; break; }
+					outer.push(n);
+				}
+				if (ok) { slots.push(sl); extra.push(...outer); }
+			}
+			for (const w of others) if (!slots.includes(w)) wall(w);
+			for (const w of extra) if (!wall(w))
+				// an outer wall that would not close leaves its slot open to the zone: the slot is walled instead
+				for (const sl of slots.slice()) if (near(sl, w)) { slots.splice(slots.indexOf(sl), 1); wall(sl); }
+			for (const sl of slots) { blocked[l * W * H + sl] |= APPROACH; cheapSlots.push(sl); RING_T.slots = (RING_T.slots || 0) + 1; }
+			blocked[l * W * H + g] |= APPROACH;
+			e.__guardAt = [g % W, (g / W) | 0];
+			holdGuard(g % W, (g / W) | 0);
+		}
+		return e;
+	};
 	const dwellCount = dwellPicks ? dwellPicks.length
 		: Math.floor(dwellExpect) + (rng() < dwellExpect % 1 ? 1 : 0);
 	for (let i = dwellCount; i > 0; i--) {
 		if (dwellPicks) {
 			const d = dwellPicks[i - 1];
-			const e = put(d.type, d.tpl, undefined, d.subtype, 40, fitAnchors(d.tpl), true);
+			// where a guard can stand: every approach tile open and no road, doorway or apron within two of it. Laid
+			// anywhere, 0.55 of our dwellings ended with their approach on a road or covered, and their pile guard found no
+			// tile (seal trace, 2026-10-02); the engine keeps its piles off the roads (TreasurePlacer). Falls back to any
+			// anchor. VMAPGEN_DWELL_GUARDABLE=0 is the old draw.
+			// never beside another dwelling: the engine's never stand within 2 tiles of each other, 0.15 of ours did
+			// (2026-10-02; VMAPGEN_DWELL_APART=0 allows it)
+			const dwellsHere = out.filter(o => (o.l || 0) === l && /^creatureGenerator|Dwelling/.test(o.type));
+			const apart = c => process.env.VMAPGEN_DWELL_APART === '0'
+				|| !dwellsHere.some(o => Math.max(Math.abs(o.x - c % W), Math.abs(o.y - ((c / W) | 0))) <= 3);
+			const anchors = fitAnchors(d.tpl).filter(apart);
+			const good = process.env.VMAPGEN_DWELL_GUARDABLE === '0' ? [] : anchors.filter(c => guardableAt(d.tpl, c % W, (c / W) | 0));
+			// in a nook first: half the engine's dwellings stand at the end of a spur, every approach tile with three
+			// walkable neighbours or fewer (mapsight), ours 0.16 (2026-10-02). VMAPGEN_DWELL_NOOK=0 skips the preference.
+			const nooks = process.env.VMAPGEN_DWELL_NOOK === '0' ? [] : good.filter(c => nookAt(d.tpl, c % W, (c / W) | 0));
+			// underground, the tunnel ends first: a dwelling within 3 tiles of a spline cave's dead end (VMAPGEN_DWELL_ENDS=0)
+			const ends = openMask && openMask.leaves && process.env.VMAPGEN_DWELL_ENDS !== '0'
+				? good.filter(c => openMask.leaves.some(q => Math.max(Math.abs(q % W - c % W), Math.abs(((q / W) | 0) - ((c / W) | 0))) <= 3)) : [];
+			// first a pocket that walls shut round it with one tile left for its guard, clear of the other stacks: the engine's dwellings stand
+			// in closed pockets with the guard in the mouth (60% closed, the ring the mouth for 80%; pile_structure.js), and ours, laid in the
+			// open, were left with corners a blocker would cut and a second guard would crowd (16 to 31% open, 2026-10-08).
+			// VMAPGEN_DWELL_POCKET=0 skips it.
+			const sealedAt = good.length && process.env.VMAPGEN_DWELL_POCKET !== '0' ? putLoot(d.type, d.tpl, undefined, d.subtype, good) : null;
+			const e = sealedAt
+				|| (ends.length ? put(d.type, d.tpl, undefined, d.subtype, 40, ends, true) : null)
+				|| (nooks.length ? put(d.type, d.tpl, undefined, d.subtype, 40, nooks, true) : null)
+				|| (good.length ? put(d.type, d.tpl, undefined, d.subtype, 40, good, true) : null)
+				|| put(d.type, d.tpl, undefined, d.subtype, 40, anchors, true);
 			if (e && d.mod) e.mod = d.mod;
 			continue;
 		}
@@ -2325,8 +2951,11 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			const d = th && th.pool.length && rng() < th.share
 				? nearestLevelDwelling(th.pool, lvl, rng)
 				: pickDwellingFor(lvl);
-			const e = d && put(d.type, d.tpl, undefined, d.subtype, 40,
-				fitAnchors(d.tpl), true);
+			// a walled pocket with the guard's tile in its mouth first, as a template zone's dwellings (the free layout's dwellings stood open on
+			// 40 to 58% of them once a second guard beside the first was refused, 2026-10-08)
+			const goodF = d && process.env.VMAPGEN_DWELL_POCKET !== '0' ? fitAnchors(d.tpl).filter(c => guardableAt(d.tpl, c % W, (c / W) | 0)) : [];
+			const e = d && ((goodF.length ? putLoot(d.type, d.tpl, undefined, d.subtype, goodF) : null)
+				|| put(d.type, d.tpl, undefined, d.subtype, 40, fitAnchors(d.tpl), true));
 			if (e) {
 				// a mod dwelling keeps its mod, so the header declares it,
 				// the same as a mod bank
@@ -2467,7 +3096,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		return m;
 	};
 	if (zoneMeta && zoneMeta.spec && process.env.VMAPGEN_TPL_BANK_PILES !== '0') {
-		const piles = templatePiles(zoneMeta.spec.treasure, cells.length);
+		const piles = templatePiles(zoneMeta.spec.treasure, cells.length, zoneMeta.richScale || 1);
 		let expect = 0;
 		for (const { band, count } of piles) {
 			if (tplMode !== 'band') {
@@ -2495,7 +3124,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	}
 	// a zone with landed piles takes the banks they drew, each as drawn (kind and number); the rate model above
 	// stands for a zone with none (a free layout)
-	const bankPicks = pileMan ? ['creatureBank', 'dragonUtopia', 'crypt'].flatMap(t => (pileMan.get(t) || []).filter(() => t !== 'dragonUtopia' || rng() < UTOPIA_LAND).map(o => {
+	const bankPicks = pileMan ? ['creatureBank', 'dragonUtopia', 'crypt'].flatMap(t => (pileMan.get(t) || []).filter(() => (t !== 'dragonUtopia' || rng() < UTOPIA_LAND) && rng() < 0.86).map(o => {
 		const sub = String(o.key).slice(String(o.key).lastIndexOf('.') + 1);
 		return bankPool.find(x => x.b.subtype === sub && (x.b.type || 'creatureBank') === t) || null;
 	})).filter(Boolean) : null;
@@ -2504,8 +3133,11 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const pick = pileMan ? band : pickBank(band);
 		if (!pick) continue;
 		const b = pick.b;
-		const e = put(b.type || 'creatureBank', pick.tpl.raw, b.rewardable ? emptyRewardable() : undefined,
-			b.subtype, 40, fitAnchors(pick.tpl.raw), true);
+		// a walled pocket with its guard's tile in the mouth first, as a dwelling's (K, 2026-10-08: stacks beside banks that close nothing; a walker
+		// took 40% of the banks with a stack beside them, the engine's 2%); VMAPGEN_BANK_POCKET=0 skips it
+		const bankOpts = b.rewardable ? emptyRewardable() : undefined;
+		const e = (zoneMeta && process.env.VMAPGEN_BANK_POCKET !== '0' ? putLoot(b.type || 'creatureBank', pick.tpl.raw, bankOpts, b.subtype, fitAnchors(pick.tpl.raw).slice()) : null)
+			|| put(b.type || 'creatureBank', pick.tpl.raw, bankOpts, b.subtype, 40, fitAnchors(pick.tpl.raw), true);
 		if (e) {
 			zoneBanks.set(bankKey(b), (zoneBanks.get(bankKey(b)) || 0) + 1);
 			mapBanks.set(bankKey(b), (mapBanks.get(bankKey(b)) || 0) + 1);
@@ -2541,23 +3173,45 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// target, and a graph deeper than three hops does not make it deeper.
 	const zd = Math.min(3, zoneDist == null ? 0 : Math.min(zoneDist, 3));
 	const artifactCount = pileMan ? 0 : Math.round(area * p.artifactDensity * fill.artifacts * 10);
-	if (pileMan)
-		for (const t of ART_TIERS)
-			for (let n = manCount(t.type, p.artifactDensity / BIOME_DEFAULTS.artifactDensity / lootDiv); n > 0; n--) {
-				if (rng() < 0.03) put('artifact', OBJECT_TEMPLATES.randomArtifact, undefined, SEER_ARTIFACTS[(rng() * SEER_ARTIFACTS.length) | 0]);
-				else put(t.type, t.tpl);
-			}
+	if (pileMan) {
+		// Artifact quality on a template: the piles' own tiers are 1x (the default slider). Away from it the major and relic counts are
+		// leaned by the factor the free layout uses (4 either way at the slider's ends) and the total stays the piles' own, so the
+		// quality moves the mix and not the number. At the default nothing changes, not a random draw. VMAPGEN_ART_LEAN_TPL=0 leaves the piles' tiers.
+		const tplLean = Number.isFinite(p.artifactRichness) && process.env.VMAPGEN_ART_LEAN_TPL !== '0'
+			? 2 ** ((p.artifactRichness - BIOME_DEFAULTS.artifactRichness) * 4) : 1;
+		const artLever = p.artifactDensity / BIOME_DEFAULTS.artifactDensity / lootDiv;
+		const putTier = t => {
+			if (rng() < 0.03) putLoot('artifact', OBJECT_TEMPLATES.randomArtifact, undefined, SEER_ARTIFACTS[(rng() * SEER_ARTIFACTS.length) | 0]);
+			else putLoot(t.type, t.tpl);
+		};
+		if (tplLean === 1) {
+			for (const t of ART_TIERS) for (let n = manCount(t.type, artLever); n > 0; n--) putTier(t);
+		} else {
+			const counts = ART_TIERS.map(t => manCount(t.type, artLever));
+			const weight = ART_TIERS.map((t, i) => counts[i] * (/Major|Relic/.test(t.type) ? tplLean : 1));
+			const total = counts.reduce((a, b) => a + b, 0), wsum = weight.reduce((a, b) => a + b, 0);
+			let carry = 0;
+			ART_TIERS.forEach((t, i) => {
+				const want = wsum ? total * weight[i] / wsum + carry : 0, n = Math.floor(want + 1e-9);
+				carry = want - n;
+				for (let k = n; k > 0; k--) putTier(t);
+			});
+		}
+	}
 	for (let i = 0; i < artifactCount; i++) {
 		// ~3% of artifacts write concrete (type 'artifact', subtype a named
 		// id) rather than tier placeholders - same pool the seer-hut quests
 		// draw from. Ran 2.41x corpus at 10%, still 1.89x at 5%.
 		if (rng() < 0.03) {
-			put('artifact', OBJECT_TEMPLATES.randomArtifact,
+			putLoot('artifact', OBJECT_TEMPLATES.randomArtifact,
 				undefined, SEER_ARTIFACTS[(rng() * SEER_ARTIFACTS.length) | 0]);
 			continue;
 		}
-		const t = pickArtifactTier(richness, rng, zd);
-		put(t.type, t.tpl);
+		// the Artifact quality lever leans the major and relic weights by a factor of 4 either way (2 ** 4 x the slider's distance
+		// from its default of 0.5, so 1 at the default and the same map); the class shifts above stay as they were
+		const lean = Number.isFinite(p.artifactRichness) ? 2 ** ((p.artifactRichness - BIOME_DEFAULTS.artifactRichness) * 4) : 1;
+		const t = pickArtifactTier(richness, rng, zd, lean);
+		putLoot(t.type, t.tpl);
 	}
 
 	// Mines moved up ahead of the scenery block - see the comment there.
@@ -2592,18 +3246,20 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		for (const o of pileMan.get('resource') || []) {
 			if (rng() >= lever && lever < 1) continue;
 			const kind = String(o.key).slice(String(o.key).lastIndexOf('.') + 1);
-			if (besideLeft > 0) { besideLeft--; continue; }
-			put('resource', pileTemplate(kind), undefined, kind);
+			// the engine's piles and its mines' extra resources are separate draws (MinePlacer, TreasurePlacer): no pile
+			// resource is taken back for one beside a mine (taken back, the map held 0.55 of the engine's loose resources with
+			// K's mods, 2026-10-03); the rate model below still counts them, as it was fitted with them in
+			putCheap('resource', pileTemplate(kind), undefined, kind);
 		}
-		for (let n = manCount('randomResource', lever); n > 0; n--) put('randomResource', pileTpl, undefined, 'randomResource');
+		for (let n = manCount('randomResource', lever); n > 0; n--) putCheap('randomResource', pileTpl, undefined, 'randomResource');
 	}
 	for (let i = pileMan ? 0 : Math.round(scale * fill.piles * p.resourceDensity); i > 0; i--) {
 		if (PILE_KINDS && rng() < 0.667) {
 			const kind = pickKind();
 			if (besideLeft > 0) { besideLeft--; continue; }
-			put('resource', pileTemplate(kind), undefined, kind);
+			putCheap('resource', pileTemplate(kind), undefined, kind);
 		} else
-			put('randomResource', pileTpl, undefined, 'randomResource');
+			putCheap('randomResource', pileTpl, undefined, 'randomResource');
 	}
 	// Treasure chests: every chest subtype the map may use (generate.js
 	// objectPools.chests) that has a template for this ground, drawn by rarity
@@ -2622,8 +3278,8 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const chestScale = CHEST_GROWTH && chestPool.length ? CHEST_K * Math.pow(chestRarity / 1000, CHEST_GAMMA) : 1;
 	const chestW = chestPool.reduce((a, e) => a + e.w, 0);
 	const putChest = pick => {
-		if (!pick) { put('treasureChest', chestTpl, undefined, 'treasureChest'); return; }
-		const e = put('treasureChest', pick.tpl.raw, pick.c.core ? undefined : emptyRewardable(), pick.c.subtype);
+		if (!pick) { putCheap('treasureChest', chestTpl, undefined, 'treasureChest'); return; }
+		const e = putCheap('treasureChest', pick.tpl.raw, pick.c.core ? undefined : emptyRewardable(), pick.c.subtype);
 		if (e && (pick.tpl.mod || pick.c.mod)) e.mod = pick.tpl.mod || pick.c.mod;
 	};
 	if (pileSim) {
@@ -2648,7 +3304,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	}
 	const fireTpl = campfireTemplate();
 	for (let i = pileMan ? manCount('campfire', p.pickupDensity / lootDiv) : Math.round(scale * fill.campfires * p.pickupDensity); i > 0; i--)
-		put('campfire', fireTpl, undefined, 'campfire');
+		putCheap('campfire', fireTpl, undefined, 'campfire');
 
 	// One-visit buildings are placed with the utilities above the scenery
 	// pass: most give a hero something permanent the first time and nothing
@@ -2670,14 +3326,32 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const uMul = l > 0 ? { pandora: 3, prison: 3, obelisk: 2.5 } : null;
 	const pandoraTpl = pandoraTemplate();
 	for (let i = pileMan ? manCount('pandoraBox') : rare(fill.pandoras * (uMul ? uMul.pandora : 1)); i > 0; i--)
-		put('pandoraBox', pandoraTpl, pandoraOptions(rng));
+		putLoot('pandoraBox', pandoraTpl, pandoraOptions(rng));
+	const prisonPile = new Map();
 	if (fill.prisons || (pileMan && pileMan.has('prison'))) {
 		if (!objectPools.prisonHeroes)
 			objectPools.prisonHeroes = makePrisonHeroPool(players.length, rng);
+		// Prisons by tier (K, 2026-10-07: "the highest-yielding prisons would be in high loot areas behind significant guards"; the
+		// engine's rule, TreasurePlacer::addPrisons and HotA's template format: tier values 2500, 5000, 10000, 20000 and 30000 for 0, 5000,
+		// 15000, 90000 and 500000 experience, a tier only where the zone's treasure reaches its value). The piles draw them by that rule
+		// (piles.js addPrisons), so each prison takes the tier of the prison its pile drew, and the pile's guard (sized on the pile's
+		// value) stands at it below. Before this the tier was a corpus roll that ignored the zone: 500000-experience prisons in start
+		// zones 12 of 45, and their guards no stronger than a tier-0 prison's (2026-10-08 assessment). The count stays (K, 2026-10-04).
+		const tiers = pileMan ? (pileMan.get('prison') || []).slice() : [];
 		for (let i = pileMan ? manCount('prison') : rare(fill.prisons * (uMul ? uMul.prison : 1)); i > 0; i--) {
 			const hero = objectPools.prisonHeroes.pop();
 			if (!hero) break;
-			put('prison', prisonTemplate(), prisonOptions(hero, rng), 'prison');
+			const src = tiers.length ? tiers.splice((rng() * tiers.length) | 0, 1)[0] : null;
+			// a start zone's prison keeps to the low tiers (K, 2026-10-07: "starter biomes get lower tiered prisons, with higher tiered ones
+			// landing in high loot zones"): the engine's value rule let Coldshadow's rich start zones draw 90000 (MapGen Dev's check, 2026-10-09)
+			const startZone = cls === BIOME_CLASS.PLAYER || !!(zoneMeta && zoneMeta.spec && /^(playerStart|cpuStart)$/.test(zoneMeta.spec.type));
+			let exp = src ? PRISON_TIER_EXP[src.value] : undefined;
+			if (startZone && exp > 15000) exp = 15000;
+			const opts = exp === undefined ? prisonOptions(hero, rng) : (exp ? { gender: -1, type: hero, experience: exp } : { gender: -1, type: hero });
+			// the free layout's corpus roll keeps to the same low tiers in a start zone
+			if (startZone && opts.experience > 15000) opts.experience = 15000;
+			const e = src ? putLoot('prison', prisonTemplate(), opts, 'prison') : put('prison', prisonTemplate(), opts, 'prison');
+			if (e && src && pileOf.get(src)) prisonPile.set(e, pileOf.get(src));
 		}
 	}
 	const obeliskTpl = obeliskTemplate(terrain);
@@ -2729,6 +3403,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// its share of the budget roams instead.
 	const guardWeight = g => (GUARD_CHANCE[g.entry.type] || 0.1)
 		* guardContextWeight(g.entry.type, p);
+	if (SEAL_TRACE) for (const g of guardable) SEAL_TRACE['guardable ' + g.entry.type] = (SEAL_TRACE['guardable ' + g.entry.type] || 0) + 1;
 	const ranked = guardable
 		.map(g => ({ ...g, key: -Math.log(rng() || 1e-9) / guardWeight(g) }))
 		.filter(g => Number.isFinite(g.key))
@@ -2736,7 +3411,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 
 	/** Post a monster on a cell beside `target`'s entrance; `preset` is an
 	 * engine-rule guard (level and count) for a template zone. */
-	const postGuard = ({ entry, tpl }, preset = null) => {
+	const postGuard = ({ entry, tpl }, preset = null, seal = false, gather = 0, retried = false) => {
+		// a guard already stands beside its visiting tile (another pile's, a mine's): this one goes to the next object (a dwelling keeps its own: its
+		// approach is five tiles wide and one neighbour's ring left most of it open, 25 to 39% of dwellings on K's maps)
+		if (!(entry.__guardAt && entry.__walled) && !/^creatureGenerator/.test(entry.type) && !(entry.type === 'prison' && entry.options && entry.options.experience >= 90000) && guardBeside(tpl, entry.x, entry.y)) { if (SEAL_TRACE) SEAL_TRACE['guard shared'] = (SEAL_TRACE['guard shared'] || 0) + 1; return false; }
 		// A guard watches the approach its target's visitableFrom permits.
 		// Standing on a forbidden side of a front-facing building guards
 		// nothing: the engine will not let a hero come at it that way anyway.
@@ -2749,19 +3427,77 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			const j = (rng() * (k + 1)) | 0;
 			[spots[k], spots[j]] = [spots[j], spots[k]];
 		}
+		// the spot whose ring covers the most of the target's approach first, so the guard seals it rather than
+		// standing at one end with the rest open (VMAPGEN_GUARD_COVER=0 keeps the shuffled order)
+		if (process.env.VMAPGEN_GUARD_COVER !== '0') {
+			const unc = ([gx, gy]) => spots.filter(([ax, ay]) => Math.abs(ax - gx) > 1 || Math.abs(ay - gy) > 1).length;
+			const u = new Map(spots.map(s => [s, unc(s)]));
+			spots.sort((a, b) => u.get(a) - u.get(b));
+		}
+		// the side of the target that leaves it, and everything else beside the guard, in view (monsterClips)
+		if (CLIP_RULE) {
+			const clipped = new Map(spots.map(s => [s, monsterClips(s[0], s[1]) ? 1 : 0]));
+			spots.sort((a, b) => clipped.get(a) - clipped.get(b));
+		}
+		// a spot clear of every other guard's 5x5 first (the register above)
+		// a dwelling's approach is up to five tiles wide: its guard takes the tile that covers most of it, keeping only the 3-tile floor
+		const wide = /^creatureGenerator/.test(entry.type);
+		// a prison of 90000 experience or more is never left without its guard for want of a spaced tile (K, 2026-10-07: "the highest-yielding
+		// prisons would be in high loot areas behind significant guards"; 19 to 27% of them stood unguarded when the spacing refused every tile)
+		const mustGuard = entry.type === 'prison' && entry.options && entry.options.experience >= 90000;
+		{ const cr = new Map(spots.map(sp => [sp, guardTightAt(sp[0], sp[1]) ? 2 : !wide && guardCrowd(sp[0], sp[1]) ? 1 : 0])); spots.sort((a, b) => cr.get(a) - cr.get(b)); }
 		// what the guard is meant to block: its target and its approach
 		const targetApproach = new Set(spots.map(([ax, ay]) => ay * W + ax));
 		for (const [vx, vy] of visitableCells(tpl, entry.x, entry.y)) targetApproach.add(vy * W + vx);
+		// With a pocket to seal, every tile that passes is a candidate and the one whose pocket leaks least wins
+		// (sealLeaks); the first that passed often had a road or a neighbour's way in on its far side
+		// (VMAPGEN_SEAL_SPOT=0 takes the first, as before).
+		const pocketing = seal && SEAL_POCKETS && zoneMeta && SEAL_SPOT;
+		// With a pocket to seal, the entrances of loose loot round the target do not refuse a guard: that loot joins the
+		// pile (sealPlanRing absorbs it). Roads, doorways and other objects' entrances still do. A dwelling's guard was
+		// refused for a pickup beside it 37 times a map (2026-10-02). VMAPGEN_GUARD_PILE_OK=0 refuses as before.
+		let pileAround = null;
+		if (pocketing && process.env.VMAPGEN_GUARD_PILE_OK !== '0') {
+			pileAround = new Set(targetApproach);
+			for (const o of out) {
+				if (o === entry || (o.l || 0) !== l || !o.template || pocketed.has(o) || !POCKETABLE.test(o.type)) continue;
+				if (Math.abs(o.x - entry.x) > 4 || Math.abs(o.y - entry.y) > 4) continue;
+				for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) pileAround.add(vy * W + vx);
+			}
+		}
+		// a pile walled as it was laid (putLoot) has one tile left open for its guard: the guard stands there, as the engine's does
+		if (entry.__guardAt && entry.__walled && entry.__walled[0] === entry.x && entry.__walled[1] === entry.y) {
+			const [gx, gy] = entry.__guardAt;
+			const walls = blockingCells(monsterTpl, gx, gy).map(([a, b]) => b * W + a);
+			// the guard's reach must not take in a road, a door or another entrance (a town's way out ran past one, 2026-10-05)
+			const ok = footprintFits(monsterTpl, gx, gy, l, W, H, blocked, true) && (!connectivity || connectivity.accepts(walls))
+				&& !(zoneMeta && reachOnReserved(monsterTpl, gx, gy, l, W, H, blocked, pileAround || targetApproach))
+				&& entranceOpen(monsterTpl, gx, gy, l, W, H, blocked, reachable);
+			RING_T[ok ? 'guard on its tile' : 'guard tile refused'] = (RING_T[ok ? 'guard on its tile' : 'guard tile refused'] || 0) + 1;
+			if (ok) { pocketed.add(entry); return placeGuardAt(gx, gy, true); }
+		}
+		const fits = [];
+		const why = SEAL_TRACE && (seal || entry.type === 'mine') ? {} : null;
+		const no = k => { if (why) why[k] = (why[k] || 0) + 1; };
 		for (const [gx, gy, vx, vy] of spots) {
 			if (gx < 0 || gy < 0 || gx >= W || gy >= H) continue;
 			// monsters are removable: the guard may stand on the approach
 			// cell itself, which is what guarding means
-			if (!footprintFits(monsterTpl, gx, gy, l, W, H, blocked, true)) continue;
+			if (!footprintFits(monsterTpl, gx, gy, l, W, H, blocked, true)) {
+				no('no room');
+				if (why && /^creatureGenerator/.test(entry.type)) {
+					const f = blocked[l * W * H + gy * W + gx];
+					const on = out.find(o => (o.l || 0) === l && blockingCells(o.template, o.x, o.y).some(([a2, b2]) => a2 === gx && b2 === gy));
+					const k = on ? 'on ' + on.type.replace(/\d+$/, '') + (pocketed.has(on) ? ' (pocketed)' : '') : (f & RESERVED ? 'reserved' : f & OCCUPIED ? 'blocked, no fill object' : 'other');
+					SEAL_TRACE['dwelling approach ' + k] = (SEAL_TRACE['dwelling approach ' + k] || 0) + 1;
+				}
+				continue;
+			}
 			// but in a template zone not over a road, a corridor, a doorway
 			// or another entrance (the free layout's guards, as in put)
-			if (zoneMeta && reachOnReserved(monsterTpl, gx, gy, l, W, H, blocked, targetApproach)) continue;
+			if (zoneMeta && reachOnReserved(monsterTpl, gx, gy, l, W, H, blocked, pileAround || targetApproach)) { no('road, door or entrance in reach'); continue; }
 			// A guard that cannot be approached is a wall, not a guard.
-			if (!entranceOpen(monsterTpl, gx, gy, l, W, H, blocked, reachable)) continue;
+			if (!entranceOpen(monsterTpl, gx, gy, l, W, H, blocked, reachable)) { no('guard unapproachable'); continue; }
 			// The guard must not be the only way in. A monster is blocked and
 			// visitable, so taking the last open cell beside an entrance turns
 			// the object it is guarding into scenery, and the stranded sweep
@@ -2779,26 +3515,465 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				stillOpen = true;
 				break;
 			}
-			if (!stillOpen) continue;
+			if (!stillOpen && !(seal && SEAL_POCKETS && zoneMeta)) continue;
 			const walls = blockingCells(monsterTpl, gx, gy).map(([a, b]) => b * W + a);
-			if (connectivity && !connectivity.accepts(walls)) continue;
-			if (weldsMasses(walls, blocked, l, W, H, 2)) continue;
+			if (connectivity && !connectivity.accepts(walls)) { no('would cut the zone'); continue; }
+			// a pocket's guard is meant to join the walls round its pile: that is what seals it, and the fight removes it.
+			// The weld test refused 43 dwelling guards and 38 bank guards a map in the tunnels (2026-10-02).
+			// VMAPGEN_GUARD_WELD_OK=0 applies the test to pocket guards as before.
+			if (!(pocketing && process.env.VMAPGEN_GUARD_WELD_OK !== '0') && weldsMasses(walls, blocked, l, W, H, 2)) { no('welds masses'); continue; }
+			if (pocketing) { if (!fits.some(([x, y]) => x === gx && y === gy)) fits.push([gx, gy]); continue; }
+			if (!mustGuard && !wide && guardTightAt(gx, gy)) { no('crowded'); continue; }
+			return placeGuardAt(gx, gy);
+		}
+		if (!fits.length) {
+			// a pickup laid on the target's approach after it (pickups may cover an approach) leaves the guard no tile:
+			// move the one on the tile that would cover most of the approach, and try once more (a dwelling's pile guard
+			// failed this way 50 times a map, 2026-10-02; VMAPGEN_GUARD_CLEAR=0 gives up as before)
+			if (seal && !retried && process.env.VMAPGEN_GUARD_CLEAR !== '0') {
+				for (const [gx, gy] of spots) {
+					if (gx < 0 || gy < 0 || gx >= W || gy >= H) continue;
+					const on = out.filter(o => (o.l || 0) === l && o.x === gx && o.y === gy && movable(o));
+					if (on.length !== 1 || !relocate(on[0], entry)) continue;
+					if (SEAL_TRACE) SEAL_TRACE['guard tile cleared'] = (SEAL_TRACE['guard tile cleared'] || 0) + 1;
+					return postGuard({ entry, tpl }, preset, seal, gather, true);
+				}
+			}
+			if (why) for (const k of Object.keys(why)) SEAL_TRACE[`guard failed ${entry.type}: ${k}`] = (SEAL_TRACE[`guard failed ${entry.type}: ${k}`] || 0) + 1;
+			return false;
+		}
+		if (CLIP_RULE) { const clear = fits.filter(([gx, gy]) => !monsterClips(gx, gy)); if (clear.length) fits.splice(0, fits.length, ...clear); }
+		// a pile's guard with only tiles beside another stack goes to the next object instead (postPileGuard walks on)
+		{ const clear = fits.filter(([gx, gy]) => !guardCrowd(gx, gy)), clear3 = fits.filter(([gx, gy]) => !guardTightAt(gx, gy));
+			if (clear.length && !wide) fits.splice(0, fits.length, ...clear); else if (clear3.length) fits.splice(0, fits.length, ...clear3); else if (seal && !mustGuard) return false; }
+		let best = fits[0], bestN = Infinity;
+		for (const [gx, gy] of fits) {
+			const n = sealLeaks(sealPlan(entry, gx, gy));
+			if (n < bestN) { bestN = n; best = [gx, gy]; if (!n) break; }
+		}
+		if (connectivity && !connectivity.accepts(blockingCells(monsterTpl, best[0], best[1]).map(([a, b]) => b * W + a))) return false;
+		return placeGuardAt(best[0], best[1]);
+
+		function placeGuardAt(gx, gy, ringed = false) {
 			const tier = preset ? preset.level : creepTier(cls, rng,
 				(GUARD_VALUE_BUMP[entry.type] || 0) + monsterShift);
 			const guardEntry = objectEntry(`randomMonsterLevel${tier}`, gx, gy, l, monsterTpl,
-				preset ? { character: 'hostile', amount: preset.amount } : monsterOptions(tier, p, rng),
+				preset ? { character: 'hostile', amount: scaledAmount(preset.amount, p) } : monsterOptions(tier, p, rng),
 				'object');
 			// the creature the engine's rule picked, for generate.js to write
 			if (preset && preset.concrete) guardEntry.guardCreature = preset.creature;
+			if (process.env.VMAPGEN_SRC_TRACE && guardCrowd(gx, gy)) guardEntry.__src = (ringed ? "ringed" : pocketing ? "pocket" : "first") + "-" + entry.type.replace(/:.*/, "") + "<crowded";
 			out.push(guardEntry);
+			holdGuard(gx, gy);
 			footprintBlock(monsterTpl, gx, gy, l, W, H, blocked);
 			markApproach(monsterTpl, gx, gy, l, W, H, blocked);
 			if (connectivity) connectivity.refresh();
 			const idx = free.indexOf(gy * W + gx);
 			if (idx >= 0) free.splice(idx, 1);
+			if (seal && SEAL_POCKETS && zoneMeta && !ringed) { if (gather > 0) gatherPile(tpl, entry, gx, gy, gather); sealTarget(tpl, entry, gx, gy); }
+			return true;
+		}
+	};
+
+	/**
+	 * Wall a pocket round `entry` and the unguarded loot packed beside it, so the guard at (gx, gy) is the way in, as the
+	 * engine's piles are (TreasurePlacer: the pile's border blocked, the guard on its entrance). The inside is the guard's
+	 * tile and the group's approach tiles joined to it; every open tile touching the inside gets a one-tile obstacle,
+	 * except tiles in the guard's ring (stepping there is the fight), tiles another object needs as its way in, doors,
+	 * roads and entrances, and tiles whose blocking would cut the zone.
+	 */
+	const pocketed = new Set();
+	const GROUPABLE = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|prison|creatureGenerator|creatureBank|dragonUtopia)/;
+	// the engine's piles hold its one-visit buildings too (TreasurePlacer's shrines, scholars, stones, schools, temples):
+	// 0.29 of them sealed behind a guard on Coldshadow's Fantasy against ours 0.10, and a shrine beside a pocket was the
+	// commonest tile a pocket could not close (seed 1: 90 of 383). VMAPGEN_SEAL_BUILDINGS=0 leaves them out.
+	const POCKETABLE = process.env.VMAPGEN_SEAL_BUILDINGS === '0' ? GROUPABLE
+		: /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|prison|creatureGenerator|creatureBank|dragonUtopia|shrine|scholar|learningStone|schoolOf|temple|starAxis|gardenOfRevelation|mysticalGarden|magicWell|magicSpring|watchTower|redwoodObservatory|pillarOfFire|libraryOfEnlightenment|witchHut|treeOfKnowledge|arena|mercenaryCamp|marlettoTower|oasis|fountain|idolOfFortune|swanPond|faerieRing|stables|wateringHole|sanctuary|obelisk|corpse|wagon|warriorsTomb|skeleton)/;
+	// The engine's pile is its objects side by side behind one guard (TreasurePlacer). Ours lays loot out one object at
+	// a time, so a guard closed one object and the rest of its pile lay open elsewhere: a guard closing 3+ objects on
+	// 0.17 of Coldshadow's Fantasy guards against the engine's 0.43, and 0.6 of its high loot open (tools/mapsight
+	// score 2026-10-01). Here up to `n` loose one-tile pickups of this zone, nearest first, move onto the target's own
+	// approach tiles on the far side from the guard, where a hero in the guard's ring reaches them and nowhere else
+	// does once the pocket is walled. VMAPGEN_SEAL_GATHER=0 leaves the loot where it was laid.
+	const zoneCellSet = new Set(cells);
+	// the level's rock as the cave checker reads it (1 = rock), for pocket walls closed as rock (sealTarget)
+	const gatherPile = (tpl, entry, gx, gy, n) => {
+		const base = l * W * H;
+		const ent = ENTRANCES.get(blocked);
+		const ring = c => Math.abs(c % W - gx) <= 1 && Math.abs(((c / W) | 0) - gy) <= 1;
+		// never a tile another object comes at its entrance from (a gate's one open approach tile, a mine's)
+		const others = new Set();
+		for (const o of out) {
+			if (o === entry || (o.l || 0) !== l || !o.template || !o.template.mask || Math.abs(o.x - entry.x) > 10 || Math.abs(o.y - entry.y) > 10) continue;
+			const ot = { mask: o.template.mask, visitableFrom: o.template.visitableFrom };
+			for (const [vx, vy] of visitableCells(ot, o.x, o.y)) for (const [dx, dy] of allowedDirs(ot)) others.add((vy + dy) * W + vx + dx);
+		}
+		for (const ex of preplaced || []) if (ex && ex.template && ex.template.mask) {
+			const ot = { mask: ex.template.mask, visitableFrom: ex.template.visitableFrom };
+			for (const [vx, vy] of visitableCells(ot, ex.x, ex.y)) for (const [dx, dy] of allowedDirs(ot)) others.add((vy + dy) * W + vx + dx);
+		}
+		const spots = [];
+		for (const [vx, vy] of visitableCells(tpl, entry.x, entry.y))
+			for (const [dx, dy] of allowedDirs(tpl)) {
+				const x = vx + dx, y = vy + dy, c = y * W + x;
+				if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1 || ring(c) || !zoneCellSet.has(c) || others.has(c)) continue;
+				if (blocked[base + c] & (OCCUPIED | RESERVED)) continue;
+				if (ent && ent.has(base + c)) continue;
+				spots.push(c);
+			}
+		// farthest from the guard first: those are the tiles the pocket wall would otherwise have to close
+		spots.sort((a, b) => ((b % W - gx) ** 2 + (((b / W) | 0) - gy) ** 2) - ((a % W - gx) ** 2 + (((a / W) | 0) - gy) ** 2));
+		const one = o => { if (!o.template || !o.template.mask) return false; const b = blockingCells(o.template, o.x, o.y); return b.length === 1 && b[0][0] === o.x && b[0][1] === o.y; };
+		const loose = out.filter(o => o !== entry && (o.l || 0) === l && GROUPABLE.test(o.type) && !pocketed.has(o) && !o.__walled && one(o)
+			&& /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox)/.test(o.type)
+			&& zoneCellSet.has(o.y * W + o.x) && (Math.abs(o.x - entry.x) > 3 || Math.abs(o.y - entry.y) > 3)
+			// a relic, a major artifact or a Pandora's box is never a pile's filler: it stands two tiles behind the guard, out of the
+			// reach of "a monster beside it", where it should be the pile's target with the guard at its own approach (the engine's
+			// guarded share of these is 0.56 to 0.76, ours stood near 0.41 with the dearest loot gathered behind other targets)
+			&& !/^(randomArtifactRelic|randomArtifactMajor|pandoraBox)$/.test(o.type))
+			// the dearest first (POCKET_RANK), the nearest among equals: a pile holds the zone's prizes, not whatever lay
+			// closest (VMAPGEN_GATHER_DEAR=0 takes the nearest only)
+			.sort((a, b) => (process.env.VMAPGEN_GATHER_DEAR === '0' ? 0 : (POCKET_RANK[a.type] || 50) - (POCKET_RANK[b.type] || 50))
+				|| ((a.x - entry.x) ** 2 + (a.y - entry.y) ** 2) - ((b.x - entry.x) ** 2 + (b.y - entry.y) ** 2));
+		let moved = 0;
+		for (const c of spots) {
+			if (moved >= n || !loose.length) break;
+			if (blocked[base + c] & (OCCUPIED | RESERVED)) continue;
+			const o = loose.shift();
+			const old = o.y * W + o.x;
+			blocked[base + old] &= ~OCCUPIED;
+			if (connectivity) connectivity.refresh();
+			if (connectivity && !connectivity.accepts([c])) {
+				blocked[base + old] |= OCCUPIED;
+				connectivity.refresh();
+				continue;
+			}
+			blocked[base + c] |= OCCUPIED;
+			if (connectivity) connectivity.refresh();
+			o.x = c % W; o.y = (c / W) | 0;
+			const fi = free.indexOf(c);
+			if (fi >= 0) free.splice(fi, 1);
+			free.push(old);
+			moved++;
+		}
+		if (SEAL_TRACE) SEAL_TRACE.gathered = (SEAL_TRACE.gathered || 0) + moved;
+	};
+	/**
+	 * The pocket as the guard's ring (SEAL_MODEL ring, the default). A pocket is sealed when every way to its objects
+	 * passes a tile of the guard's 3x3. So each object of the group must have an approach tile in the ring, or a short
+	 * path from the ring (the pocket's floor, P); every other approach tile of the group, and every open tile beside
+	 * the floor, is blocked. The wide model (SEAL_MODEL=wide) flooded through all the group's approach tiles and walled
+	 * round the lot, and one tile of that long wall a neighbour or a road needed left the pocket open: Coldshadow's
+	 * Fantasy sealed 0.3 of its high loot against the engine's 0.84 (tools/mapsight score, 2026-10-01).
+	 */
+	const sealPlanRing = (entry, gx, gy, t = () => {}) => {
+		const key = (x, y) => y * W + x;
+		const open = c => !(blocked[l * W * H + c] & OCCUPIED);
+		const approachOf = o => {
+			const ot = { mask: o.template.mask, visitableFrom: o.template.visitableFrom };
+			const set = new Set();
+			for (const [vx, vy] of visitableCells(ot, o.x, o.y))
+				for (const [dx, dy] of allowedDirs(ot)) { const x = vx + dx, y = vy + dy; if (x >= 0 && y >= 0 && x < W && y < H) set.add(key(x, y)); }
+			return set;
+		};
+		const R = new Set([key(gx, gy)]);
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+			const x = gx + dx, y = gy + dy;
+			if (x >= 0 && y >= 0 && x < W && y < H && open(key(x, y))) R.add(key(x, y));
+		}
+		const P = new Set();
+		const appr = new Map();
+		const A = o => { if (!appr.has(o)) appr.set(o, approachOf(o)); return appr.get(o); };
+		// whether o can be visited from the ring or the floor, adding up to two floor tiles when that takes it
+		const reach = o => {
+			const a = A(o);
+			for (const c of a) if (R.has(c) || P.has(c)) return true;
+			const from = new Map();
+			let front = [...R, ...P];
+			for (const c of front) from.set(c, -1);
+			for (let d = 0; d < 2; d++) {
+				const next = [];
+				for (const c of front) {
+					const x = c % W, y = (c / W) | 0;
+					for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+						const nx = x + dx, ny = y + dy;
+						if ((!dx && !dy) || nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+						const n = key(nx, ny);
+						if (from.has(n) || !open(n)) continue;
+						from.set(n, c);
+						if (a.has(n)) { for (let k = n; k >= 0 && !R.has(k) && !P.has(k); k = from.get(k)) P.add(k); return true; }
+						next.push(n);
+					}
+				}
+				front = next;
+			}
+			return false;
+		};
+		const group = [entry];
+		reach(entry);
+		const near = out.filter(o => o !== entry && (o.l || 0) === l && o.template && POCKETABLE.test(o.type) && !pocketed.has(o)
+			&& Math.abs(o.x - entry.x) <= 3 && Math.abs(o.y - entry.y) <= 3)
+			.sort((a, b) => (Math.abs(a.x - entry.x) + Math.abs(a.y - entry.y)) - (Math.abs(b.x - entry.x) + Math.abs(b.y - entry.y)));
+		for (const o of near) if (reach(o)) group.push(o);
+		let wall, needed, needBy;
+		for (let pass = 0; pass < 4; pass++) {
+			const inG = new Set(group);
+			needed = new Set(); needBy = new Map();
+			for (const o of out) {
+				if (inG.has(o) || (o.l || 0) !== l || !o.template || Math.abs(o.x - entry.x) > 10 || Math.abs(o.y - entry.y) > 10) continue;
+				for (const c of A(o)) { needed.add(c); if (!needBy.has(c)) needBy.set(c, []); needBy.get(c).push(o); }
+			}
+			wall = new Set();
+			for (const o of group) for (const c of A(o)) if (!R.has(c) && !P.has(c) && open(c)) wall.add(c);
+			for (const c of P) {
+				const x = c % W, y = (c / W) | 0;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const nx = x + dx, ny = y + dy;
+					if ((!dx && !dy) || nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+					const n = key(nx, ny);
+					if (!R.has(n) && !P.has(n) && open(n)) wall.add(n);
+				}
+			}
+			if (!SEAL_ABSORB) break;
+			// loose loot whose way in is one of these tiles joins the pocket when the ring reaches it
+			const join = [];
+			for (const c of wall) for (const o of needBy.get(c) || [])
+				if (!inG.has(o) && !join.includes(o) && POCKETABLE.test(o.type) && !pocketed.has(o)
+					&& Math.abs(o.x - entry.x) <= 5 && Math.abs(o.y - entry.y) <= 5 && reach(o)) join.push(o);
+			if (!join.length) break;
+			group.push(...join);
+			t('absorbed', join.length);
+		}
+		return { group, near: group.slice(1), wall, needed, groupAppr: new Set(), needBy };
+	};
+	// the pocket a guard at (gx, gy) would close round `entry`: the group, its inside and the wall round it
+	const sealPlan = (entry, gx, gy, t = () => {}) => SEAL_MODEL === 'wide' ? sealPlanWide(entry, gx, gy, t) : sealPlanRing(entry, gx, gy, t);
+	const sealPlanWide = (entry, gx, gy, t = () => {}) => {
+		const key = (x, y) => y * W + x;
+		const approachOf = o => {
+			const ot = { mask: o.template.mask, visitableFrom: o.template.visitableFrom };
+			const set = new Set();
+			for (const [vx, vy] of visitableCells(ot, o.x, o.y))
+				for (const [dx, dy] of allowedDirs(ot)) { const x = vx + dx, y = vy + dy; if (x >= 0 && y >= 0 && x < W && y < H) set.add(key(x, y)); }
+			return set;
+		};
+		const near = out.filter(o => o !== entry && (o.l || 0) === l && o.template && GROUPABLE.test(o.type) && !pocketed.has(o)
+			&& Math.abs(o.x - entry.x) <= 3 && Math.abs(o.y - entry.y) <= 3);
+		const group = [entry, ...near];
+		const groupAppr = new Set();
+		const open = c => !(blocked[l * W * H + c] & OCCUPIED);
+		const ring = new Set();
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const x = gx + dx, y = gy + dy; if (x >= 0 && y >= 0 && x < W && y < H) ring.add(key(x, y)); }
+		let inside, needed, wall, needBy;
+		// Loose loot whose way in is a tile of the wall joins the pocket instead (SEAL_ABSORB, the default): the
+		// engine's pile holds its objects together behind one guard, and ours, laid out one by one, left the wall open
+		// wherever a neighbour's approach crossed it (Coldshadow's Fantasy seed 1: 1182 of the wall's tiles).
+		for (let pass = 0; pass < 4; pass++) {
+			for (const o of group) for (const c of approachOf(o)) groupAppr.add(c);
+			inside = new Set([key(gx, gy)]);
+			const st = [key(gx, gy)];
+			while (st.length) {
+				const c = st.pop(), x = c % W, y = (c / W) | 0;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const nx = x + dx, ny = y + dy;
+					if ((!dx && !dy) || nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+					const n = key(nx, ny);
+					if (inside.has(n) || !groupAppr.has(n) || !open(n)) continue;
+					inside.add(n); st.push(n);
+				}
+			}
+			needed = new Set(); needBy = new Map();
+			for (const o of out) {
+				if (group.includes(o) || (o.l || 0) !== l || !o.template || Math.abs(o.x - entry.x) > 10 || Math.abs(o.y - entry.y) > 10) continue;
+				for (const c of approachOf(o)) { needed.add(c); if (!needBy.has(c)) needBy.set(c, []); needBy.get(c).push(o); }
+			}
+			wall = new Set();
+			for (const c of inside) {
+				const x = c % W, y = (c / W) | 0;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const nx = x + dx, ny = y + dy;
+					if ((!dx && !dy) || nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+					const n = key(nx, ny);
+					if (inside.has(n) || ring.has(n) || !open(n)) continue;
+					wall.add(n);
+				}
+			}
+			if (!SEAL_ABSORB) break;
+			const join = new Set();
+			for (const c of wall) for (const o of needBy.get(c) || [])
+				if (GROUPABLE.test(o.type) && !pocketed.has(o) && Math.abs(o.x - entry.x) <= 6 && Math.abs(o.y - entry.y) <= 6) join.add(o);
+			if (!join.size) break;
+			for (const o of join) group.push(o);
+			t('absorbed', join.size);
+		}
+		const wide = { group, near, wall, needed, groupAppr };
+		// The tight pocket: the target alone, its own approach tiles outside the guard's ring blocked. A wide wall
+		// that one road tile or a neighbour's way in leaves open is an open pocket; the tight one has a few tiles to
+		// close, mostly ones no one else needs. The fewer leaks wins, the wide one on a tie (it keeps the loot
+		// together). VMAPGEN_SEAL_TIGHT=0 keeps the wide pocket only.
+		if (!SEAL_TIGHT) return wide;
+		const own = approachOf(entry);
+		const tWall = new Set([...own].filter(c => !ring.has(c) && open(c)));
+		const tNeeded = new Set();
+		for (const o of out) {
+			if (o === entry || (o.l || 0) !== l || !o.template || Math.abs(o.x - entry.x) > 10 || Math.abs(o.y - entry.y) > 10) continue;
+			for (const c of approachOf(o)) tNeeded.add(c);
+		}
+		const tight = { group: [entry], near: [], wall: tWall, needed: tNeeded, groupAppr: new Set(), tight: true };
+		return sealLeaks(tight) < sealLeaks(wide) ? tight : wide;
+	};
+	// wall tiles the seal would have to leave open: the pocket's leaks
+	const sealLeaks = P => {
+		let n = 0;
+		const ent = ENTRANCES.get(blocked);
+		for (const c of P.wall)
+			if (P.needed.has(c) || P.groupAppr.has(c) || (blocked[l * W * H + c] & RESERVED) || (ent && ent.has(l * W * H + c))) n++;
+		return n;
+	};
+	// a pickup's mask is two tiles wide ("VA", "VV/VA"), the left one only drawn: one blocking tile, at its anchor
+	const oneTile = o => { if (!o.template || !o.template.mask) return false; const b = blockingCells(o.template, o.x, o.y); return b.length === 1 && b[0][0] === o.x && b[0][1] === o.y; };
+	const movable = o => !pocketed.has(o) && !o.__walled && oneTile(o) && /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll)/.test(o.type);
+	// a one-tile pickup to a free tile of the zone at least five tiles from `from`, next to no entrance or approach
+	const relocate = (o, from) => {
+		const base = l * W * H;
+		const old = o.y * W + o.x;
+		for (let tries = 0; tries < 40 && free.length; tries++) {
+			const c = free[(rng() * free.length) | 0];
+			const x = c % W, y = (c / W) | 0;
+			if (Math.max(Math.abs(x - from.x), Math.abs(y - from.y)) < 5 || x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
+			if (blocked[base + c] & (OCCUPIED | RESERVED | APPROACH)) continue;
+			if (!zoneCellSet.has(c)) continue;
+			let clear = true;
+			const ent = ENTRANCES.get(blocked);
+			for (let dy = -1; dy <= 1 && clear; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const k = c + dy * W + dx;
+				if (ent && ent.has(base + k)) { clear = false; break; }
+				if (blocked[base + k] & (RESERVED | APPROACH)) { clear = false; break; }
+			}
+			if (!clear) continue;
+			blocked[base + old] &= ~OCCUPIED;
+			if (connectivity) connectivity.refresh();
+			if (connectivity && !connectivity.accepts([c])) { blocked[base + old] |= OCCUPIED; if (connectivity) connectivity.refresh(); continue; }
+			blocked[base + c] |= OCCUPIED;
+			if (connectivity) connectivity.refresh();
+			markApproach(o.template, x, y, l, W, H, blocked);
+			o.x = x; o.y = y;
+			const fi = free.indexOf(c);
+			if (fi >= 0) free.splice(fi, 1);
+			free.push(old);
 			return true;
 		}
 		return false;
+	};
+	// The engine finds a place where a pile closes (TreasurePlacer: the pile's border blocked, its guard on the one way
+	// in, never beside a road); ours placed the loot first. A one-tile target whose pocket would leak where it lies moves
+	// to the free tile of its zone, among up to 60 nooks (3+ blocked neighbours, no road or door within two tiles), whose
+	// pocket closes with the fewest open tiles. VMAPGEN_SEAL_RESITE=0 leaves it where it was laid.
+	const resite = (g, spotFor) => {
+		const { entry } = g;
+		if (!oneTile(entry) || pocketed.has(entry) || entry.__walled) return false;
+		const base = l * W * H;
+		const leaksAt = () => { const s = spotFor(g); return s ? sealLeaks(sealPlan(entry, s[0], s[1])) : Infinity; };
+		let best = leaksAt();
+		if (best === 0) return false;
+		const homeX = entry.x, homeY = entry.y, home = homeY * W + homeX;
+		const nook = c => {
+			const x = c % W, y = (c / W) | 0;
+			if (x < 2 || y < 2 || x >= W - 2 || y >= H - 2 || !zoneCellSet.has(c)) return false;
+			if (blocked[base + c] & (OCCUPIED | RESERVED | APPROACH)) return false;
+			let walls = 0;
+			for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+				const f = blocked[base + c + dy * W + dx];
+				if (f & RESERVED) return false;
+				if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1 && (dx || dy) && (f & OCCUPIED)) walls++;
+			}
+			return walls >= 3;
+		};
+		const cand = [];
+		for (let tries = 0; tries < 400 && cand.length < 60 && free.length; tries++) {
+			const c = free[(rng() * free.length) | 0];
+			if (nook(c) && !cand.includes(c)) cand.push(c);
+		}
+		let bestC = -1;
+		blocked[base + home] &= ~OCCUPIED;
+		for (const c of cand) {
+			blocked[base + c] |= OCCUPIED;
+			entry.x = c % W; entry.y = (c / W) | 0;
+			const n = leaksAt();
+			blocked[base + c] &= ~OCCUPIED;
+			if (n < best) { best = n; bestC = c; if (!n) break; }
+		}
+		entry.x = homeX; entry.y = homeY;
+		if (bestC < 0) { blocked[base + home] |= OCCUPIED; return false; }
+		if (connectivity) connectivity.refresh();
+		if (connectivity && !connectivity.accepts([bestC])) { blocked[base + home] |= OCCUPIED; if (connectivity) connectivity.refresh(); return false; }
+		blocked[base + bestC] |= OCCUPIED;
+		if (connectivity) connectivity.refresh();
+		entry.x = bestC % W; entry.y = (bestC / W) | 0;
+		markApproach(entry.template, entry.x, entry.y, l, W, H, blocked);
+		const fi = free.indexOf(bestC);
+		if (fi >= 0) free.splice(fi, 1);
+		free.push(home);
+		if (SEAL_TRACE) SEAL_TRACE.resited = (SEAL_TRACE.resited || 0) + 1;
+		return true;
+	};
+	const sealTarget = (tpl, entry, gx, gy) => {
+		const T = SEAL_TRACE; const t = (k, n = 1) => { if (T) T[k] = (T[k] || 0) + n; };
+		t('targets'); t('target ' + entry.type);
+		const { group, near, wall, needed, groupAppr, needBy } = sealPlan(entry, gx, gy, t);
+		let leaked = 0;
+		for (const c of wall) {
+			const cx = c % W, cy = (c / W) | 0;
+			leaked++;
+			// a loose one-tile pickup whose way in is this tile moves elsewhere in the zone, and the tile is walled
+			// (VMAPGEN_SEAL_MOVE=0 leaves it): loose resources beside a pocket were its commonest open tile after the
+			// shrines (seed 1: 125 of 299)
+			if (needed.has(c) && SEAL_MOVE && needBy) {
+				const movers = (needBy.get(c) || []).slice();
+				if (T) for (const o of movers) if (!movable(o)) t('not movable: ' + (pocketed.has(o) ? 'pocketed ' : '') + o.type.replace(/\d+$/, ''));
+				if (movers.length && movers.every(o => movable(o))) {
+					if (movers.every(o => relocate(o, entry))) { needed.delete(c); t('moved a pickup away', movers.length); }
+					else t('relocation failed');
+				}
+			}
+			if (needed.has(c)) { t('another object uses it'); if (T && needBy) for (const o of needBy.get(c) || []) t('needed by ' + o.type.replace(/\d+$/, '')); continue; }
+			if (groupAppr.has(c)) { t('a grouped object needs it'); continue; }
+			const f = blocked[l * W * H + c];
+			if (f & RESERVED) { t('reserved door or road'); continue; }
+			if (ENTRANCES.get(blocked) && ENTRANCES.get(blocked).has(l * W * H + c)) { t('an entrance'); continue; }
+			// In a cave the wall closes as rock where the rock's terrain art fits no worse, as the engine's cave walls
+			// are rock with few obstacles; one-tile obstacles made our tunnels read as cluttered (underground pieces
+			// 950 at 2.2 tiles against the engine's 520 at 3.4, 2026-10-02). VMAPGEN_SEAL_ROCK=0 always uses an obstacle.
+			if (caveRock && process.env.VMAPGEN_SEAL_ROCK !== '0' && openMask[c]) {
+				const was = p.caveChecker.around(caveRock, W, H, cx, cy, 2);
+				caveRock[c] = 1;
+				const now = p.caveChecker.around(caveRock, W, H, cx, cy, 2);
+				if (now <= was && (!connectivity || connectivity.accepts([c]))) {
+					openMask[c] = 0; sealRock(c);
+					blocked[l * W * H + c] |= OCCUPIED;
+					if (connectivity) connectivity.refresh();
+					const fi = free.indexOf(c);
+					if (fi >= 0) free.splice(fi, 1);
+					t('sealed tile'); t('sealed by rock');
+					leaked--;
+					continue;
+				}
+				caveRock[c] = 0;
+			}
+			const s = singleTemplate(terrain, rng);
+			if (!s || !s.tpl.mask || s.tpl.mask.length !== 1 || s.tpl.mask[0].length !== 1) { t('no single-tile art'); continue; }
+			if (connectivity && !connectivity.accepts([c])) { t('connectivity'); continue; }
+			t('sealed tile');
+			leaked--;
+			out.push(objectEntry(s.type, cx, cy, l, s.tpl, {}, s.subtype));
+			footprintBlock(s.tpl, cx, cy, l, W, H, blocked);
+			if (connectivity) connectivity.refresh();
+			const fi = free.indexOf(c);
+			if (fi >= 0) free.splice(fi, 1);
+		}
+		for (const o of group) pocketed.add(o);
+		if (near.length) t('grouped objects', near.length);
+		t(leaked ? 'pockets left open' : 'pockets closed');
 	};
 
 	let posted = 0;
@@ -2829,9 +4004,35 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			if (guard && concrete) guard.concrete = true;
 			return guard;
 		};
+		// The Monster count slider on a template map (it only fed the free layout's budget, so 0x and 3x gave the same 17 monsters a
+		// 1000 tiles, sweep 2026-10-04): below 1x each pile and mine guard stands with that chance; above 1x each posted guard brings a
+		// roaming monster with chance (slider - 1), so 2x doubles them. Plain behaviour; 1x is untouched.
+		const thin = () => userGuardDensity < 1 && rng() >= userGuardDensity;
+		// Guarding vs roaming on a template map (K, 2026-10-05: every lever acts on every template; it read the free layout only): the engine's
+		// monsters all guard, which is the lever's default 0.75. Below it each posted guard brings roaming monsters, on average 0.75 / share - 1 up to
+		// 2, so a share of 0.375 is half of the monsters roaming and 0.25 and below two roamers a guard. The guards stay, so no pile is left open.
+		const crowd = lvl => {
+			const tier = Math.max(1, Math.min(4, lvl - 1));
+			if (userGuardDensity > 1 && rng() < Math.min(1, userGuardDensity - 1))
+				put(`randomMonsterLevel${tier}`, monsterTpl, monsterOptions(tier, p, rng));
+			if (guardShare < OBJECT_GUARD_SHARE) {
+				const e = Math.min(2, OBJECT_GUARD_SHARE / Math.max(guardShare, 0.01) - 1);
+				for (let n = Math.floor(e) + (rng() < e - Math.floor(e) ? 1 : 0); n > 0; n--)
+					put(`randomMonsterLevel${tier}`, monsterTpl, monsterOptions(tier, p, rng));
+			}
+		};
+		// Mine guard weight on a template map: it only ordered the mines, so 4x equalled 1x and the guards stood at every setting.
+		// Below 1x a mine keeps the engine's guard with that chance; above 1x a mine the engine leaves unguarded (its value too low
+		// for a guard) gets one with chance (weight - 1) / 3, sized as a mine worth (1 + weight) times as much. 1x is untouched.
+		const mineW = Number.isFinite(p.mineGuardWeight) ? p.mineGuardWeight : 1;
 		for (const g of onMines) {
-			const guard = zoneGuard(MINE_RMG_VALUE[g.entry.subtype] || 3500);
-			if (guard && postGuard(g, guard)) posted++;
+			if (thin()) continue;
+			if (mineW < 1 && rng() >= mineW) continue;
+			const mineValue = MINE_RMG_VALUE[g.entry.subtype] || 3500;
+			let guard = zoneGuard(mineValue);
+			if (!guard && mineW > 1 && rng() < Math.min(1, (mineW - 1) / 3)) guard = zoneGuard(mineValue * (1 + mineW));
+			if (SEAL_TRACE) { const k = 'mine ' + g.entry.subtype + (guard ? '' : ' no guard by value'); SEAL_TRACE[k] = (SEAL_TRACE[k] || 0) + 1; }
+			if (guard && postGuard(g, guard)) { posted++; crowd(guard.level); }
 		}
 		// The engine asks for floor(tiles * density / 400) piles per band but
 		// keeps each pile clear of other objects: minDistance = sqrt(min(value,
@@ -2848,37 +4049,168 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// the fidelity lens.
 		let next = 0;
 		const usedTarget = new Set();
+		// where postGuard would most likely stand for a target: the free approach tile covering most of the approach
+		const spotFor = ({ entry, tpl }) => {
+			const sp = [];
+			for (const [vx, vy] of visitableCells(tpl, entry.x, entry.y)) for (const [dx, dy] of allowedDirs(tpl)) sp.push([vx + dx, vy + dy]);
+			const unc = ([gx, gy]) => sp.filter(([ax, ay]) => Math.abs(ax - gx) > 1 || Math.abs(ay - gy) > 1).length;
+			sp.sort((a, b) => unc(a) - unc(b));
+			return sp.find(([gx, gy]) => gx >= 0 && gy >= 0 && gx < W && gy < H && footprintFits(monsterTpl, gx, gy, l, W, H, blocked, true)) || null;
+		};
+		let rankOrder = null, rankNext = 0;
 		const postPileGuard = (guard, pile = null) => {
+			if (thin()) return;
 			if (process.env.VMAPGEN_PILE_TRACE) console.error(`[pile]   guard level ${guard.level} strength ${guard.strength}`);
 			let done = false;
 			// the guard stands by what its pile is worth most in: an artifact pile's guard by an artifact, a
 			// Pandora's box's by a box (our objects are not clustered into piles, so the nearest thing to the engine's
 			// pile is the placed object of the pile's dearest kind); with none left, by the next in the ranking
-			const top = pile && pile.objects && pile.objects.length ? pile.objects.reduce((a, o) => (o.value > a.value ? o : a)) : null;
-			if (top) {
-				const k = byPiles.findIndex((g, j) => !usedTarget.has(j) && g.entry.type === top.type);
-				if (k >= 0) { usedTarget.add(k); done = postGuard(byPiles[k], guard); }
-			}
-			while (!done && next < byPiles.length) {
-				if (usedTarget.has(next)) { next++; continue; }
-				usedTarget.add(next);
-				done = postGuard(byPiles[next++], guard);
+			if (SEAL_POCKETS) {
+				// dearest unguarded object first (POCKET_RANK), the pile's guard on its entrance
+				if (!rankOrder) rankOrder = byPiles.map((g, j) => j).sort((x, y) => (POCKET_RANK[byPiles[x].entry.type] || 50) - (POCKET_RANK[byPiles[y].entry.type] || 50));
+				// of the next SEAL_LOOK candidates in that order, the one whose pocket closes tightest (fewest wall
+				// tiles left open, sealLeaks): the engine places a pile where its border can close, and ours, placed
+				// first and guarded after, left 0.72 of its high loot open (Coldshadow's Fantasy, tools/mapsight
+				// score 2026-10-01). VMAPGEN_SEAL_LOOK=1 is the plain rank order.
+				while (!done) {
+					const cand = [];
+					// candidates of the first one's rank only: a leaky dwelling lost to cheaper loot in the window every
+					// time and was left unguarded when the guards ran out (0.21 of dwellings, against the engine's 0.06;
+					// VMAPGEN_SEAL_SAME_RANK=0 mixes ranks as before)
+					const rankOf = j => POCKET_RANK[byPiles[j].entry.type] || 50;
+					let firstRank = null;
+					for (let q = rankNext; q < rankOrder.length && cand.length < SEAL_LOOK; q++) {
+						const j = rankOrder[q];
+						if (usedTarget.has(j) || pocketed.has(byPiles[j].entry)) continue;
+						if (firstRank === null) firstRank = rankOf(j);
+						else if (process.env.VMAPGEN_SEAL_SAME_RANK !== '0' && rankOf(j) !== firstRank) break;
+						cand.push(j);
+					}
+					if (!cand.length) break;
+					let pick = cand[0];
+					if (cand.length > 1) {
+						let best = Infinity;
+						for (const j of cand) {
+							const s = spotFor(byPiles[j]);
+							if (!s) continue;
+							const n = sealLeaks(sealPlan(byPiles[j].entry, s[0], s[1]));
+							if (n < best) { best = n; pick = j; if (!n) break; }
+						}
+					}
+					usedTarget.add(pick);
+					if (SEAL_RESITE) resite(byPiles[pick], spotFor);
+					while (rankNext < rankOrder.length && (usedTarget.has(rankOrder[rankNext]) || pocketed.has(byPiles[rankOrder[rankNext]].entry))) rankNext++;
+					done = postGuard(byPiles[pick], guard, true, SEAL_GATHER ? Math.min(3, pile && pile.objects ? pile.objects.length - 1 : 0) : 0);
+				}
+			} else {
+				const top = pile && pile.objects && pile.objects.length ? pile.objects.reduce((a, o) => (o.value > a.value ? o : a)) : null;
+				if (top) {
+					const k = byPiles.findIndex((g, j) => !usedTarget.has(j) && g.entry.type === top.type);
+					if (k >= 0) { usedTarget.add(k); done = postGuard(byPiles[k], guard, true); }
+				}
+				while (!done && next < byPiles.length) {
+					if (usedTarget.has(next)) { next++; continue; }
+					usedTarget.add(next);
+					done = postGuard(byPiles[next++], guard, true);
+				}
 			}
 			// more guarded piles than objects to stand by: the guard still
 			// stands in the zone
 			if (!done) {
 				const e = put(`randomMonsterLevel${guard.level}`, monsterTpl,
-					{ character: 'hostile', amount: guard.amount });
+					{ character: 'hostile', amount: scaledAmount(guard.amount, p) });
 				if (e && guard.concrete) e.guardCreature = guard.creature;
 				done = !!e;
 			}
-			if (done) posted++;
+			if (done) { posted++; crowd(guard.level); }
 			else if (process.env.VMAPGEN_PILE_TRACE) console.error(`[pile]   guard level ${guard.level} DROPPED: no cell`);
 		};
 		if (pileSim) {
 			// the engine's piles (VMAPGEN_TPL_PILE_MODEL=engine, above): each
 			// landed pile's guard, sized on what that pile is worth
-			for (const pl of pileSim.landed) if (pl.guard) postPileGuard(pl.guard, pl);
+			// a prison stands behind its own pile's guard first, so the guard rises with the prison's tier
+			const guardDone = new Set();
+			for (const [e, pl] of prisonPile) {
+				if (!pl.guard || guardDone.has(pl)) { if (process.env.VMAPGEN_PRISON_TRACE) console.error(`[prison] (${e.x},${e.y}) exp ${(e.options && e.options.experience) || 0}: ${pl.guard ? "pile guard used" : "pile has no guard"}`); continue; }
+				const j = byPiles.findIndex(g => g.entry === e);
+				if (j < 0 || usedTarget.has(j)) continue;
+				if (thin()) { guardDone.add(pl); continue; }
+				usedTarget.add(j);
+				const okP = postGuard(byPiles[j], pl.guard, true);
+				if (process.env.VMAPGEN_PRISON_TRACE) console.error(`[prison] (${e.x},${e.y}) L${l} exp ${(e.options && e.options.experience) || 0} walled ${!!e.__walled} guard ${pl.guard ? pl.guard.strength : 0}: ${okP ? "posted" : "NOT posted"}`);
+				if (okP) { guardDone.add(pl); posted++; crowd(pl.guard.level); }
+			}
+			for (const pl of pileSim.landed) if (pl.guard && !guardDone.has(pl)) postPileGuard(pl.guard, pl);
+			if (SEAL_TRACE && zoneMeta.spec) {
+				const dw = byPiles.filter(g => /^creatureGenerator/.test(g.entry.type)).length;
+				const dwDone = byPiles.filter(g => /^creatureGenerator/.test(g.entry.type) && pocketed.has(g.entry)).length;
+				SEAL_TRACE['zone ' + zoneMeta.spec.id + ' guards/dwellings/dwellings pocketed'] = `${pileSim.landed.filter(x => x.guard).length}/${dw}/${dwDone}`;
+			}
+			// Every valuable pile the engine's pile count left unguarded gets its own guard and pocket, as the engine guards each
+			// pile worth more than minGuardedValue and lays it only where it closes (TreasurePlacer). Ours ran out of pile guards
+			// before the dear loot was all covered, and guardhigh.js then stood a guard beside the rest with no wall: on K's 252
+			// underground 199 high piles open beside a guard, the engine's maps 3 to 24 (K, 2026-10-04).
+			// Guards on treasure Off: none of these either (MapGen Dev, k13: 5-12% of dear loot kept a guard with Off)
+			if (onOff(p.guardTreasure)) for (let j = 0; j < byPiles.length; j++) {
+				const g = byPiles[j];
+				if (usedTarget.has(j) || pocketed.has(g.entry) || !/^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact)$/.test(g.entry.type)) continue;
+				if (thin()) continue;
+				const guard = zoneGuard(spentValue(g.entry));
+				if (!guard) continue;
+				usedTarget.add(j);
+				if (SEAL_RESITE) resite(g, spotFor);
+				if (postGuard(g, guard, true, 0)) { posted++; crowd(guard.level); }
+			}
+			// The engine's unguarded loot lies in small piles too; ours, laid one by one, was single pickups strewn over
+			// the floor (side-by-side crops, Coldshadow underground, 2026-10-02). A loose one-tile pickup with no other
+			// pickup within 2 tiles moves beside the nearest loose one of its zone (within 20 tiles), onto a free tile
+			// that is no road, apron or other object's way in, and never cuts the zone. VMAPGEN_CLUSTER_LOOSE=0 leaves them.
+			if (SEAL_POCKETS && process.env.VMAPGEN_CLUSTER_LOOSE !== '0') {
+				const base = l * W * H;
+				// valuable piles stay where they were laid walled in for their guard (putLoot); the rest gathers
+				const pick = o => oneTile(o) && /^(resource|randomResource|treasureChest|campfire|randomArtifactTreasure)/.test(o.type);
+				const loose = out.filter(o => (o.l || 0) === l && pick(o) && !pocketed.has(o) && zoneCellSet.has(o.y * W + o.x));
+				for (let i = loose.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [loose[i], loose[j]] = [loose[j], loose[i]]; }
+				const others = new Set();
+				for (const o of out) {
+					if ((o.l || 0) !== l || !o.template || !o.template.mask || pick(o)) continue;
+					const ot = { mask: o.template.mask, visitableFrom: o.template.visitableFrom };
+					for (const [vx, vy] of visitableCells(ot, o.x, o.y)) for (const [dx, dy] of allowedDirs(ot)) others.add((vy + dy) * W + vx + dx);
+				}
+				let clustered = 0;
+				for (const o of loose) {
+					const near = out.some(q => q !== o && (q.l || 0) === l && pick(q) && Math.max(Math.abs(q.x - o.x), Math.abs(q.y - o.y)) <= 2);
+					if (near) continue;
+					// a share of the lone ones only: all of them put 0.83 of low loot beside another against the engine's
+					// 0.74 (VMAPGEN_CLUSTER_SHARE, default 0.6)
+					if (rng() >= Number(process.env.VMAPGEN_CLUSTER_SHARE || 0.6)) continue;
+					let tgt = null, td = 21;
+					for (const q of loose) { if (q === o) continue; const d = Math.max(Math.abs(q.x - o.x), Math.abs(q.y - o.y)); if (d < td) { td = d; tgt = q; } }
+					if (!tgt) continue;
+					const old = o.y * W + o.x;
+					let moved = false;
+					for (let r = 1; r <= 2 && !moved; r++)
+						for (let dy = -r; dy <= r && !moved; dy++) for (let dx = -r; dx <= r && !moved; dx++) {
+							if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+							const x = tgt.x + dx, y = tgt.y + dy;
+							if (x < 2 || y < 2 || x >= W - 2 || y >= H - 2) continue;
+							const c = y * W + x;
+							if (c === old || !zoneCellSet.has(c) || others.has(c)) continue;
+							if (blocked[base + c] & (OCCUPIED | RESERVED)) continue;
+							blocked[base + old] &= ~OCCUPIED;
+							if (connectivity) connectivity.refresh();
+							if (connectivity && !connectivity.accepts([c])) { blocked[base + old] |= OCCUPIED; if (connectivity) connectivity.refresh(); continue; }
+							blocked[base + c] |= OCCUPIED;
+							if (connectivity) connectivity.refresh();
+							markApproach(o.template, x, y, l, W, H, blocked);
+							o.x = x; o.y = y;
+							const fi = free.indexOf(c); if (fi >= 0) free.splice(fi, 1);
+							free.push(old);
+							moved = true; clustered++;
+						}
+				}
+				if (SEAL_TRACE) SEAL_TRACE['loose pickups clustered'] = (SEAL_TRACE['loose pickups clustered'] || 0) + clustered;
+			}
 		} else {
 			// VMAPGEN_TPL_PILE_VALUES=engine: each pile sized on what a pile the
 			// engine builds in that band is worth (piles.js preparePile: objects
@@ -2887,7 +4219,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// uniform draw spreads evenly across it (B4: the engine's piles of
 			// 3000-6000 guarded 31%, the even draw 61%)
 			const valuePool = TPL_PILE_VALUES === 'engine' && objectPools.pileCommon ? makePilePool() : null;
-			for (const { band: t, count, d, byDensity, byRoom } of templatePiles(bands, cells.length)) {
+			for (const { band: t, count, d, byDensity, byRoom } of templatePiles(bands, cells.length, (zoneMeta && zoneMeta.richScale) || 1)) {
 				if (process.env.VMAPGEN_PILE_TRACE)
 					console.error(`[pile] zone ${zoneMeta.spec.id} band ${t.min}-${t.max} density ${t.density}: cells ${cells.length}, d ${d.toFixed(1)}, by density ${byDensity}, by room ${byRoom}, placing ${count}`);
 				for (let k = count; k > 0; k--) {
@@ -3308,7 +4640,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		let miss = 0, placed = 0;
 		while (want > 0 && miss < 80 && wall.length) {
 			const i = wall[Math.min(wall.length - 1, (rng() * rng() * wall.length) | 0)];
-			const c = rng() < 0.3 ? singleTemplate(terrain, rng) : clusterTemplate(terrain, rng);
+			const c = rng() < Number(process.env.VMAPGEN_CAVE_SINGLE_SHARE ?? 0.3) ? singleTemplate(terrain, rng) : clusterTemplate(terrain, rng);
 			if (!c) break;
 			const offs = blockingCells(c.tpl, 0, 0);
 			for (let k = offs.length - 1; k > 0; k--) {
@@ -3365,9 +4697,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	return out;
 }
 
-module.exports = { fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
+module.exports = {
+	GUARD_GAP, fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	footprintCells, blockingCells, footprintFits, footprintBlock, visitableCells,
 	entranceOpen, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED,
 	APPROACH, allowedDirs, markApproach, weldsMasses, REMOVABLE_TYPES, MONSTER_OPTIONS,
-	monsterOptions, STACK_RANGE,
-	sliverCount, engineGuard, zoneGuardPool, nearestLevelDwelling, creepTier, reachOnReserved };
+	monsterOptions, scaledAmount, STACK_RANGE,
+	sliverCount, engineGuard, lootGuard, scaledLinkGuard, zoneGuardPool, nearestLevelDwelling, creepTier, reachOnReserved };

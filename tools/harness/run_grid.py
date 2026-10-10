@@ -25,7 +25,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-PROJECT = r"C:\AI Projects\Heroes 3"
+PROJECT = os.environ.get("H3_PROJECT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 MAPGEN = os.path.join(PROJECT, "VCMIMapGen")
 RMGRUN = os.path.join(PROJECT, "VCMI", "rmgrun")
 DMBTEST = os.path.join(PROJECT, "VCMI", "dmbtest")
@@ -58,6 +58,17 @@ def guard_env(extra=None):
 
 
 def run_engine(job, seed, run, out, timeout):
+    """One engine map; a crash that a second try does not repeat is retried once (2026-10-01: 6 of about 3000 engine
+    runs ended in a crash under several lanes and none of the six crashed again alone: the crash file the program now
+    writes names the module and offset the next time)."""
+    first = _run_engine_once(job, seed, run, out, timeout)
+    if first.startswith("FAIL"):
+        second = _run_engine_once(job, seed, run, out, timeout)
+        return second + f" (retry; first try: {first[:60]})" if second.startswith("ok") else first
+    return first
+
+
+def _run_engine_once(job, seed, run, out, timeout):
     base = os.path.join(out, "engine", run)
     if os.path.exists(base + ".vmap") and os.path.exists(base + ".zones.json"):
         return "skip"
@@ -89,6 +100,8 @@ def run_ours(job, seed, run, out, timeout):
             "--bio.waterContent", str(job["water"]), "--bio.monsterStrength", str(job["monsters"] + 1)]
     if job["levels"] >= 2:
         args += ["--underground", "1"]
+    if "shape" in job:  # a water layout sweep: --bio.waterShape N (the job names it; the water grids leave the default)
+        args += ["--bio.waterShape", str(job["shape"])]
     # the user folder holds the game data (CRTRAITS, terrain and monster tables) the generator reads, as it does under the game;
     # without it ours falls back to the zone model and loses its pools (found 2026-10-01: tier 1 first run lacked it)
     env = guard_env({"VMAPGEN_ZONE_DUMP": base + ".zonedump.json", "VCMI_USER_DIR": os.path.join(RMGRUN, "userdata"), **OURS_ENV})

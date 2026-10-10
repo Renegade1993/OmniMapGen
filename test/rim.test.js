@@ -78,6 +78,23 @@ function connected(W, H, walls, from, to) {
 	return false;
 }
 
+test('rim band: a template zone under 450 cells keeps only its line cells (a small map with a big template)', () => {
+	const W = 20, H = 12;
+	const zone = twoZones(W, H);
+	const edges = biomeEdges(zone, W, H, 2);
+	const connections = new Map([[0 * 100000 + 1, 'openNoRoad']]);
+	const { barriers, openings } = carveBoundaries(edges, connections, zone, W, H, { zonePlan: {} }, xorshift(5), new Map([[0 * 100000 + 1, {}]]));
+	const open = new Set([...openings[0].hole, ...openings[0].inner]);
+	let inner = 0;
+	for (let y = 0; y < H; y++) {
+		for (const x of [9, 10]) if (!open.has(y * W + x)) assert.ok(barriers.has(y * W + x), `(${x},${y}) should be rim`);
+		for (const x of [8, 11]) if (barriers.has(y * W + x)) inner++;
+	}
+	// the ring inside the line cells stays open, but for a corner the diagonal seal may close
+	assert.ok(inner <= 2, `${inner} cells of the inner ring walled`);
+	assert.ok(connected(W, H, barriers, 0, W - 1), "the doorway still joins the zones");
+});
+
 test('rim band: a zone line is solid two cells deep on both sides', () => {
 	const W = 20, H = 12;
 	const { barriers, openings } = carve(W, H, 'openNoRoad');

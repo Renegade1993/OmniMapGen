@@ -82,3 +82,48 @@ test('templates from active mods are listed and load, zipped or loose; a switche
 		if (saved.user === undefined) delete process.env.VCMI_USER_DIR; else process.env.VCMI_USER_DIR = saved.user;
 	}
 });
+
+// The approved-templates list (K, 2026-10-02: "ONLY THOSE THAT HAVE BEEN APPROVED GO IN"): a module's
+// approved-templates.json decides which templates are offered, mod-shipped ones included; an empty list offers none.
+function withApproved(content, run) {
+	const { install, user } = makeInstall();
+	const file = path.join(install, 'approved-templates.json');
+	if (content !== null) fs.writeFileSync(file, JSON.stringify(content));
+	const saved = { root: process.env.VCMI_ROOT, user: process.env.VCMI_USER_DIR, ap: process.env.VMAPGEN_APPROVED_TEMPLATES };
+	process.env.VCMI_ROOT = install;
+	process.env.VCMI_USER_DIR = user;
+	process.env.VMAPGEN_APPROVED_TEMPLATES = content === null ? 'off' : file;
+	const modPath = require.resolve('../src/rmg/template');
+	delete require.cache[modPath];
+	try {
+		run(require('../src/rmg/template'));
+	} finally {
+		delete require.cache[modPath];
+		for (const [k, v] of [['VCMI_ROOT', saved.root], ['VCMI_USER_DIR', saved.user], ['VMAPGEN_APPROVED_TEMPLATES', saved.ap]])
+			if (v === undefined) delete process.env[k]; else process.env[k] = v;
+	}
+}
+
+test('approved templates: an empty list offers no template, and a template that is not found cannot be loaded', () => {
+	withApproved({ approved: {} }, ({ listTemplates, loadTemplate }) => {
+		assert.deepStrictEqual(listTemplates(), []);
+		assert.throws(() => loadTemplate('[Test] Loose'));
+	});
+});
+
+test('approved templates: a listed template appears (any case, with its date), an unlisted mod template stays hidden', () => {
+	withApproved({ approved: { '[test] loose': '2026-10-02' } }, ({ listTemplates, loadTemplate }) => {
+		assert.deepStrictEqual(listTemplates(), ['[Test] Loose']);
+		assert.strictEqual(loadTemplate('[Test] Loose').name, '[Test] Loose');
+		assert.throws(() => loadTemplate('[Test] Zipped'), 'an unlisted zipped mod template is hidden');
+	});
+});
+
+test('approved templates: the list may be an array of {name, date}, and no list file offers every template', () => {
+	withApproved({ approved: [{ name: '[Test] Zipped', date: '2026-10-02' }] }, ({ listTemplates }) => {
+		assert.deepStrictEqual(listTemplates(), ['[Test] Zipped']);
+	});
+	withApproved(null, ({ listTemplates }) => {
+		assert.ok(listTemplates().includes('[Test] Loose') && listTemplates().includes('[Test] Zipped'));
+	});
+});

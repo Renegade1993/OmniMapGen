@@ -13,9 +13,13 @@
  * Usage: VCMI_rmg.exe <jobs.json> [--deadline <seconds>] [--list-templates]
  * A job: { "out": "path/no/extension", "template": "Jebus Cross", "w": 144, "h": 144, "levels": 1,
  *          "players": 4, "water": 0|1|2 (none, normal, islands), "monsters": -1|0|1 (weak, normal, strong),
- *          "seed": 123 }
+ *          "seed": 123 [, "compOnly": 0 (computer-only players; absent: random, which fills every start zone)] }
  * Writes <out>.vmap and <out>.zones.json; one result line per job on stdout. The process ends by
  * itself after --deadline seconds (default 3000), whatever it is doing.
+ * The zone sidecar also carries "zoneTiles": per level, the zone id of every tile, row by row (y * w + x).
+ *
+ * A conversion job instead: { "convert": "path/to/map.h3m", "out": "path/no/extension" [, "encoding": "CP1252"] }
+ * loads an original map with the engine's own reader and saves it as <out>.vmap (tools/mapsight reads it).
  */
 #include <algorithm>
 #include <array>
@@ -46,6 +50,7 @@
 #include "lib/json/JsonNode.h"
 #include "lib/mapping/CMap.h"
 #include "lib/mapping/MapFormatJson.h"
+#include "lib/mapping/CMapService.h"
 #include "lib/mapObjects/CGObjectInstance.h"
 #include "lib/callback/EditorCallback.h"
 #include "lib/rmg/CMapGenOptions.h"
@@ -114,6 +119,10 @@ static std::string factionName(FactionID f)
 	}
 }
 
+// crashguard.cpp: no Windows error box, and a crash writes its template, seed and address to <out>.crash.txt
+extern "C" void crashGuardInstall();
+extern "C" void crashGuardJob(const char * templateName, int seed, const char * out);
+
 static void runJob(const JsonNode & job, double & seconds)
 {
 	auto started = std::chrono::steady_clock::now();
@@ -135,6 +144,10 @@ static void runJob(const JsonNode & job, double & seconds)
 		opt.setMapTemplate(wanted);
 	}
 	opt.setHumanOrCpuPlayerCount((si8)job["players"].Integer());
+	// computer-only players: left random (the engine then fills every start zone of the template with a player, as the
+	// lobby's default does) unless the job names a count; "compOnly": 0 gives exactly "players" players (2026-10-01)
+	if(!job["compOnly"].isNull())
+		opt.setCompOnlyPlayerCount((si8)job["compOnly"].Integer());
 	if(!job["humans"].isNull())
 		opt.setHumanOrCpuPlayerCount((si8)job["players"].Integer());
 	opt.setWaterContent((EWaterContent::EWaterContent)(job["water"].isNull() ? 0 : job["water"].Integer()));
@@ -246,6 +259,15 @@ static void runJob(const JsonNode & job, double & seconds)
 		}
 		z << "}}";
 	}
+	z << "],\"zoneTiles\":[";
+	for(int lz = 0; lz < (int)map->levels(); lz++)
+	{
+		z << (lz ? ",[" : "[");
+		for(int ty = 0; ty < map->height; ty++)
+			for(int tx = 0; tx < map->width; tx++)
+				z << ((ty || tx) ? "," : "") << gen.map->zoneColouring[tx][ty][lz];
+		z << "]";
+	}
 	z << "],\"outsideZones\":{";
 	bool f4 = true;
 	for(const auto & ob : objectsByZone[-1])
@@ -259,11 +281,35 @@ static void runJob(const JsonNode & job, double & seconds)
 	seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
 }
 
+// an original map (.h3m) read by the engine's own loader and saved as .vmap, so the map tools read one format
+static void convertJob(const JsonNode & job, double & seconds)
+{
+	auto started = std::chrono::steady_clock::now();
+	const std::string in = job["convert"].String(), out = job["out"].String();
+	const std::string bytes = readFile(in);
+	const std::string encoding = job["encoding"].isNull() ? "CP1252" : job["encoding"].String();
+	EditorCallback cb(nullptr);
+	CMapService service;
+	std::unique_ptr<CMap> map = service.loadMap(reinterpret_cast<const uint8_t *>(bytes.data()), (int)bytes.size(), in, "core", encoding, &cb);
+	if(!map)
+		throw std::runtime_error("the engine could not read " + in);
+	cb.setMap(map.get());
+	CMemoryBuffer buffer;
+	{
+		CMapSaverJson saver(&buffer);
+		saver.saveMap(map);
+	}
+	std::ofstream f(out + ".vmap", std::ios::binary);
+	f.write((const char *)buffer.getBuffer().data(), buffer.getSize());
+	seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - started).count();
+}
+
 int main(int argc, char * argv[])
 {
+	crashGuardInstall();
 	double deadline = 3000;
 	std::string jobsPath;
-	bool listTemplates = false, logOn = false;
+	bool listTemplates = false, logOn = false, crashTest = false;
 	for(int i = 1; i < argc; i++)
 	{
 		std::string a = argv[i];
@@ -271,6 +317,8 @@ int main(int argc, char * argv[])
 			deadline = atof(argv[++i]);
 		else if(a == "--log")
 			logOn = true;
+		else if(a == "--crash-test")
+			crashTest = true;   // dies on a bad write at the first job, to show no error box appears
 		else if(a == "--list-templates")
 			listTemplates = true;
 		else
@@ -334,7 +382,17 @@ int main(int argc, char * argv[])
 		double seconds = 0;
 		try
 		{
-			runJob(job, seconds);
+			const bool convert = !job["convert"].isNull();
+			crashGuardJob(convert ? job["convert"].String().c_str() : job["template"].String().c_str(), (int)job["seed"].Integer(), job["out"].String().c_str());
+			if(crashTest)
+			{
+				volatile int * bad = reinterpret_cast<volatile int *>(0x10);
+				*bad = 1;
+			}
+			if(convert)
+				convertJob(job, seconds);
+			else
+				runJob(job, seconds);
 			ok++;
 			std::fprintf(stdout, "OK\t%s\t%.1f s\n", job["out"].String().c_str(), seconds);
 		}

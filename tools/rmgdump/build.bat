@@ -7,7 +7,7 @@ REM own a console window; its stdout still reaches a pipe the parent gives it. K
 REM Does not touch the DMB repo or its build tree; only reads headers and the import library.
 call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat" >nul 2>&1
 set "SRC=%~dp0vcmi-snapshot"
-set "CON=C:\Users\user\.conan2\p"
+set "CON=%USERPROFILE%\.conan2\p"
 set "OUT=%~dp0out"
 if not exist "%OUT%" mkdir "%OUT%"
 cd /d "%~dp0"
@@ -18,7 +18,7 @@ cl /nologo /DWIN32 /D_WINDOWS /GR /EHsc /utf-8 /bigobj /wd4250 /wd4251 /wd4244 /
  -I"%SRC%\lib" -I"%SRC%" -I"%SRC%\include" ^
  -external:I%CON%\miniz1a73c1b095f86\p\include -external:I%CON%\miniz1a73c1b095f86\p\include\minizip -external:I%CON%\bzip2176458ec779e0\p\include ^
  -external:I%CON%\zlibbedb652bac8b7\p\include -external:I%CON%\boost6d656fcebc81b\p\include -external:I%CON%\onetbccbc1726d6e90\p\include -external:W0 ^
- rmgdump.cpp /Fo"%OUT%\\" /Fe"%OUT%\VCMI_rmg.exe" ^
+ rmgdump.cpp crashguard.cpp /Fo"%OUT%\\" /Fe"%OUT%\VCMI_rmg.exe" ^
  /link /machine:x64 /INCREMENTAL:NO /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup "%SRC%\bin\VCMI_lib.lib" bcrypt.lib ^
  %CON%\miniz1a73c1b095f86\p\lib\minizip.lib %CON%\zlibbedb652bac8b7\p\lib\zdll.lib ^
  %CON%\boost6d656fcebc81b\p\lib\boost_filesystem.lib %CON%\boost6d656fcebc81b\p\lib\boost_program_options.lib %CON%\boost6d656fcebc81b\p\lib\boost_locale.lib ^

@@ -139,8 +139,10 @@ test('art cells do not block; only B/H/A/T do', () => {
 		'overlapping art must not count as a collision');
 	assert.strictEqual(footprintFits(tpl, 5, 5, 0, W, H, blocked), false,
 		'two objects may not share a visitable cell');
-	// art may hang off the map edge, a wall may not
-	assert.strictEqual(footprintFits(tpl, 1, 1, 0, W, H, blocked), true);
+	// a visited object's art may not hang off the top or left edge (K, 2026-10-08: "the outcasts and school of magic ... placed improperly close
+	// to the top map edge"); plain scenery's art may, as on the engine's maps; a wall never may
+	assert.strictEqual(footprintFits(tpl, 1, 1, 0, W, H, blocked), false);
+	assert.strictEqual(footprintFits({ mask: ['VVV', 'VBV'] }, 1, 1, 0, W, H, blocked), true);
 	assert.strictEqual(footprintFits({ mask: ['BB'] }, 0, 1, 0, W, H, blocked), false);
 });
 

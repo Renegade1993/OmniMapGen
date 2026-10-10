@@ -43,8 +43,8 @@ const MIN_CHANCE = 3;
  */
 function artFor(type, subtype, tpl, short, rng) {
 	const terrain = CORE[short];
-	if (!terrain) return tpl;
 	const arts = byType.get(`${type}|${subtype || 'object'}`) || byType.get(`${type}|${type}`);
+	if (!terrain) return modGroundArt(type, tpl, arts, rng);
 	if (!arts) return tpl;
 	const seen = arts.reduce((a, x) => a + x.n, 0);
 	if (seen < MIN_SEEN) return tpl;
@@ -59,6 +59,35 @@ function artFor(type, subtype, tpl, short, rng) {
 	for (const x of ok) { roll -= x.w; if (roll <= 0) return { animation: x.a.anim, mask: x.a.mask, visitableFrom: x.a.visitableFrom }; }
 	const x = ok[0];
 	return { animation: x.a.anim, mask: x.a.mask, visitableFrom: x.a.visitableFrom };
+}
+
+
+// Ground a mod adds (highlands, deadland, dunes, wasteland, stardust...) has no corpus data, and an art kept as asked stood a snow
+// well in a highlands biome (K, 2026-10-03/04: "still seeing the frozen well in a highlands biome"; the 72x72 map s28307801 had
+// AVXwlsn0, snow only, at (65,65)). The game's rule for ground a template does not name is the template's "any land" case: an art
+// the original table lets stand on every land ground. The corpus says which arts those are: one that real maps stood on at least
+// NEUTRAL_MIN different core grounds. On mod ground a type keeps its art if that one is neutral, takes a neutral art of the type
+// otherwise, and is refused when it has none (the landmark is owed to the next biome). What a map cannot be without (mines,
+// towns, dwellings, gates, monoliths) keeps the art it was asked for. VMAPGEN_MOD_GROUND_ART=0 keeps every art as asked.
+const NEUTRAL_MIN = 4;
+const ESSENTIAL = /^(mine|town|randomTown|creatureGenerator|creatureBank|dragonUtopia|subterraneanGate|monolith|obelisk|shipyard|boat|seerHut|questGuard|borderGate|keymasterTent|prison|spellScroll|artifact|randomArtifact|treasureChest|pandoraBox|resource|campfire|sign|garrison|witchHut|scholar|waterWheel|windmill|mysticalGarden|learningStone)/i;
+function neutral(a) {
+	return Object.values(a.terrains).filter(c => c >= MIN_ON).length >= NEUTRAL_MIN;
+}
+function modGroundArt(type, tpl, arts, rng) {
+	if (process.env.VMAPGEN_MOD_GROUND_ART === '0' || ESSENTIAL.test(String(type || ''))) return tpl;
+	// an art out of a mod's own folder (hota/wasteland/..., hota/deadland/...) was drawn for that mod's ground; only the game's own arts are in question
+	if (tpl && /[\/]/.test(String(tpl.animation || ''))) return tpl;
+	if (!arts) return tpl;
+	const seen = arts.reduce((a, x) => a + x.n, 0);
+	if (seen < MIN_SEEN) return tpl;
+	const ok = arts.filter(neutral);
+	if (!ok.length) return null;
+	if (tpl && tpl.animation && ok.some(a => a.anim === String(tpl.animation).toLowerCase())) return tpl;
+	const total = ok.reduce((s, a) => s + a.n, 0);
+	let roll = rng() * total;
+	for (const a of ok) { roll -= a.n; if (roll <= 0) return { animation: a.anim, mask: a.mask, visitableFrom: a.visitableFrom }; }
+	return { animation: ok[0].anim, mask: ok[0].mask, visitableFrom: ok[0].visitableFrom };
 }
 
 function allowed(art, terrain) {
@@ -76,4 +105,12 @@ function violates(type, subtype, animation, short) {
 	return allowed(a, terrain) === 0 && a.n * ((FILE.totals || {})[terrain] || 0) / TOTAL >= MIN_CHANCE;
 }
 
-module.exports = { artFor, violates, CORE };
+// Whether an art stands on enough different core grounds in the corpus to be fit for ground the corpus knows nothing about.
+function artNeutral(animation) {
+	const a = DATA[String(animation || '').toLowerCase().replace(/\.def$/, '')];
+	if (!a) return null;
+	return Object.values(a.terrains).filter(c => c >= MIN_ON).length >= NEUTRAL_MIN;
+}
+const essential = type => ESSENTIAL.test(String(type || ''));
+
+module.exports = { artFor, violates, CORE, artNeutral, essential };

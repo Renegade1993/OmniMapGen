@@ -119,4 +119,5 @@ function main() {
 		.map(([k, n]) => `${k} ${n}`).join(', '));
 }
 
-main();
+if (require.main === module) main();
+module.exports = { readLod, TERRAINS };   // tools/mapsight reads the core terrain rules through these

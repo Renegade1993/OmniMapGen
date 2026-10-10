@@ -210,7 +210,7 @@
 			},
 			"size": 104,
 			"itemsVisible": 0,
-			"itemsTotal": 2,
+			"itemsTotal": 4,
 			"scrollBounds": {
 				"x": -4,
 				"y": -6,
@@ -220,7 +220,7 @@
 			"setting": "persistent:mapGen/params/undergroundStarts",
 			"valueMin": 0,
 			"valueStep": 1,
-			"valueDefault": 1,
+			"valueDefault": 4,
 			"valueLabel": "value_undergroundStarts",
 			"valueNames": [
 				[
@@ -234,6 +234,14 @@
 				[
 					2,
 					"vcmi.mapGen.undergroundStarts.stop2"
+				],
+				[
+					3,
+					"vcmi.mapGen.undergroundStarts.stop3"
+				],
+				[
+					4,
+					"vcmi.mapGen.undergroundStarts.stop4"
 				]
 			]
 		},

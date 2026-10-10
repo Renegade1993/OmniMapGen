@@ -12,7 +12,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert');
-const { placeHarbours, fillWater } = require('../src/biome/waterfill');
+const { placeHarbours, fillWater, setModWater } = require('../src/biome/waterfill');
 const { OCCUPIED, blockingCells, visitableCells, allowedDirs } = require('../src/biome/content');
 const { xorshift } = require('../src/wfc/solver');
 
@@ -192,5 +192,31 @@ test('below Every biome a zone off the shore gets nothing, as the engine\'s own 
 			objectEntry: entry });
 		assert.strictEqual(harbours.length, 0, `access ${access}: no start or town zone has a shore`);
 		assert.strictEqual(objects.length, 0);
+	}
+});
+
+test('a mod\'s water-only objects go down on the water, carry their mod, and VMAPGEN_MOD_WATER=0 leaves them out', () => {
+	const { W, H, water, zone, blocked } = world();
+	const run = () => {
+		const objects = [];
+		const harbours = placeHarbours({ W, H, l: 0, water, zone, blocked: blocked.slice(), rng: xorshift(5),
+			p: { waterAccess: 3 }, objects, towns: [{ x: 6, y: 20, l: 0 }], playerStarts: [], objectEntry: entry });
+		fillWater({ W, H, l: 0, water, harbours, rng: xorshift(7), p: { waterBuildings: 6 }, objects, objectEntry: entry });
+		return objects.filter(o => o.type === 'seaBarrel');
+	};
+	setModWater([{ type: 'seaBarrel', subtype: 'seaBarrel', mod: 'hota', weight: 400,
+		tpl: { animation: 'hota/seaBarrel/AVAbrrlw', mask: ['A'], visitableFrom: ['+++', '+-+', '+++'] } }]);
+	try {
+		const got = run();
+		assert.ok(got.length > 0, 'the barrels were placed');
+		for (const o of got) {
+			assert.strictEqual(o.mod, 'hota');
+			assert.ok(water[o.y * W + o.x], 'on water');
+		}
+		process.env.VMAPGEN_MOD_WATER = '0';
+		assert.strictEqual(run().length, 0);
+	} finally {
+		delete process.env.VMAPGEN_MOD_WATER;
+		setModWater([]);
 	}
 });

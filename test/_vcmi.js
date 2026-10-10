@@ -5,7 +5,9 @@
  * src/parser/modCrawler.js), so a test that runs generate-cli has to say so.
  * VMAPGEN_TEST_ROOT and VMAPGEN_TEST_USER_DIR win when set. Otherwise the
  * install is DMB's test build beside this folder (..\VCMI\dmbtest in the
- * project's layout): it carries the MapGen tab, the engine's own templates and
+ * project's layout, so only a run from the main checkout finds it; a git
+ * archive or a worktree needs VMAPGEN_TEST_ROOT, and the suite stops with a
+ * message saying so when the folder is missing): it carries the MapGen tab, the engine's own templates and
  * DMB's (Golem Foundry), and the match chain never redeploys it the way it
  * does testinstall. The fork's source tree was the install until DMB made
  * MapGen a mod (fork c5519a7a7, September 26th): its templates left the tree,
@@ -17,6 +19,12 @@
 
 const TEST_ROOT = process.env.VMAPGEN_TEST_ROOT
 	|| require('path').join(__dirname, '..', '..', 'VCMI', 'dmbtest');
+// The default folder exists only beside the main checkout. A git archive or a worktree under .tmp has no such sibling, and
+// every test that generates would fail with a long stack; refuse once, here, and say what to set.
+if (!require('fs').existsSync(TEST_ROOT)) {
+	throw new Error(`The test install ${TEST_ROOT} does not exist. Set VMAPGEN_TEST_ROOT to the VCMI test install `
+		+ `(for the project's layout: VMAPGEN_TEST_ROOT="<project>/VCMI/dmbtest") and run the suite again.`);
+}
 const TEST_USER_DIR = process.env.VMAPGEN_TEST_USER_DIR || null;
 
 /** Environment for a spawned generate-cli: the test install, nothing else. */

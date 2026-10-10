@@ -78,7 +78,7 @@ test('--classic: the stock background, the rows inside its bands, every text the
 		const page = JSON.parse(fs.readFileSync(path.join(stage, p.layout), 'utf8'));
 		walk(page);
 		for (const item of page.items) {
-			if (!item.setting) continue;
+			if (!item.setting || item.type === 'label') continue;      // a label only shows a value (the Underground toggle's On or Off)
 			assert.ok(!settings.has(item.setting), `${item.setting} on one page only`);
 			settings.set(item.setting, p.layout);
 			// lever rows sit inside the bands (header text at 133, the sixth band's control strip to 517)
@@ -100,7 +100,7 @@ test('--classic: the stock background, the rows inside its bands, every text the
 	const bound = s => map.find(i => i.setting === s);
 	const size = bound('persistent:mapGen/map/size');
 	assert.strictEqual(size.type, 'toggleGroup', 'map size is a row of buttons, as stock');
-	assert.deepStrictEqual(size.values, [36, 72, 108, 144, 180, 216, 252]);
+	assert.deepStrictEqual(size.values, [36, 72, 108, 144, 180, 216, 252, -1], 'the seven sizes and Random');
 	assert.ok(bound('persistent:mapGen/map/humans').values.includes(-1), 'human or computer players: Random');
 	assert.deepStrictEqual(bound('persistent:mapGen/params/compOnly').values, [0, 1, 2, 3, 4, 5, 6, 7, -1], 'computer only players 0-7 and Random');
 	assert.ok(map.some(i => i.callback === 'chooseMapGenTeams'), 'team alignments open the grid');
@@ -183,8 +183,14 @@ test('--api4: the gold bar\'s words carved, Water layout a chooser, and the mani
 	// band, C takes the next one, and the two-level button is the game's own too
 	const page = id => JSON.parse(fs.readFileSync(path.join(stage, 'config', 'widgets', 'mapGen', `page_${id}.json`), 'utf8')).items;
 	const size = page('map').find(w => w.setting === 'persistent:mapGen/map/size');
-	assert.deepStrictEqual(size.items.map(b => b.image), ['DmbSizeS', 'DmbSizeM', 'DmbSizeL', 'DmbSizeXL', 'DmbSizeH', 'DmbSizeXH', 'DmbSizeG']);
+	assert.deepStrictEqual(size.items.map(b => b.image), ['DmbSizeS', 'DmbSizeM', 'DmbSizeL', 'DmbSizeXL', 'DmbSizeH', 'DmbSizeXH', 'DmbSizeG', 'RANRAND']);
 	assert.ok(size.position.x >= 67 && size.position.x + size.items[6].position.x + 44 <= 67 + 312, 'the seven inside the band');
+	// Random size (K, 2026-10-04): the game's Random art in the custom-size band, clear of its two fields, inside the band
+	const rnd = size.items[7], band2 = page('map').find(w => w.name === 'input_map.height');
+	assert.strictEqual(size.values[7], -1);
+	assert.ok(rnd.position.y > size.items[6].position.y, 'Random is in the band below the sizes');
+	assert.ok(size.position.x + rnd.position.x >= band2.rect.x + band2.rect.w, 'Random is clear of the height field');
+	assert.ok(size.position.x + rnd.position.x + 32 <= 67 + 312, 'Random is inside the band');
 	// custom size: a type entry box, not the old popup (K, September 27th/28th)
 	assert.ok(!page('map').some(w => w.callback === 'chooseMapGenCustomSize'), 'the old popup is gone with API 4');
 	const widthIn = page('map').find(w => w.setting === 'persistent:mapGen/map/width');
@@ -211,4 +217,22 @@ test('--api4: the gold bar\'s words carved, Water layout a chooser, and the mani
 	const { buildModJson } = require('../tools/make_mod');
 	const text = fs.readFileSync(path.join(ROOT, 'mod', 'mod.json'), 'utf8');
 	assert.deepStrictEqual(JSON.parse(buildModJson(text, { pager: true, atBegin: true, api4: true })).dmb, { api: 4 });
+});
+
+test('the layout carries a reset block: open layout, random size, Random on every setting that has it', () => {
+	const stage = fs.mkdtempSync(path.join(testTmp(), 'vmapgen-reset-'));
+	execFileSync(process.execPath, [TOOL, 'build', '--classic', '--atbegin', '--api4', '--out', stage], { windowsHide: true });
+	const tab = JSON.parse(fs.readFileSync(path.join(stage, 'config', 'widgets', 'mapGen', 'mapGenTab.json'), 'utf8'));
+	assert.strictEqual(tab.reset.map.template, '', 'no template: the open layout');
+	assert.strictEqual(tab.reset.map.size, -1, 'a random size');
+	assert.strictEqual(tab.reset.map.humans, -1);
+	assert.strictEqual(tab.reset.params.waterContent, 0, 'None, as a fresh settings file (K, 2026-10-06: Reset equals a fresh start)');
+	assert.strictEqual(tab.reset.params.compOnly, -1);
+	assert.strictEqual(tab.reset.params.undergroundStarts, 4, 'Template preference (K, 2026-10-05: default player spawns to template, Reset too)');
+	assert.strictEqual(tab.defaults.params.undergroundStarts, 4);
+	assert.strictEqual(tab.reset.params.guardPortals, 2, 'Template');
+	assert.strictEqual(tab.reset.params.waterShape, 8, 'Template, as a fresh settings file');
+	assert.strictEqual(tab.defaults.params.waterShape, 8, 'Template');
+	assert.strictEqual(tab.reset.params.mineDensity, tab.defaults.params.mineDensity, 'a slider with no Random keeps its default');
+	assert.strictEqual(tab.defaults.map.size, 108, 'a first run still starts from the defaults');
 });

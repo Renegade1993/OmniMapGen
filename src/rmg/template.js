@@ -138,6 +138,39 @@ function* modTemplateFiles() {
 	}
 }
 
+/**
+ * The approved-templates list (K, 2026-10-02: "ONLY THOSE THAT HAVE BEEN APPROVED GO IN"). A module carries
+ * `approved-templates.json` beside its mod.json (mod/approved-templates.json in the repository, copied by make_mod),
+ * outside generator/ so editing it does not change the code pin. Every template not on it, mod-shipped ones included,
+ * is not offered: listTemplates() leaves it out, loadTemplate() does not find it, "random" does not roll it. The
+ * file reads {"approved": {"Template name": "date K approved it", ...}} (an array of {name, date} works too); an
+ * empty list offers no template (free layouts are unaffected). A generator not inside a module (the repository's own
+ * runs and tests) has no such file beside it and offers every template; VMAPGEN_APPROVED_TEMPLATES=<file> names one
+ * explicitly, and =off turns the filter off.
+ */
+function approvedFile() {
+	const env = process.env.VMAPGEN_APPROVED_TEMPLATES;
+	if (env) return env === 'off' ? null : env;
+	const root = path.resolve(__dirname, '..', '..', '..');
+	const f = path.join(root, 'approved-templates.json');
+	return fs.existsSync(f) && fs.existsSync(path.join(root, 'mod.json')) ? f : null;
+}
+let approvedSet; // undefined: not read yet; null: no filter
+function approvedTemplates() {
+	if (approvedSet !== undefined) return approvedSet;
+	approvedSet = null;
+	const f = approvedFile();
+	if (!f) return approvedSet;
+	let j = {};
+	try { j = JSON.parse(dropTrailingCommas(stripJsonComments(fs.readFileSync(f, 'utf8')))); } catch (e) {
+		console.error(`[template] ${f} unreadable (${e.message}): no template is offered`);
+	}
+	const a = j && j.approved;
+	const names = Array.isArray(a) ? a.map(x => (x && x.name) || x) : Object.keys(a || {});
+	approvedSet = new Set(names.map(n => String(n).toLowerCase()));
+	return approvedSet;
+}
+
 let templateIndex = null;
 function indexTemplates() {
 	if (templateIndex) return templateIndex;
@@ -147,8 +180,10 @@ function indexTemplates() {
 		try {
 			j = JSON.parse(dropTrailingCommas(stripJsonComments(src.read())));
 		} catch { continue; }
+		const ok = approvedTemplates();
 		for (const name of Object.keys(j)) {
 			const key = name.toLowerCase();
+			if (ok && !ok.has(key)) continue;
 			if (!templateIndex.has(key)) templateIndex.set(key, { name, source: src });
 		}
 	}
@@ -399,7 +434,7 @@ function buildZonePlan(raw, zones, req, accommodations) {
 	} else {
 		for (const z of rest) perLevel[0].push(z);
 		// one level: the engine ignores forcedLevel, so these go up too
-		for (const z of forced) if (!starts.includes(z)) perLevel[0].push({ ...z, forcedLevel: undefined });
+		for (const z of forced) if (!starts.includes(z)) perLevel[0].push({ ...z, forcedLevel: undefined, wasUnderground: true });
 	}
 
 	return finishZonePlan(raw, zones, req, perLevel);
@@ -424,12 +459,17 @@ function finishZonePlan(raw, zones, req, perLevel) {
 	})).map(c => ({ ...c, roadOption: c.road, aRef: indexOf.get(c.a), bRef: indexOf.get(c.b) }));
 
 	resolveRoadOptions(zones, connections, req.seed || 1);
+	if (process.env.VMAPGEN_ROAD_TRACE) console.error('[roads] template links with a road: ' + connections.map(c => `${c.a}-${c.b}:${c.road ? 'R' : '-'}`).join(' '));
 
 	// the median zone's treasure mass is the unit loot multipliers compare to
 	const masses = zones.map(zoneTreasureMass).sort((a, b) => a - b);
 	const medianMass = masses.length ? masses[masses.length >> 1] : 0;
 
-	return { zones, perLevel, connections, indexOf, medianMass };
+	// the template's smallest map, tiles over every level (minSize, e.g. xl+u = 144 x 144 x 2): plan.js scales the rich
+	// piles of a smaller map against it
+	const mn = parseSizeCode(raw.minSize);
+	const minTiles = mn ? mn[0] * mn[0] * mn[1] : 0;
+	return { zones, perLevel, connections, indexOf, medianMass, minTiles };
 }
 
 /**
@@ -555,8 +595,136 @@ const MINE_SUBTYPE = {
 	sulfur: 'sulfurDune', mercury: 'alchemistLab', gold: 'goldMine',
 };
 
+/**
+ * A template on a map far below its own sizes keeps fewer, larger zones. The engine refuses such a map; ours makes it,
+ * and Coldshadow's 21 zones on a 36x36 one-level map came to about 60 tiles each, which the zone walls nearly filled:
+ * starts without their sawmill or ore pit, most towns and mines without room (K, 2026-10-03: "small coldshadow's is
+ * scuffed"). Where the map's tiles over the zones come to under VMAPGEN_ZONE_MIN_TILES (default 180):
+ *  - a start with a player keeps its own zone, and its size is raised so it gets at least VMAPGEN_START_MIN_TILES
+ *    (default 260: a start zone holds two towns, about 20 blocked tiles each, and at 200 the towns split a 36x36 two-level
+ *    map's start zone and shut a mine in) of the map;
+ *  - every other zone merges with a linked one, the pair with the smallest size together first, until the rest come
+ *    to the minimum; the richer zone of a pair (its richest treasure band) keeps its spec, so a template's centre and
+ *    its dragon zones outlast the plain ones, and the sizes add up;
+ *  - links follow the zone that kept its spec; a link inside one zone goes, and of two links between the same zones the
+ *    stronger guard stays.
+ * VMAPGEN_ZONE_MERGE=0 off. Returns { raw, notes }: the raw template with resolved zones (no *LikeZone left), or the
+ * same raw when nothing merges.
+ */
+function fitZonesToMap(raw, req) {
+	const notes = [];
+	if (process.env.VMAPGEN_ZONE_MERGE === '0' || !raw || !raw.zones) return { raw, notes };
+	const tiles = req.w * req.h * Math.max(1, req.levels || 1);
+	const MIN = Number(process.env.VMAPGEN_ZONE_MIN_TILES || 180);
+	const START_MIN = Number(process.env.VMAPGEN_START_MIN_TILES || 260);
+	const zones = resolveZones(raw).map(z => ({ ...z }));
+	// Most biomes per level on a template (K, 2026-10-05: every lever acts on every template): a cap under the template's zones a level merges them the same way
+	// (the smallest linked pair first, the richer keeps its spec), the cap counted over the levels; the default 300 never binds
+	const capZones = Number.isFinite(req.zoneCap) && req.zoneCap >= 1 ? Math.floor(req.zoneCap) * Math.max(1, req.levels || 1) : Infinity;
+	if (!zones.length || (tiles / zones.length >= MIN && zones.length <= capZones)) return { raw, notes };
+	const players = req.players || 0;
+	const active = z => /^(playerStart|cpuStart)$/.test(z.type) && Number(z.owner) >= 1 && Number(z.owner) <= players;
+	const richest = z => Math.max(0, ...(z.treasure || []).map(t => Number(t.max) || 0));
+	const starts = zones.filter(active);
+	let rest = zones.filter(z => !active(z));
+	const want = Math.max(1, Math.min(Math.floor(Math.max(0, tiles - starts.length * START_MIN) / MIN), capZones - starts.length));
+	let links = (raw.connections || []).map(c => ({ ...c, a: parseInt(c.a, 10), b: parseInt(c.b, 10) }));
+	const byId = new Map(zones.map(z => [z.id, z]));
+	const absorbed = new Map();
+	while (rest.length > want) {
+		let best = null;
+		for (const c of links) {
+			if (c.a === c.b || c.type === 'repulsive') continue;
+			const A = byId.get(c.a), B = byId.get(c.b);
+			if (!A || !B || active(A) || active(B)) continue;
+			const sum = (A.size || 0) + (B.size || 0);
+			if (!best || sum < best.sum || (sum === best.sum && Math.min(c.a, c.b) < Math.min(best.A.id, best.B.id))) best = { A, B, sum };
+		}
+		if (!best) break;
+		const { A, B } = best;
+		const [keep, gone] = richest(B) > richest(A) || (richest(B) === richest(A) && (B.size || 0) > (A.size || 0)) ? [B, A] : [A, B];
+		keep.size = (keep.size || 0) + (gone.size || 0);
+		absorbed.set(gone.id, keep.id);
+		byId.delete(gone.id);
+		rest = rest.filter(z => z !== gone);
+		for (const c of links) { if (c.a === gone.id) c.a = keep.id; if (c.b === gone.id) c.b = keep.id; }
+		links = links.filter(c => c.a !== c.b);
+	}
+	if (!absorbed.size) return { raw, notes };
+	const strongest = new Map();
+	for (const c of links) {
+		const k = Math.min(c.a, c.b) + '-' + Math.max(c.a, c.b) + '-' + (c.type === 'forcePortal' ? 'p' : '');
+		const o = strongest.get(k);
+		if (!o || (Number(c.guard) || 0) > (Number(o.guard) || 0)) strongest.set(k, c);
+	}
+	links = [...strongest.values()];
+	// the starts' floor. The layout shares a level by size to the 0.8th power (plan.js chooseTemplateLayout, the engine's
+	// rule), so with X = x^0.8: X / (n X + the others' size^0.8 summed) >= START_MIN / tiles. Solved linearly the floor
+	// came out short and a two-player 36x36 start zone got 118 tiles (2026-10-03).
+	const E = Number(process.env.VMAPGEN_ZONE_BALANCE_EXP || 0.8);
+	const f = START_MIN / tiles, others = rest.reduce((m, z) => m + Math.max(1, z.size || 10) ** E, 0);
+	if (starts.length && starts.length * f < 1) {
+		const x = Math.ceil((f * others / (1 - starts.length * f)) ** (1 / E));
+		for (const z of starts) if ((z.size || 0) < x) z.size = x;
+	}
+	// an idle start that survives a merge keeps one town (the one standing in for its missing player), not its extra
+	// neutral one too: with both, a two-player 36x36 two-level Coldshadow read as a four-player map (K, 2026-10-04:
+	// "almost made a 4 player map out of a small with two towns for each player"). VMAPGEN_IDLE_ONE_TOWN=0 keeps both.
+	let trimmed = 0;
+	if (process.env.VMAPGEN_IDLE_ONE_TOWN !== '0')
+		for (const z of rest) if (/^(playerStart|cpuStart)$/.test(z.type) && z.neutralTowns) { delete z.neutralTowns; trimmed++; }
+	const kept = [...starts, ...rest].sort((a, b) => a.id - b.id);
+	const out = { ...raw, zones: {}, connections: links.map(c => ({ ...c, a: String(c.a), b: String(c.b) })) };
+	for (const z of kept) {
+		const { id, ...rest2 } = z;
+		out.zones[String(id)] = rest2;
+	}
+	const into = new Map();
+	for (const [g, k] of absorbed) { let r = k; while (absorbed.has(r)) r = absorbed.get(r); (into.get(r) || into.set(r, []).get(r)).push(g); }
+	notes.push(`${zones.length} zones on ${tiles} tiles are ${Math.round(tiles / zones.length)} a zone; merged to ${kept.length} `
+		+ `(${[...into].map(([k, g]) => `${k} took ${g.sort((a, b) => a - b).join('+')}`).join(', ')})`
+		+ (starts.length ? `, starts sized to ${starts[0].size}` : '') + (trimmed ? `, ${trimmed} idle start(s) keep one town` : ''));
+	return { raw: out, notes };
+}
+
+/**
+ * A map for more players than the template has start zones gets a start zone of its own for each extra player (K,
+ * 2026-10-01: "it should not make players share biomes ... extra start zones yes"). Before, the extra towns went to the
+ * template-blind default corners, inside whichever zone was nearest: Jebus Cross at 8 players had three players in each of
+ * two zones. Each missing owner slot clones a start zone of the template, taken in turn (same type, size, towns, mines,
+ * treasure and monsters), with the same links to the same neighbours, so the graph stays connected and the clone sits among
+ * the neighbours its source has. Returns { raw, notes }: the same raw when no start is missing.
+ */
+function addStartZones(raw, req) {
+	const notes = [];
+	if (!raw || !raw.zones) return { raw, notes };
+	const isStart = z => /^(playerStart|cpuStart)$/.test(String((z || {}).type || '')) && Number(z.owner) >= 1;
+	const starts = Object.keys(raw.zones).map(Number).sort((a, b) => a - b).filter(id => isStart(raw.zones[String(id)]));
+	if (!starts.length) return { raw, notes };
+	const owners = new Set(starts.map(id => Number(raw.zones[String(id)].owner)));
+	const slots = Math.max(...owners);
+	const want = Number(req.players) || 0;
+	if (want <= slots || owners.size < slots) return { raw, notes };
+	const out = { ...raw, zones: { ...raw.zones }, connections: [...(raw.connections || [])] };
+	let next = Math.max(...Object.keys(raw.zones).map(Number)) + 1;
+	const added = [];
+	const bySlot = starts.slice().sort((a, b) => Number(raw.zones[String(a)].owner) - Number(raw.zones[String(b)].owner));
+	for (let owner = slots + 1; owner <= want; owner++) {
+		const srcId = bySlot[(owner - slots - 1) % bySlot.length], id = next++;
+		out.zones[String(id)] = { ...JSON.parse(JSON.stringify(raw.zones[String(srcId)])), owner };
+		for (const c of raw.connections || []) {
+			const a = parseInt(c.a, 10), b = parseInt(c.b, 10);
+			if (a === srcId && b !== srcId) out.connections.push({ ...c, a: String(id), b: String(b) });
+			else if (b === srcId && a !== srcId) out.connections.push({ ...c, a: String(a), b: String(id) });
+		}
+		added.push(`${id} for player ${owner} like ${srcId}`);
+	}
+	notes.push(`${want - slots} start zone(s) added for the players the template has no start for (${added.join(', ')})`);
+	return { raw: out, notes };
+}
+
 module.exports = {
-	loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan, assignLevels,
+	loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan, assignLevels, addStartZones,
 	guardToLevel, zoneTreasureMass, lootScale, pileRate, pileLoot, ZONE_CLASS, MONSTER_BAND,
-	MINE_SUBTYPE, parseSizeCode, parseRange,
+	MINE_SUBTYPE, parseSizeCode, parseRange, fitZonesToMap,
 };

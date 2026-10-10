@@ -66,7 +66,7 @@ const PAGE_WIDGET = PAGER && !CLASSIC && !AT_BEGIN;
 // the black on gold font"), and Water layout as a chooser, a list to pick from
 // (K's C10: "a category, like size and template")
 const API4 = process.argv.includes('--api4');
-const CHOOSERS = new Set(API4 ? ['waterShape'] : []);
+const CHOOSERS = new Set(API4 ? ['waterShape', 'undergroundStarts', 'guardPortals'] : []);
 const GOLD_WORD = API4 ? { style: 'engraved' } : { color: [0, 0, 0, 255] };
 const outArg = process.argv.indexOf('--out');
 const STAGE = PAGER ? path.resolve(outArg > 0 ? process.argv[outArg + 1]
@@ -143,7 +143,8 @@ const EXTRAS_ART = {
 const TITLE_Y = CLASSIC ? 32 : 36;
 
 // the map settings the tab owns, and where they start
-const MAP_DEFAULTS = { size: 108, underground: 0, players: 4, humans: 1, template: '', declareMods: 0 };
+// the template starts as Coldshadow's Fantasy, the one approved (K, 2026-10-03: "omni map gen should only have coldshadows"); the stored value is only the first run's, so a client that reads an empty one as none keeps the free layout
+const MAP_DEFAULTS = { size: 108, underground: 0, players: 4, humans: 1, template: "Coldshadow's Fantasy", declareMods: 0 };
 const SIZE_STOPS = [[36, 'S'], [72, 'M'], [108, 'L'], [144, 'XL'], [180, 'H'], [216, 'XH'], [252, 'G']];
 // Each size's tooltip gives a scale a player can feel (K, 2026-09-27): a new
 // hero's days to cross the map corner to corner over open grass with nothing
@@ -234,6 +235,16 @@ function pageJson(page) {
 	// a stock band takes both strips of one band, the room of two levers
 	const band = CLASSIC ? STOCK_BANDS[page.id] : null;
 	const lead = band && band.first ? 2 : 0;
+	// In the classic bands a row is either in the header strip (a slim line) or in the control strip (32 high, where stock's buttons
+	// stand). A dropdown button is a control-strip piece: drawn in a header strip it spills into the row below and over the label
+	// (K, 2026-10-03, the underground starts: "this spawn control button is wayy too big"). So a chooser takes a control-strip slot
+	// (odd row), swapping places with a neighbouring slider.
+	if (CLASSIC)
+		knobs.forEach((k, i) => {
+			if (!(CHOOSERS.has(k.key) && k.stops) || (i + lead) % 2 === 1) return;
+			const other = [i + 1, i - 1].find(j => j >= 0 && j < knobs.length && !(CHOOSERS.has(knobs[j].key) && knobs[j].stops));
+			if (other !== undefined) [knobs[i], knobs[other]] = [knobs[other], knobs[i]];
+		});
 	const rows = knobs.length + (band ? 2 + (band.first ? 0 : knobs.length % 2) : 0);
 	if (CLASSIC && rows > 2 * BAND_HEAD.length)
 		throw new Error(`the ${page.id} page needs ${rows} rows, more than six bands hold`);
@@ -267,7 +278,7 @@ const clGroup = (name, pos, setting, values, def, imageOf, xs, words, font, help
 		const image = imageOf(v, i);
 		return { index: i, type: 'toggleButton', image,
 			...(/^(RANNUM|RANRAND)/.test(image) ? {} : { imageOrder: [0, 1, 1, 3] }),
-			position: { x: xs[i], y: 0 }, help: clHelp(helpOf ? helpOf(i) : name.replace(/^group_/, '')),
+			position: typeof xs[i] === 'object' ? xs[i] : { x: xs[i], y: 0 }, help: clHelp(helpOf ? helpOf(i) : name.replace(/^group_/, '')),
 			...(words && words[i] ? { items: clWord(words[i], font) } : {}) };
 	}),
 });
@@ -285,7 +296,11 @@ const STOCK_BANDS = {
 			// the game's own two-level button with API 4; VCMI Extras' before it
 			...(API4 ? { image: 'RANUNDR' } : { image: EXTRAS_ART.twoLevels, imageOrder: [0, 1, 1, 3] }),
 			position: { x: 67, y: BAND_CTRL[n] }, setting: 'persistent:mapGen/map/underground',
-			selected: !!MAP_DEFAULTS.underground, help: clHelp('map.underground') }] },
+			selected: !!MAP_DEFAULTS.underground, help: clHelp('map.underground') },
+		// "On" or "Off" right of the button, following its state (K, 2026-10-04: put On and Off text to the right of it)
+		{ name: 'value_map.underground', type: 'label', font: 'small', alignment: 'left', color: 'yellow',
+			setting: 'persistent:mapGen/map/underground', valueTexts: { 0: 'vcmi.mapGen.map.underground.off', 1: 'vcmi.mapGen.map.underground.on' },
+			emptyText: 'vcmi.mapGen.map.underground.off', position: { x: 67 + 46, y: BAND_CTRL[n] + 9 } }] },
 	// with Random
 	water: { first: true, items: n => [...clHead(n, 'waterContent'),
 		clGroup('group_waterContent', { x: 67, y: BAND_CTRL[n] }, 'persistent:mapGen/params/waterContent', [0, 1, 2, -1],
@@ -340,9 +355,13 @@ function classicMapPageJson() {
 	const sizeArt = API4 ? ['DmbSizeS', 'DmbSizeM', 'DmbSizeL', 'DmbSizeXL', 'DmbSizeH', 'DmbSizeXH', 'DmbSizeG'] : EXTRAS_ART.sizes;
 	const sizeX = API4 ? 69 : 67, sizeStep = API4 ? 44 : 35;
 	items.push(...head(0, 'map.size'),
-		group('group_map.size', { x: sizeX, y: BAND_CTRL[0] }, 'persistent:mapGen/map/size', SIZE_STOPS.map(([v]) => v),
-			MAP_DEFAULTS.size, (v, i) => sizeArt[i], SIZE_STOPS.map((_, i) => i * sizeStep),
-			undefined, undefined, i => `map.size.s${i}`));
+		// Random (-1, K 2026-10-04: "we need a random map size button"): the game's own Random art, in the custom-size band's free
+		// right-hand end with API 4 (the seven sizes fill their band), after C in the Extras row without it. The generator takes
+		// --w random (or -1) and picks a size from the row (stockChoices.randomSize)
+		group('group_map.size', { x: sizeX, y: BAND_CTRL[0] }, 'persistent:mapGen/map/size', [...SIZE_STOPS.map(([v]) => v), -1],
+			MAP_DEFAULTS.size, (v, i) => (v < 0 ? 'RANRAND' : sizeArt[i]),
+			[...SIZE_STOPS.map((_, i) => i * sizeStep), API4 ? { x: 190, y: BAND_CTRL[1] - BAND_CTRL[0] } : 8 * sizeStep],
+			undefined, undefined, i => (i < SIZE_STOPS.length ? `map.size.s${i}` : 'map.size.random')));
 	// Custom size: any width and height typed directly, no popup (K, September
 	// 27th/28th: "custom size should just be a type entry box"). With API 4,
 	// two textInput fields bound straight to persistent:mapGen/map/width and
@@ -360,7 +379,7 @@ function classicMapPageJson() {
 			rect: { x, y, w: 70, h: 22 }, color: [0, 0, 0, 128], colorLine: [64, 64, 64, 64] },
 		{ name: `input_${id}`, type: 'textInput', rect: { x, y, w: 70, h: 22 },
 			font: 'small', alignment: 'center', setting, valueMin: WH_MIN, valueMax: WH_MAX,
-			valueDefault: MAP_DEFAULTS.size },
+			valueDefault: MAP_DEFAULTS.size, help: help('map.size.custom') },   // DMB's launcher shows help on text inputs (2026-10-04)
 	];
 	let band = 1;
 	if (AT_BEGIN && API4) {
@@ -477,12 +496,26 @@ function tabJson() {
 	// the released tab leaves the stock choices unset, so the generator never
 	// sees a computer-only count beside that tab's own player count
 	for (const k of KNOBS) if (CLASSIC || !k.stock) params[k.key] = k.default;
+	// a setting's Reset value: its Random choice where it has one (a stop named Random, or computer-only players' -1), else its default
+	const resetParams = { ...params };
+	for (const k of KNOBS) {
+		if (!(k.key in resetParams)) continue;
+		// the starting levels reset to Template preference (K, 2026-10-05: "default player spawns to template with a settings reset")
+		const rnd = ['undergroundStarts', 'waterShape', 'waterContent'].includes(k.key) ? null : (k.stops || []).find(([, label]) => /random/i.test(label));
+		if (rnd) resetParams[k.key] = rnd[0];
+		else if (k.key === 'compOnly') resetParams[k.key] = -1;
+	}
 	return {
 		library: ['config/widgets/commonPrimitives.json'],
 		// the page list the page buttons show; the pages widget carries its own
 		...(PAGE_WIDGET ? {} : { pages: ALL_PAGES.map(p => `config/widgets/mapGen/page_${p.id}.json`) }),
 		// the preset Defaults returns to, which the client no longer assumes
 		defaults: { params, map: MAP_DEFAULTS, preset: 'nostalgia' },
+		// what the Reset button returns to (K, 2026-10-04: "reset should default all settings to the open template, with the most widest
+		// and varying settings we offer"): no template (the open layout), a random size, and every setting that has a Random choice on
+		// Random; settings with no Random keep their default. `defaults` stays what a first run starts from. A client that does not know
+		// `reset` keeps using `defaults`.
+		reset: { params: resetParams, map: { ...MAP_DEFAULTS, template: '', size: -1, humans: -1 }, preset: 'nostalgia' },
 		items: [
 			// No texture strip over it: VCMI's own tabs draw DIBOXBCK at x 391-473,
 			// which covered the info card's text (K, 2026-09-25); narrowed to
@@ -582,11 +615,11 @@ function stringsJson() {
 			'vcmi.mapGen.presets.load.hover': 'Load saved settings',
 			'vcmi.mapGen.presets.load.help': '{Load saved settings}\n\nReplaces every setting on these pages with a set you saved.',
 			'vcmi.mapGen.map.size.custom.hover': 'Custom size',
-			'vcmi.mapGen.map.size.custom.help': '{Custom size}\n\nAny width and height you type, and one or two levels, instead of the sizes in the row.',
+			'vcmi.mapGen.map.size.custom.help': '{Custom size}\n\nType a width and a height, 36 to 999 cells each, in place of a size from the row. Picking a size in the row above clears them.',
 			'vcmi.mapGen.template.random': '(Random)',
 		} : {}),
 		'vcmi.mapGen.defaults.hover': 'Defaults',
-		'vcmi.mapGen.defaults.help': '{Defaults}\n\nPuts every setting back to its default, matched to the random maps you have played.',
+		'vcmi.mapGen.defaults.help': '{Defaults}\n\nPuts every setting back to the open layout with the widest choices: Random wherever a setting has Random, a random size, no template. A setting with no Random keeps its default.',
 		'vcmi.mapGen.defaults.word': 'Reset',
 		'vcmi.mapGen.generate.hover': 'Generate map',
 		'vcmi.mapGen.generate.help': '{Generate map}\n\nMakes a map from these settings and selects it in the scenario list. Settings are saved as you change them.',
@@ -615,8 +648,10 @@ function stringsJson() {
 		'vcmi.mapGen.map.size.hover': 'Map size',
 		'vcmi.mapGen.map.size.help': '{Map size}\n\nS 36, M 72, L 108, XL 144, H 180, XH 216 or G 252 cells a side. A new hero crosses one corner to corner in about '
 			+ SIZE_STOPS.map(([v]) => crossingDays(v)).join(', ').replace(/, (\d+)$/, ' or $1') + ' days, over open grass with nothing in the way.',
-		'vcmi.mapGen.map.underground.hover': 'Two-level map',
-		'vcmi.mapGen.map.underground.help': '{Two-level map}\n\nA second level underground, linked to the surface by subterranean gates and portals. Off, the other settings on this page do nothing.',
+		'vcmi.mapGen.map.underground.hover': 'Underground',
+		'vcmi.mapGen.map.underground.on': 'On',
+		'vcmi.mapGen.map.underground.off': 'Off',
+		'vcmi.mapGen.map.underground.help': '{Underground}\n\nA second level underground, linked to the surface by subterranean gates and portals. Off, the other settings on this page do nothing.',
 		'vcmi.mapGen.map.declareMods.hover': 'Use mod content',
 		'vcmi.mapGen.map.declareMods.help': '{Use mod content}\n\nPlace modded terrain, creature banks and dwellings from your installed mods, and declare them in the map so VCMI requires the same mods to open it. Off makes a map that loads anywhere, core content only.',
 		'vcmi.mapGen.map.players.hover': 'Players',
@@ -644,12 +679,14 @@ function stringsJson() {
 	// says Reset: DEFAULTS does not fit it in the game's own capitals)
 	if (API4) {
 		s['vcmi.mapGen.defaults.hover'] = 'Reset to defaults';
-		s['vcmi.mapGen.defaults.help'] = '{Reset}\n\nPuts every setting back to its default, matched to the random maps you have played.';
+		s['vcmi.mapGen.defaults.help'] = '{Reset}\n\nPuts every setting back to the open layout with the widest choices: Random wherever a setting has Random, a random size, no template. A setting with no Random keeps its default.';
 	}
 	// after the lever texts below: the classic band says what stock's does
 	const classicLabels = CLASSIC ? { 'vcmi.mapGen.monsterStrength.hover': 'Monster strength' } : {};
 	// the load screen's line for each of the generator's stages (src/main/phases.js)
 	for (const [id, text] of PHASES) s[`vcmi.mapGen.phase.${id}`] = text;
+	s['vcmi.mapGen.map.size.random.hover'] = 'Random size';
+	s['vcmi.mapGen.map.size.random.help'] = '{Random size}\n\nThe map is made at a size picked from the row at random (the same size for the same seed), leaving out the sizes too small for the players. Small sizes are only offered when few players are seated.';
 	SIZE_STOPS.forEach(([v, name], i) => {
 		s[`vcmi.mapGen.map.size.stop${i}`] = name;
 		s[`vcmi.mapGen.map.size.s${i}.hover`] = `${SIZE_NAMES[name]}, ${v}x${v}`;

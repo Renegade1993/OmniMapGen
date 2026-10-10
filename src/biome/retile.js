@@ -96,6 +96,24 @@ function retile({ W, H, allowed, region, groupsFor, rng }) {
 	for (let c = 0; c < N; c++) if (allowed[c]) { state[c] = 1; order.push(c); }
 	const scan = shuffle(order, rng);
 	const placed = [], uncovered = [];
+	// Variety (K, 2026-10-03, a giant map: "a lot of terrain blocker repetition that looks really bad...we need to ensure
+	// variety and as much random variation as possible along borders"): a piece's score loses half its size for each
+	// piece of the same art already anchored within REP_R tiles, so four twins near by score it out and another piece or
+	// size takes the spot. Our masses are bigger and more solid than the engine's, so its own scoring alone stamped one
+	// best-fitting piece across them (decorrepeat.js on a giant map: 21 of one piece within 6 tiles; the engine's worst 9).
+	// VMAPGEN_DECOR_REPEAT sets the penalty per twin as a share of size (0.5; 0 off), VMAPGEN_DECOR_REPEAT_R the reach (6).
+	const REP = Number(process.env.VMAPGEN_DECOR_REPEAT ?? 0.5), REP_R = Number(process.env.VMAPGEN_DECOR_REPEAT_R || 6);
+	const bucket = new Map(), BK = 8;
+	const bkey = (x, y) => ((y / BK) | 0) * 100000 + ((x / BK) | 0);
+	const twins = (anim, ax, ay) => {
+		if (!REP) return 0;
+		let n = 0;
+		for (let by = ((ay - REP_R) / BK) | 0; by <= ((ay + REP_R) / BK | 0); by++)
+			for (let bx = ((ax - REP_R) / BK) | 0; bx <= ((ax + REP_R) / BK | 0); bx++)
+				for (const q of bucket.get(by * 100000 + bx) || [])
+					if (q.anim === anim && Math.abs(q.x - ax) <= REP_R && Math.abs(q.y - ay) <= REP_R) n++;
+		return n;
+	};
 
 	for (const t of scan) {
 		if (state[t] !== 1) continue;
@@ -118,7 +136,7 @@ function retile({ W, H, allowed, region, groupsFor, rng }) {
 						if (state[c] === 1) cb++; else ov++;
 					}
 					if (!ok) continue;
-					const weight = size + cb - ov * size;
+					const weight = size + cb - ov * size - (REP ? REP * size * twins(e.animation, ax, ay) : 0);
 					if (weight > maxWeight) {
 						maxWeight = weight;
 						cands = [[e, ax, ay]];
@@ -136,6 +154,7 @@ function retile({ W, H, allowed, region, groupsFor, rng }) {
 			state[c] = 2;
 			cells.push(c);
 		}
+		if (REP) { const k = bkey(ax, ay); if (!bucket.has(k)) bucket.set(k, []); bucket.get(k).push({ anim: e.animation, x: ax, y: ay }); }
 		placed.push({ x: ax, y: ay, type: e.type, animation: e.animation,
 			mask: e.mask, cells, ...(e.subtype ? { subtype: e.subtype } : {}) });
 	}
@@ -201,7 +220,7 @@ const nextItem = (arr, rng) => arr[(rng() * arr.length) | 0];
  */
 function zoneTemplates(terrain, rng) {
 	const S = setsFor(terrain);
-	if (!S) return [];
+	if (!S) return require('./decor').terrainDecorTemplates(terrain);
 	const open = list => (list || []).filter(s => !s.factions || !s.factions.length);
 	const chosen = [];
 	const mountains = open(S.mountain);
@@ -260,9 +279,21 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 	for (let c = 0; c < N; c++) if (keep[c]) allowed[c] = 0;
 
 	const region = Int32Array.from(zone);
+	// A zone draws its obstacle sets once per DECOR_SET_AREA tiles (VMAPGEN_DECOR_SET_AREA, 2500): the engine draws once
+	// whatever the zone's size, which is variety enough for its zones at the template's own sizes (about 1500 to 2800
+	// tiles at XL) and far too little for a giant map's (5000 to 8000), where a handful of pieces covered every mass
+	// (K, 2026-10-03). At XL a zone still draws once, as the engine's do.
+	const AREA = Number(process.env.VMAPGEN_DECOR_SET_AREA || 2500);
+	const areaOf = new Map();
+	for (let c = 0; c < N; c++) areaOf.set(zone[c], (areaOf.get(zone[c]) || 0) + 1);
 	const cache = new Map();
 	const groupsFor = z => {
-		if (!cache.has(z)) cache.set(z, sizeGroups(zoneTemplates(biomeTerrain[z], rng), false));
+		if (!cache.has(z)) {
+			const rounds = Math.max(1, Math.round((areaOf.get(z) || 0) / AREA));
+			const temps = [];
+			for (let i = 0; i < rounds; i++) temps.push(...zoneTemplates(biomeTerrain[z], rng));
+			cache.set(z, sizeGroups(temps, false));
+		}
 		return cache.get(z);
 	};
 	const r = retile({ W, H, allowed, region, groupsFor, rng });
@@ -272,6 +303,32 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 		.some(([x, y]) => x >= 0 && y >= 0 && x < W && y < H && unc.has(y * W + x))) : [];
 	const placed = r.placed.map(p =>
 		entry(p.type, p.x, p.y, l, { animation: p.animation, mask: p.mask }, p.subtype || 'object'));
+	if (process.env.VMAPGEN_DECOR_TRACE) {
+		// which pass each piece came from: the retile's own, kept where no set fits, or never scenery to it
+		const tally = (list, f) => { const m = new Map(); for (const o of list) { const k = String((o.template && o.template.animation) || o.animation || '?').split('/').pop(); m.set(k, (m.get(k) || 0) + 1); } return [...m].sort((x, y) => y[1] - x[1]).slice(0, 6).map(([k, v]) => `${k}:${v}`).join(' '); };
+		const restScen = rest.filter(o => (o.l || 0) === l && o.template && o.template.mask && !o.template.mask.some(r2 => /[AT]/.test(r2)));
+		console.error(`[decor] level ${l}: retiled ${tally(r.placed)} | kept ${tally(kept)} | untouched non-visitable ${tally(restScen)}`);
+		// where single-tile pieces come from: the blocked clusters handed in (8-way) by size, against the pieces placed by size
+		const seen = new Uint8Array(N), comp = { 1: 0, 2: 0, '3-4': 0, '5-8': 0, '9+': 0 }, pcs = { 1: 0, 2: 0, '3-4': 0, '5-8': 0, '9+': 0 };
+		const bin = n => n === 1 ? 1 : n === 2 ? 2 : n <= 4 ? '3-4' : n <= 8 ? '5-8' : '9+';
+		for (let c = 0; c < N; c++) {
+			if (!allowed[c] || seen[c]) continue;
+			let n = 0; const q = [c]; seen[c] = 1;
+			while (q.length) {
+				const k = q.pop(); n++;
+				const x = k % W, y = (k / W) | 0;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const u = x + dx, v = y + dy;
+					if (u < 0 || v < 0 || u >= W || v >= H) continue;
+					const m = v * W + u;
+					if (allowed[m] && !seen[m]) { seen[m] = 1; q.push(m); }
+				}
+			}
+			comp[bin(n)]++;
+		}
+		for (const p of r.placed) pcs[bin(blockedOffsets(p.mask).length)]++;
+		console.error(`[decor] level ${l}: blocked clusters handed in ${JSON.stringify(comp)} | pieces placed ${JSON.stringify(pcs)}`);
+	}
 	return { objects: [...rest, ...kept, ...placed], before: scenery.length,
 		after: kept.length + placed.length, kept: kept.length };
 }

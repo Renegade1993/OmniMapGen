@@ -84,6 +84,16 @@ if (!PRESETS[presetName] || presetName.startsWith('_'))
 	fail(`unknown preset "${opt.preset}"; presets: `
 		+ Object.keys(PRESETS).filter(k => !k.startsWith('_')).join(', '));
 const biomes = { ...PRESETS[presetName].values };
+// the line written beside the map (its .zones.json "settings", shown on the mapsight card): the template, the base set (the preset) and the
+// levers that differ from the base with their values, e.g. "Coldshadow's Fantasy; base: nostalgia; changed: waterContent 2, waterCoverage 0.45"
+const settingsLine = (() => {
+	// the base value of a lever: the preset's own, else the lever's default, else the generator's built-in one
+	const knobDefault = Object.fromEntries(require('../biome/knobs').KNOBS.filter(k => k.default !== undefined).map(k => [k.key, k.default]));
+	const base = { ...require('../biome/biomes').BIOME_DEFAULTS, ...knobDefault, ...PRESETS[presetName].values };
+	const changed = Object.entries(opt).filter(([k]) => k.startsWith('bio.')).map(([k, v]) => [k.slice(4), parseFloat(v)])
+		.filter(([k, v]) => Number.isFinite(v) && (base[k] === undefined || Math.abs(base[k] - v) > 1e-9)).map(([k, v]) => `${k} ${v}`);
+	return `${opt.template || 'open layout'}; base: ${presetName}; changed: ${changed.length ? changed.join(', ') : 'none'}`;
+})();
 const { KNOBS } = require('../biome/knobs');
 const KNOB_KEYS = new Set(KNOBS.filter(k => !k.cli).map(k => k.key));
 for (const [k, v] of Object.entries(opt)) {
@@ -151,8 +161,9 @@ async function main() {
 		console.log(JSON.stringify({ pages: PAGES, knobs: KNOBS, presets }, null, 1));
 		return;
 	}
-	const W = parseInt(opt.w || '64', 10);
-	const H = parseInt(opt.h || '64', 10);
+	let W = parseInt(opt.w || '64', 10);
+	let H = parseInt(opt.h || '64', 10);
+	const RANDOM_SIZE = stock.isRandomSize(opt.w) || stock.isRandomSize(opt.h);
 	const tplMod = require('../rmg/template');
 	const counts = stock.playerCounts({ players: opt.players, humans: opt.humans, compOnly: biomes.compOnly,
 		templatePlayers: opt.template && !RANDOM_TEMPLATE ? tplMod.loadTemplate(opt.template).raw.players : null }, roll);
@@ -166,6 +177,7 @@ async function main() {
 	for (const c of humanColors || [])
 		if (!COLORS.includes(c)) fail(`--humanColors: "${c}" is no player colour; colours: ${COLORS.join(', ')}`);
 	const nPlayers = humanColors ? Math.max(counts.nPlayers, humanColors.length) : counts.nPlayers;
+	if (RANDOM_SIZE) { W = H = stock.randomSize(humanColors ? Math.max(counts.nPlayers, humanColors.length) : counts.nPlayers, roll); }
 	const humans = humanColors ? humanColors.length : counts.humans;
 	const mapColors = humanColors
 		? COLORS.filter(c => humanColors.includes(c)
@@ -215,6 +227,10 @@ async function main() {
 		mapW: W, mapH: H,
 		players,
 		outFile: opt.out || 'out.vmap',
+		// beside the map in its .zones.json (generate.js), so a map from K's game can be made again with the same options
+		cliOptions: { ...opt, w: String(W), h: String(H) },   // the size as made (a Random size is the one it rolled)
+		settingsLine,
+		rolled: roll.rolled.slice(),
 		seed: parseInt(opt.seed || '1', 10),
 		threads: parseInt(opt.threads || '0', 10) || undefined,
 		pErode: opt.perode ? parseFloat(opt.perode) : 0.25,

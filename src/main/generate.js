@@ -34,11 +34,12 @@ const { serializeVmap, makeHeader, FLIP_CODES } = require('../exporter/vmapWrite
 const { solveRoadTiles, solveRiverTiles } = require('../exporter/roads');
 const { buildPatterns, assignTerrainViews, smoothForPatterns } = require('../exporter/terrainView');
 const { buildRiverNetwork } = require('../biome/rivernet');
-const { buildWaterPlan, WATER_SHAPES } = require('../biome/water');
+const { buildWaterPlan, buildAdoptedPlan, WATER_SHAPES } = require('../biome/water');
 const { makeMaskChecker } = require('../exporter/maskcheck');
-const { loadTemplate, resolveZones, checkConstraints, buildZonePlan, assignLevels, parseSizeCode }
+const { loadTemplate, resolveZones, checkConstraints, buildZonePlan, assignLevels, parseSizeCode, fitZonesToMap, addStartZones }
 	= require('../rmg/template');
 const { orderStarts } = require('../rmg/startOrder');
+const { pickSpread, permuteOwners } = require('../rmg/startSpread');
 
 const CHUNK = 32;
 
@@ -645,6 +646,10 @@ async function generateMap(params) {
 		roots.installDir ? path.join(roots.installDir, 'config') : null,
 		ordered, params.noCache);
 	stage('assetIndex');
+	// VMAPGEN_TERRAIN_DUMP=FILE: every terrain's code, name and move cost from the loaded mods (tools/geometry/travelweb.js)
+	if (process.env.VMAPGEN_TERRAIN_DUMP)
+		fs.writeFileSync(process.env.VMAPGEN_TERRAIN_DUMP, JSON.stringify(Object.fromEntries([...assetIndex.terrains]
+			.map(([k, t]) => [k, { name: t.name, moveCost: t.moveCost }])), null, 1));
 
 	// One rule for modded content, applied everywhere: a map that declares no
 	// mod requirements uses no modded content. Opting in with declareMods
@@ -692,6 +697,21 @@ async function generateMap(params) {
 	const levels = [{ name: 'surface', index: 0, width: params.mapW, height: params.mapH }];
 	if (params.underground || hasObserver)
 		levels.push({ name: 'underground', index: 1, width: params.mapW, height: params.mapH });
+	// The template as this map runs it: on a map far below its sizes, fewer and larger zones (template.js
+	// fitZonesToMap). Every read of the template's zones and links below goes through this.
+	let fitTemplate = null, fitBase = null;
+	const loadFitTemplate = () => {
+		if (!fitTemplate) {
+			const t = loadTemplate(params.template);
+			const req = { w: params.mapW, h: params.mapH, levels: levels.length, players: (params.players || []).length,
+				zoneCap: Number((params.biomes || {}).zoneCap) };
+			const more = addStartZones(t.raw, req);
+			const r = fitZonesToMap(more.raw, req);
+			fitBase = { raw: more.raw, req, notes: more.notes };
+			fitTemplate = { name: t.name, raw: r.raw, notes: [...more.notes, ...r.notes] };
+		}
+		return fitTemplate;
+	};
 
 	// Faction-agnostic player towns: every indexed faction stays legal.
 	//
@@ -748,7 +768,45 @@ async function generateMap(params) {
 	// start's level. Read before the starts are pinned, because the faction
 	// picks the start's biome.
 	const factionsForTowns = townFactions(allFactions, assetIndex.factions);
-	const tplZonesEarly = params.template ? resolveZones(loadTemplate(params.template).raw) : null;
+	// Which start zones the players get (src/rmg/startSpread.js; K, 2026-10-03: players should spawn as far from each other as
+	// possible): the template numbers its start zones and the players took the first n, which it often puts side by side. The zones are laid
+	// out free and the n farthest apart take the owners 1..n. VMAPGEN_SPREAD_OWNERS=0 keeps the template's numbering.
+	if (params.template && observerIndex < 0 && (params.players || []).length >= 2 && process.env.VMAPGEN_SPREAD_OWNERS !== '0') {
+		try {
+			const n = (params.players || []).length, ft = loadFitTemplate();
+			const zonesAll = resolveZones(ft.raw);
+			const startZones = zonesAll.filter(z => /start/i.test(String(z.type || '')) && z.owner);
+			if (startZones.length > n) {
+				const plan0 = buildZonePlan(ft.raw, zonesAll, { w: params.mapW, h: params.mapH, levels: levels.length, players: n,
+					humans: params.humans, seed: params.seed || 1, starts: new Array(n).fill(null), undergroundStarts: 0 },
+				new Set(params.accommodate || []));
+				const zones0 = plan0.perLevel[0];
+				const conns0 = plan0.connections.filter(c => c.aRef && c.bRef && c.aRef.l === 0 && c.bRef.l === 0)
+					.map(c => ({ ...c, a: c.aRef.i, b: c.bRef.i }));
+				const free = chooseTemplateLayout({ tplZones: zones0, tplConns: conns0, W: params.mapW, H: params.mapH,
+					playerStarts: [], seed: params.seed || 1, p: params.biomes || {}, tries: 8 });
+				const pos = new Map(), own = new Map();
+				for (const z of startZones) {
+					const i = zones0.findIndex(q => q.id === z.id);
+					if (i >= 0) { pos.set(z.id, free.seeds[i]); own.set(z.id, Number(z.owner)); }
+				}
+				const pick = pickSpread(pos, own, n);
+				if (pick) {
+					const was = [...own.keys()].sort((a, b) => own.get(a) - own.get(b)).slice(0, n);
+					// the zones the players take are the ones that keep a start's size and extra town: the fit runs again on the template with
+					// the new owners (it had run with owners 1..n, so a zone chosen later was fitted as an idle start, lost its neutral town and
+					// kept the small size: K's 36x36 two players, 2026-10-06, red 2 towns and blue 1)
+					const baseOwn = new Map();
+					for (const z of resolveZones(fitBase.raw)) if (/start/i.test(String(z.type || '')) && z.owner) baseOwn.set(z.id, Number(z.owner));
+					const refit = fitZonesToMap(permuteOwners(fitBase.raw, baseOwn, pick.set), fitBase.req);
+					fitTemplate = { ...ft, raw: refit.raw, notes: [...fitBase.notes, ...refit.notes] };
+					console.error(`[gen] start zones: the players take zones ${pick.set.join(', ')} (the template's own order would be ${was.join(', ')}), `
+						+ `least distance between two ${(100 * pick.min / Math.hypot(params.mapW, params.mapH)).toFixed(0)}% of the diagonal`);
+				}
+			}
+		} catch (e) { console.error('[gen] start zones: spread not applied (' + e.message + ')'); }
+	}
+	const tplZonesEarly = params.template ? resolveZones(loadFitTemplate().raw) : null;
 	const ownerZone = i => tplZonesEarly && tplZonesEarly.find(z => Number(z.owner) === i + 1
 		&& /start/i.test(String(z.type || '')));
 	// Which level each start is on (template.js assignLevels, the engine's
@@ -772,8 +830,12 @@ async function generateMap(params) {
 		if (!layers.length) return null;
 		return layers.includes('underground') && !layers.includes('surface') ? 'underground' : 'surface';
 	});
+	const undergroundChoice = require('./stockChoices').resolveUndergroundStarts((params.biomes || {}).undergroundStarts, {
+		seed: params.seed || 1, hasTemplate: !!tplZonesEarly, levels: levels.length,
+		templateForcesStarts: !!(tplZonesEarly && tplZonesEarly.some(z => /start/i.test(String(z.type || '')) && z.forcedLevel)) });
+	if (undergroundChoice.note) console.error('[gen] ' + undergroundChoice.note);
 	const levelReq = { levels: levels.length, seed: params.seed || 1, starts: startNative,
-		undergroundStarts: (params.biomes || {}).undergroundStarts };
+		undergroundStarts: undergroundChoice.mode };
 	// without a template the starts are the only zones decided up front: the
 	// same rule over them alone, a random town to the level with fewer starts
 	const freeStarts = !tplZonesEarly && observerIndex < 0
@@ -803,7 +865,7 @@ async function generateMap(params) {
 	const startCell = new Map();
 	let presetSeeds0 = null;  // the free layout the start cells came from, if they did
 	if (tplZonesEarly && process.env.VMAPGEN_START_ORDER !== '0') {
-		const tplRawEarly = loadTemplate(params.template).raw;
+		const tplRawEarly = loadFitTemplate().raw;
 		const cand = (params.players || []).map((p, i) => ({ i, zone: ownerZone(i), pos: p.townPos }))
 			.filter(s => s.i !== observerIndex && s.zone && s.pos);
 		// level by level: handing all of them out at once, whatever their
@@ -844,18 +906,33 @@ async function generateMap(params) {
 				// two starts side by side in the middle, which no edge or corner
 				// arrangement can give (7 of its 15 links were portals).
 				const free = chooseTemplateLayout({ tplZones: zones0, tplConns: conns0, W, H,
-					playerStarts: [], seed: params.seed || 1, p: params.biomes || {}, tries: 8 });
+					playerStarts: [], seed: params.seed || 1, p: params.biomes || {}, tries: 8, balance: false });
 				const zoneAt = s => zones0.findIndex(z => z.id === s.zone.id);
 				if (cand.every(s => zoneAt(s) >= 0))
 					options.push(cand.map(s => at(free.seeds[zoneAt(s)].x, free.seeds[zoneAt(s)].y)));
 				const freeOption = options.length - 1;
 				let best = null;
-				options.forEach((cells, oi) => {
+				const scored = options.map((cells, oi) => {
 					const r = chooseTemplateLayout({ tplZones: zones0, tplConns: conns0, W, H,
 						playerStarts: cells, seed: params.seed || 1, p: params.biomes || {}, tries: 4,
-						preset: oi === freeOption ? free.seeds : null });
-					if (!best || r.missing < best.missing) best = { cells, missing: r.missing, oi };
+						preset: oi === freeOption ? free.seeds : null, balance: false });
+					// the least distance between two starts, and the mean (K, 2026-10-03: players spawn as far apart as possible)
+					let min = Infinity, sum = 0, k = 0;
+					for (let a = 0; a < cells.length; a++) for (let b = a + 1; b < cells.length; b++) {
+						const d = Math.hypot(cells[a].x - cells[b].x, cells[a].y - cells[b].y); min = Math.min(min, d); sum += d; k++;
+					}
+					return { cells, missing: r.missing, oi, min: k ? min : 0, mean: k ? sum / k : 0 };
 				});
+				// the fewest broken links wins, unless an option that breaks at most VMAPGEN_START_SLACK more (default 1) puts the starts
+				// farther apart: a broken link is a portal pair, two starts side by side is what K saw on most 2-player maps
+				const slack = process.env.VMAPGEN_START_SLACK === undefined ? 1 : Number(process.env.VMAPGEN_START_SLACK);
+				const fewest = Math.min(...scored.map(o => o.missing));
+				for (const o of scored) {
+					if (o.missing > fewest + slack) continue;
+					if (!best || (slack === 0 ? o.missing < best.missing
+						: (o.min > best.min + 1e-9 || (Math.abs(o.min - best.min) <= 1e-9 && (o.missing < best.missing || (o.missing === best.missing && o.mean > best.mean)))))) best = o;
+				}
+				if (process.env.VMAPGEN_START_TRACE) console.error('[gen] start options: ' + scored.map(o => `${o.oi}${o.oi === freeOption ? 'f' : ''}: ${o.missing} missing, min ${o.min.toFixed(0)}`).join('; ') + ` -> ${best.oi}`);
 				if (best && best.oi > 0) {
 					console.error(`[gen] template starts: ${best.oi === freeOption ? 'a free layout\'s start cells'
 						: `arrangement ${best.oi + 1} of ${options.length}`} leave ${best.missing} link(s) `
@@ -972,7 +1049,7 @@ async function generateMap(params) {
 	// loops that zip plan.starts back onto players by position below.
 	const hubAnchor = (() => {
 		if (!tplZonesEarly || players.length < 2) return null;
-		const conns = (loadTemplate(params.template).raw.connections || [])
+		const conns = (loadFitTemplate().raw.connections || [])
 			.map(c => ({ a: parseInt(c.a, 10), b: parseInt(c.b, 10), type: c.type }))
 			.filter(c => c.type !== 'repulsive' && c.type !== 'forcePortal');
 		const startIds = new Set();
@@ -1112,6 +1189,24 @@ async function generateMap(params) {
 				if (tpls.length)
 					chests.push({ type: 'treasureChest', subtype: o.subtype, rmg: o.rmg, tpls, mod: id.split(':')[0] });
 			}
+	}
+	// The mods' own water objects (waterfill.js setModWater): one-visit sites and pickups whose every template names only water, with
+	// an rmg entry, from a map that declares its mods. Banks and quest gates (guards) are left to their own passes.
+	{
+		const unscope = s => String(s).slice(String(s).lastIndexOf(':') + 1).toLowerCase();
+		const list = [];
+		if (useMods)
+			for (const [id, o] of assetIndex.objects) {
+				if (String(id).startsWith('core:') || o.overrides || o.handler !== 'configurable' || /bank|utopia|guard|gate|hut|seer/i.test(String(o.type))) continue;
+				if (!o.rmg || !(o.rmg.value > 0) || !(o.rmg.rarity > 0)) continue;
+				const t = placeables(o).find(x => Array.isArray(x.allowedTerrains) && x.allowedTerrains.length
+					&& x.allowedTerrains.every(a => unscope(a) === 'water'));
+				if (!t) continue;
+				list.push({ type: o.type, subtype: o.subtype, mod: id.split(':')[0], weight: o.rmg.rarity,
+					tpl: { animation: String(t.raw.animation).replace(/\.def$/i, ''), mask: t.raw.mask, visitableFrom: t.raw.visitableFrom } });
+			}
+		require('../biome/waterfill').setModWater(list);
+		if (list.length) console.error(`[gen] water: ${list.length} mod object(s) made for the water: ${list.map(m => m.type).join(', ')}`);
 	}
 	// Scenery for the mod terrains, from the obstacles their mods bring
 	// (decor.js registerTerrainDecor): every static object's template that
@@ -1353,7 +1448,8 @@ async function generateMap(params) {
 	const templateAcc = new Set(params.strictTemplate ? (params.accommodate || [])
 		: ['size', 'players', 'humans', 'underground', ...(params.accommodate || [])]);
 	if (params.template) {
-		const tpl = loadTemplate(params.template);
+		const tpl = loadFitTemplate();
+		for (const note of tpl.notes) console.error(`[gen] template accommodation: ${note}`);
 		const zones = resolveZones(tpl.raw);
 		const req = { w: params.mapW, h: params.mapH, levels: levels.length,
 			players: players.length, humans: params.humans, seed: params.seed || 1,
@@ -1382,10 +1478,97 @@ async function generateMap(params) {
 	// belongs to the settings (template, size, players, levels, water) rather
 	// than to one roll of the map seed. The refusal names the reason and what
 	// does fit, so the player can choose.
-	if (waterPlan && zonePlan && !process.env.VMAPGEN_WATER_FORCE) {
+	// Water on a template map the engine's way (water.js adoptWater; MapGen Dev, 2026-10-02): lay the zones out dry, then
+	// turn the outer part of each surface zone to water (Normal) or make every zone an island (Islands), as VCMI's
+	// WaterAdopter does. The water is never refused for the template's links: boats cross it. VMAPGEN_ADOPT_WATER=0 keeps
+	// the shape-first water and the refusal below.
+	const adoptMode = zonePlan && process.env.VMAPGEN_ADOPT_WATER !== '0'
+		? ({ 1: 'normal', 2: 'islands' })[Math.round(Number(biomeParams.waterContentMode))] : null;
+	// Islands on a ONE-level map whose template forces zones underground (Coldshadow's Fantasy: the four dragon caches, zones
+	// 17 to 20, and their central hub): K, 2026-10-03, "C. make it random variably between a centralized dragon island and
+	// smaller ones". Each seed picks. Centralized: those zones, and the zone linked to three or more of them, are laid in a ring
+	// round the map's centre (layoutAnchors, the layout's own pull toward a point) and make ONE island (the water treats them as
+	// one zone). Otherwise each is an island of its own, as the rule gives. VMAPGEN_ISLAND_CLUSTER=1 or 0 forces a variant.
+	let clusterAnchors = null, clusterPlan = null, clusterMask = null;
+	if (adoptMode === 'islands' && zonePlan.perLevel.length === 1 && process.env.VMAPGEN_ISLAND_CLUSTER !== '0') {
+		const forced = new Set((zonePlan.zones || []).filter(z => z.forcedLevel === 'underground').map(z => z.id));
+		const coin = (Math.imul((params.seed || 1) >>> 0, 2654435761) >>> 9) & 1;
+		// EXPERIMENTAL, off unless VMAPGEN_ISLAND_CLUSTER=1: the layout does not hold the cluster (see the log, 2026-10-03)
+		if (forced.size >= 2 && process.env.VMAPGEN_ISLAND_CLUSTER === '1' && coin >= 0) {
+			const ids = new Set(forced);
+			const linkedTo = id => zonePlan.connections.filter(c => (c.a === id && forced.has(c.b)) || (c.b === id && forced.has(c.a))).length;
+			for (const z of zonePlan.perLevel[0]) if (!ids.has(z.id) && linkedTo(z.id) >= 3) ids.add(z.id);
+			const order = zonePlan.perLevel[0].map(z => z.id);
+			clusterPlan = { ids: [...ids], order, ring: [...ids].filter(id => forced.has(id)).sort((a, b) => a - b),
+				hub: [...ids].filter(id => !forced.has(id)) };
+		} else if (forced.size >= 2) console.error('[gen] islands: the forced-underground zones are islands of their own');
+	}
+	if (adoptMode) {
+		const origin = starts.map(s => waterOrigins.get(s.color) || { x: s.x, y: s.y });
+		const dryLayout = anchors => planMap({
+			W: params.mapW, H: params.mapH,
+			levels: zonePlan.perLevel.length, playerStarts: starts.map((s, k) => ({ ...s, x: origin[k].x, y: origin[k].y })),
+			params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: null, layoutOnly: true, waterIslands: false,
+				...(anchors ? { layoutAnchors: anchors } : {}) },
+			terrainShortIds, tileIdsByShort, numTiles: tiles.length,
+			objectPools: { banks, dwellings, coreBanks, chests, terrainNames }, terrainInfo: assetIndex.terrains,
+		}).plans[0];
+		const wetLayout = (plan, anchors) => planMap({
+			W: params.mapW, H: params.mapH,
+			levels: zonePlan.perLevel.length, playerStarts: starts.map((s, k) => ({ ...s, x: plan.starts[k] ? plan.starts[k].x : origin[k].x, y: plan.starts[k] ? plan.starts[k].y : origin[k].y })),
+			params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: plan.mask, layoutOnly: true, waterIslands: !!plan.islands,
+				...(anchors ? { layoutAnchors: anchors } : {}) },
+			terrainShortIds, tileIdsByShort, numTiles: tiles.length,
+			objectPools: { banks, dwellings, coreBanks, chests, terrainNames }, terrainInfo: assetIndex.terrains,
+		}).plans[0];
+		let dry = null;
+		if (clusterPlan) {
+			// The layout is a force drawing, and a spring to a point does not hold five zones in one piece: of four seeds one
+			// came out whole. So the anchors are tried in turn (the ring turned and widened a little each time) until the
+			// cluster's zones touch one another through each other, at most 12 tries; none, and the zones are islands of their own.
+			const { order, ring, hub, ids } = clusterPlan;
+			const cx = params.mapW / 2, cy = params.mapH / 2, base = Number(process.env.VMAPGEN_CLUSTER_RING || 0.18) * Math.min(params.mapW, params.mapH);
+			const idx = ids.map(id => order.indexOf(id));
+			for (let k = 0; k < 8 && !dry; k++) {
+				const d = base * (0.85 + 0.06 * (k % 6)), turn = Math.PI / 4 + k * 0.41;
+				const anchors = order.map(() => null);
+				ring.forEach((id, j) => { const a = turn + (j * 2 * Math.PI) / ring.length; anchors[order.indexOf(id)] = { x: cx + d * Math.cos(a), y: cy + d * Math.sin(a), k: 25 }; });
+				for (const id of hub) anchors[order.indexOf(id)] = { x: cx, y: cy, k: 25 };
+				const trial = dryLayout(anchors);
+				// a mask from the dry layout, a layout drawn with it, a mask from that, and a layout drawn with THAT one: the last
+				// is the map's own (the layout is only deterministic for the same water), and it must leave the cluster's land in
+				// one piece. Water moves the layout, so nothing short of drawing it again with the final water says.
+				const mask1 = buildAdoptedPlan(params.mapW, params.mapH, trial.zone, adoptMode, origin, params.seed || 1, shoreCheck, [idx]);
+				const wet1 = wetLayout(mask1, anchors);
+				const mask2 = buildAdoptedPlan(params.mapW, params.mapH, wet1.zone, adoptMode, origin, params.seed || 1, shoreCheck, [idx]);
+				const wet2 = wetLayout(mask2, anchors);
+				const Wd = params.mapW, Hd = params.mapH, m = mask2.mask, comp = new Int32Array(Wd * Hd).fill(-1), sizes = [];
+				for (let s0 = 0; s0 < Wd * Hd; s0++) {
+					if (m[s0] || comp[s0] >= 0) continue;
+					let n = 0; const st = [s0]; comp[s0] = sizes.length;
+					while (st.length) { const c = st.pop(); n++; const x = c % Wd, y = (c / Wd) | 0;
+						for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < Wd && v < Hd && !m[v * Wd + u] && comp[v * Wd + u] < 0) { comp[v * Wd + u] = sizes.length; st.push(v * Wd + u); } } }
+					sizes.push(n);
+				}
+				const inCluster = new Set(idx), per = new Map();
+				let landCells = 0;
+				for (let c = 0; c < Wd * Hd; c++) if (inCluster.has(wet2.zone[c]) && comp[c] >= 0) { per.set(comp[c], (per.get(comp[c]) || 0) + 1); landCells++; }
+				const best = Math.max(0, ...per.values());
+				if (landCells > 0 && best >= 0.95 * landCells) {
+					clusterAnchors = anchors; dry = wet2; clusterMask = mask2;
+					console.error(`[gen] islands: a centralized island of zones ${ids.join(', ')} (layout try ${k + 1}, ${best} land cells in one piece)`);
+				}
+			}
+			if (!dry) console.error('[gen] islands: no layout kept the dragon zones together in 8 tries; they are islands of their own');
+		}
+		if (!dry) dry = dryLayout(null);
+		waterPlan = clusterMask || buildAdoptedPlan(params.mapW, params.mapH, dry.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage);
+		console.error(`[gen] water: ${adoptMode} the engine's way, ${(100 * waterPlan.coverage).toFixed(1)}% of the surface`);
+	}
+	if (waterPlan && zonePlan && !adoptMode && !process.env.VMAPGEN_WATER_FORCE) {
 		const SEEDS = [101, 202, 303];
-		const tplRaw = loadTemplate(params.template).raw;
-		const tplName = loadTemplate(params.template).name;
+		const tplRaw = loadFitTemplate().raw;
+		const tplName = loadFitTemplate().name;
 		const layout = (mask, startList, plan, seed, islands = false) => planMap({
 			W: params.mapW, H: params.mapH,
 			levels: plan.perLevel.length, playerStarts: startList,
@@ -1503,6 +1686,7 @@ async function generateMap(params) {
 			// HotA's twelve more it made 1.4 to 2.0 times the corpus's portals)
 			monolithChannels: useMods && zonePlan ? modChannels(assetIndex.objects) : [],
 			waterMask: waterPlan ? waterPlan.mask : null, caveChecker,
+			...(clusterAnchors ? { layoutAnchors: clusterAnchors } : {}),
 			// a crossroads island left to boats is one more island the planner counts boats for
 			waterIslands: !!(waterPlan && (waterPlan.islands || (waterPlan.hubCells && waterPlan.hubCells.length))),
 			hubCells: waterPlan && waterPlan.hubCells ? waterPlan.hubCells : null,
@@ -1690,6 +1874,84 @@ async function generateMap(params) {
 			console.error(`[gen] ${rolled} of ${fixed + rolled} artifact(s) have no art of their own; written as random artifacts`);
 	}
 
+	if (process.env.VMAPGEN_SRC_TRACE) {
+		const ms = objects.filter(o => /^randomMonster/.test(String(o.type)));
+		const tag = o => String(o.__src || '?').split('<').slice(0, 2).join('<');
+		const t = {}, all = {};
+		for (const m of ms) {
+			all[tag(m)] = (all[tag(m)] || 0) + 1;
+			for (const n of ms) if (n !== m && n.l === m.l && Math.max(Math.abs(n.x - m.x), Math.abs(n.y - m.y)) <= 2) { const k = tag(m) + ' | ' + tag(n); t[k] = (t[k] || 0) + 1; }
+		}
+		console.error('[srctrace] stacks by source ' + JSON.stringify(all));
+		console.error('[srctrace] crowded ordered pairs ' + JSON.stringify(t));
+	}
+	if (process.env.VMAPGEN_DWFAC_TRACE) {
+		const bareF = s => String(s || '').slice(String(s || '').lastIndexOf(':') + 1).toLowerCase();
+		const rows = [];
+		for (const pl of plans) {
+			if (!pl || !pl.zone) continue;
+			const li = pl.levelIndex !== undefined ? pl.levelIndex : plans.indexOf(pl);
+			const W = params.mapW;
+			const by = new Map();
+			for (const o of objects) {
+				if ((o.l || 0) !== li) continue;
+				const z = pl.zone[o.y * W + o.x];
+				if (z === undefined || z < 0) continue;
+				if (!by.has(z)) by.set(z, { towns: [], dw: {} });
+				const e = by.get(z);
+				if (o.type === 'town') e.towns.push(bareF(o.subtype));
+				if (o.type === 'randomTown') e.towns.push('start:' + ((o.options && o.options.owner) || '?'));
+				if (/^creatureGenerator/.test(o.type)) { const f = dwellingFactions.get(`${o.type}|${o.subtype}`) || '?'; e.dw[f] = (e.dw[f] || 0) + 1; }
+			}
+			for (const [z, e] of by) {
+				if (!e.towns.length) continue;
+				const m = (pl.zoneMeta && pl.zoneMeta[z]) || { faction: pl.freeFaction && pl.freeFaction.get(z) };
+				rows.push(`L${li} zone ${m.spec ? m.spec.id : z} ${m.ownerColor ? 'start ' + m.ownerColor : 'neutral'} faction ${m.faction} towns ${e.towns.join(',')} dwellings ${JSON.stringify(e.dw)}`);
+			}
+		}
+		for (const r of rows) console.error('[dwfac] ' + r);
+	}
+	// K, 2026-10-08 (top edge): a visited object is drawn up and to the left of its anchor over its whole mask; the placement test
+	// (content.js footprintFits) keeps it on the map, and the passes that move objects afterwards are caught here: one whose picture crosses the
+	// top or left edge moves the fewest tiles right or down onto free open land, its blocking tiles clear of every other object.
+	{
+		const Wm = params.mapW, Hm = params.mapH;
+		const occ = new Map();
+		const key = (l, x, y) => (l * Hm + y) * Wm + x;
+		for (const o of objects) if (o.template && o.template.mask) for (const [x, y] of blockingCells(o.template, o.x, o.y)) occ.set(key(o.l || 0, x, y), o);
+		let moved = 0, left = 0, cleared = 0;
+		const clearedSet = new Set();
+		for (const o of objects) {
+			const m = o.template && o.template.mask;
+			if (!m || !m.some(r => r.includes('A'))) continue;
+			const h = m.length, w = Math.max(...m.map(r => r.length)), l = o.l || 0;
+			const ny = Math.max(0, h - 1 - o.y), nx = Math.max(0, w - 1 - o.x);
+			if (!nx && !ny) continue;
+			const pl = plans[l];
+			const landAt = (x, y) => x >= 0 && y >= 0 && x < Wm && y < Hm && !(pl && pl.openMask && !pl.openMask[y * Wm + x]) && !(l === 0 && waterPlan && waterPlan.mask && waterPlan.mask[y * Wm + x]);
+			let done = false;
+			for (let r = 0; r <= 5 && !done; r++) for (let dy = ny; dy <= ny + r && !done; dy++) for (let dx = nx; dx <= nx + r && !done; dx++) {
+				if (Math.max(dx - nx, dy - ny) !== r) continue;
+				const tx = o.x + dx, ty = o.y + dy;
+				const cells = blockingCells(o.template, tx, ty);
+				// plain scenery in the way (nothing to visit on it) is cleared for the object; anything visited is not
+				// and only inside the object's own zone, off its border walls (a wall cleared would open a way past the zone's guards)
+				const bars = pl && pl.barriers ? pl.barriers : null, zOf = c => (pl && pl.zone ? pl.zone[c] : -1), oz = zOf(o.y * Wm + o.x);
+				const plain = q => !(q.template && q.template.mask && q.template.mask.some(row => row.includes('A')))
+					&& blockingCells(q.template, q.x, q.y).every(([x, y]) => x >= 0 && y >= 0 && x < Wm && y < Hm && zOf(y * Wm + x) === oz && !(bars && bars.has && bars.has(y * Wm + x)));
+				if (!cells.every(([x, y]) => landAt(x, y) && (!occ.has(key(l, x, y)) || occ.get(key(l, x, y)) === o || plain(occ.get(key(l, x, y)))))) continue;
+				const gone = new Set(cells.map(([x, y]) => occ.get(key(l, x, y))).filter(q => q && q !== o));
+				for (const q of gone) { for (const [x, y] of blockingCells(q.template, q.x, q.y)) if (occ.get(key(l, x, y)) === q) occ.delete(key(l, x, y)); clearedSet.add(q); cleared++; }
+				for (const [x, y] of blockingCells(o.template, o.x, o.y)) if (occ.get(key(l, x, y)) === o) occ.delete(key(l, x, y));
+				o.x = tx; o.y = ty; o.instanceName = `${o.type}_${tx}_${ty}_${l}`;
+				for (const [x, y] of cells) occ.set(key(l, x, y), o);
+				moved++; done = true;
+			}
+			if (!done) left++;
+		}
+		if (clearedSet.size) { const keep = objects.filter(q => !clearedSet.has(q)); objects.length = 0; objects.push(...keep); }
+		if (moved || left) console.error(`[gen] objects whose picture crossed the top or left edge: ${moved} moved onto the map (${cleared} scenery piece(s) cleared for them), ${left} left`);
+	}
 	phase('guards');
 	// the rest of the placeholders rolled as the game rolls them (below), on a
 	// map that declares its mods: without them the registry is core alone, and
@@ -1912,7 +2174,34 @@ async function generateMap(params) {
 		const roadCells = plans[li].roadCells;
 		const openMask = plans[li].openMask;
 		const roadRng = xorshift((params.seed || 1) + 4242 + li);
-		const roadArt = solveRoadTiles(roadCells, lv.width, lv.height, roadRng);
+		// a road that steps corner to corner gets one of the two tiles between: road art joins only across a tile's sides,
+		// so the step showed as a break (ours 7-24 a Coldshadow 144 map, the engine's 0-1, 2026-10-04). The tile goes on
+		// ground nothing stands on, open floor underground, never on water. VMAPGEN_ROAD_CORNERS=0 off.
+		if (roadCells && roadCells.size && process.env.VMAPGEN_ROAD_CORNERS !== '0') {
+			const Wl = lv.width, Hl = lv.height, held = new Set();
+			for (const o of plans[li].objects || []) if ((o.l || 0) === li && o.template && o.template.mask && !REMOVABLE_TYPES.has(o.type))
+				for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < Wl && fy < Hl) held.add(fy * Wl + fx);
+			const wet = plans[li].p && plans[li].p.waterMask;
+			const free = c => !held.has(c) && !(openMask && !openMask[c]) && !(li === 0 && wet && wet[c]);
+			let filled = 0;
+			for (const c of [...roadCells]) {
+				const x = c % Wl, y = (c / Wl) | 0;
+				if (y + 1 >= Hl) continue;
+				for (const dx of [-1, 1]) {
+					const d = (y + 1) * Wl + x + dx, a = y * Wl + x + dx, b = (y + 1) * Wl + x;
+					if (x + dx < 0 || x + dx >= Wl || !roadCells.has(d) || roadCells.has(a) || roadCells.has(b)) continue;
+					const pick = free(a) ? a : free(b) ? b : -1;
+					if (pick >= 0) { roadCells.add(pick); filled++; }
+				}
+			}
+			if (filled) console.error(`[gen] level ${li}: ${filled} corner-to-corner road step(s) joined across a side`);
+		}
+		// roads are one tile wide: the corner joins above can complete a 2x2 block with tiles the late passes laid
+			if (roadCells && roadCells.size) {
+				const th = require('../biome/gateroad').thinRoadBlocks(plans[li], lv.width, lv.height, li, { visitableCells });
+				if (th.thinned) console.error(`[gen] level ${li}: road tiles taken out of 2x2 blocks at the end: ${th.thinned}`);
+			}
+			const roadArt = solveRoadTiles(roadCells, lv.width, lv.height, roadRng);
 
 		// the terrain grid as short codes, which smoothing may adjust
 		const shorts = [];
@@ -2002,9 +2291,27 @@ async function generateMap(params) {
 		// stands on, which is why a real river changes colour as it crosses a
 		// biome edge.
 		const riverRng = xorshift((params.seed || 1) + 1717 + li);
+		// K, 2026-10-07: no river under an object or its guard's ring, and none that ends in the open. The router (rivernet.js routeRivers)
+		// keeps off every object's tiles and every monster's 3x3, runs on open ground only, and ends at the map's edge, at water or at another river.
+		const riverForbid = new Uint8Array(lv.width * lv.height), riverUnder = new Uint8Array(lv.width * lv.height);
+		for (const o of objects) {
+			if ((o.l || 0) !== li || !o.template || !o.template.mask) continue;
+			const mark = (x, y) => { if (x >= 0 && y >= 0 && x < lv.width && y < lv.height) riverForbid[y * lv.width + x] = 1; };
+			if (/^(monster|randomMonster)/.test(String(o.type))) {
+				for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) mark(vx + dx, vy + dy);
+				continue;
+			}
+			// plain scenery (nothing to visit) a river may pass under (the lead's option C); anything visited, a pickup among them, it keeps off
+			const vis = visitableCells(o.template, o.x, o.y);
+			if (!vis.length) { for (const [x, y] of blockingCells(o.template, o.x, o.y)) if (x >= 0 && y >= 0 && x < lv.width && y < lv.height) riverUnder[y * lv.width + x] = 1; continue; }
+			for (const [x, y] of blockingCells(o.template, o.x, o.y)) mark(x, y);
+			for (const [x, y] of vis) mark(x, y);
+		}
+		if (process.env.VMAPGEN_RIVER_TRACE) { let f = 0, o = 0, w = 0; for (let c = 0; c < riverForbid.length; c++) { if (riverForbid[c]) f++; if (openMask && !openMask[c]) o++; if (li === 0 && water && water[c]) w++; } console.error(`[river] level ${li}: forbidden ${f}, closed ${o}, water ${w} of ${riverForbid.length}; openMask ${!!openMask}`); }
 		let riverCells = params.rivers === false ? new Set()
 			: buildRiverNetwork(lv.width, lv.height, riverRng,
-				params.riverShare !== undefined ? params.riverShare : 0.018);
+				params.riverShare !== undefined ? params.riverShare : 0.018,
+				{ forbid: riverForbid, under: riverUnder, water: li === 0 ? water : null, open: openMask || null });
 		// a river through solid rock is not a river. Underground, keep the
 		// water inside the carved chambers and tunnels.
 		if (openMask)
@@ -2069,7 +2376,7 @@ async function generateMap(params) {
 				if (t && (t.types || []).includes('WATER')) waterTiles++;
 			}
 	const waterMap = waterTiles >= Math.floor(allTiles / 100);
-	const listTpl = params.template ? loadTemplate(params.template).raw : null;
+	const listTpl = params.template ? loadFitTemplate().raw : null;
 	const allowLists = {}, bannedCounts = [];
 	const bareId = id => String(id).replace(/^core:/, '');
 	for (const [field, kind, tplKey] of [['allowedSpells', 'spells', 'Spells'],
@@ -2108,12 +2415,22 @@ async function generateMap(params) {
 	// assignment never reach the .vmap, so value-vs-zone-distance metrics
 	// (vmap_zonevalue.js) cannot compute them after the fact. Written only
 	// when asked; the map file itself is unchanged.
-	if (process.env.VMAPGEN_ZONE_DUMP) {
+	// written beside every map (VMAPGEN_ZONE_DUMP=0 turns it off), so tools/mapsight can compare a map from K's own game
+	// zone by zone too
+	if (process.env.VMAPGEN_ZONE_DUMP !== '0') {
 		fs.writeFileSync(params.outFile + '.zones.json', JSON.stringify({
+			// the command line this map was made with (the paths are K's own, the seed and every setting are in it) and the choices left to chance
+			options: params.cliOptions || null, rolled: params.rolled || null,
+			// the template, the base set and the levers that differ from it (generate-cli.js), for people and for the mapsight card
+			settings: params.settingsLine || null,
 			levels: plans.map(pl => ({
 				zone: Array.from(pl.zone),
 				classes: Array.from(pl.classes),
 				starts: (pl.playerStarts || []).map(s => ({ x: s.x, y: s.y })),
+				// the template zone each local zone index stands for (tools/mapsight compares zone by zone with the
+				// engine's map through these; null in the free layout)
+				templateIds: (pl.zoneMeta || []).map(m => (m && m.spec ? m.spec.id : null)),
+				templateTypes: (pl.zoneMeta || []).map(m => (m && m.spec ? m.spec.type : null)),
 			})),
 		}));
 	}

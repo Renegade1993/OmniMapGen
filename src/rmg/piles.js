@@ -65,21 +65,24 @@ function commonPool(objects, useMods = true, h3rows = null) {
 		if (OWN_POOL.has(o.type)) continue;
 		const core = String(key).startsWith('core:');
 		if (!core && !useMods) continue;
-		let large, water;
+		let large, water, tpls = null;
 		if (core) {
 			large = !H3_TOP.has(o.type);
 			water = H3_WATER.has(o.type) ? 'only' : 'never';
 		} else {
-			const tpls = (o.templates || []).filter(t => t.raw && t.raw.animation);
-			if (!tpls.length) continue;   // the engine needs a template to place it
-			large = tpls.some(t => !topVisitable(t));
+			const own = (o.templates || []).filter(t => t.raw && t.raw.animation);
+			if (!own.length) continue;   // the engine needs a template to place it
+			// the mod's own templates, as the engine writes them into a map, for placing a kind ours has no art for
+			tpls = own.filter(t => Array.isArray(t.raw.mask) && t.raw.mask.length).map(t => ({ animation: t.raw.animation, mask: t.raw.mask,
+				visitableFrom: t.raw.visitableFrom || ['---', '+-+', '+++'], allowedTerrains: t.allowedTerrains || null }));
+			large = own.some(t => !topVisitable(t));
 			const onWater = t => Array.isArray(t.allowedTerrains) && t.allowedTerrains.length === 1
 				&& t.allowedTerrains[0] === 'water';
-			water = tpls.every(onWater) ? 'only' : 'never';
+			water = own.every(onWater) ? 'only' : 'never';
 		}
 		out.push({ key, type: o.type, subtype: o.subtype, core, classIndex: o.classIndex, subIndex: o.subIndex,
 			value: o.rmg.value, probability: o.rmg.rarity || 0,
-			zoneLimit: o.rmg.zoneLimit, mapLimit: o.rmg.mapLimit, large, water, terrains: groundsOf(o, h3rows) });
+			zoneLimit: o.rmg.zoneLimit, mapLimit: o.rmg.mapLimit, large, water, terrains: groundsOf(o, h3rows), tpls });
 	}
 	return out;
 }

@@ -28,9 +28,19 @@ const PHASES = [
 	['monoliths', 'Binding the Monoliths'],          // portal pairs
 	['roads', 'Engineering Roads'],
 	['mountains', 'Heaving Up the Mountains'],       // the walls turned to scenery
-	['valleys', 'Carving the Valleys'],              // ridges and scenery inside the zones
+	['valleys', 'Carving the Valleys'],              // the packs of scenery inside the zones
+	['ridges', 'Raising the Ridges'],                // the interior masses, grown as the engine grows them
+	// the lower level's own run through the long stages (a stage is announced once, and level 1 meets them after
+	// level 0 has passed, so each has a twin that only level 1 announces: phase() below)
+	['sculptBelow', 'Sculpting the Underworld'],
+	['landsBelow', 'Painting the Depths'],
+	['bordersBelow', 'Raising the Deep Borders'],
+	['mountainsBelow', 'Heaving Up the Roots of the Mountains'],
+	['valleysBelow', 'Carving the Caverns'],
+	['ridgesBelow', 'Buttressing the Caverns'],
 	['underworld', 'Opening the Ways Below'],        // the gates between levels
 	['resources', 'Discovering Resources'],          // mines, treasure, dwellings, banks, guards
+	['resourcesBelow', 'Hiding Treasure in the Depths'],   // the same on the lower level
 	['edges', 'Sealing the Edge of the World'],      // the map's rim
 	['paths', 'Walking Every Path'],                 // every start, town and pile reachable
 	['forests', 'Planting the Forests'],             // the scenery's art chosen
@@ -42,18 +52,31 @@ const PHASES = [
 ];
 
 let reached = -1;
+let level = 0;
+
+/** The level being planned: on level 1 and below a stage is announced as its `Below` twin, or not at all. */
+function setPhaseLevel(l) {
+	level = l;
+}
 
 /** Enter stage `id`: write its line once, and never one before it. */
 function phase(id) {
-	const i = PHASES.findIndex(p => p[0] === id);
+	let key = id;
+	if (level > 0) {
+		key = id + 'Below';
+		if (!PHASES.some(p => p[0] === key)) return;
+	}
+	const i = PHASES.findIndex(p => p[0] === key);
 	if (i <= reached) return;
 	reached = i;
-	process.stderr.write(`[phase] ${i + 1}/${PHASES.length} ${id}\n`);
+	process.stderr.write(`[phase] ${i + 1}/${PHASES.length} ${key}
+`);
 }
 
 /** Start a new run's count (a process that makes more than one map). */
 function resetPhases() {
 	reached = -1;
+	level = 0;
 }
 
-module.exports = { PHASES, phase, resetPhases };
+module.exports = { PHASES, phase, resetPhases, setPhaseLevel };

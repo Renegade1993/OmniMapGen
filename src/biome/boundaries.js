@@ -10,7 +10,7 @@
 'use strict';
 
 const { BIOME_DEFAULTS, BIOME_CLASS, rimModeOf, bordersOff } = require('./biomes');
-const { engineGuard, creepTier } = require('./content');
+const { engineGuard, creepTier, scaledLinkGuard } = require('./content');
 
 /**
  * For each biome edge, pick opening cells from the shared border.
@@ -23,6 +23,7 @@ function carveBoundaries(edges, connections, zone, W, H, params, rng, edgeInfo) 
 	const p = { ...BIOME_DEFAULTS, ...params };
 	const barriers = new Set();
 	const openings = [];
+	const water = p.water || null;
 
 	for (const e of edges) {
 		const kind = connections.get(e.a * 100000 + e.b);
@@ -40,7 +41,48 @@ function carveBoundaries(edges, connections, zone, W, H, params, rng, edgeInfo) 
 		// doorway, not the 2-4 the spread below draws; narrow the hole under
 		// the flag so the wall pass, not the doorway, decides the border.
 		const info = edgeInfo && edgeInfo.get(e.a * 100000 + e.b);
-		const pivot = border[(rng() * border.length) | 0];
+		// the doorway away from where a third zone meets this border: a doorway at a three-zone corner opens onto the
+		// third zone as well, a passage the template never makes (mapsight zones, Coldshadow's Fantasy 2026-10-02: the
+		// leaks left after the zone warp were all doorways at corners). VMAPGEN_DOOR_CLEAR=0 picks from the whole border.
+		const clearOfThird = (c, R = 4) => {
+			const x = c % W, y = (c / W) | 0;
+			for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) {
+				const nx = x + dx, ny = y + dy;
+				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+				const z = zone[ny * W + nx];
+				if (z >= 0 && z !== e.a && z !== e.b) return false;
+			}
+			return true;
+		};
+		// and on solid ground: 4+ tiles from the map's edge, with 12+ tiles of each zone within 3 (a doorway on a zone's
+		// thin strip along the edge opened onto ground the edge rows then filled: one-level Coldshadow seed 3, zone 5)
+		const solid = c => {
+			const x = c % W, y = (c / W) | 0;
+			if (x < 4 || y < 4 || x >= W - 4 || y >= H - 4) return false;
+			let na = 0, nb = 0;
+			for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) { const z = zone[(y + dy) * W + x + dx]; if (z === e.a) na++; else if (z === e.b) nb++; }
+			return na >= 12 && nb >= 12;
+		};
+		// and dry: no water beside the doorway, so both its sides are land a hero walks on (K's water settings, one-level
+		// 144 2 players seed 11: a doorway's far side was a water inlet, the zone behind it was reached by nothing and swept empty)
+		const wetNear = (c, R) => {
+			const x = c % W, y = (c / W) | 0;
+			for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < W && ny < H && water[ny * W + nx]) return true; }
+			return false;
+		};
+		// 4 tiles clear if the border allows, else 3, else 2 (small zones on a crowded level), else anywhere
+		let pool = [];
+		if (water && p.zonePlan && kind !== 'portal' && process.env.VMAPGEN_DOOR_DRY !== '0')
+			for (const wr of [1]) {
+				for (const R of [4, 3, 2]) { pool = border.filter(c => clearOfThird(c, R) && solid(c) && !wetNear(c, wr)); if (pool.length) break; }
+				if (pool.length) break;
+			}
+		if (process.env.VMAPGEN_DOOR_CLEAR !== '0' && !pool.length) {
+			for (const R of [4, 3, 2]) { pool = border.filter(c => clearOfThird(c, R) && solid(c)); if (pool.length) break; }
+			if (!pool.length) for (const R of [4, 3, 2]) { pool = border.filter(c => clearOfThird(c, R)); if (pool.length) break; }
+		}
+		const from = pool.length ? pool : border;
+		const pivot = from[(rng() * from.length) | 0];
 		const px = pivot % W, py = (pivot / W) | 0;
 		const narrow = !!process.env.VMAPGEN_GATES;
 		const width = kind === 'portal' ? 1
@@ -53,7 +95,7 @@ function carveBoundaries(edges, connections, zone, W, H, params, rng, edgeInfo) 
 		for (const c of border) {
 			if (hole.size >= width) break;
 			const cx = c % W, cy = (c / W) | 0;
-			if (Math.max(Math.abs(cx - px), Math.abs(cy - py)) <= width) hole.add(c);
+			if (Math.max(Math.abs(cx - px), Math.abs(cy - py)) <= width && !(water && p.zonePlan && kind !== 'portal' && wetNear(c, 1) && !wetNear(pivot, 1))) hole.add(c);
 		}
 
 		// The opening also needs cells INSIDE each biome adjacent to the hole
@@ -96,9 +138,8 @@ function carveBoundaries(edges, connections, zone, W, H, params, rng, edgeInfo) 
 	}
 
 	// surface only: a carved level's rock is already its zone wall
-	const water = p.water || null;
 	const rim = rimModeOf(p) && !p.underground
-		? addRimBand(zone, W, H, connections, edgeInfo, barriers, openings, water) : null;
+		? addRimBand(zone, W, H, connections, edgeInfo, barriers, openings, water, !!p.zonePlan) : null;
 
 	// Seal diagonal leaks: heroes move 8-way, so two diagonally-adjacent
 	// barrier cells can be cut through at the corner when the other two
@@ -137,6 +178,7 @@ function carveBoundaries(edges, connections, zone, W, H, params, rng, edgeInfo) 
 }
 
 const DIRS4 = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+const RIM_INWARD_MIN = Number(process.env.VMAPGEN_RIM_INWARD_MIN ?? 450);
 
 /**
  * The engine's zone border (ConnectionsPlacer::createBorder,
@@ -156,7 +198,7 @@ const DIRS4 = [[0, -1], [1, 0], [0, 1], [-1, 0]];
  * reserves, so no content can plug it. VMAPGEN_RIM=0 turns this off (and
  * the per-zone interior field in plan.js with it).
  */
-function addRimBand(zone, W, H, connections, edgeInfo, barriers, openings, water = null) {
+function addRimBand(zone, W, H, connections, edgeInfo, barriers, openings, water = null, template = false) {
 	const N = W * H;
 	const wide = new Set();
 	if (edgeInfo)
@@ -180,10 +222,20 @@ function addRimBand(zone, W, H, connections, edgeInfo, barriers, openings, water
 					break;
 				}
 		}
+	// A zone under RIM_INWARD_MIN cells keeps only its line cells in the band, without the ring inside them: the
+	// engine's band is four cells across a zone line, and on a small map with a big template (Coldshadow's Fantasy at
+	// 36x36 two levels, about 100 cells a zone; the engine refuses it below 144) that band took most of each zone and
+	// left 14-29% of the lowest zones standable (K: "top right biome is half untraversable", 2026-10-04). Template
+	// maps only (p.zonePlan; a level's edge info can be empty when every link it has runs through the other level);
+	// the free layout's zones keep the engine's band.
+	const area = new Map();
+	for (let c = 0; c < N; c++) if (zone[c] >= 0) area.set(zone[c], (area.get(zone[c]) || 0) + 1);
+	const inward = z => !template || (area.get(z) || 0) >= RIM_INWARD_MIN;
 	const band = new Uint8Array(N);
 	for (let c = 0; c < N; c++) {
 		if (!isBorder[c]) continue;
 		band[c] = 1;
+		if (!inward(zone[c])) continue;
 		const x = c % W, y = (c / W) | 0;
 		for (const [dx, dy] of DIRS4) {
 			const nx = x + dx, ny = y + dy;
@@ -279,6 +331,9 @@ function addRimBand(zone, W, H, connections, edgeInfo, barriers, openings, water
  * asks its own zone's ObjectManager::chooseGuard), and comes back with its
  * creature for generate.js to write.
  */
+// a template's zone links at the default Bottleneck guard share: open on a map of at most LINK_OPEN_BELOW of the template's own tiles, all guarded
+// from LINK_KEEP_FROM up
+const LINK_OPEN_BELOW = 0.05, LINK_KEEP_FROM = 0.2;
 function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor = null, forcedStrength = null) {
 	const p = { ...BIOME_DEFAULTS, ...params };
 	// guardBottlenecks 0: no monster in any doorway, the template's own
@@ -287,6 +342,7 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 	// monsterStrength shifts every guard by whole creature levels, as the stock
 	// tab's weak / strong setting does for the engine's own generator
 	const shift = Math.round(p.monsterStrength || 0);
+	const scaled = s => scaledLinkGuard(s, p);   // a map smaller than the template's smallest (plan.js linkGuardScale)
 	const guards = [];
 	for (const o of openings) {
 		if (o.kind === 'portal') continue;
@@ -297,8 +353,38 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 			// the engine sizes a zone-link guard (ObjectManager::chooseGuard,
 			// map strength only; our Normal is the engine's weak, see
 			// content.js engineGuard). Too weak a link stays unguarded there.
-			if (!info.guard) continue;
-			const g = engineGuard(info.guard, 1 + shift, rng, true, poolFor ? poolFor(o.a) : undefined);
+			// Bottleneck guard share on a template: its own links are 1x (the default share). Below it a guarded link, never a start's, loses
+			// its guard with probability 1 - share / default, and none keeps one at 0; above it a link the template leaves free gains a guard
+			// of the weakest strength a link of its two zones carries, at (share - default) / (1 - default). The link itself stays either way.
+			// No random draw at the default, so a default map is as it was. VMAPGEN_CHOKE_SHARE=0 leaves the template's guards.
+			// A map far below the template's own size keeps fewer of them at the default (K, 2026-10-09: "Zone links: yes, but should respond to
+			// lever"): none at 5% of the template's tiles or less (36x36 Coldshadow is 3%, where half its stacks were link guards and 11.6% of
+			// stacks crowded), all from 20% up, in between by the share; the slider scales that down to none at 0 and up to every link at 1.
+			const dflt = BIOME_DEFAULTS.chokeGuardRatio, share = Number(p.chokeGuardRatio);
+			const a = Number.isFinite(p.tplAreaShare) ? p.tplAreaShare : 1;
+			const sizeKeep = Math.min(1, Math.max(0, (a - LINK_OPEN_BELOW) / (LINK_KEEP_FROM - LINK_OPEN_BELOW)));
+			const s = Number.isFinite(share) ? share : dflt;
+			const keep = s <= dflt ? sizeKeep * s / dflt : sizeKeep + (1 - sizeKeep) * (s - dflt) / (1 - dflt);
+			const tplShare = process.env.VMAPGEN_CHOKE_SHARE !== '0' && (Number.isFinite(share) && share !== dflt || keep < 1);
+			const atStart = zoneClasses[o.a] === BIOME_CLASS.PLAYER || zoneClasses[o.b] === BIOME_CLASS.PLAYER;
+			let strength = info.guard;
+			// the draws are the link's own (a hash of its zones and the seed): the rest of the map is laid as at the default, and a link kept at
+			// one value of the slider is kept at every higher one, so each step changes the guards one way
+			const own = k => { const v = Math.sin(o.a * 12.9898 + o.b * 78.233 + (Number(p.seed) || 1) * 0.0137 + k * 3.7) * 43758.5453; return v - Math.floor(v); };
+			// a start's links keep their guards, except below the default on a map below the template's size, where the rest are open already:
+			// there the slider thins them too, none at 0 (MapGen Dev, 2026-10-09: 0, 0.25 and 0.5 gave the same 47% of links on such a map)
+			if (tplShare && atStart && info.guard && sizeKeep < 1 && s < dflt && own(1) >= s / dflt) continue;
+			if (tplShare && !atStart) {
+				if (info.guard && keep < 1 && own(0) >= keep) continue;
+				if (!info.guard && share > dflt) {
+					if (!(own(2) < (share - dflt) / (1 - dflt))) continue;
+					let weakest = 0;
+					for (const [k, e] of edgeInfo) { const ka = Math.floor(k / 100000), kb = k % 100000; if ((ka === o.a || kb === o.a || ka === o.b || kb === o.b) && e && e.guard > 0 && (!weakest || e.guard < weakest)) weakest = e.guard; }
+					strength = weakest;
+				}
+			}
+			if (!strength) continue;
+			const g = engineGuard(scaled(strength), 1 + shift, rng, true, poolFor ? poolFor(o.a) : undefined);
 			if (!g) continue;
 			const mid = o.hole[(o.hole.length / 2) | 0];
 			guards.push({ cell: mid, level: g.level, amount: g.amount, edge: [o.a, o.b],
@@ -309,7 +395,7 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 		// strongest link its zones have (planLevel), sized the same way
 		if (forcedStrength) {
 			const strength = forcedStrength(o.a, o.b);
-			const g = strength > 0 ? engineGuard(strength, 1 + shift, rng, true, poolFor ? poolFor(o.a) : undefined) : null;
+			const g = strength > 0 ? engineGuard(scaled(strength), 1 + shift, rng, true, poolFor ? poolFor(o.a) : undefined) : null;
 			if (!g) continue;
 			const mid = o.hole[(o.hole.length / 2) | 0];
 			guards.push({ cell: mid, level: g.level, amount: g.amount, edge: [o.a, o.b],

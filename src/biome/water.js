@@ -44,13 +44,18 @@ const WATER_SHAPES = [
 ];
 
 const MAX_COVERAGE = 0.6;
+// random islands: the share of the map their discs fill before the water lever grows the coasts, and the open sea held between two islands
+const ISLAND_PACK = 0.32, ISLAND_EVEN = 1.2;
+// the strait grows with the room each island has: 4 tiles on a 72x72 with 6 islands, 6 on a 108 or 144 with 4 to 6, 4 on a 108 Archipelago
+const straitWidth = (W, H, K) => Math.max(3, Math.min(6, Math.round(Math.sqrt(W * H / Math.max(1, K)) / 8)));
 // Land kept around a start town (Chebyshev radius from its anchor): the town,
 // the reserved ground before its gate and room for the starter mines.
 const START_CLEAR = 7;
 
 function shapeOf(p) {
-	const i = Math.round(Number(p && p.waterShape) || 0);
-	return WATER_SHAPES[Math.max(0, Math.min(WATER_SHAPES.length - 1, i))];
+	let i = Math.round(Number(p && p.waterShape) || 0);
+	if (i >= WATER_SHAPES.length) i = 0;      // Random and Template (7, 8) are settled before the plan (stockChoices applyWaterContent)
+	return WATER_SHAPES[Math.max(0, i)];
 }
 
 /**
@@ -89,7 +94,140 @@ function islandSites(W, H, shape, starts, rng) {
 	return sites;
 }
 
-function scoreField(W, H, shape, rng, starts = []) {
+/**
+ * Random islands (P2; K, 2026-09-30: "We need actual, random islands... WAYYYY MORE VARIABILITY", islands that are
+ * "two blob masses that are near mirrors of each other"). The old layout was a Voronoi diagram of the players' starts
+ * (islandSites): four starts in four corners made four equal cells and a water cross, every roll. Here the islands
+ * come from the seed alone:
+ *   - a count (the players' and a random number of neutral ones), each with its own area share (log-normal, so one is
+ *     big and one small) and a bounding radius from it;
+ *   - positions by dart throwing, no two islands closer than their radii and a gap, the larger first;
+ *   - a shape of its own: two to four lobes along a random axis with lateral jitter, the union bent by a warp noise;
+ *   - each player moved onto an island of its own (the nearest free one to where the layout had put them) at a random
+ *     spot with room for the start's dry ground.
+ * Returns { field, starts }: field is high on land and falls off outside, or null when the map is too small to hold
+ * the players' islands with their dry ground (the caller keeps the Voronoi layout there).
+ */
+function randomIslands(W, H, shape, starts, rng, noise, cover) {
+	const nP = Math.max(1, starts.length);
+	const minR = START_CLEAR + 4;                     // a player's island must hold the start's dry ground and a shore
+	// the discs fill a packing share of the map, and the water lever's own selection then grows every coast to the amount asked: discs thrown
+	// at random fill little more than half a square, and sized to the whole land (55% at 45% water) the start islands found no room on most
+	// maps (72x72 4 players 12 of 12, 108 7 of 12, 144 8 players 12 of 12; 2026-10-09)
+	const land = Math.min(1 - cover, ISLAND_PACK) * W * H;
+	const gap = 4;
+	const bound = f => Math.sqrt(f / Math.PI);
+	// area shares: players around 1, neutrals smaller, both spread
+	const shares = [];
+	const neutral = Math.round((shape.perStart || 0) * nP) + (shape.perStart ? 0 : Math.floor(rng() * (nP + 1)));
+	const logn = sd => Math.exp((rng() + rng() + rng() - 1.5) * 2 * sd);
+	// every player's island the same share (a start on a big island against one on a small one was 3.3 to 1 on 144x144); the neutrals vary
+	for (let i = 0; i < nP; i++) shares.push({ start: true, w: 1 });
+	for (let i = 0; i < neutral; i++) shares.push({ start: false, w: 0.35 * logn(0.5) });
+	const tot = shares.reduce((a, q) => a + q.w, 0);
+	for (const q of shares) q.R = Math.max(q.start ? minR : 6, bound(land * q.w / tot));
+	// the players' islands must fit at all
+	if (shares.filter(q => q.start).reduce((a, q) => a + Math.PI * q.R * q.R, 0) > 0.8 * W * H) return null;
+	// the players' islands first (they must fit), then the neutrals, each larger first
+	shares.sort((a, b) => (b.start - a.start) || (b.R - a.R));
+	// a round that leaves a player without room starts again with every island smaller, and from the third round with half the neutrals
+	let placed = null;
+	for (let round = 0; round < 5 && !placed; round++) {
+		placed = [];
+		const sc = Math.pow(0.88, round);
+		const list = round < 2 ? shares : shares.filter((q, i) => q.start || i % 2 === 0);
+		for (const q of list) {
+			let ok = null;
+			for (let shrink = 0; shrink < 6 && !ok; shrink++) {
+				const R = Math.max(q.start ? minR : 6, q.R * sc) * Math.pow(0.9, shrink);
+				if (q.start && R < minR) break;
+				for (let t = 0; t < 200; t++) {
+					const x = R + 2 + rng() * (W - 2 * R - 4), y = R + 2 + rng() * (H - 2 * R - 4);
+					if (!(x > 0) || !(y > 0)) continue;
+					if (placed.every(o => Math.hypot(o.x - x, o.y - y) >= (o.R + R) * 1.15 + gap)) { ok = { x, y, R, start: q.start }; break; }
+				}
+			}
+			if (ok) placed.push(ok);
+			else if (q.start) {
+				if (process.env.VMAPGEN_ISLAND_TRACE) console.error("[isl] no room for start island R", q.R.toFixed(1), "placed", placed.length, "round", round);
+				placed = null;
+				break;
+			}
+		}
+	}
+	if (!placed) return null;
+	// each island's lobes
+	for (const isl of placed) {
+		// a player's island keeps three lobes of one size (its turn and bend still random), so the start islands come out near one area;
+		// a neutral one takes two to four of any size
+		const n = isl.start ? 3 : 2 + Math.floor(rng() * 3), ang = rng() * Math.PI;
+		isl.lobes = [];
+		for (let k = 0; k < n; k++) {
+			const t = n === 1 ? 0 : -0.55 + 1.1 * (k / (n - 1));
+			const lat = (rng() - 0.5) * 0.5;
+			const r = isl.start ? 0.65 : 0.5 + rng() * 0.3;
+			isl.lobes.push({ x: isl.x + isl.R * (t * Math.cos(ang) - lat * Math.sin(ang)) * 0.8,
+				y: isl.y + isl.R * (t * Math.sin(ang) + lat * Math.cos(ang)) * 0.8, r: isl.R * r });
+		}
+	}
+	const warp = 3 + 0.06 * (W + H) / 2;
+	const wx = noise.a, wy = noise.b;
+	// signed distance to each island's shore (negative inside), the two nearest islands per cell: the land score is
+	// the nearest, and where the two are within a few cells the strait between them is held open (straitWidth: a crack of one or two
+	// tiles left the islands nearly touching, 2026-10-09)
+	const field = new Float64Array(W * H), strait = new Uint8Array(W * H), sw = straitWidth(W, H, placed.length);
+	const scale = Math.sqrt(W * H / placed.length) / 2;
+	const K = placed.length, G = new Float32Array(W * H * K);
+	for (let y = 0; y < H; y++)
+		for (let x = 0; x < W; x++) {
+			const px = x + (wx(x, y) - 0.5) * 2 * warp, py = y + (wy(x, y) - 0.5) * 2 * warp;
+			placed.forEach((isl, i) => {
+				let g = Infinity;
+				for (const l of isl.lobes) { const d = Math.hypot(px - l.x, py - l.y) - l.r; if (d < g) g = d; }
+				G[(y * W + x) * K + i] = g;
+			});
+		}
+	// the field and the straits with island i's coast moved out by bias[i] tiles (in, when negative)
+	const draw = (bias = null) => {
+		for (let c = 0; c < W * H; c++) {
+			let g1 = Infinity, g2 = Infinity;
+			for (let i = 0; i < K; i++) {
+				const g = G[c * K + i] - (bias ? bias[i] : 0);
+				if (g < g1) { g2 = g1; g1 = g; } else if (g < g2) g2 = g;
+			}
+			field[c] = -g1 / scale;
+			strait[c] = g2 - g1 <= sw ? 1 : 0;
+		}
+		return { field, strait };
+	};
+	draw();
+	// the players: each to the nearest free island, at a random inner spot with room for the start's ground
+	const free = placed.map((isl, i) => ({ isl, i })), moved = [];
+	const order = starts.map((q, i) => i).sort(() => rng() - 0.5);
+	const out = new Array(starts.length), startIsland = new Array(starts.length);
+	for (const si of order) {
+		const q = starts[si];
+		free.sort((a, b) => Math.hypot(a.isl.x - q.x, a.isl.y - q.y) - Math.hypot(b.isl.x - q.x, b.isl.y - q.y));
+		const pick = free.findIndex(f => f.isl.start);
+		const took = free.splice(pick >= 0 ? pick : 0, 1)[0], isl = took.isl;
+		startIsland[si] = took.i;
+		// a spot on one of the island's lobes, near its centre: the dry ground a start needs is forced round it
+		// afterwards (buildWaterPlan's forcedAround), which the island's own coast then bulges to meet
+		const m = START_CLEAR + 1;
+		let bx = -1, by = -1;
+		for (let t = 0; t < 200 && bx < 0; t++) {
+			const l = isl.lobes[Math.floor(rng() * isl.lobes.length)];
+			const x = Math.round(l.x + (rng() - 0.5) * 0.6 * l.r), y = Math.round(l.y + (rng() - 0.5) * 0.6 * l.r);
+			if (x < m || y < m || x >= W - m || y >= H - m) continue;
+			if (field[y * W + x] >= 0.25 * l.r / scale) { bx = x; by = y; }
+		}
+		if (bx < 0) { if (process.env.VMAPGEN_ISLAND_TRACE) console.error('[isl] no start spot on island R', isl.R.toFixed(1)); return null; }
+		out[si] = { ...q, x: bx, y: by, moved: true };
+	}
+	return { field, strait, starts: out, count: placed.length, startIsland, draw };
+}
+
+function scoreField(W, H, shape, rng, starts = [], cover = 0.4) {
 	const coarseCell = shape.id === 'highland' ? Math.max(4, Math.round((W + H) / 14))
 		: Math.max(6, Math.round((W + H) / 7));
 	const coarse = valueNoise((rng() * 1e9) | 0, coarseCell);
@@ -99,6 +237,31 @@ function scoreField(W, H, shape, rng, starts = []) {
 	const alongX = rng() < 0.5;
 	const s = new Float64Array(W * H);
 	const edgeBand = 0.1 * Math.min(W, H) + 3;
+	// the Islands and Archipelago layouts (K, 2026-10-08: "the static/deterministic corner growth algorithm for map generation which i hate");
+	// the Voronoi of the starts below is left only for a map too small to hold the players' islands
+	if (shape.islands) {
+		const warpNoise = { a: valueNoise((rng() * 1e9) | 0, Math.max(5, Math.round((W + H) / 12))), b: valueNoise((rng() * 1e9) | 0, Math.max(5, Math.round((W + H) / 12))) };
+		const isl = randomIslands(W, H, shape, starts, rng, warpNoise, cover);
+		if (isl) {
+			const channel = new Uint8Array(W * H);
+			const fill = ({ field, strait }) => {
+				for (let c = 0; c < W * H; c++) {
+					const x = c % W, y = (c / W) | 0;
+					const edge = Math.max(0, 1 - Math.min(x, y, W - 1 - x, H - 1 - y) / edgeBand);
+					s[c] = -field[c] + 0.5 * edge + 0.12 * (fine(x, y) - 0.5);
+					// the strait between any two islands, and open sea well clear of every island
+					channel[c] = strait[c] || field[c] < -1.2 ? 1 : 0;
+				}
+			};
+			fill(isl);
+			s.recoast = bias => fill(isl.draw(bias));
+			s.startIsland = isl.startIsland;
+			s.islandCount = isl.count;
+			s.channel = channel;
+			s.starts = isl.starts;
+			return s;
+		}
+	}
 	if (shape.islands) {
 		// water where two islands' cells meet (d2 - d1 small) and along the
 		// map edge; the noise bends the channels
@@ -484,8 +647,57 @@ function buildWaterPlan(W, H, p, starts, seed, check = null) {
 			return x !== q.x || y !== q.y ? { ...q, x, y, moved: true } : { ...q };
 		});
 	}
-	const s = scoreField(W, H, shape, rng, base);
 	const N = W * H;
+	// random islands are laid again until every player has an island of its own and the largest start island is at most ISLAND_EVEN times
+	// the smallest (one start on a big island against one on a small one was 3.3 to 1 on 144x144); the most even of ten is kept
+	let best = null;
+	for (let attempt = 0; attempt < 10; attempt++) {
+		let r = layWater(W, H, p, shape, rng, base, cover, N);
+		// not islands at all, or a random layout with no room for the players (the Voronoi of the starts stands in): kept only when no try lays islands
+		if (!shape.islands) { best = r; break; }
+		if (!r.s.starts) { if (!best) best = { ...r, even: Infinity, fallback: true }; continue; }
+		// the start islands' own areas, the islands each start stands on
+		const judge = q => {
+			const pieces = components(q.mask, W, H, 0);
+			const homes = q.startCells.map(c => pieces.id[c]);
+			const sizes = homes.map(h => (h >= 0 ? pieces.sizes[h] : 0));
+			q.sizes = sizes;
+			q.even = new Set(homes).size === homes.length && Math.min(...sizes) > 0 ? Math.max(...sizes) / Math.min(...sizes) : Infinity;
+		};
+		judge(r);
+		// an island by the map edge or crowded by its neighbours keeps less land than one in open sea: each start island's coast moves out or
+		// in by the land it lacks or has over the start islands' mean, spread round its shore, until they are within ISLAND_EVEN
+		if (r.s.recoast && Number.isFinite(r.even)) {
+			const bias = new Array(r.s.islandCount).fill(0);
+			for (let round = 0; round < 6 && r.even > ISLAND_EVEN; round++) {
+				const mean = r.sizes.reduce((a, v) => a + v, 0) / r.sizes.length;
+				r.sizes.forEach((a, k) => { bias[r.s.startIsland[k]] += 0.9 * (mean - a) / (2 * Math.sqrt(Math.PI * Math.max(1, a))); });
+				r.s.recoast(bias);
+				const q = layWater(W, H, p, shape, rng, base, cover, N, r.s);
+				judge(q);
+				if (!(q.even < r.even)) break;
+				r = q;
+			}
+		}
+		if (!best || r.even < best.even) best = r;
+		if (best.even <= ISLAND_EVEN) break;
+	}
+	if (process.env.VMAPGEN_ISLAND_TRACE && best.even) console.error('[isl] start islands largest/smallest', best.even.toFixed(2));
+	const { mask, moved, forced, startCells, apart, wet } = best;
+	let got = best.got;
+	const unfit = check ? repairShore(mask, W, H, forced, check, wet, apart.length > 0) : 0;
+	got = mask.reduce((a, v) => a + v, 0);
+	// the crossroads cells the sea did leave on land of their own, for the planner
+	const pieces = components(mask, W, H, 0);
+	const mainPiece = startCells.length ? pieces.id[startCells[0]] : -1;
+	const hubCells = apart.filter(c => pieces.id[c] >= 0 && pieces.id[c] !== mainPiece);
+	return { mask, starts: moved, shape: shape.id, coverage: got / N, unfit,
+		islands: !!shape.islands, hubCells };
+}
+
+/** One water plan for buildWaterPlan: the score field, the starts it moves, and the mask cleaned to the amount asked */
+function layWater(W, H, p, shape, rng, base, cover, N, given = null) {
+	const s = given || scoreField(W, H, shape, rng, base, cover);
 	// island shapes: the straits between players stay water, islands stay apart
 	const wet = shape.islands ? s.channel : null;
 	const target = Math.round(cover * N);
@@ -494,8 +706,8 @@ function buildWaterPlan(W, H, p, starts, seed, check = null) {
 	// Continental. Lakes simply yield to a start's forced dry ground instead:
 	// scattered lakes leave no fully dry square nearby, and a start sent
 	// across the map to find one wrecks the layout.
-	const moved = shape.relocate
-		? relocateStarts(selectTop(s, target, null), base, W, H) : base.map(q => ({ ...q }));
+	const moved = s.starts ? s.starts.map(q => ({ ...q }))
+		: shape.relocate ? relocateStarts(selectTop(s, target, null), base, W, H) : base.map(q => ({ ...q }));
 	const forced = forcedAround(moved, W, H, START_CLEAR);
 	const startCells = moved.map(q => q.y * W + q.x);
 	// The template's crossroads (a start the caller marks `hub`) may be left an island of its own,
@@ -517,14 +729,7 @@ function buildWaterPlan(W, H, p, starts, seed, check = null) {
 		if (!got || Math.abs(got - target) <= Math.max(8, 0.01 * N)) break;
 		k = Math.max(1, Math.round(k * target / got));
 	}
-	const unfit = check ? repairShore(mask, W, H, forced, check, wet, apart.length > 0) : 0;
-	got = mask.reduce((a, v) => a + v, 0);
-	// the crossroads cells the sea did leave on land of their own, for the planner
-	const pieces = components(mask, W, H, 0);
-	const mainPiece = startCells.length ? pieces.id[startCells[0]] : -1;
-	const hubCells = apart.filter(c => pieces.id[c] >= 0 && pieces.id[c] !== mainPiece);
-	return { mask, starts: moved, shape: shape.id, coverage: got / N, unfit,
-		islands: !!shape.islands, hubCells };
+	return { s, mask, moved, forced, startCells, apart, wet, got };
 }
 
 /**
@@ -546,7 +751,10 @@ function settleZonesOnLand(zone, seeds, W, H, water, apart = null) {
 	// flood each zone's own land from its seed
 	for (let i = 0; i < seeds.length; i++) {
 		const s0 = seeds[i].y * W + seeds[i].x;
-		if (water[s0] || zone[s0] !== i) continue;
+		if (water[s0]) continue;
+		// a seed owns its own tile: the warp could hand it to a neighbour, and then the zone had no core on its island and the island's land
+		// stayed labelled for zones across the water (random islands, 72x72 Archipelago seed 3, 2026-10-09)
+		zone[s0] = i;
 		const q = [s0];
 		core[s0] = 1;
 		for (let h = 0; h < q.length; h++) {
@@ -643,5 +851,196 @@ function settleZonesOnLand(zone, seeds, W, H, water, apart = null) {
 	return moved;
 }
 
+/**
+ * The engine's way of making water on a template map, over our zone layout (MapGen Dev, 2026-10-02, branch
+ * water-islands). VCMI's WaterAdopter takes each LAND zone of the surface on its own, after the zones are laid out:
+ * ISLANDS turns the zone's border and every tile of it farther than the zone's size from its centre into water, so
+ * every zone is an island; NORMAL turns the outer part of the zone into water except a slice of at least a quarter
+ * of its coast, so the water is a lake at each place the zones meet. Both then cut inlets (random tiles at each depth
+ * from the coast, each pulling a channel down to the coast), fill coves, and drop tiny lakes. Measured on the engine's
+ * own template maps (tier-1 grid, 93 templates): Normal 20% water in about 10 pieces on one land mass, Islands 47% in
+ * about 8 land masses. Ours made 1 to 3 lakes, and under Islands a dry map on 57 of 93 template groups.
+ *
+ * zoneOf: level 0's zone index per cell (-1 where none); content 'normal' or 'islands'; forced: cells that stay land
+ * (the starts' rings); keep: fraction of a zone's cells left as land by the radius rule before inlets (calibration
+ * constants, see ADOPT below). Returns the water mask.
+ */
+// calibration points (map width: share of a zone left land by the radius rule), from the engine's own maps: its water
+// share falls with the size of the map (Islands 0.55 at 36x36 down to 0.40 at 144x144) because the border band is a
+// fixed width and a start keeps its ring of land. VMAPGEN_ADOPT_KEEP_ISLANDS / _NORMAL="36:0.5,72:0.6,..." override.
+const KEEP_POINTS = {
+	islands: process.env.VMAPGEN_ADOPT_KEEP_ISLANDS || '36:0.30,72:0.58,108:0.70,144:0.75',
+	normal: process.env.VMAPGEN_ADOPT_KEEP_NORMAL || '36:0.38,72:0.65,108:0.78,144:0.76',
+};
+function keepFor(content, W) {
+	const pts = KEEP_POINTS[content].split(',').map(s => s.split(':').map(Number));
+	if (W <= pts[0][0]) return pts[0][1];
+	for (let i = 1; i < pts.length; i++)
+		if (W <= pts[i][0]) return pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * (W - pts[i - 1][0]) / (pts[i][0] - pts[i - 1][0]);
+	return pts[pts.length - 1][1];
+}
+const ADOPT = {
+	islands: { border: 1, inlets: 0.5 },
+	normal: { border: 0, inlets: 0.5 },
+};
+function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = null, wetScale = 1) {
+	const N = W * H;
+	const cfg = ADOPT[content] || ADOPT.normal;
+	// The Water layout on a template map's Normal water (it was ignored: the water is each zone's outer part). The shape sets how wet
+	// each zone is, by where its centre lies, around the same overall amount: Coastal wets the zones toward one side of the map
+	// (picked from the seed), Continental those toward the edge, Mediterranean those toward the middle; Lakes and Highland leave
+	// every zone as it was. A factor of 1 is the old water, and Lakes (the default) draws nothing extra from the generator.
+	const shapeId = content !== 'islands' && shape !== null ? (WATER_SHAPES[Math.max(0, Math.min(WATER_SHAPES.length - 1, Math.round(Number(shape) || 0)))] || {}).id : null;
+	const side = shapeId === 'coastal' ? rng() * Math.PI * 2 : 0;
+	const wetFactor = (cx, cy) => {
+		if (shapeId === 'coastal') { const t = ((cx - W / 2) * Math.cos(side) + (cy - H / 2) * Math.sin(side)) / (Math.hypot(W, H) / 2); return Math.max(0.2, 1 + 1.6 * t); }
+		if (shapeId === 'continental' || shapeId === 'mediterranean') {
+			const t = Math.min(1, Math.hypot(cx - W / 2, cy - H / 2) / (Math.hypot(W, H) / 2 * 0.75));
+			return shapeId === 'continental' ? 0.3 + 1.4 * t : 1.7 - 1.4 * t;
+		}
+		return 1;
+	};
+	const mask = new Uint8Array(N);
+	const zones = new Map();
+	for (let c = 0; c < N; c++) {
+		const z = zoneOf[c];
+		if (z < 0) continue;
+		if (!zones.has(z)) zones.set(z, []);
+		zones.get(z).push(c);
+	}
+	const dirs4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+	// each zone's factor, scaled so the area-weighted mean is 1 (the overall amount of water stays what the layout asked for)
+	const zoneFactor = new Map();
+	if (shapeId) {
+		let sum = 0, area = 0;
+		for (const [z, cells] of zones) {
+			let cx = 0, cy = 0;
+			for (const c of cells) { cx += c % W; cy += (c / W) | 0; }
+			cx /= cells.length; cy /= cells.length;
+			if (centres && centres[z]) { cx = centres[z].x; cy = centres[z].y; }
+			const f = wetFactor(cx, cy);
+			zoneFactor.set(z, f); sum += f * cells.length; area += cells.length;
+		}
+		for (const [z, f] of zoneFactor) zoneFactor.set(z, f * area / Math.max(1e-9, sum));
+	}
+	for (const [z, cells] of zones) {
+		// the zone's centre: the given one, else the centroid snapped to a cell of the zone
+		let cx = 0, cy = 0;
+		for (const c of cells) { cx += c % W; cy += (c / W) | 0; }
+		cx /= cells.length; cy /= cells.length;
+		if (centres && centres[z]) { cx = centres[z].x; cy = centres[z].y; }
+		// depth from the zone's edge: 1 on a cell beside a cell of another zone, growing inward
+		const depth = new Map();
+		let front = [];
+		for (const c of cells) {
+			const x = c % W, y = (c / W) | 0;
+			let edge = false;
+			for (const [dx, dy] of dirs4) {
+				const nx = x + dx, ny = y + dy;
+				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+				if (zoneOf[ny * W + nx] !== z) { edge = true; break; }
+			}
+			if (edge) { depth.set(c, 1); front.push(c); }
+		}
+		for (let d = 2; front.length; d++) {
+			const next = [];
+			for (const c of front) {
+				const x = c % W, y = (c / W) | 0;
+				for (const [dx, dy] of dirs4) {
+					const nx = x + dx, ny = y + dy;
+					if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+					const n = ny * W + nx;
+					if (zoneOf[n] === z && !depth.has(n)) { depth.set(n, d); next.push(n); }
+				}
+			}
+			front = next;
+		}
+		for (const c of cells) if (!depth.has(c)) depth.set(c, 1);
+		// the radius rule: the cells farthest from the centre, so that `keep` of the zone stays land
+		const dist = c => Math.hypot(c % W - cx, ((c / W) | 0) - cy);
+		const ranked = cells.map(c => [dist(c), c]).sort((a, b) => a[0] - b[0]);
+		const keepZone = shapeId || wetScale !== 1 ? 1 - Math.max(0, Math.min(0.95, (1 - keepFor(content, W)) * (shapeId ? zoneFactor.get(z) : 1) * wetScale)) : keepFor(content, W);
+		const R = ranked[Math.min(ranked.length - 1, Math.floor(ranked.length * keepZone))][0];
+		const wet = new Set();
+		for (const [d, c] of ranked) if (d > R) wet.add(c);
+		if (cfg.border) for (const c of cells) if (depth.get(c) <= cfg.border) wet.add(c);
+		// NORMAL: a slice of at least a quarter of the coast stays dry
+		if (content !== 'islands') {
+			const angle = c => Math.atan2(((c / W) | 0) - cy, c % W - cx);
+			// the engine keeps one slice dry; several narrower ones (the same share in all) cut a zone's water into more
+			// lakes, which is what its maps show (about 11 pieces on the 36 to 108 size, 20 on 144)
+			const nSlice = Math.max(1, Math.round(Number(process.env.VMAPGEN_ADOPT_SLICES || 6)));
+			const total = Math.PI * 2 * (0.25 + 0.15 * rng());
+			const slices = [];
+			for (let k = 0; k < nSlice; k++) slices.push([rng() * Math.PI * 2, total / nSlice]);
+			const inSlice = c => slices.some(([a0, span]) => { let a = (angle(c) - a0) % (Math.PI * 2); if (a < 0) a += Math.PI * 2; return a < span; });
+			for (const c of [...wet]) if (inSlice(c)) wet.delete(c);
+		}
+		// coast irregularity: random cells at each depth, each pulling a channel of falling depth to the coast
+		const byDepth = new Map();
+		for (const c of cells) { const d = depth.get(c); if (!byDepth.has(d)) byDepth.set(d, []); byDepth.get(d).push(c); }
+		const maxD = Math.max(...byDepth.keys());
+		const checked = new Set();
+		const queue = [];
+		const passed = new Set();
+		// an inlet is a short, wandering channel: no deeper than 6 tiles from the coast, and each cell of it passes on to one neighbour, not to all that are
+		// one step nearer the coast (all of them cut a straight slot 2 to 3 wide and up to 14 long into the land, K's islands; slots.js counted 6 on his map)
+		for (let d = Math.min(maxD, Math.round(Math.sqrt(cells.length) / 2), 6); d >= 1; d--) {
+			const ring = byDepth.get(d) || [];
+			const n = Math.floor(ring.length / (d + 3) * cfg.inlets);
+			for (let k = 0; k < n; k++) {
+				const c = ring[(rng() * ring.length) | 0];
+				if (checked.has(c) || forced[c]) continue;
+				if (content !== 'islands' && d > 1 && !wet.has(c)) continue; // a lake grows only from water that is there
+				queue.push(c); checked.add(c);
+			}
+		}
+		while (queue.length) {
+			const c = queue.shift();
+			if (wet.has(c) && content !== 'islands') { /* already water, keep pulling */ }
+			wet.add(c);
+			const x = c % W, y = (c / W) | 0;
+			for (const [dx, dy] of dirs4) {
+				const nx = x + dx, ny = y + dy;
+				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+				const n = ny * W + nx;
+				if (checked.has(n) || zoneOf[n] !== z) continue;
+				if (depth.get(c) - depth.get(n) === 1 && !passed.has(c) && rng() < 0.6) { passed.add(c); queue.push(n); checked.add(n); }
+			}
+		}
+		for (const c of wet) if (!forced[c]) mask[c] = 1;
+	}
+	return mask;
+}
+
+/** The water plan of a template map made the engine's way (adoptWater), cleaned as buildWaterPlan's is. */
+function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, groups = null, shape = null, coverage = null) {
+	// zones that make one island (a centralized island of several zones): their cells count as one zone to the water
+	if (groups && groups.length) {
+		const to = new Map();
+		for (const g of groups) for (const z of g) to.set(z, g[0]);
+		zoneOf = zoneOf.map(z => (to.has(z) ? to.get(z) : z));
+	}
+	const forced = forcedAround(starts, W, H, START_CLEAR);
+	const startCells = starts.map(q => q.y * W + q.x);
+	// Amount of water (K, 2026-10-05: "this is not 45% water"): the engine's own calibration (keepFor) fixed the share whatever the
+	// slider said, 0.14 to 0.19 on a template map. The wet share of every zone is now scaled until the surface comes out at the
+	// amount asked, within 2 points, in at most six tries; no amount given runs once as before.
+	const want = Number(coverage) > 0 ? Number(coverage) : null;
+	let scale = 1, mask = null, got = 0, unfit = 0;
+	for (let t = 0; t < (want ? 6 : 1); t++) {
+		const rng = xorshift(((seed || 1) ^ 0x5b3e17) >>> 0);
+		rng(); rng();
+		mask = adoptWater(W, H, zoneOf, content, rng, forced, null, shape, scale);
+		settle(mask, W, H, forced, startCells, { connect: content !== 'islands' });
+		unfit = check ? repairShore(mask, W, H, forced, check, null, false) : 0;
+		got = mask.reduce((a, v) => a + v, 0);
+		if (!want || Math.abs(got / (W * H) - want) <= 0.02) break;
+		scale = Math.max(0.1, Math.min(6, scale * want / Math.max(0.01, got / (W * H))));
+	}
+	return { mask, starts: starts.map(q => ({ ...q, moved: false })), shape: content === 'islands' ? 'islands' : 'lakes',
+		coverage: got / (W * H), unfit, islands: content === 'islands', hubCells: [], adopted: content };
+}
+
 module.exports = { WATER_SHAPES, MAX_COVERAGE, START_CLEAR, buildWaterPlan,
-	settleZonesOnLand, shapeOf };
+	settleZonesOnLand, shapeOf, adoptWater, buildAdoptedPlan };

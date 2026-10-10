@@ -1,0 +1,6 @@
+{
+	"_about" : "Templates K has approved, one per line as \"Template name\" : \"date K approved it\". Only these are offered by the MapGen tab and the generator; a template not listed is hidden, the ones a mod ships included. Empty means none (free layouts are unaffected). Edit here; no code change and no re-pinning (this file is outside generator/). Coldshadow's Fantasy is listed for K's own test of it (he asked for it on 2026-10-02); it stays only if he signs it off.",
+	"approved" : {
+		"Coldshadow's Fantasy" : "2026-10-02, for K's test, not yet signed off"
+	}
+}

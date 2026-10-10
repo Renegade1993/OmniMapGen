@@ -59,10 +59,94 @@ function traceRiver(W, H, rng, cells, budget = Infinity) {
 }
 
 /**
- * Lay rivers over a level until roughly `share` of it carries water.
+ * Rivers routed over free ground (K, 2026-10-07 18:3x: "instances of these creeks running through objects and dead-ending out in the open";
+ * the lead's option C, 2026-10-08: under plain scenery allowed, never under anything visited, a pickup or a guard ring).
+ * A river starts at a map edge, at water or at another river, and ends at one of those at least `minLen` tiles away; it never crosses a tile
+ * `forbid` marks (an object's footprint, a guard's ring) nor closed ground (`open` 0, rock underground) nor water; one that cannot reach an
+ * end is not laid. The way is the cheapest by a coarse noise field, which bends it the way the random wander did, and a tile beside a river
+ * already laid costs more, so two rivers meet at an end rather than run side by side. Measured before this on K's eight case maps: 109 of
+ * 176 river ends in the open, 52% of river tiles under an object (the engine's own maps: 76 of 119 and 9%; K's rule is stricter).
  * Returns the set of river cells.
  */
-function buildRiverNetwork(W, H, rng, share = 0.018) {
+function routeRivers(W, H, rng, share, { forbid = null, water = null, open = null, under = null } = {}) {
+	const cells = new Set();
+	const target = Math.round(W * H * share);
+	if (target < 4) return cells;
+	const N = W * H;
+	const free = c => (!forbid || !forbid[c]) && (!open || open[c]) && !(water && water[c]);
+	// a coarse value noise, 0..1, one knot every 6 tiles
+	const G = 6, gw = Math.ceil(W / G) + 2, gh = Math.ceil(H / G) + 2, knots = new Float32Array(gw * gh);
+	for (let i = 0; i < knots.length; i++) knots[i] = rng();
+	const noise = (x, y) => {
+		const fx = x / G, fy = y / G, ix = fx | 0, iy = fy | 0, tx = fx - ix, ty = fy - iy;
+		const k = (a, b) => knots[(iy + b) * gw + ix + a];
+		const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+		return (k(0, 0) * (1 - sx) + k(1, 0) * sx) * (1 - sy) + (k(0, 1) * (1 - sx) + k(1, 1) * sx) * sy;
+	};
+	const cost = new Float32Array(N);
+	// under plain scenery (the lead's option C, 2026-10-08) a river may pass, at a cost, so it keeps to open ground and ducks under a wall to cross it
+	for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) cost[y * W + x] = 1 + 6 * noise(x, y) + (under && under[y * W + x] ? 5 : 0);
+	const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+	const wetBeside = c => { if (!water) return false; const x = c % W, y = (c / W) | 0; return N4.some(([dx, dy]) => { const u = x + dx, v = y + dy; return u >= 0 && v >= 0 && u < W && v < H && water[v * W + u]; }); };
+	const onEdge = c => { const x = c % W, y = (c / W) | 0; return x === 0 || y === 0 || x === W - 1 || y === H - 1; };
+	const riverBeside = c => { const x = c % W, y = (c / W) | 0; return N4.some(([dx, dy]) => { const u = x + dx, v = y + dy; return u >= 0 && v >= 0 && u < W && v < H && cells.has(v * W + u); }); };
+	// an end: free ground on the edge, beside water, or beside a river already laid
+	// an end is in view: not under scenery
+	const isEnd = c => free(c) && !(under && under[c]) && (onEdge(c) || wetBeside(c) || riverBeside(c));
+	const starts = [];
+	for (let c = 0; c < N; c++) if (free(c) && !(under && under[c]) && (onEdge(c) || wetBeside(c))) starts.push(c);
+	const T = process.env.VMAPGEN_RIVER_TRACE ? { starts: starts.length, target, nogoal: 0, toolong: 0, laid: 0, skip: 0 } : null;
+	if (!starts.length) { if (T) console.error("[river] " + JSON.stringify(T)); return cells; }
+	let failed = 0;
+	const dist = new Float64Array(N), prev = new Int32Array(N);   // doubles, as the heap holds them: a float32 store skipped tiles
+	for (let tries = 0; tries < 80 && cells.size < target; tries++) {
+		const s = starts[(rng() * starts.length) | 0];
+		if (cells.has(s) || riverBeside(s)) continue;
+		const sx = s % W, sy = (s / W) | 0;
+		// end to end 15 to 35% of the map's span: a river that reads as one, crossing a zone wall or two under its scenery
+		// shorter after each try that found no end, down to 8 (an island is smaller than the span: K's islands map had none)
+		const minLen = Math.max(8, Math.round((W + H) * (0.15 + 0.2 * rng()) * Math.pow(0.8, failed)));
+		dist.fill(Infinity); prev.fill(-1);
+		dist[s] = 0;
+		// a binary heap of [cost, cell]
+		const heap = [[0, s]];
+		const push = (d, c) => { heap.push([d, c]); let i = heap.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
+		const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; let i = 0; for (;;) { const l = 2 * i + 1, r = l + 1; let m = i; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; i = m; } } return top; };
+		let goal = -1;
+		while (heap.length) {
+			const [d, c] = pop();
+			if (d > dist[c]) continue;
+			const cx = c % W, cy = (c / W) | 0;
+			if (c !== s && isEnd(c) && Math.max(Math.abs(cx - sx), Math.abs(cy - sy)) >= minLen) { goal = c; break; }
+			for (const [dx, dy] of N4) {
+				const u = cx + dx, v = cy + dy;
+				if (u < 0 || v < 0 || u >= W || v >= H) continue;
+				const n = v * W + u;
+				if (!free(n) || cells.has(n)) continue;
+				// short of the goal, a tile on the edge, beside water or beside a river is a way along it, not into it
+				const along = (onEdge(n) || wetBeside(n) || riverBeside(n)) && Math.max(Math.abs(u - sx), Math.abs(v - sy)) < minLen ? 8 : 0;
+				const nd = d + cost[n] + along;
+				if (nd < dist[n]) { dist[n] = nd; prev[n] = c; push(nd, n); }
+			}
+		}
+		if (goal < 0) { failed++; if (T) T.nogoal++; continue; }
+		const path = [];
+		for (let c = goal; c >= 0; c = prev[c]) path.push(c);
+		// the river the network asked for, not much more: a river longer than what is left (and a quarter) is passed over and the next try is shorter
+		if (cells.size + path.length > target * 1.25 + 4) { failed++; if (T) T.toolong++; continue; }
+		for (const c of path) cells.add(c);
+		if (T) T.laid++;
+	}
+	if (T) console.error("[river] " + JSON.stringify(T) + " cells " + cells.size);
+	return cells;
+}
+
+/**
+ * Lay rivers over a level until roughly `share` of it carries water.
+ * Returns the set of river cells. With `route` (the tiles to keep off and the water), rivers are routed by routeRivers.
+ */
+function buildRiverNetwork(W, H, rng, share = 0.018, route = null) {
+	if (route) return routeRivers(W, H, rng, share, route);
 	const cells = new Set();
 	const target = Math.round(W * H * share);
 	if (target < 4) return cells;
@@ -75,4 +159,4 @@ function buildRiverNetwork(W, H, rng, share = 0.018) {
 	return cells;
 }
 
-module.exports = { buildRiverNetwork, traceRiver };
+module.exports = { buildRiverNetwork, traceRiver, routeRivers };

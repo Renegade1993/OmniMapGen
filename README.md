@@ -63,8 +63,26 @@ bundled Node.
 
     node --test "test/*.test.js"
 
-The suite generates against a VCMI source tree with the MapGen tab, `..\VCMI\source` by default
-(set `VMAPGEN_TEST_ROOT` to point elsewhere).
+The suite generates against DMB's test install of VCMI (`VCMI\dmbtest` in the project's layout: the MapGen tab,
+the engine's own templates, DMB's Golem Foundry). Beside the main checkout it is found as `..\VCMI\dmbtest`. From a
+git archive, a worktree or any other folder name it with `VMAPGEN_TEST_ROOT`, or the suite stops at the first test
+file and says so:
+
+    export VMAPGEN_TEST_ROOT="<project>/VCMI/dmbtest"
+    node --test "test/*.test.js"
+
+`VMAPGEN_TEST_USER_DIR` names a user folder with mods; by default none is read, so the suite gives the same maps on any
+machine. Run no generation while the suite runs: its timeouts are tight (a 144x144 test took 90 s under load).
+
+### Playtest checks (the grid)
+
+    node tools/harness/playtest_checks.js <map.vmap or folder> [--only name,name]
+    node tools/harness/k_cases.js [--seeds 3] [--nomods]
+
+playtest_checks.js measures a map for what K found in play on October 6th (towns per start, road on every town front tile, dwelling
+reach, guard clusters, dragon dwellings in the middle of a one-level water map, straight water slots, bare areas of a biome); its limits
+come from the engine maps. k_cases.js regenerates K's four playtest maps from their recorded options with this checkout (his own seed gives his
+map again) and prints the checks for his map and for the new ones. A fix has landed when the checks his words name pass on every seed.
 
 ## Layout
 
@@ -79,6 +97,21 @@ The suite generates against a VCMI source tree with the MapGen tab, `..\VCMI\sou
 | `src/preview` | a PNG preview of a map, and a `.vmap` reader |
 | `mod` | the mod as it installs, less the generator's code and Node: `mod.json`, the tab's pages and texts (`Content/config`, written by `tools/gen_vcmi_ui.js`), three templates of its own, `generator/generate.cmd` |
 | `tools` | packages the mod (`make_mod.js`); builds the tab's configs from the generator's settings; a settings fuzzer; an extractor for the game's own object templates |
+
+## Release names
+
+Each release is named after a land of Heroes III, the lighter ones of the good factions first and the darker ones for the later, elite versions:
+
+1. Erathia (0.3.0 beta 1, the first beta)
+2. Steadwick
+3. AvLee
+4. Vori
+5. Bracada
+6. The Contested Lands
+7. Krewlod
+8. Tatalia
+9. Nighon
+10. Eeofol
 
 ## License
 

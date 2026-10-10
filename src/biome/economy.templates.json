@@ -10,7 +10,7 @@
    "sb": "AVMsawl0",
    "lv": "AVMsawl0",
    "ws": "AVMsawl0",
-   "sw": "AVMsawl0"
+   "sw": "AVMsaws0"
   },
   "orePit": {
    "gr": "AVMore0",
@@ -448,6 +448,18 @@
    ]
   },
   "AVMsawl0": {
+   "mask": [
+    "VVVVV",
+    "VVVBB",
+    "VBBAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVMsaws0": {
    "mask": [
     "VVVVV",
     "VVVBB",

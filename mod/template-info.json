@@ -1,0 +1,131 @@
+{
+	"_about": "What the template picker's details panel shows for each approved template (K, 2026-10-05: original size, player counts, underground on or off, and what makes the template unique). Keyed by the template's name, as in approved-templates.json. Facts come from the template's own file (src/rmg/templates); the description is written from its structure. Outside generator/, so editing it needs no re-pinning. Fields: originalSizeMin and originalSizeMax (tiles, one side), originalLevels (1 or 2; 2 means the original is a two-level template), playersMin and playersMax, humansMax, underground (a sentence), zones (total) and zonesByKind, description (plain text, paragraphs split by a blank line). original (an object): only the original game's own facts for the template, each confirmed by the online check of TEMPLATE-MATCHING-PLAYBOOK.md section 9 step 10, with its sources: players, humans, humanStartZones, computerStartZones, sizeMin and sizeMax (tiles, one side), sizeNames, levels, zones, zonesByKind, checked (date), source (a list of {what, url}), notChecked. The launcher's Original game specs box reads this block and nothing else; what OmniMapGen allows beyond it stays in the flat fields and the description. originalPreferences: the values the \"original template preferences\" switch sets (levers, templateChoices, ranges, modContent, leversWithNoEffectOnTemplates).",
+	"templates": {
+		"Coldshadow's Fantasy": {
+			"originalSizeMin": 144,
+			"originalSizeMax": 252,
+			"originalSizeNames": "Extra Large to Giant",
+			"originalLevels": 2,
+			"underground": "Two levels in the original; also plays on one level, with the underground zones gathered in the middle of the surface",
+			"playersMin": 2,
+			"playersMax": 8,
+			"humansMax": 2,
+			"zones": 21,
+			"zonesByKind": {
+				"start": 8,
+				"treasure": 9,
+				"junction": 4
+			},
+			"description": "An eight-player funnel. Every player starts in a large zone with a castle of their own and a short, guarded road to a treasure zone that has a neutral castle. Two such treasure zones meet at a junction, the junctions pair up, and all four open into one rich centre zone.\n\nThe four junction zones are the template's signature. Each lies underground (on a one-level map they gather in the middle of the surface) and holds a neutral dragon dwelling, the Crystal, Azure, Faerie and Rust dragons, behind strong guards. The centre zone has the richest treasure on the map, and every door into it is guarded for 60,000.\n\nThe original has two start zones for human players and six for computer players only, so it takes at most two human players, and one is allowed too. Each human start leaves by a road guarded three times as hard as a computer start does. OmniMapGen lets any number of players be human here, and a map with more players than the template has starts adds extra start zones of its own.",
+			"original": {
+				"players": "2 to 8",
+				"humans": "At most 2: made for 1 human against up to 7 computer players, or 2 humans against up to 6",
+				"humanStartZones": 2,
+				"computerStartZones": 6,
+				"sizeMin": 144,
+				"sizeMax": 252,
+				"sizeNames": "Extra Large (with underground) to Giant (with underground)",
+				"levels": 2,
+				"zones": 21,
+				"zonesByKind": {
+					"start": 8,
+					"treasure": 9,
+					"junction": 4
+				},
+				"checked": "2026-10-07",
+				"source": [
+					{
+						"what": "the template file as VCMI ships it: players 2-8, humans 2, minSize xl+u, maxSize g+u, zone types and link guards",
+						"file": "src/rmg/templates/coldshadowsFantasy.json (VCMI Content/config/rmg)"
+					},
+					{
+						"what": "VCMI template format: players, humans, playerStart, cpuStart, size codes",
+						"url": "https://github.com/vcmi/vcmi/blob/develop/docs/modders/Random_Map_Template.md"
+					},
+					{
+						"what": "the template's author, angelito, on the human and computer players it was made for (search summary, thread not opened)",
+						"url": "http://heroescommunity.com/viewthread.php3?TID=31293"
+					},
+					{
+						"what": "the author on sizes and on more human players (search summary, thread not opened)",
+						"url": "http://heroescommunity.com/viewthread.php3?TID=47172"
+					}
+				],
+				"notChecked": "The Heroes Community threads could not be opened from the build machine (connection refused); the human count in words is their search summary. Full record: ! LLM Files/Research/2026-10-07-Coldshadows-Fantasy-original-online-check.md"
+			},
+			"originalPreferences": {
+				"about": "What 'Restrict all settings to original template preferences' sets for this template: every lever at its template value (the default, which is the template's own 1x), every setting that offers a Template choice locked to it, size, players and humans inside the original's ranges. Mod content stays the player's own choice. A lever listed in leversWithNoEffectOnTemplates is not measured to do anything on a template (LEVER-TABLE.md, after MapGen Dev's k23), so freezing it changes nothing that is known.",
+				"levers": {
+					"zoneCells": 400,
+					"zoneCap": 300,
+					"highLootRatio": 0.25,
+					"townRatio": 0.1,
+					"lowLootRatio": 0.25,
+					"borderSolidity": 1,
+					"biomeWobble": 0.6,
+					"interconnectivity": 0.6,
+					"interconnectPortal": 0.2,
+					"openPathNoRoad": 0.55,
+					"openPathRoad": 0.26,
+					"roadNetwork": 1,
+					"roadType": 2,
+					"artifactDensity": 0.006,
+					"artifactRichness": 0.5,
+					"pickupDensity": 1,
+					"resourceDensity": 1,
+					"mineDensity": 1,
+					"starterMines": 1,
+					"dwellingDensity": 1,
+					"bonusDensity": 1,
+					"monsterStrength": 0,
+					"stackScale": 1,
+					"guardDensity": 1,
+					"objectGuardShare": 0.75,
+					"guardTreasure": 1,
+					"guardMines": 1,
+					"guardDwellings": 1,
+					"guardBottlenecks": 1,
+					"chokeGuardRatio": 0.7,
+					"guardPortals": 2,
+					"lootGuardWeight": 1,
+					"mineGuardWeight": 1,
+					"subterraneanGateRatio": 1,
+					"subterraneanNarrow": 0.6,
+					"undergroundStarts": 4,
+					"subterraneanOpen": 0.57,
+					"decorDensity": 1,
+					"rivers": 1,
+					"riverAmount": 1,
+					"teams": 1,
+					"compOnly": 3,
+					"roadDirt": 1,
+					"roadGravel": 1,
+					"roadCobblestone": 1,
+					"waterContent": 0,
+					"waterCoverage": 0,
+					"waterShape": 8,
+					"waterAccess": 2,
+					"waterTreasure": 1,
+					"waterBuildings": 1
+				},
+				"templateChoices": {
+					"guardPortals": 2,
+					"undergroundStarts": 4,
+					"waterShape": 8
+				},
+				"ranges": {
+					"sizeMin": 144,
+					"sizeMax": 252,
+					"underground": "on",
+					"playersMin": 2,
+					"playersMax": 8,
+					"humansMax": 2
+				},
+				"modContent": "the player decides; the template names none",
+				"leversWithNoEffectOnTemplates": [
+					"interconnectivity"
+				]
+			}
+		}
+	}
+}

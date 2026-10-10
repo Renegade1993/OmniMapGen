@@ -46,7 +46,7 @@ test('the art a building has follows the ground: the lean-to is snow only, the w
 	assert.strictEqual(artFor('magicWell', 'magicWell', well, 'sn', rng), well, 'the frost well stays on snow');
 	for (const g of ['gr', 'dt', 'lv', 'sb'])
 		assert.notStrictEqual(artFor('magicWell', 'magicWell', well, g, rng).animation.toLowerCase(), 'avxwlsn0', `no frost well on ${g}`);
-	assert.strictEqual(artFor('magicWell', 'magicWell', well, 'zz', rng), well, 'a mod terrain keeps the art asked for');
+	assert.notStrictEqual(artFor('magicWell', 'magicWell', well, 'zz', rng).animation.toLowerCase(), 'avxwlsn0', 'a mod terrain gets no frost well either (K, 2026-10-04)');
 	assert.ok(violates('magicWell', 'magicWell', 'AVXwlsn0', 'gr'));
 	assert.ok(!violates('magicWell', 'magicWell', 'AVXwlsn0', 'sn'));
 });

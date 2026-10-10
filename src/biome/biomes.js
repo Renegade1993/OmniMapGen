@@ -86,8 +86,11 @@ const BIOME_DEFAULTS = {
 	// that make one look real. Measured with `vmap_thickness.js --corpus`.
 	subterraneanOpen: 0.57,
 	// which starts go below on a two-level map (template.js assignLevels): 0
-	// none, 1 the game's rule, 2 all of them
-	undergroundStarts: 1,
+	// none, 1 the game's rule, 2 all of them. 0 by default (K, 2026-10-03, on a huge two-level map:
+	// "4 players apparently spawned underground which should not be allowed by default on templates")
+	// 0 All Overworld, 1 Mixed, 2 All Underground, 3 Random, 4 Template preference (stockChoices.js resolveUndergroundStarts).
+	// 4 by default; the tab sends it like any default, so a Reset replaces whatever an earlier run stored (K, 2026-10-03)
+	undergroundStarts: 4,
 	mineDensity: 1.0,
 	resourceDensity: 1.0,
 	pickupDensity: 1.0,
@@ -148,7 +151,7 @@ const BIOME_DEFAULTS = {
 	guardMines: 1,
 	guardDwellings: 1,
 	guardBottlenecks: 1,
-	guardPortals: 0,
+	guardPortals: 2,
 	// The road network that links the towns: 1 on, 0 off. Roads cut through
 	// zone openings follow openPathRoad either way.
 	roadNetwork: 1,
@@ -336,12 +339,27 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 		: null;
 
 	const zone = new Int16Array(W * H).fill(-1);
+	// the same domain warp as partitionSeeded (the free layout's borders wandered no more than a template's did)
+	const warpK = process.env.VMAPGEN_ZONE_WARP !== undefined ? Number(process.env.VMAPGEN_ZONE_WARP) : (p.zoneWarp ?? 1.7);
+	let wx = null, wy = null;
+	if (warpK > 0) {
+		const spacing = Math.sqrt(land / Math.max(1, seeds.length));
+		const big = Math.max(6, Math.round(0.7 * spacing)), small = Math.max(3, Math.round(0.18 * spacing));
+		const s0 = (rng() * 1e9) | 0;
+		const n = [valueNoise(s0 + 11, big), valueNoise(s0 + 23, big), valueNoise(s0 + 37, small), valueNoise(s0 + 41, small)];
+		const A = warpK * 0.28 * spacing, a2 = warpK * 0.07 * spacing * Number(process.env.VMAPGEN_ZONE_WARP_FINE || p.zoneWarpFine || 1);
+		wx = new Float32Array(W * H); wy = new Float32Array(W * H);
+		for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+			wx[y * W + x] = x + A * (n[0](x, y) - 0.5) * 2 + a2 * (n[2](x, y) - 0.5) * 2;
+			wy[y * W + x] = y + A * (n[1](x, y) - 0.5) * 2 + a2 * (n[3](x, y) - 0.5) * 2;
+		}
+	}
 	// each seed's squared distance field, noise and all, once
 	const field = seeds.map((s, i) => {
 		const f = new Float32Array(W * H);
 		for (let y = 0; y < H; y++)
 			for (let x = 0; x < W; x++) {
-				const dx = x - s.x, dy = y - s.y;
+				const dx = (wx ? wx[y * W + x] : x) - s.x, dy = (wy ? wy[y * W + x] : y) - s.y;
 				let d = dx * dx + dy * dy; // squared euclid, rounder blobs than Chebyshev
 				if (noise) d *= 1 + amp * (noise[i].coarse(x, y) - 0.5)
 					+ (noise[i].fine
@@ -360,6 +378,11 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 			}
 			zone[c] = best;
 		}
+		// each zone in one piece before the areas are counted: run after the balancing, it moved whole pieces from
+		// start to start (72x72, 4 starts, seed 1: 649, 529, 649, 794 of 648 each, 2026-10-02). Not with water: there a
+		// zone's pieces on two islands are meant (each island has its own seed), and joining them across the water cut
+		// players off from their boats (islands.test.js, 108x108 seed 1 and 72x72 seed 7)
+		if (process.env.VMAPGEN_ZONE_WHOLE !== '0' && !water) zonesWhole(zone, W, H, seeds);
 	};
 	assign();
 	// Start zones grown to their area: a heavier seed wins ground farther
@@ -367,19 +390,24 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 	// area it is owed until every start holds it to within a tenth. Equal
 	// areas are the point: they are what keeps one player from starting in
 	// a closet beside another's field (K, 2026-09-27).
+	// The steps get gentler after the first few and the closest layout seen is kept: with each zone made whole inside
+	// the loop, a piece changing hands could swing the areas back and forth past the tenth (144x144, 8 starts, seed 3,
+	// 2026-10-02).
 	if (startCells > 0 && playerStarts.length) {
+		let best = Infinity, bestZone = null;
 		for (let round = 0; round < 30; round++) {
 			const area = new Array(seeds.length).fill(0);
 			for (let c = 0; c < W * H; c++) if (!(water && water[c])) area[zone[c]]++;
 			let off = 0;
-			for (let i = 0; i < playerStarts.length; i++) {
-				const r = startCells / Math.max(1, area[i]);
-				off = Math.max(off, Math.abs(1 - r));
-				weight[i] *= Math.max(0.5, Math.min(2.5, r ** 0.9));
-			}
+			for (let i = 0; i < playerStarts.length; i++) off = Math.max(off, Math.abs(1 - startCells / Math.max(1, area[i])));
+			if (off < best) { best = off; bestZone = zone.slice(); }
 			if (off < 0.1) break;
+			const step = round < 6 ? 0.9 : 0.45;
+			for (let i = 0; i < playerStarts.length; i++)
+				weight[i] *= Math.max(0.5, Math.min(2.5, (startCells / Math.max(1, area[i])) ** step));
 			assign();
 		}
+		if (bestZone) zone.set(bestZone);
 	}
 	return { zone, seeds, count: seeds.length };
 }
@@ -441,6 +469,55 @@ function nearestLand(W, H, water, x, y) {
  *
  * seeds: [{x,y,player}] in final order. Returns {zone, seeds, count}.
  */
+/**
+ * Each zone in one piece. A warped partition (zone warp, above) can leave a zone a main body and a few detached
+ * fragments; a doorway that lands on a fragment opens onto nothing (Coldshadow's Fantasy seed 4, 2026-10-02: zones 8
+ * and 16 cut off below, 535 objects dropped). Every fragment but the zone's largest joins the neighbouring zone it
+ * shares the most border with. The cells that hold a seed always stay with it. Mutates zone; returns cells moved.
+ */
+function zonesWhole(zone, W, H, seeds) {
+	const N = W * H, comp = new Int32Array(N).fill(-1), pieces = [];
+	for (let c = 0; c < N; c++) {
+		if (zone[c] < 0 || comp[c] >= 0) continue;
+		const z = zone[c], cells = [c], id = pieces.length;
+		comp[c] = id;
+		for (let k = 0; k < cells.length; k++) {
+			const x = cells[k] % W, y = (cells[k] / W) | 0;
+			for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+				const nx = x + dx, ny = y + dy;
+				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+				const m = ny * W + nx;
+				if (zone[m] === z && comp[m] < 0) { comp[m] = id; cells.push(m); }
+			}
+		}
+		pieces.push({ z, cells });
+	}
+	const keep = new Map();   // zone -> piece id to keep: the seed's, else the largest
+	pieces.forEach((pc, id) => { const k = keep.get(pc.z); if (k === undefined || pieces[k].cells.length < pc.cells.length) keep.set(pc.z, id); });
+	(seeds || []).forEach((s, i) => { const c = s.y * W + s.x; if (c >= 0 && c < N && zone[c] === i) keep.set(i, comp[c]); });
+	let moved = 0;
+	// small fragments first, so a fragment can join one that has already joined its neighbour
+	const order = pieces.map((_, id) => id).filter(id => keep.get(pieces[id].z) !== id).sort((a, b) => pieces[a].cells.length - pieces[b].cells.length);
+	for (const id of order) {
+		const pc = pieces[id], count = new Map();
+		for (const c of pc.cells) {
+			const x = c % W, y = (c / W) | 0;
+			for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+				const nx = x + dx, ny = y + dy;
+				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+				const n = zone[ny * W + nx];
+				if (n >= 0 && n !== pc.z) count.set(n, (count.get(n) || 0) + 1);
+			}
+		}
+		let best = -1, bn = 0;
+		for (const [n, k] of count) if (k > bn) { bn = k; best = n; }
+		if (best < 0) continue;
+		for (const c of pc.cells) zone[c] = best;
+		moved += pc.cells.length;
+	}
+	return moved;
+}
+
 function partitionSeeded(W, H, seeds, weights, rng, params) {
 	const p = { ...BIOME_DEFAULTS, ...params };
 	const amp = p.biomeWobble;
@@ -453,11 +530,31 @@ function partitionSeeded(W, H, seeds, weights, rng, params) {
 		}))
 		: null;
 	const zone = new Int16Array(W * H).fill(-1);
+	// Domain warp: each tile's position is pushed by a two-scale noise field before the distances are compared, so the
+	// borders wander and zones take uneven outlines. Without it every zone was a straight-sided polygon (K, 2026-10-01:
+	// "every single overworld biome is a fucking pentagon"; mapsight shape: zone ragged 1.00 against the engine's
+	// 1.07 to 1.17). VMAPGEN_ZONE_WARP=0 turns it off; the number scales its strength (default 1).
+	// The Border wobble slider scales it too (it read the same at 0, 0.6 and 1.5 on templates: the warp is most of what bends a
+	// border, and "0 gives straight lines"): 1x at the default 0.6, none at 0, up to 2x at 1.2 and over.
+	const wobbleK = Number.isFinite(p.biomeWobble) ? Math.min(2, Math.max(0, p.biomeWobble) / BIOME_DEFAULTS.biomeWobble) : 1;
+	const warpK = process.env.VMAPGEN_ZONE_WARP !== undefined ? Number(process.env.VMAPGEN_ZONE_WARP)
+		: (p.zoneWarp ?? 1) * wobbleK;
+	let warp = null;
+	if (warpK > 0) {
+		const spacing = Math.sqrt(W * H / Math.max(1, seeds.length));
+		const big = Math.max(6, Math.round(0.7 * spacing)), small = Math.max(3, Math.round(0.18 * spacing));
+		const s0 = (rng() * 1e9) | 0;
+		const n = [valueNoise(s0 + 11, big), valueNoise(s0 + 23, big), valueNoise(s0 + 37, small), valueNoise(s0 + 41, small)];
+		const A = warpK * 0.28 * spacing, a2 = warpK * 0.07 * spacing * Number(process.env.VMAPGEN_ZONE_WARP_FINE || p.zoneWarpFine || 1);
+		warp = (x, y) => [x + A * (n[0](x, y) - 0.5) * 2 + a2 * (n[2](x, y) - 0.5) * 2,
+			y + A * (n[1](x, y) - 0.5) * 2 + a2 * (n[3](x, y) - 0.5) * 2];
+	}
 	for (let y = 0; y < H; y++)
 		for (let x = 0; x < W; x++) {
 			let best = -1, bd = Infinity;
+			const [wx, wy] = warp ? warp(x, y) : [x, y];
 			for (let i = 0; i < seeds.length; i++) {
-				const dx = x - seeds[i].x, dy = y - seeds[i].y;
+				const dx = wx - seeds[i].x, dy = wy - seeds[i].y;
 				let d = dx * dx + dy * dy;
 				if (noise) d *= 1 + amp * (noise[i].coarse(x, y) - 0.5)
 					+ (noise[i].fine
@@ -467,6 +564,7 @@ function partitionSeeded(W, H, seeds, weights, rng, params) {
 			}
 			zone[y * W + x] = best;
 		}
+	if (process.env.VMAPGEN_ZONE_WHOLE !== '0') zonesWhole(zone, W, H, seeds);
 	return { zone, seeds, count: seeds.length };
 }
 
@@ -589,6 +687,11 @@ function layoutZoneSeeds(zoneSpecs, conns, W, H, playerStarts, rng, opts = {}) {
 		const pinned = (z.type === 'playerStart' || z.type === 'cpuStart')
 			&& z.owner && startOfOwner(playerStarts, z.owner);
 		if (pinned) return { x: startOfOwner(playerStarts, z.owner).x, y: startOfOwner(playerStarts, z.owner).y, pin: true };
+		// an anchor with pin: true holds its zone's seed at that point, as a start's is held (MapGen Dev's centralized
+		// dragon island, 2026-10-03: springs alone let the cluster drift apart); the zone's area share still comes from
+		// the balancing and evenZoneAreas (plan.js)
+		const a = opts.anchors && opts.anchors[i];
+		if (a && a.pin) return { x: Math.min(W - 4, Math.max(3, a.x)), y: Math.min(H - 4, Math.max(3, a.y)), pin: true, held: true };
 		return { x: 6 + rng() * (W - 12), y: 6 + rng() * (H - 12), pin: false };
 	});
 
@@ -657,7 +760,8 @@ function layoutZoneSeeds(zoneSpecs, conns, W, H, playerStarts, rng, opts = {}) {
 			}
 	}
 
-	// opts.anchors: a point per zone or null, where the zones it links to on a
+	// opts.anchors: a point per zone or null ({x, y, k} pulls the zone with strength k; {x, y, pin: true} holds it there,
+	// above), where the zones it links to on a
 	// level already laid out sit (plan.js crossLevelAnchors). The engine places
 	// both levels as one drawing, where a link between levels pulls its zones
 	// together against everything else pushing them about; such a zone starts
@@ -746,7 +850,7 @@ function layoutZoneSeeds(zoneSpecs, conns, W, H, playerStarts, rng, opts = {}) {
 	const inset = opts.startInset !== undefined ? opts.startInset : 0.5;
 	return zoneSpecs.map((z, i) => {
 		let x = pos[i].x, y = pos[i].y;
-		if (pos[i].pin && inset > 0) {
+		if (pos[i].pin && !pos[i].held && inset > 0) {
 			const dx = W / 2 - x, dy = H / 2 - y, d = Math.hypot(dx, dy);
 			const step = Math.min(inset * radius[i], d / 2);
 			if (d > 0) { x += dx / d * step; y += dy / d * step; }
@@ -952,7 +1056,7 @@ function assignConnections(edges, params, rng, zoneCount) {
  *
  * Mutates `connections` and returns how many borders it had to open.
  */
-function ensureConnected(edges, connections, seedCount, params, rng) {
+function ensureConnected(edges, connections, seedCount, params, rng, joined = []) {
 	const p = { ...BIOME_DEFAULTS, ...params };
 	const parent = Array.from({ length: seedCount }, (_, i) => i);
 	const find = a => { while (parent[a] !== a) { parent[a] = parent[parent[a]]; a = parent[a]; } return a; };
@@ -961,6 +1065,8 @@ function ensureConnected(edges, connections, seedCount, params, rng) {
 
 	for (const e of edges)
 		if (connections.get(key(e)) !== 'blocked') union(e.a, e.b);
+	// pairs already joined some other way: a monolith pair, or both reaching the other level (plan.js)
+	for (const [a, b] of joined) if (a >= 0 && b >= 0 && a < seedCount && b < seedCount) union(a, b);
 
 	// biome 0 is a player start (partitionBiomes seeds those first), so its
 	// component is the one the game is played in

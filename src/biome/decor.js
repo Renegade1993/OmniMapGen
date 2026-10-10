@@ -358,13 +358,26 @@ const registered = new Set();
  */
 function registerTerrainDecor(terrain, { clusters = [], single = [], packs = [] } = {}) {
 	if (CORE_TERRAINS.includes(terrain)) return false;
+	for (const e of [...clusters, ...single]) if (e && e.animation) TERRAIN_DECOR_ANIMS.add(String(e.animation).toLowerCase());
 	DATA.clusters[terrain] = clusters;
 	DATA.single[terrain] = single;
 	if (!PACKS[terrain] || registered.has(terrain)) PACKS[terrain] = packs;
 	registered.add(terrain);
 	return true;
 }
+// The art a mod terrain's scenery is drawn from (registerTerrainDecor): the retile treats it as scenery and, on a terrain
+// with no obstacle sets of its own, draws from it the way the engine draws from every obstacle of a terrain when a zone
+// gets too few sets (retile.js zoneTemplates). Before, a giant map's dunes, wasteland and deadland zones kept the fill's
+// first picks: 325 of one rock-and-bush piece, 21 within 6 tiles of one another (K, 2026-10-03).
+const TERRAIN_DECOR_ANIMS = new Set();
+function isTerrainDecorAnimation(animation) { return !!animation && TERRAIN_DECOR_ANIMS.has(String(animation).toLowerCase()); }
+function terrainDecorTemplates(terrain) {
+	if (!registered.has(terrain)) return [];
+	return [...(DATA.clusters[terrain] || []), ...(DATA.single[terrain] || [])].filter(e => e && e.animation && Array.isArray(e.mask))
+		.map(e => ({ type: e.type, ...(e.subtype ? { subtype: e.subtype } : {}), animation: e.animation, mask: e.mask }));
+}
 function clearTerrainDecor() {
+	TERRAIN_DECOR_ANIMS.clear();
 	for (const t of registered) {
 		delete DATA.clusters[t];
 		delete DATA.single[t];
@@ -379,7 +392,7 @@ module.exports = {
 	clusterTemplate, singleTemplate, dominoTemplate, trominoTemplate,
 	mergedTemplate,
 	wallClusters, clusterSize, packFor,
-	registerTerrainDecor, clearTerrainDecor,
+	registerTerrainDecor, clearTerrainDecor, isTerrainDecorAnimation, terrainDecorTemplates,
 	DECOR_BLOCKED_SHARE_UNDERGROUND,
 	DECOR_BLOCKED_SHARE, DECOR_TYPES,
 	TERRAINS: CORE_TERRAINS,

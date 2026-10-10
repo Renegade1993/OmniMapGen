@@ -1,0 +1,102 @@
+{
+ "dt": {
+  "name": "core:dirt",
+  "moveCost": 100
+ },
+ "sa": {
+  "name": "core:sand",
+  "moveCost": 150
+ },
+ "gr": {
+  "name": "core:grass",
+  "moveCost": 100
+ },
+ "sn": {
+  "name": "core:snow",
+  "moveCost": 150
+ },
+ "sw": {
+  "name": "core:swamp",
+  "moveCost": 175
+ },
+ "rg": {
+  "name": "core:rough",
+  "moveCost": 125
+ },
+ "sb": {
+  "name": "core:subterra",
+  "moveCost": 100
+ },
+ "lv": {
+  "name": "core:lava",
+  "moveCost": 100
+ },
+ "wt": {
+  "name": "core:water",
+  "moveCost": 100
+ },
+ "rc": {
+  "name": "core:rock",
+  "moveCost": -1
+ },
+ "as": {
+  "name": "asphalt-terrain:asphalt",
+  "moveCost": 75
+ },
+ "hl": {
+  "name": "hota.highlandsterrain:highlands",
+  "moveCost": 100
+ },
+ "ws": {
+  "name": "hota.wastelandterrain:wasteland",
+  "moveCost": 125
+ },
+ "dn": {
+  "name": "new-pavilion.dunes-terrain:dunes",
+  "moveCost": 75
+ },
+ "dl": {
+  "name": "newtown-terrains.deadlandterrain:deadland",
+  "moveCost": 100
+ },
+ "fg": {
+  "name": "newtown-terrains.fieldgloryterrain:fieldGlory",
+  "moveCost": 100
+ },
+ "fe": {
+  "name": "newtown-terrains.fierylandterrain:fieryLand",
+  "moveCost": 100
+ },
+ "ht": {
+  "name": "newtown-terrains.heatherthicket:heatherThicket",
+  "moveCost": 100
+ },
+ "ic": {
+  "name": "newtown-terrains.icelandterrain:icelands",
+  "moveCost": 150
+ },
+ "ma": {
+  "name": "newtown-terrains.meadlandterrain:meadLand",
+  "moveCost": 100
+ },
+ "pl": {
+  "name": "newtown-terrains.plateaulandterrain:plateau",
+  "moveCost": 125
+ },
+ "sh": {
+  "name": "newtown-terrains.shallowsterrain:shallows",
+  "moveCost": 175
+ },
+ "jf": {
+  "name": "newtown-terrains.spoiledland:spoiledLand",
+  "moveCost": 90
+ },
+ "sd": {
+  "name": "newtown-terrains.stardustterrain:stardust",
+  "moveCost": 100
+ },
+ "te": {
+  "name": "newtown-terrains.terraceland:terrace",
+  "moveCost": 100
+ }
+}

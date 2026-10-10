@@ -48,6 +48,13 @@ const BUILDING_RATES = [
 	['buoy', 0.6], ['mermaids', 0.4], ['sirens', 0.3], ['whirlpool', 0.3],
 ];
 const SCENERY_RATE = { kelp: 5, blocking: 4 };
+// The mods' own water objects (K, 2026-10-04: "definitely still missing modded water buildings"): HotA's sea barrel, jetsam, vial and
+// altar of mana, observatory, seafaring academy and sea shrine are made for the water and name no other ground. generate.js lists the
+// ones the install brings (setModWater, only when the map declares mods); they go down with the buildings, sharing MOD_RATE a 1000
+// cells of sailable water by their rmg rarity, scaled by waterBuildings.
+const MOD_RATE = 1.2;
+let MOD_WATER = [];
+function setModWater(list) { MOD_WATER = Array.isArray(list) ? list : []; }
 const MIN_BODY = 25;
 
 function waterBodies(water, W, H) {
@@ -439,6 +446,11 @@ function fillWater(ctx) {
 			if (kind === 'whirlpool') k += k % 2;
 			for (let i = 0; i < k; i++) wanted.push(kind);
 		}
+		if (MOD_WATER.length && process.env.VMAPGEN_MOD_WATER !== '0') {
+			const n = area * MOD_RATE * bmult;
+			const k = Math.floor(n) + (rng() < n - Math.floor(n) ? 1 : 0);
+			for (let i = 0; i < k; i++) wanted.push('modWater');
+		}
 		const kelp = Math.round(area * SCENERY_RATE.kelp), rocks = Math.round(area * SCENERY_RATE.blocking);
 		for (let i = 0; i < kelp; i++) wanted.push('kelp');
 		for (let i = 0; i < rocks; i++) wanted.push('blocking');
@@ -446,9 +458,14 @@ function fillWater(ctx) {
 		const sceneryOf = kind => templatesOf('waterScenery').filter(t =>
 			kind === 'kelp' ? t.id === 125 : t.id !== 125);
 		for (const kind of wanted) {
-			const pool = kind === 'kelp' || kind === 'blocking' ? sceneryOf(kind) : templatesOf(kind);
+			let modPick = null;
+			if (kind === 'modWater') {
+				let r = rng() * MOD_WATER.reduce((a, m) => a + m.weight, 0);
+				modPick = MOD_WATER.find(m => (r -= m.weight) < 0) || MOD_WATER[0];
+			}
+			const pool = modPick ? [modPick] : kind === 'kelp' || kind === 'blocking' ? sceneryOf(kind) : templatesOf(kind);
 			if (!pool.length) continue;
-			const entry = pool[(rng() * pool.length) | 0];
+			const entry = modPick ? { template: modPick.tpl } : pool[(rng() * pool.length) | 0];
 			const tpl = entry.template;
 			for (let tries = 0; tries < cells.length; tries++) {
 				const c = cells[(cursor + tries) % cells.length];
@@ -489,8 +506,9 @@ function fillWater(ctx) {
 						}
 					if (!ok) continue;
 				}
-				const [type, subtype] = identity(entry);
+				const [type, subtype] = modPick ? [modPick.type, modPick.subtype] : identity(entry);
 				objects.push(objectEntry(type, x, y, l, tpl, subtype));
+				if (modPick) objects[objects.length - 1].mod = modPick.mod;
 				if (type === 'whirlpool') whirlpools.push(objects[objects.length - 1]);
 				footprintBlock(tpl, x, y, 0, W, H, wb);
 				if (walls.length) guard.refresh();
@@ -549,4 +567,4 @@ function sailLinksFor(harbours, water, W, H) {
 	return harbours.map(h => [h.boarding, shoreOf.get(h.body) || [], true, h.kind]);
 }
 
-module.exports = { placeHarbours, fillWater, waterBodies, sailLinksFor, MIN_BODY };
+module.exports = { placeHarbours, fillWater, waterBodies, sailLinksFor, setModWater, MIN_BODY };

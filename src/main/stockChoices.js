@@ -91,12 +91,27 @@ function playerCounts({ players, humans, compOnly, templatePlayers }, roll) {
  * made a dry map while the page read Normal (DMB Dev, 2026-09-27).
  */
 function applyWaterContent(biomes, roll, { islandsShape, defaultCoverage }) {
+	// Water layout's two extra values (K, 2026-10-05, "a option for random, and a option for template"): 7 Random picks one of the five
+	// land layouts (Lakes, Coastal, Continental, Mediterranean, Highland) from the map's seed, 8 Template (the picker's default) is what
+	// the template does with its water, which is Lakes' engine-style water, and the free layout's default too. Islands is one state with
+	// content Islands: either one sets the other, so the stored layout and content agree.
+	if (biomes.waterShape !== undefined) {
+		const v = Math.round(Number(biomes.waterShape));
+		if (v === 7) { biomes.waterShape = roll.pick([0, 1, 2, 3, 4]); roll.rolled.push(`water layout ${['lakes', 'coastal', 'continental', 'mediterranean', 'highland'][biomes.waterShape]}`); }
+		else if (v === 8) biomes.waterShape = 0;
+		if (Math.round(Number(biomes.waterShape)) === islandsShape && biomes.waterContent !== undefined && Math.round(biomes.waterContent) === 1) biomes.waterContent = 2;
+		// a land layout chosen on purpose (Coastal, Continental, Mediterranean, Highland) puts content Islands back to Normal (K, 2026-10-05:
+		// "setting the water layout to anything but islands should take water content back to normal"); Lakes (0, the old default) and
+		// Template do not count as a choice
+		if (v >= 1 && v <= 4 && biomes.waterContent !== undefined && Math.round(biomes.waterContent) === 2) biomes.waterContent = 1;
+	}
 	if (biomes.waterContent === undefined) return;
 	let w = Math.round(biomes.waterContent);
 	if (w < 0) {
 		w = roll.pick([0, 1, 2]);
 		roll.rolled.push(`water ${['none', 'normal', 'islands'][w]}`);
 	}
+	biomes.waterContentMode = w;  // what the buttons said (0 None, 1 Normal, 2 Islands): template maps make their water the engine's way from it
 	if (w === 0) { biomes.waterCoverage = 0; return; }
 	if (w === 2) biomes.waterShape = islandsShape;
 	if (!(biomes.waterCoverage > 0)) biomes.waterCoverage = defaultCoverage;
@@ -139,5 +154,57 @@ function randomTemplate(names, fits, roll) {
 	return name;
 }
 
-module.exports = { roller, rangeTakes, playerCounts, applyWaterContent, applyMonsterStrength, roadFromToggles,
+/**
+ * The underground-starts control (K, 2026-10-03: "all overworld, all underground, mixed, and random", then "maybe 5: with the
+ * addition being Template preference"): 0 All Overworld, 1 Mixed (the game's split: a start whose picked town is native
+ * to the surface stays up, Dungeon goes down, a random town lands on either level), 2 All Underground, 3 Random (each seed
+ * picks one of those three), 4 Template preference (the template's own start-level rule: a start zone it forces to a
+ * level keeps it, otherwise All Overworld; with no template, the open template's preference, which is Random). The
+ * default is 4. A value this build does not know (the retired Automatic, -1) reads as All Overworld. A map with one level
+ * has no underground, so every start is on the surface whatever is chosen.
+ * Returns {mode: 0|1|2 as assignLevels takes it, label, note: a log line when the choice could not be kept, or null}.
+ */
+function resolveUndergroundStarts(value, { seed = 1, hasTemplate = false, templateForcesStarts = false, levels = 2 } = {}) {
+	const NAMES = ['All Overworld', 'Mixed', 'All Underground'];
+	let v = Number(value);
+	if (value === undefined || value === null || value === '' || !Number.isFinite(v)) v = 4;
+	v = Math.round(v);
+	if (v < 0 || v > 4) v = 0;
+	let how = '';
+	if (v === 4) {
+		how = 'template preference';
+		if (hasTemplate) { v = templateForcesStarts ? 1 : 0; how += templateForcesStarts ? ' (the template forces some starts to a level)' : ' (the template has no start-level rule)'; }
+		else { v = 3; how += ' (open template: random)'; }
+	}
+	if (v === 3) {
+		v = (Math.imul((seed || 1) >>> 0, 2654435761) >>> 13) % 3;
+		how = how || 'random';
+	}
+	if (levels < 2) {
+		const kept = v === 0;
+		return { mode: 0, label: NAMES[0], note: kept ? null : `underground starts: the map has one level, so every start is on the surface (${NAMES[v]} was chosen)` };
+	}
+	return { mode: v, label: NAMES[v], note: how ? `underground starts: ${NAMES[v]}, from ${how}` : null };
+}
+
+/**
+ * The map-size row's Random (K, 2026-10-04: "we need a random map size button"): --w random (or -1, the value the tab stores) picks
+ * one of the sizes the row offers, S 36 to G 252 cells a side, square, from the seed and reports it. The row's sizes below what
+ * the players need are left out (a baseline for K to correct: up to 2 players 36, up to 4 players 72, up to 6 players 108, more 144);
+ * the template accommodates whatever is picked, as for any size. VMAPGEN_RANDOM_SIZES=36,72,... changes the offered list.
+ */
+const SIZE_ROW = [36, 72, 108, 144, 180, 216, 252];
+function isRandomSize(v) {
+	return v !== undefined && /^(random|-1|0)$/i.test(String(v).trim());
+}
+function randomSize(players, roll) {
+	const row = process.env.VMAPGEN_RANDOM_SIZES ? process.env.VMAPGEN_RANDOM_SIZES.split(',').map(Number).filter(n => n > 0) : SIZE_ROW;
+	const floor = players <= 2 ? 36 : players <= 4 ? 72 : players <= 6 ? 108 : 144;
+	const ok = row.filter(n => n >= floor);
+	const size = roll.pick(ok.length ? ok : row);
+	roll.rolled.push(`size ${size}x${size} (of ${ok.length || row.length} that take ${players} players)`);
+	return size;
+}
+
+module.exports = { isRandomSize, randomSize, resolveUndergroundStarts, roller, rangeTakes, playerCounts, applyWaterContent, applyMonsterStrength, roadFromToggles,
 	isRandomTemplate, randomTemplate, ROAD_CODES, RANDOM, RANDOM_STRENGTH };
