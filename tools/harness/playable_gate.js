@@ -3,15 +3,17 @@
  * playable_gate.js - the minimally playable gate over the configurations the options allow (K 2026-10-11 16:10: "they all lead to minimally playable outcomes at the
  * very least for all potential configurations").
  *
- *   node tools/harness/playable_gate.js --tip DIR --out DIR [--extremes 1] [--random N] [--seed 1] [--lanes 3] [--deadline-min 60] [--eval] [--cases FILE]
+ *   node tools/harness/playable_gate.js --tip DIR --out DIR [--extremes 1] [--random N] [--seed 1] [--lanes 3] [--deadline-min 60] [--water 1] [--eval] [--cases FILE]
  *
  * A configuration passes when the map is written and loads, and
  *   - mapsight's hard checks pass (lib/check.js: road ends, a start shut at its gate, sealed objects, empty zones, split zones, own town behind a guard, teleport off road),
  *   - every start town has a road (grid_extra start-road) and every town has one on its front tile (playtest_checks town-road),
- *   - no start is boxed in: walking from the start town over open ground without entering a stack's 3x3 ring reaches at least 8 tiles on a map up to 48 wide, 50 up to 72, 200 above (the engine's own minimums: 0, 57, 210),
+ *   - no start is boxed in: walking from the start town over open ground without entering a stack's 3x3 ring reaches at least 8 tiles on a map up to 48 wide, 50 above (the engine's own minimums on dry maps: 0, 57, 210),
  *   - no land zone of 40 walkable tiles or more is out of reach for a hero without a boat (guards are fights, not walls; monoliths and gates are taken), except on a
  *     map with water, where a zone reached only across water is reported as "by water" and not failed,
  *   - the number of start towns equals the number of players asked.
+ * Per start, the tiles it walks to, the land zones it reaches and whether it can walk to a shipyard are listed in the notes; a start that misses a land zone and has no shipyard in reach
+ * fails the map (the Mediterranean cases of the lead, 10-11 17:00). --water 1 adds the AoE water layouts (1 to 6) at 108 and 144 with seeds 1 and 7001 and K's 180x180 seed.
  * Configurations: with --extremes every lever alone at its minimum and its maximum on three configurations (open layout 72x72 four players, Coldshadow 108x108 four
  * players, open layout with an underground), then --random N combinations (size 36 to 144, players 2 to 8, one or two levels, open layout or the template, three to six levers
  * at an extreme or a random value), all fixed by --seed. Failing configurations are written to OUT/cases.json under a name with their full options, so they rerun.
@@ -45,7 +47,7 @@ const TPL = "Coldshadow's Fantasy";
 
 // ---------------------------------------------------------------------------------------------------------------- configurations
 const cases = [];
-if (has('--extremes') || !RANDOM) {
+if (has('--extremes') || (!RANDOM && !has('--water'))) {
 	const bases = [{ id: 'free72', o: { w: 72, h: 72, players: 4, humans: 1 } }, { id: 'tpl108', o: { w: 108, h: 108, players: 4, humans: 1, template: TPL } }, { id: 'ug72', o: { w: 72, h: 72, players: 4, humans: 1, underground: 1 } }];
 	for (const b of bases) for (const k of KNOBS) {
 		if (b.id !== 'ug72' && k.page === 'underground') continue;
@@ -72,6 +74,15 @@ for (let i = 0; i < RANDOM; i++) {
 	}
 	if (o['bio.waterCoverage'] > 0 && o['bio.waterContent'] === undefined) o['bio.waterContent'] = 1;
 	cases.push({ name: `r${SEED}_${i}_${size}p${players}${ug ? 'u' : ''}${tpl ? 't' : 'f'}`, opt: o });
+}
+if (has('--water')) {
+	// the water layouts of the AoE library on 108 and 144, two seeds each, K's 180x180 and the cases the lead named (seed 7001), all four players
+	let base = {};
+	try { base = JSON.parse(fs.readFileSync(arg('--base', 'C:/AI Projects/Heroes 3/.tmp/opus-seeing/k1010/mapgen_180x180_p4_s669067840.vmap.zones.json'), 'utf8')).options; } catch (e) { base = {}; }
+	for (const k of Object.keys(base)) if (/^(w|h|seed|out|vcmiroot|vcmiuserdir|bio.water.*)$/.test(k)) delete base[k];
+	const SH = [[1, 'coastal', 0.35], [2, 'continental', 0.45], [3, 'mediterranean', 0.45], [4, 'highland', 0.35], [5, 'islands', 0.45], [6, 'archipelago', 0.45]];
+	for (const size of [108, 144]) for (const seed of [1, 7001]) for (const [id, nm, cov] of SH) cases.push({ name: `w_${nm}_${size}_s${seed}`, opt: { ...base, w: size, h: size, players: 4, humans: 4, seed: String(seed), 'bio.waterShape': id, 'bio.waterCoverage': cov, 'bio.waterContent': id >= 5 ? 2 : 1, factions: 'random,random,random,random' } });
+	cases.push({ name: 'w_mediterranean_180_k', opt: { ...base, w: 180, h: 180, players: 4, humans: 4, seed: '669067840', 'bio.waterShape': 3, 'bio.waterCoverage': 0.45, 'bio.waterContent': 1, factions: 'random,random,random,random' } });
 }
 if (arg('--cases')) { cases.length = 0; for (const c of JSON.parse(fs.readFileSync(arg('--cases'), 'utf8'))) cases.push(c); }
 
@@ -116,36 +127,38 @@ function evaluate(file, c) {
 		return seen;
 	};
 	// starts: boxed in by guards. The engine itself leaves starts with 0 to 8 such tiles on 36x36 (p10 8, median 149), at least 57 on 72x72 (p10 117) and at least 210 on 108 and 144
-	// (91 sample maps), so the limit follows the size: 8 up to 48, 50 up to 72, 200 above
-	const boxMin = M.W <= 48 ? 8 : M.W <= 72 ? 50 : 200;
+	// (91 sample maps), so the limit is 8 up to 48 wide and 50 above (water maps hold less land than the dry engine maps, and 100 to 200 tiles is not boxed in)
+	const boxMin = M.W <= 48 ? 8 : 50;
 	const startTowns = M.objs.filter(o => o.cls === 'town' && st.some(s => s.l === o.l && cheb(s.at, o.at) <= 1));
-	const reachAll = new Uint8Array(N), reachHard = [];
+	const perStart = [], reachHard = [];
 	for (const t of startTowns) {
 		const hard = flood(M.approach(t), openHard, false); let n = 0; for (let i = 0; i < N; i++) if (hard[i]) n++;
 		reachHard.push(n); if (n < boxMin) fails.push(`start (${t.at}) boxed in by guards: ${n} tiles walkable without a fight (limit ${boxMin} for a ${M.W}x${M.H} map)`);
-		const sf = flood(M.approach(t), openSoft, true); for (let i = 0; i < N; i++) if (sf[i]) reachAll[i] = 1;
+		perStart.push({ t, sf: flood(M.approach(t), openSoft, true) });
 	}
-	// land zones out of reach
+	// every start against every land zone (lead 10-11 17:00): a zone of 40 walkable tiles or more is reached when half of it is walkable from the start (guards are fights,
+	// monoliths and gates are taken, water is not crossed); a start that misses a zone must have a shipyard it can walk to, else the map fails for that start
+	const reachRows = [];
 	if (M.zones && M.zones.zoneOf && startTowns.length) {
-		const zl = new Map();
+		const byZone = new Map();
 		for (let l = 0; l < M.NL; l++) for (let y = 0; y < M.H; y++) for (let x = 0; x < M.W; x++) {
 			const z = M.zoneAt(l, x, y); if (z === undefined || z === null || z < 0) continue;
 			const i = M.idx(l, x, y); if (!openSoft(i)) continue;
-			const k = `${l}:${z}`, e = zl.get(k) || { n: 0, hit: 0 }; e.n++; if (reachAll[i]) e.hit++; zl.set(k, e);
+			const k = `${l}:${z}`; (byZone.get(k) || byZone.set(k, []).get(k)).push(i);
 		}
-		const out = [...zl].filter(([, e]) => e.n >= 40 && e.hit < 0.5 * e.n);
-		if (out.length) {
-			let byWater = [];
-			if (wet) { // open the water and walk again: a zone that then opens is reached by boat only
-				const all = new Uint8Array(N);
-				for (const t of startTowns) { const sf = flood(M.approach(t), i => (M.ground(i) || isWet(i)) && (!M.blocked[i] || soft[i]), true); for (let i = 0; i < N; i++) if (sf[i]) all[i] = 1; }
-				byWater = out.filter(([k]) => { const [l, z] = k.split(':').map(Number); let n = 0, h = 0; for (let y = 0; y < M.H; y++) for (let x = 0; x < M.W; x++) { if (M.zoneAt(l, x, y) !== z) continue; const i = M.idx(l, x, y); if (!openSoft(i)) continue; n++; if (all[i]) h++; } return h >= 0.5 * n; });
-			}
-			const hard = out.filter(e => !byWater.includes(e));
-			if (hard.length) fails.push(`${hard.length} zone(s) out of reach on foot: ${hard.slice(0, 4).map(([k, e]) => `${k} ${e.hit}/${e.n}`).join(', ')}`);
-			if (byWater.length) notes.push(`${byWater.length} zone(s) reached by water only`);
+		const zones = [...byZone].filter(([, a2]) => a2.length >= 40);
+		const ships = M.objs.filter(o => /shipyard/i.test(o.type));
+		for (const ps of perStart) {
+			const missing = []; let reached = 0, tiles = 0;
+			for (let i = 0; i < N; i++) if (ps.sf[i]) tiles++;
+			for (const [k, arr] of zones) { let h = 0; for (const i of arr) if (ps.sf[i]) h++; if (h >= 0.5 * arr.length) reached++; else missing.push(`${k} ${h}/${arr.length}`); }
+			const ship = ships.some(o => M.approach(o).some(i => ps.sf[i]));
+			reachRows.push({ start: ps.t.at, tiles, zones: zones.length, reached, shipyard: ship });
+			if (missing.length && !ship) fails.push(`start (${ps.t.at}) reaches ${reached} of ${zones.length} land zones on foot and has no shipyard in reach; not reached: ${missing.slice(0, 4).join(', ')}${missing.length > 4 ? ' ...' : ''}`);
+			else if (missing.length) notes.push(`start (${ps.t.at}) reaches ${reached} of ${zones.length} land zones on foot, the rest by boat from a shipyard it can walk to`);
 		}
 	}
+	notes.push(`reach per start (tiles, zones reached of all, shipyard): ${reachRows.map(r => `${r.tiles}, ${r.reached}/${r.zones}, ${r.shipyard ? 'yes' : 'no'}`).join(' | ')}`);
 	notes.push(`starts walk ${reachHard.join('/')} tiles, water ${(100 * wet / N).toFixed(0)}%`);
 	return { fails, notes };
 }

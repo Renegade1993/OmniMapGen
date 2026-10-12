@@ -47,3 +47,12 @@ tools/rmgdump/out/
 tools/rmgdump/build.log
 tools/rmgdump/vcmi-snapshot/
 __pycache__/
+
+# generated maps, pictures and binaries never belong in the repository (the lead and K, 2026-10-11: nothing personal or generated is uploaded);
+# a file already tracked stays tracked, these only stop a new one being added by git add -A
+*.vmap
+*.vmap.*
+*.png
+*.h3m
+*.zip
+*.exe
