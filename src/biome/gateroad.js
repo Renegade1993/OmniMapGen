@@ -21,6 +21,9 @@ const ONE_VISIT = /^(scholar|seaChest|flotsam)$/;
 // anchored: a mod building named "townGate" matched "town" and kept a road ending beside it (grid, 108x108 seed 1, 2026-10-09)
 const SERVED = /^(mine|abandonedMine|monolith|subterraneanGate)|^(town|randomTown)$/;
 const REACH = 60;       // the longest run laid for one end, in tiles
+// the step costs of an eight-way road run (roadnet.js route): a diagonal with a free side tile a little dearer than a straight step, one between two
+// blocked side tiles (drawn as two dead ends) dear enough that a straight way up to about 25 tiles longer wins
+const DIAG_COST = { elbow: 1.5, corner: 25 };
 
 function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockingCells, opts = {}) {
 	const types = opts.types || TYPES, reach = opts.reach || REACH, chance = opts.chance === undefined ? 1 : opts.chance, rng = opts.rng || Math.random;
@@ -30,7 +33,10 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 	const base = l * W * H;
 	const water = plan.p && plan.p.water, om = plan.openMask;
 	const guard = new Set();
-	for (const o of plan.objects) if ((o.l || 0) === l && /^(randomMonster|monster)/.test(o.type)) guard.add(o.y * W + o.x);
+	// opts.overGuards false: the run never crosses a guard (a mine's road, laid by chance, ran under the guard at a town's door: K's XL underground
+	// seed 1594927107, red's second town (30,95) and the sawmill (31,100))
+	if (opts.overGuards !== false)
+		for (const o of plan.objects) if ((o.l || 0) === l && /^(randomMonster|monster)/.test(o.type)) guard.add(o.y * W + o.x);
 	const floor = c => !(water && water[c]) && (!om || om[c]);
 	const free = c => floor(c) && (!(blocked[base + c] & OCCUPIED) || guard.has(c));
 	// a pickup vanishes when taken, so a road may lie under it; used only when no run over bare floor reaches a road (a pocket whose
@@ -56,6 +62,9 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 			if ((dx || dy) && vx0 + dx >= 0 && vy0 + dy >= 0 && vx0 + dx < W && vy0 + dy < H && R.has((vy0 + dy) * W + vx0 + dx)) { beside = true; break; }
 		if (beside) { R.add(v); out.onto++; continue; }
 		let prev, hit = -1;
+		// four ways first, eight only where no straight run reaches a road (an eight-way run drew staircases of corner-only steps, which the game
+		// shows as dead ends: a gold mine's road on K's 180x180 seed 669067840, (14,46), the Opus Reviewer's R27)
+		for (const dirs of [D8.slice(0, 4), D8]) {
 		for (const ok of [free, c => free(c) || under(c)]) {
 			prev = new Map([[v, -1]]);
 			const q = [v];
@@ -63,7 +72,7 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 				const c = q[h], x = c % W, y = (c / W) | 0;
 				let d = 0; for (let k = c; prev.get(k) !== -1; k = prev.get(k)) d++;
 				if (d >= reach) continue;
-				for (const [dx, dy] of D8) {
+				for (const [dx, dy] of dirs) {
 					const nx = x + dx, ny = y + dy;
 					if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
 					const m = ny * W + nx;
@@ -74,6 +83,8 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 				}
 			}
 			if (hit >= 0 || !pick.size) break;
+		}
+			if (hit >= 0) break;
 		}
 		if (hit < 0) { out.none++; continue; }
 		let n = 0;
@@ -214,8 +225,8 @@ const ROAD_MIN = 8;
 // how far off a roadless zone's town the goal of its road stands, so the road is ROAD_MIN long at least
 const GOAL_OFF = 8;
 /** The goal tiles of a town's road in a zone with no road: beside an object a hero visits GOAL_OFF tiles off at least, else the zone's shore */
-function roadlessGoals(plan, W, H, l, blocked, OCCUPIED, visitableCells, o, vis, z) {
-	const goal = new Set(), far = (x, y) => !vis.some(c => Math.max(Math.abs(c % W - x), Math.abs(((c / W) | 0) - y)) < GOAL_OFF);
+function roadlessGoals(plan, W, H, l, blocked, OCCUPIED, visitableCells, o, vis, z, off = GOAL_OFF) {
+	const goal = new Set(), far = (x, y) => !vis.some(c => Math.max(Math.abs(c % W - x), Math.abs(((c / W) | 0) - y)) < off);
 	for (const q of plan.objects) {
 		if (q === o || (q.l || 0) !== l || !q.template || !VISIT_GOAL.test(q.type)) continue;
 		const qv = visitableCells(q.template, q.x, q.y);
@@ -241,23 +252,39 @@ function roadlessGoals(plan, W, H, l, blocked, OCCUPIED, visitableCells, o, vis,
 // what a road may end at (mapsight's ROAD_DEST: towns, mines, monoliths and gates); a road ending at a bank, a dwelling, a mod building whose
 // name starts with "town" (townGate) or the shore fails its check as a road ending at an object or at nothing (grid, 108x108 seed 1, 2026-10-09)
 const VISIT_GOAL = /^(mine|abandonedMine|monolith|subterraneanGate)|^(town|randomTown)$/;
-function joinBareTowns(plan, W, H, l, blocked, OCCUPIED, visitableCells, ownedOnly = false, blockingCells = null) {
+/** The steps of a path between two tiles that touch only at a corner with both side tiles blocked in bl. */
+function cornerSteps(path, W, bl, base, OCCUPIED) {
+	let n = 0;
+	for (let i = 1; i < path.length; i++) {
+		const a = path[i - 1], b = path[i], ax = a % W, ay = (a / W) | 0, bx = b % W, by = (b / W) | 0;
+		if (ax !== bx && ay !== by && (bl[base + ay * W + bx] & OCCUPIED) && (bl[base + by * W + ax] & OCCUPIED)) n++;
+	}
+	return n;
+}
+
+function joinBareTowns(plan, W, H, l, blocked, OCCUPIED, visitableCells, ownedOnly = false, blockingCells = null, opts = {}) {
 	const out = { joined: 0, left: 0 };
 	// a pickup vanishes when taken and a hero fights through a monster, so a road may lie under either (gateroad's teleportRoads does the same): the way a town
 	// shut in by loot and its guards needs (K's XL map, 2026-10-06: a neutral town whose front tile had 2 pickups between it and a road 9 tiles off)
-	let soft = null;
+	let soft = null, softLoot = null;
 	const softBlocked = () => {
 		if (soft || !blockingCells) return soft;
 		soft = new Uint8Array(blocked);
+		softLoot = new Uint8Array(blocked);
 		for (const q of plan.objects) {
-			if ((q.l || 0) !== l || !q.template || !(PICKUP.test(q.type) || ONE_VISIT.test(q.type) || /^(monster|randomMonster)/.test(q.type))) continue;
-			for (const [fx, fy] of blockingCells(q.template, q.x, q.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) soft[l * W * H + fy * W + fx] &= ~OCCUPIED;
+			if ((q.l || 0) !== l || !q.template) continue;
+			const loot = PICKUP.test(q.type) || ONE_VISIT.test(q.type);
+			if (!loot && !/^(monster|randomMonster)/.test(q.type)) continue;
+			for (const [fx, fy] of blockingCells(q.template, q.x, q.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) {
+				soft[l * W * H + fy * W + fx] &= ~OCCUPIED;
+				if (loot) softLoot[l * W * H + fy * W + fx] &= ~OCCUPIED;
+			}
 		}
 		return soft;
 	};
 	const R = plan.roadCells;
 	if (!R || !R.size || !plan.zone) return out;
-	const { route, addElbows, DIRS4 } = require('./roadnet');
+	const { route, addElbows, DIRS4, DIRS8 } = require('./roadnet');
 	for (const o of plan.objects) {
 		if ((o.l || 0) !== l || !o.template || !/^(town|randomTown)$/.test(o.type)) continue;
 		// Build Road Network Off: only a player's town (an owner) joins the road of its zone, a neutral town stands as the passages leave it
@@ -287,28 +314,62 @@ function joinBareTowns(plan, W, H, l, blocked, OCCUPIED, visitableCells, ownedOn
 			}
 		}
 		if (stub.size >= ROAD_MIN) continue;
+		// a start's road is the net's: it runs up to 140 tiles to reach it before settling for the object a hero visits in its own roadless zone (a start whose
+		// zone has no road ended in a 6-tile stub to a mine, 108x108 eight players underground seed 3, MapGen Dev's start-road)
+		const maxJoin = o.options && o.options.owner ? 140 : 60;
 		const z = plan.zone[vis[0]];
 		const here = new Set([...R].filter(c => plan.zone[c] === z && !stub.has(c)));
 		// the visiting tile is itself marked occupied, so the way starts from the free tiles around it (the road then runs onto the
 		// entrance, as the engine's does); everything else the road may not cross is OCCUPIED
 		const open = c => !(blocked[l * W * H + c] & OCCUPIED);
 		const from = front.some(open) ? front.filter(open) : [...door].filter(open);
-		if (!from.length) { out.left++; continue; }
+		// the front tile and every tile round the door hold loot or a guard (K's XL map seed 1594927107, town (30,95): a pile on the front tile and piles and a monster
+		// round it): no free tile to start from, but the way may cross them (softBlocked), so the town is not left bare here
+		let softFrom = false;
+		if (!from.length && softBlocked() && process.env.VMAPGEN_TOWN_ROAD_SOFT !== '0') {
+			const sOpen0 = c => !(soft[l * W * H + c] & OCCUPIED);
+			softFrom = front.some(sOpen0) || [...door].some(sOpen0);
+		}
+		if (!from.length && !softFrom) { if (process.env.VMAPGEN_TOWNROAD_TRACE) console.error(`[jbt] (${o.x},${o.y}) zone ${z} left: no free tile round the door`); out.left++; continue; }
 		// first inside the zone; failing that, over free ground into the next zone (an unguarded opening), where a short way reaches a road
 		let path = here.size ? route(from, here, W, H, blocked, l, R, DIRS4, n => plan.zone[n] === z) : null;
 		const away = stub.size ? new Set([...R].filter(c => !stub.has(c))) : R;
 		if (!path || path.length > 120) path = route(from, away, W, H, blocked, l, R, DIRS4);
 		let bl = blocked;
-		if ((!path || path.length > 60) && softBlocked() && process.env.VMAPGEN_TOWN_ROAD_SOFT !== '0') {
-			bl = soft;
-			const openSoft = c => !(bl[l * W * H + c] & OCCUPIED);
-			const from2 = front.some(openSoft) ? front.filter(openSoft) : [...door].filter(openSoft);
-			path = from2.length && here.size ? route(from2, here, W, H, bl, l, R, DIRS4, n => plan.zone[n] === z) : null;
-			if (!path || path.length > 120) path = from2.length ? route(from2, away, W, H, bl, l, R, DIRS4) : null;
+		// over loot only first, then over loot and guards: a town road led through a guard although a way over two piles left the town (K's XL underground
+		// seed 1594927107, red's second town at (30,95))
+		// a pocket joined to the rest by diagonal steps between blocked tiles has no four-connected way out, but a hero walks it: the way over eight
+		// neighbours (a start with a 2-tile stub and a neutral town with no road, both in such pockets, MapGen Dev 19:58), over loot before guards (the
+		// four-way run over a guard won over the eight-way run over two piles at (30,95))
+		let refused = false;
+		if (!path || path.length > maxJoin) {
+			const softOk = softBlocked() && process.env.VMAPGEN_TOWN_ROAD_SOFT !== '0';
+			const tries = softOk ? [[softLoot, DIRS4], [softLoot, DIRS8], [soft, DIRS4], [soft, DIRS8]] : [[blocked, DIRS8]];
+			let last = null;
+			for (const [sb, dirs] of tries) {
+				const ok = c => !(sb[l * W * H + c] & OCCUPIED);
+				const f2 = front.some(ok) ? front.filter(ok) : [...door].filter(ok);
+				if (!f2.length) continue;
+				let p = dirs === DIRS4 && here.size ? route(f2, here, W, H, sb, l, R, DIRS4, n => plan.zone[n] === z) : null;
+				// eight ways: a corner-only step only where nothing else gets out (the Opus Reviewer's R27: staircases on K's road map seed 2090106454)
+				if (!p || p.length > 120) p = route(f2, away, W, H, sb, l, R, dirs, null, dirs === DIRS8 ? DIAG_COST : null);
+				// the costed run can be longer in tiles than the limit where the plain one is not (a neutral town on 180x180 seed 669067840 left bare)
+				if (dirs === DIRS8 && (!p || p.length > maxJoin)) { const q = route(f2, away, W, H, sb, l, R, dirs); if (q && (!p || q.length < p.length)) p = q; }
+				if (dirs === DIRS4 && p && (!last || p.length < last[0].length)) last = [p, sb];
+				// opts.noCorner (the first call): an eight-way path with a step between two blocked side tiles is refused, so the clearing pass opens a
+				// straight way first (plan.js clearWayToRoad, then the second call)
+				if (p && dirs === DIRS8 && opts.noCorner && cornerSteps(p, W, sb, l * W * H, OCCUPIED)) { out.cornerRefused = (out.cornerRefused || 0) + 1; refused = true; continue; }
+				if (p && p.length <= maxJoin) { path = p; bl = sb; if (dirs === DIRS8) out.diag = (out.diag || 0) + 1; last = null; break; }
+			}
+			// none short enough: the longest-reach fallbacks below get the four-way soft run as before
+			if (last && softOk) { path = last[0]; bl = last[1]; }
 		}
 		// a zone with no road of its own (an island zone alone on its island): the road runs from the door to the nearest object a hero visits
 		// in the zone, so the town has a road and it leads somewhere
-		if ((!path || path.length > (bl === blocked ? 60 : 120)) && !here.size) {
+		// a way to the net refused for its corner steps: the clearing and the second call come first, the road to an object in the zone after them (a
+		// start's 7-tile stub to an object on 108x108 eight players free seed 3, MapGen Dev 15:01)
+		if (refused && (!path || path.length > maxJoin)) { out.left++; continue; }
+		if ((!path || path.length > (bl === blocked ? maxJoin : maxJoin * 2)) && !here.size) {
 			const goal = new Set();
 			for (const q of plan.objects) {
 				if (q === o || (q.l || 0) !== l || !q.template || !VISIT_GOAL.test(q.type)) continue;
@@ -322,6 +383,13 @@ function joinBareTowns(plan, W, H, l, blocked, OCCUPIED, visitableCells, ownedOn
 						const c = y * W + x;
 						if (plan.zone[c] === z && !(blocked[l * W * H + c] & OCCUPIED)) goal.add(c);
 					}
+			}
+			// no mine, gate, monolith or other town in the zone (an island zone): the road on the town's own front tile and nothing more, so the town has
+			// its road and the road ends at the town (K's islands seed 2094259455, town (131,65), MapGen Dev 13:28; a road run on to another building ended
+			// at an object, which the engine's maps never do: f144p2u (19,7,L1), the Opus Reviewer's islands s455 (124,69))
+			if (!goal.size && process.env.VMAPGEN_TOWN_FRONT_ONLY !== '0') {
+				const fr = front.filter(c => !(blocked[l * W * H + c] & OCCUPIED));
+				if (fr.length) { for (const c of vis) R.add(c); for (const c of fr) R.add(c); out.joined++; out.frontOnly = (out.frontOnly || 0) + 1; continue; }
 			}
 			let p2 = goal.size ? route(from, goal, W, H, blocked, l, R, DIRS4, n => plan.zone[n] === z) : null;
 			// no object it can reach: the zone's shore, where a hero's boat lands (a neutral island town in a pocket with the coast, i108 seed 2)
@@ -340,10 +408,17 @@ function joinBareTowns(plan, W, H, l, blocked, OCCUPIED, visitableCells, ownedOn
 			// over loot and monsters too, as the zone-road join does (a way the clearing pass found with nothing to clear crossed them, i108 seed 2)
 			let blp = blocked;
 			if ((!p2 || p2.length > 60) && softBlocked()) { const sb = softBlocked(), sOpen = c => !(sb[l * W * H + c] & OCCUPIED), fs = front.some(sOpen) ? front.filter(sOpen) : [...door].filter(sOpen); const p4 = fs.length ? route(fs, goal, W, H, sb, l, R, DIRS4, n => plan.zone[n] === z) : null; if (p4 && p4.length <= 60) { p2 = p4; blp = sb; } }
+			// none of those reached: the nearer goals, 4 tiles off (a cave start whose zone's other objects stood far beyond rock)
+			if (!p2 || p2.length > 60) {
+				const g4 = roadlessGoals(plan, W, H, l, blocked, OCCUPIED, visitableCells, o, vis, z, 4);
+				let p5 = g4.size ? route(from, g4, W, H, blocked, l, R, DIRS4, n => plan.zone[n] === z) : null;
+				if ((!p5 || p5.length > 60) && g4.size && softBlocked()) { const sb = softBlocked(), sOpen = c => !(sb[l * W * H + c] & OCCUPIED), fs2 = front.some(sOpen) ? front.filter(sOpen) : [...door].filter(sOpen); p5 = fs2.length ? route(fs2, g4, W, H, sb, l, R, DIRS4, n => plan.zone[n] === z) : null; if (p5 && p5.length <= 60) blp = sb; }
+				if (p5 && p5.length <= 60) p2 = p5;
+			}
 			if (p2 && p2.length <= 60) { path = p2; bl = blp; out.toObject = (out.toObject || 0) + 1; (plan.roadEndsKept || (plan.roadEndsKept = new Set())).add(p2[p2.length - 1]); }
 			if (process.env.VMAPGEN_TOWNROAD_TRACE) console.error(`[townroad] (${o.x},${o.y}) zone ${z}: to an object, goal tiles ${goal.size}, path ${p2 ? p2.length + " ending " + (p2[p2.length - 1] % W) + "," + ((p2[p2.length - 1] / W) | 0) : "none"}`);
 		}
-		if (!path || path.length > (bl === blocked ? 60 : 120)) { out.left++; continue; }
+		if (!path || path.length > (bl === blocked ? maxJoin : maxJoin * 2)) { if (process.env.VMAPGEN_TOWNROAD_TRACE) { const sb = softBlocked() || blocked, seen = new Set(), q = [...(front.filter(c => !(sb[l * W * H + c] & OCCUPIED)))]; for (const c of q) seen.add(c); let touched = 0; for (let h = 0; h < q.length; h++) { const c = q[h], x = c % W, y = (c / W) | 0; if (R.has(c) && !stub.has(c)) touched++; for (const [dx, dy] of DIRS4) { const u = x + dx, v = y + dy; if (u < 0 || v < 0 || u >= W || v >= H) continue; const n = v * W + u; if (seen.has(n) || (sb[l * W * H + n] & OCCUPIED)) continue; seen.add(n); q.push(n); } } console.error(`[jbt] (${o.x},${o.y}) zone ${z} left: path ${path ? path.length : 'none'}, soft ${bl !== blocked}, from ${from.length}, here ${here.size}, stub ${stub.size}; free-ground flood from the front reaches ${seen.size} tiles, ${touched} of them road`); } out.left++; continue; }
 		for (const c of addElbows(path, W, H, bl, l)) R.add(c);
 		for (const c of vis) R.add(c);
 		for (const c of front) if (!(bl[l * W * H + c] & OCCUPIED)) R.add(c);
@@ -531,4 +606,92 @@ function thinRoadBlocks(plan, W, H, l, d) {
 }
 
 
-module.exports = { roadlessGoals, teleportRoads, closeRoadGaps, trimRoadStubs, joinBareTowns, openTownFronts, roadsPastObjects, thinRoadBlocks };
+/**
+ * Two road tiles that touch only at a corner are not joined in the game: VCMI draws a road tile from its eight neighbours with ten
+ * patterns (CDrawRoadsOperation), and a tile whose only neighbours are one on a side and one on a corner is drawn as a dead end, so the
+ * road shows a gap there (K, 2026-10-10, 108x108 four players seed 2090106454: five such steps, three of them in the places he circled,
+ * "roads are a mess"; 638 steps on the 72 grid maps of 62564c7). The routes take steps in eight directions and the thinning leaves some of
+ * them. Every such step gets one of the two tiles beside it: free floor no object blocks (a pickup's or a monster's tile may carry road),
+ * not water, and one that makes no 2x2 block with the road; failing that, a tile that only scenery stands on (not on a zone line) is cleared
+ * and takes the road (d.clearScenery, d.isDecor). When neither takes one, the step stays and is counted. VMAPGEN_ROAD_DIAG=0 skips it.
+ * Returns { closed, cleared, left }.
+ */
+function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d = {}) {
+	const out = { closed: 0, cleared: 0, left: 0 };
+	const R = plan.roadCells;
+	if (!R || R.size < 2) return out;
+	const base = l * W * H, zone = plan.zone;
+	const water = plan.p && plan.p.water, om = plan.openMask;
+	const walkers = new Set();
+	for (const o of plan.objects)
+		if ((o.l || 0) === l && o.template && o.template.mask && /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|randomMonster|monster)/.test(o.type))
+			for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) walkers.add(fy * W + fx);
+	const at = (x, y) => (x >= 0 && y >= 0 && x < W && y < H ? y * W + x : -1);
+	const onLine = c => { if (!zone) return false; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = at((c % W) + dx, ((c / W) | 0) + dy); if (n >= 0 && zone[n] !== zone[c]) return true; } return false; };
+	const walk = c => c >= 0 && !(water && water[c]) && (!om || om[c]) && (!(blocked[base + c] & OCCUPIED) || walkers.has(c));
+	// the scenery on a tile that no road may cross: all of it decor, and clearing it opens no walk from one zone into another (each piece in one zone,
+	// and none of its tiles on a zone line beside a tile of the other zone a hero stands on); null when something else stands there. The first rule
+	// refused every piece touching a zone line, and a tree group one tile from a line kept a staircase round a cathedral's corner (K's road map seed
+	// 2090106454, (55,28) to (58,25), the Opus Reviewer's R27)
+	const sceneryOn = c => {
+		if (!d.clearScenery || !d.isDecor || c < 0 || (water && water[c]) || (om && !om[c]) || !(blocked[base + c] & OCCUPIED)) return null;
+		const on = plan.objects.filter(q => (q.l || 0) === l && q.template && q.template.mask && blockingCells(q.template, q.x, q.y).some(([a, b]) => at(a, b) === c));
+		if (!on.length || !on.every(d.isDecor)) return null;
+		for (const q of on) {
+			const cells = blockingCells(q.template, q.x, q.y).map(([a, b]) => at(a, b)).filter(t => t >= 0);
+			if (zone && new Set(cells.map(t => zone[t])).size > 1) return null;
+			for (const t of cells) {
+				if (!onLine(t)) continue;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const n = at((t % W) + dx, ((t / W) | 0) + dy);
+					if (n >= 0 && zone[n] !== zone[t] && walk(n)) return null;
+				}
+			}
+		}
+		return on;
+	};
+	// the tile joins no 2x2 block of road
+	const noBlock = c => {
+		const x = c % W, y = (c / W) | 0;
+		for (const [dx, dy] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+			const a = at(x + dx, y), b = at(x, y + dy), e = at(x + dx, y + dy);
+			if (a >= 0 && b >= 0 && e >= 0 && R.has(a) && R.has(b) && R.has(e)) return false;
+		}
+		return true;
+	};
+	for (let pass = 0; pass < 3; pass++) {
+		let any = false;
+		for (const c of [...R]) {
+			const x = c % W, y = (c / W) | 0;
+			for (const [dx, dy] of [[1, 1], [1, -1]]) {
+				const n = at(x + dx, y + dy), s1 = at(x + dx, y), s2 = at(x, y + dy);
+				if (n < 0 || !R.has(n) || R.has(s1) || R.has(s2)) continue;
+				let pick = [s1, s2].filter(t => walk(t) && noBlock(t))[0];
+				if (pick === undefined) {
+					const t = [s1, s2].find(t => noBlock(t) && sceneryOn(t));
+					if (t === undefined) continue;
+					out.cleared += d.clearScenery(plan, l, W, H, blocked, { gone: new Set(sceneryOn(t)) });
+					pick = t;
+				}
+				R.add(pick); out.closed++; any = true;
+			}
+		}
+		if (!any) break;
+	}
+	for (const c of R) {
+		const x = c % W, y = (c / W) | 0;
+		for (const [dx, dy] of [[1, 1], [1, -1]]) {
+			const n = at(x + dx, y + dy);
+			if (n >= 0 && R.has(n) && !R.has(at(x + dx, y)) && !R.has(at(x, y + dy))) {
+				out.left++;
+				if (process.env.VMAPGEN_DIAG_TRACE) for (const t of [at(x + dx, y), at(x, y + dy)]) {
+					const on = t < 0 ? [] : plan.objects.filter(q => (q.l || 0) === l && q.template && q.template.mask && blockingCells(q.template, q.x, q.y).some(([a, b]) => at(a, b) === t));
+					console.error(`[diag] L${l} (${x},${y})-(${x + dx},${y + dy}) side (${t % W},${(t / W) | 0}): walk ${walk(t)} noBlock ${noBlock(t)} scenery ${!!sceneryOn(t)} on ${on.map(q => q.type + '@' + q.x + ',' + q.y + (d.isDecor && d.isDecor(q) ? ' decor' : '')).join(' ')}`);
+				}
+			}
+		}
+	}
+	return out;
+}
+
+module.exports = { roadlessGoals, teleportRoads, closeRoadGaps, trimRoadStubs, joinBareTowns, openTownFronts, roadsPastObjects, thinRoadBlocks, closeDiagonalSteps };

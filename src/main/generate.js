@@ -1930,8 +1930,17 @@ async function generateMap(params) {
 			const pl = plans[l];
 			const landAt = (x, y) => x >= 0 && y >= 0 && x < Wm && y < Hm && !(pl && pl.openMask && !pl.openMask[y * Wm + x]) && !(l === 0 && waterPlan && waterPlan.mask && waterPlan.mask[y * Wm + x]);
 			let done = false;
-			for (let r = 0; r <= 5 && !done; r++) for (let dy = ny; dy <= ny + r && !done; dy++) for (let dx = nx; dx <= nx + r && !done; dx++) {
-				if (Math.max(dx - nx, dy - ny) !== r) continue;
+			// a dear pile keeps its guard where it can: the first ring of tiles that takes it offers several, the one with a monster beside it goes first
+			// (the Opus Reviewer, M8: a relic planned at (134,0) went to (134,3), out of its guard's ring, on 144x144 two levels seed 1914)
+			const dear = /^(randomArtifact|artifact|pandoraBox|spellScroll)/.test(o.type);
+			const monTiles = dear ? objects.filter(q => (q.l || 0) === l && /^(monster|randomMonster)/.test(q.type)) : [];
+			const guardedAt = (x, y) => monTiles.some(q => Math.max(Math.abs(q.x - x), Math.abs(q.y - y)) <= 1);
+			for (let r = 0; r <= 5 && !done; r++) {
+			const order = [];
+			for (let dy = ny; dy <= ny + r; dy++) for (let dx = nx; dx <= nx + r; dx++) if (Math.max(dx - nx, dy - ny) === r) order.push([dx, dy]);
+			if (dear) order.sort((u, v) => (guardedAt(o.x + v[0], o.y + v[1]) ? 1 : 0) - (guardedAt(o.x + u[0], o.y + u[1]) ? 1 : 0));
+			for (const [dx, dy] of order) {
+				if (done) break;
 				const tx = o.x + dx, ty = o.y + dy;
 				const cells = blockingCells(o.template, tx, ty);
 				// plain scenery in the way (nothing to visit on it) is cleared for the object; anything visited is not
@@ -1946,6 +1955,7 @@ async function generateMap(params) {
 				o.x = tx; o.y = ty; o.instanceName = `${o.type}_${tx}_${ty}_${l}`;
 				for (const [x, y] of cells) occ.set(key(l, x, y), o);
 				moved++; done = true;
+			}
 			}
 			if (!done) left++;
 		}
@@ -2200,6 +2210,15 @@ async function generateMap(params) {
 			if (roadCells && roadCells.size) {
 				const th = require('../biome/gateroad').thinRoadBlocks(plans[li], lv.width, lv.height, li, { visitableCells });
 				if (th.thinned) console.error(`[gen] level ${li}: road tiles taken out of 2x2 blocks at the end: ${th.thinned}`);
+				// the thinning keeps the road in one piece by its eight neighbours, so it can leave two tiles meeting at a corner only (the game draws both as
+				// dead ends); each gets a tile beside it again, over ground nothing stands on (the Opus Reviewer, R17: 5 corner steps left on seed 670084743)
+				if (process.env.VMAPGEN_ROAD_DIAG !== '0') {
+					const Wl = lv.width, Hl = lv.height, bl = new Uint8Array((li + 1) * Wl * Hl);
+					for (const o of plans[li].objects || []) if ((o.l || 0) === li && o.template && o.template.mask && !REMOVABLE_TYPES.has(o.type))
+						for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < Wl && fy < Hl) bl[li * Wl * Hl + fy * Wl + fx] = 1;
+					const dg = require('../biome/gateroad').closeDiagonalSteps(plans[li], Wl, Hl, li, bl, 1, blockingCells);
+					if (dg.closed) console.error(`[gen] level ${li}: road steps that met at a corner only after the last thinning: ${dg.closed} joined by a tile beside them, ${dg.left} left`);
+				}
 			}
 			const roadArt = solveRoadTiles(roadCells, lv.width, lv.height, roadRng);
 

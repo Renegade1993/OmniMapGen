@@ -26,7 +26,7 @@ const LOW = ['resource', 'randomResource', 'campfire', 'treasureChest', 'randomA
 const isMonster = o => o.type === 'monster' || /^randomMonster/.test(o.type);
 const tierOf = o => { const m = /^randomMonsterLevel(\d)/.exec(o.type); return m ? +m[1] : 0; };
 
-function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, visitableCells) {
+function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, visitableCells, opts = {}) {
 	const objs = plan.objects.filter(o => (o.l || 0) === l && o.template && o.template.mask);
 	const zoneOf = plan.zone;
 	if (!zoneOf || !objs.length) return { swapped: 0, guards: 0, moved: 0 };
@@ -70,7 +70,12 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 	}
 	const oneTile = o => { const b = blockingCells(o.template, o.x, o.y); const v = visitableCells(o.template, o.x, o.y); return b.length <= 1 && v.length === 1; };
 	const approach = o => { const out = []; for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) for (const [dx, dy] of N8) if (inb(vx + dx, vy + dy)) out.push((vy + dy) * W + vx + dx); return out; };
-	const open = o => approach(o).some(c => piece[c] >= 0 && size[piece[c]] > POCKET);
+	// a piece holding a town's doorstep is open whatever its size: a hero leaves the town into it (the Opus Reviewer's R28: a Pandora's box in a
+	// 29-tile piece in front of the preserve at (45,48), seed 670084743, counted as a guarded pocket)
+	const atDoor = new Set();
+	for (const o of objs) if (/^(town|randomTown)$/.test(o.type))
+		for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) for (const [dx, dy] of N8) if (inb(vx + dx, vy + dy)) { const c = (vy + dy) * W + vx + dx; if (piece[c] >= 0) atDoor.add(piece[c]); }
+	const open = o => approach(o).some(c => piece[c] >= 0 && (size[piece[c]] > POCKET || atDoor.has(piece[c])));
 	// the guard whose ring takes in an approach tile, nearest first
 	const guardOf = o => {
 		let best = null, bd = 9;
@@ -89,7 +94,20 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 	};
 	const zone = o => zoneOf[o.y * W + o.x];
 	const highs = objs.filter(o => HIGH.includes(o.type) && oneTile(o) && open(o)).sort((a, b) => HIGH.indexOf(a.type) - HIGH.indexOf(b.type));
-	const lows = objs.filter(o => LOW.includes(o.type) && oneTile(o) && !open(o));
+	// shut as the flyer rule reads it: its own tile in a ring, or every tile it is taken from blocked or in a ring (a pocket under POCKET tiles
+	// with no guard at all let a flying hero land and take a Pandora's box traded into it: 36x36 eight players f36p8, (2,13)); the late calls
+	// (opts.anyZone) take only such partners
+	// and, since these trades run after the pass that posts a guard beside every dear pile, a monster on or beside the tile itself: a flying hero
+	// lands anywhere, and a pile shut by walls with its guard two tiles off was open to one (MapGen Dev's flyer-open on e3d7d30: xl-p4-islands
+	// s802051433 relic (46,59), s802051434 Pandora's box (72,61), small-ug s1750425234 Pandora's box L1 (4,11))
+	const besideMonster = (x, y) => monsters.some(m => Math.max(Math.abs(m.x - x), Math.abs(m.y - y)) <= 1);
+	const shut = o => {
+		if (!besideMonster(o.x, o.y)) return false;
+		const at = o.y * W + o.x;
+		if (inb(o.x, o.y) && ring[at] >= 0) return true;
+		return approach(o).every(c => hard[c] || ring[c] >= 0);
+	};
+	const lows = objs.filter(o => LOW.includes(o.type) && oneTile(o) && !open(o) && (!opts.anyZone || shut(o)));
 	// the engine leaves some of its dear loot open too (Coldshadow's Fantasy: 10 to 19% of it): swap only down to that
 	// share (VMAPGEN_LOOT_OPEN, default 0.14), dearest first
 	const all = objs.filter(o => HIGH.includes(o.type)).length;
@@ -127,7 +145,7 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 		const taken = new Set();
 		for (const o of objs) for (const [x, y] of blockingCells(o.template, o.x, o.y)) if (inb(x, y)) taken.add(y * W + x);
 		for (const o of objs) for (const [x, y] of visitableCells(o.template, o.x, o.y)) if (inb(x, y)) taken.add(y * W + x);
-		const inPocket = c => piece[c] >= 0 && size[piece[c]] <= POCKET;
+		const inPocket = c => piece[c] >= 0 && size[piece[c]] <= POCKET && !atDoor.has(piece[c]);
 		for (const h of objs.filter(o => DEAREST.has(o.type) && oneTile(o) && open(o))) {
 			const z = zone(h);
 			let best = -1, bd = 13;
@@ -136,6 +154,7 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 				if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
 				const c = y * W + x, d = Math.max(Math.abs(dx), Math.abs(dy));
 				if (d >= bd || zoneOf[c] !== z || taken.has(c) || blocked[base + c] || !inPocket(c)) continue;
+				if (opts.anyZone && !besideMonster(x, y)) continue;
 				let ok = true;
 				for (const [ex, ey] of N8) {
 					const m = (y + ey) * W + x + ex;
@@ -154,6 +173,36 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 			moved++;
 		}
 	}
+	// Last, a relic, major or Pandora's box still open trades with the nearest guarded cheap pickup of any zone: its own zone had no partner and no
+	// pocket (the Opus Reviewer's R28: the Pandora's box at (44,51) beside the preserve at (45,48), 108x108 four players seed 670084743, where a
+	// guard's ring would cover the town's doorstep). Only on the late call (opts.anyZone, after the guards left the doorsteps: an early
+	// trade into a pocket a doorstep guard still shut put a second box there). VMAPGEN_LOOT_ANY_ZONE=0 off.
+	if (opts.anyZone && process.env.VMAPGEN_LOOT_ANY_ZONE !== '0')
+		for (const h of objs.filter(o => DEAREST.has(o.type) && oneTile(o) && open(o))) {
+			// a guarded spell scroll or plain artifact is a partner too here: those may stand open (the engine's own open dear loot), a major may not
+			// (36x36 eight players a36p8: every guarded cheap pickup was taken and a major stood open beside a start's road at (25,4))
+			// only into a zone of the same class (the Opus Reviewer's R36: the trade moved relics, majors and Pandora's boxes out of the high-loot
+			// zones and into player zones, seed 670084743 high-loot 25 to 18), and a partner whose guard is level 4 or more first (dear loot behind a
+			// level 1 or 2 guard rose from 13 to 17 there)
+			const cls = plan.classes, hc = cls ? cls[zone(h)] : undefined;
+			const tierAt = o => { const g = guardOf(o); return g ? tierOf(g) : 0; };
+			// a player zone's dear loot stays in that zone: no start gets another's (the lead, 15:20: never into a player start zone)
+			const pool = lows.concat(objs.filter(o => (o.type === 'spellScroll' || o.type === 'artifact') && oneTile(o) && shut(o) && !open(o)))
+				.filter(o => !cls || (cls[zone(o)] === hc && (hc !== 'player' || zone(o) === zone(h))));
+			const lo = pool.filter(o => !used.has(o)).sort((a, b) => ((tierAt(a) >= 4 ? 0 : 1) - (tierAt(b) >= 4 ? 0 : 1))
+				|| (Math.abs(a.x - h.x) + Math.abs(a.y - h.y)) - (Math.abs(b.x - h.x) + Math.abs(b.y - h.y)))[0];
+			if (!lo) continue;
+			used.add(lo);
+			const gl = guardOf(lo), gh = nearGuard(h);
+			[h.x, h.y, lo.x, lo.y] = [lo.x, lo.y, h.x, h.y];
+			swapped++;
+			// the stronger guard stays with the dear object, as in the same-zone trade above
+			if (gl && gh && gl !== gh && tierOf(gl) < tierOf(gh) && pickupsOnly(gl)) {
+				for (const k of ['type', 'options', 'guardCreature', 'subtype', 'template'])
+					[gl[k], gh[k]] = [gh[k], gl[k]];
+				guards++;
+			}
+		}
 	return { swapped, guards, moved };
 }
 

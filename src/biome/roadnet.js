@@ -30,7 +30,7 @@ const DIRS8 = [[0, -1], [1, 0], [0, 1], [-1, 0], [1, -1], [1, 1], [-1, 1], [-1, 
  * Existing road is cheap so branches share a trunk. Returns the path as an
  * array of cell indices, or null.
  */
-function route(sources, targets, W, H, blocked, l, roadCells, dirs, allow = null) {
+function route(sources, targets, W, H, blocked, l, roadCells, dirs, allow = null, cost = null) {
 	const base = l * W * H;
 	const N = W * H;
 	const dist = new Float64Array(N).fill(Infinity);
@@ -73,7 +73,13 @@ function route(sources, targets, W, H, blocked, l, roadCells, dirs, allow = null
 			// component holds ~52% of road cells), ours ran 41.8% under
 			// 0.25 with the balance spread over shards. 0.12 makes a join
 			// ride the trunk for the stretch it can instead of paralleling.
-			const step = roadCells.has(n) ? 0.12 : 1;
+			let step = roadCells.has(n) ? 0.12 : 1;
+			// cost (optional): a diagonal step costs cost.elbow where a side tile is free (addElbows fills it) and cost.corner where both are
+			// blocked (the game draws such a step as two dead ends; the Opus Reviewer's R27: an eight-way town road made staircases of them)
+			if (cost && dx && dy) {
+				const s1 = (blocked[base + y * W + nx] & OCCUPIED) !== 0, s2 = (blocked[base + ny * W + x] & OCCUPIED) !== 0;
+				step *= s1 && s2 ? cost.corner : cost.elbow;
+			}
 			if (dist[c] + step < dist[n]) {
 				dist[n] = dist[c] + step;
 				prev[n] = c;

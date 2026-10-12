@@ -992,7 +992,9 @@ const REMOVABLE_TYPES = new Set([
  * refuses entry from anywhere else, so an object whose open ground is all on
  * a forbidden side is scenery that happens to occupy the map.
  */
-function entranceOpen(tpl, x, y, l, W, H, blocked, reachable) {
+// noRim: an entrance tile on the outermost row or column does not count (a mine entered only from there can be neither guarded nor closed: nothing
+// stands on the rim; MapGen Dev's gold-front, 9 of 17 open gold mines at the map edge)
+function entranceOpen(tpl, x, y, l, W, H, blocked, reachable, noRim = false) {
 	const own = new Set(blockingCells(tpl, x, y).map(([a, b]) => b * W + a));
 	const vis = visitableCells(tpl, x, y);
 	// A mountain has no visitable cell and no entrance to keep open. Asking
@@ -1005,6 +1007,7 @@ function entranceOpen(tpl, x, y, l, W, H, blocked, reachable) {
 		for (const [dx, dy] of allowedDirs(tpl)) {
 			const nx = vx + dx, ny = vy + dy;
 			if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+			if (noRim && (nx === 0 || ny === 0 || nx === W - 1 || ny === H - 1)) continue;
 			const c = ny * W + nx;
 			if (own.has(c)) continue;                  // its own walls do not count
 			if (blocked[l * W * H + c] & OCCUPIED) continue;
@@ -1821,7 +1824,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// An object whose entrance has no open ground beside it is
 			// scenery. Checking here rather than after the fact keeps the
 			// count honest: the object is simply placed somewhere else.
-			if (!entranceOpen(tpl, x, y, l, W, H, blocked, reachable)) { rej('entrance'); continue; }
+			if (!entranceOpen(tpl, x, y, l, W, H, blocked, reachable, type === 'mine' && subtype === 'goldMine')) { rej('entrance'); continue; }
 			// in a template zone a monster never stands over a road, a
 			// corridor, a doorway or an entrance (reachOnReserved, the
 			// engine's rule). The free layout keeps its roaming monsters on
@@ -4114,14 +4117,9 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					done = postGuard(byPiles[next++], guard, true);
 				}
 			}
-			// more guarded piles than objects to stand by: the guard still
-			// stands in the zone
-			if (!done) {
-				const e = put(`randomMonsterLevel${guard.level}`, monsterTpl,
-					{ character: 'hostile', amount: scaledAmount(guard.amount, p) });
-				if (e && guard.concrete) e.guardCreature = guard.creature;
-				done = !!e;
-			}
+			// more guarded piles than objects to stand by: the guard is dropped, as the engine drops a pile no tile takes. It used to stand
+			// anywhere in the zone, beside nothing (cloud Brief I fix 1, 2026-10-09: the one source of stacks that close nothing by construction)
+			if (!done) { objectPools.__pileGuardDropped = (objectPools.__pileGuardDropped || 0) + 1; }
 			if (done) { posted++; crowd(guard.level); }
 			else if (process.env.VMAPGEN_PILE_TRACE) console.error(`[pile]   guard level ${guard.level} DROPPED: no cell`);
 		};

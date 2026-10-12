@@ -178,6 +178,9 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		if (blocked[base + c] & RESERVED) return no('reserved');
 		if (roads.has(c)) return no('road');
 		if (zone[c] !== zone[o.y * W + o.x]) return no('other zone');
+		// the object itself keeps a free way in: closing a mine's two open front tiles left only the tile under a subterranean gate in its
+		// guard's ring, and the mine was sealed (grid, 72x72 two levels four players seed 2, 2026-10-09)
+		if (appOf.get(o) && !appOf.get(o).some(a => a !== c && isFree(a))) return no('own last way');
 		for (const q of owners.get(c) || []) {
 			if (q === o) continue;
 			if (!appOf.get(q).some(a => a !== c && isFree(a))) return no('last way of another');
@@ -196,6 +199,16 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 	};
 
 	// a dear pile has a monster on or beside its tile (a flyer that lands on it meets the ring; MapGen Dev's flyer-open, the Reviewer's 0.1% before this pass)
+	// a start's own zone: no guard on its roads or beside them (a stack there stands across the start's way out; 36x36 eight players seed 901)
+	// the ways from each start to the other towns of its zone (plan.js startWayCells): no guard whose ring covers one (a stack there stands across
+	// the start's way out; 36x36 eight players seed 901); this replaced "no guard on or beside a road in a start's zone", which left a Pandora's box
+	// beside a start's road with no guard (the Opus Reviewer, M8)
+	const startWay = d.startWayCells ? d.startWayCells(pl, l, W, H, blocked) : new Set();
+	const byStartRoad = c => { if (!startWay.size) return false; const x = c % W, y = (c / W) | 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H && startWay.has(v * W + u)) return true; } return false; };
+	// no exception for a gold mine's guard: one stood on a start's road when no town was within 8 tiles (written when the set was every road of a start's
+	// zone), and once the set became the start's ways to its own towns, the final gold run put a guard on green's way from (135,32) to its second town
+	// (136,77) at (139,44), grid 144x144 four players one level seed 1 (own town behind a guard; 084ac2c passes)
+	const roadBlock = c => byStartRoad(c);
 	const besideFix = o => {
 		if (!DEAR.test(o.type, o) || monsterBeside(o)) return;
 		const foot = new Set(blockingCells(o.template, o.x, o.y).map(([a, b]) => at(a, b)));
@@ -206,7 +219,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		// none a guard may usually take: a free tile of the zone beside a road, then the road itself, as the engine stands guards on roads
 		// (a 500000 prison by a road with no monster beside it, 144x144 eight players seed 2, MapGen Dev 2026-10-09)
 		if (!pick.length) {
-			const last = [...cs].filter(c => isFree(c) && zone[c] === zone[o.y * W + o.x] && c % W > 0 && ((c / W) | 0) > 0 && c % W < W - 1 && ((c / W) | 0) < H - 1)
+			const last = [...cs].filter(c => isFree(c) && !byStartRoad(c) && zone[c] === zone[o.y * W + o.x] && c % W > 0 && ((c / W) | 0) > 0 && c % W < W - 1 && ((c / W) | 0) < H - 1)
 				.sort((u, v) => ((roads.has(u) ? 2 : 0) + ((blocked[base + u] & RESERVED) ? 1 : 0)) - ((roads.has(v) ? 2 : 0) + ((blocked[base + v] & RESERVED) ? 1 : 0)));
 			if (last.length) pick.push(last[0]);
 		}
@@ -247,6 +260,10 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		}
 		return false;
 	};
+	// d.only 'gold': the last run, after the late passes (guards for gold mines whose door the passes opened, no walls, no regrouping of stacks)
+	const goldOnly = d.only === 'gold';
+	stages: {
+	if (goldOnly) break stages;
 	for (const o of pl.objects.slice()) {
 		if ((o.l || 0) !== l || !KIND.test(o.type) || !o.template || !o.template.mask) continue;
 		if (/^creatureGenerator/.test(o.type) && !dwellingsOn) continue;
@@ -709,29 +726,35 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		}
 		console.error('[thintrace] crowded stacks by what depends on them: ' + JSON.stringify(hist));
 	}
+	}
 	// every dear object has a monster on or beside it, prisons of 90000 and more among them (they are no kind of this pass)
-	for (const o of pl.objects.slice()) if ((o.l || 0) === l && o.template && o.template.mask && DEAR.test(o.type, o)) besideFix(o);
+	if (!goldOnly) for (const o of pl.objects.slice()) if ((o.l || 0) === l && o.template && o.template.mask && DEAR.test(o.type, o)) besideFix(o);
 	// Last: no entrance tile of high loot stays open to a flyer (Opus Reviewer, 2026-10-09: tiles on open ground outside every ring, 7.6% of high
 	// loot on 0cf6cf0's four seeds, most of them pockets a walker reaches only through a guard's ring, where a wall could shut the loot off): a
 	// monster goes on a free tile within 1 of the open tile, so its ring takes it; off the roads first, a tile clear of other stacks first
 	out.flyerShut = 0;
 	{
 		const HIGH = /^(randomArtifact|artifact|spellScroll|pandoraBox)/;
+		// gold mines only while their guards are on (Guards at mines, Mine guard weight above 0), as guardDearLoot's gold pass
+		const goldOn = Number(p.guardMines) !== 0 && !(Number.isFinite(Number(p.mineGuardWeight)) && Number(p.mineGuardWeight) <= 0);
 		const pickC = new Set();
 		for (const q of pl.objects) if ((q.l || 0) === l && q.template && q.template.mask && PICKUP.test(q.type))
 			for (const [fx, fy] of blockingCells(q.template, q.x, q.y)) { const c = at(fx, fy); if (c >= 0) pickC.add(c); }
 		const openT = () => {
 			const list = [];
 			for (const [o, a] of appOf) {
-				if ((o.l || 0) !== l || !HIGH.test(o.type)) continue;
-				for (const t of a) if (isFree(t) && !pickC.has(t) && !ring.has(t)) list.push([o, t]);
+				// and a gold mine's: a corner entrance beside a door whose front tile holds a pile stayed outside every ring (7 of K's 18 maps, MapGen Dev 12:58)
+				if ((o.l || 0) !== l || !((!goldOnly && HIGH.test(o.type)) || (goldOn && o.type === 'mine' && o.subtype === 'goldMine'))) continue;
+				// a pile before a gold mine is a way in too (a hero takes it and walks in)
+				const gm = goldOn && o.type === 'mine' && o.subtype === 'goldMine';
+				for (const t of a) if ((isFree(t) || (gm && pickC.has(t))) && (gm || !pickC.has(t)) && !ring.has(t)) list.push([o, t]);
 			}
 			return list;
 		};
 		// walls where a wall may stand
 		out.flyerWalled = 0;
 		trial.length = 0;
-		for (const [o, t] of openT()) if (isFree(t) && !ring.has(t) && block(t, o)) out.flyerWalled++;
+		if (!goldOnly) for (const [o, t] of openT()) if (isFree(t) && !ring.has(t) && block(t, o)) out.flyerWalled++;
 		trial.length = 0;
 		// a guard where none may: the tile whose ring takes the most open tiles, clear of other stacks
 		for (let round = 0; round < 400; round++) {
@@ -741,17 +764,45 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			let best = -1, bs = -Infinity;
 			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
 				const c = at(tx + dx, ty + dy), x = tx + dx, y = ty + dy;
-				if (c < 0 || x < 1 || y < 1 || x >= W - 1 || y >= H - 1 || !isFree(c) || pickC.has(c)) continue;
-				if (zone[c] !== zone[o.y * W + o.x] || crowdAt(c)) continue;
+				// a gold mine's rim tile may take its guard (the mine's door on the outermost row or column has no other tile for it)
+				if (c < 0 || ((x < 1 || y < 1 || x >= W - 1 || y >= H - 1) && !(o.subtype === 'goldMine' && o.type === 'mine')) || !isFree(c) || pickC.has(c)) continue;
+				if (zone[c] !== zone[o.y * W + o.x] || crowdAt(c) || roadBlock(c, o)) continue;
 				const takes = open.filter(([, u]) => Math.max(Math.abs(u % W - x), Math.abs(((u / W) | 0) - y)) <= 1).length;
 				const sc = takes * 2 - (roads.has(c) ? 3 : (blocked[base + c] & RESERVED) ? 1 : 0);
 				if (sc > bs) { bs = sc; best = c; }
+			}
+			// a gold mine is guarded whatever (the engine guards all of them): a tile within 2 of another stack when no clear one is left
+			if (best < 0 && goldOn && o.type === 'mine' && o.subtype === 'goldMine')
+				for (let dy = -1; dy <= 1 && best < 0; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const c = at(tx + dx, ty + dy), x = tx + dx, y = ty + dy;
+					if (c < 0 || !isFree(c) || pickC.has(c) || roadBlock(c, o) || zone[c] !== zone[o.y * W + o.x]) continue;
+					best = c; break;
+				}
+			if (best < 0 && process.env.VMAPGEN_GOLD_TRACE && ((o.type === 'mine' && o.subtype === 'goldMine') || DEAR_TYPE.test(o.type))) { const why = []; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const c = at(tx + dx, ty + dy), x = tx + dx, y = ty + dy; const r = c < 0 || x < 1 || y < 1 || x >= W - 1 || y >= H - 1 ? 'edge' : !isFree(c) ? (land(c) ? 'occupied' : 'water/rock') : pickC.has(c) ? 'pile' : byStartRoad(c) ? 'startroad' : zone[c] !== zone[o.y * W + o.x] ? 'zone' : crowdAt(c) ? 'crowd' : 'ok'; why.push(`(${x},${y}) ${r}`); } console.error(`[goldtrace] mine (${o.x},${o.y}) open tile (${tx},${ty}) pile ${pickC.has(t)}: ` + why.join('; ')); }
+			// a pile on the mine's only way in, no tile beside it for a guard: the pile goes and the guard stands on its tile (the way in is a fight
+			// then; a start's own gold mine beside its town, 72x72 four players seed 1: a pile on the door, the road and the walls round it)
+			if (best < 0 && process.env.VMAPGEN_GOLD_TRACE && o.type === 'mine' && o.subtype === 'goldMine') console.error(`[goldpile] mine (${o.x},${o.y}) tile ${tx},${ty}: pick ${pickC.has(t)} free ${isFree(t)} crowd ${crowdAt(t)} startroad ${byStartRoad(t)} zone ${zone[t] === zone[o.y * W + o.x]}`);
+			if (best < 0 && goldOn && o.type === 'mine' && o.subtype === 'goldMine' && pickC.has(t) && !crowdAt(t) && !roadBlock(t, o) && zone[t] === zone[o.y * W + o.x]) {
+				const pile = pl.objects.find(q => (q.l || 0) === l && q.template && q.template.mask && PICKUP.test(q.type)
+					&& blockingCells(q.template, q.x, q.y).length === 1 && blockingCells(q.template, q.x, q.y).some(([fx, fy]) => at(fx, fy) === t));
+				if (pile) {
+					pl.objects.splice(pl.objects.indexOf(pile), 1);
+					pickC.delete(t);
+					blocked[base + t] &= ~OCCUPIED;
+					best = t;
+					out.goldPileTaken = (out.goldPileTaken || 0) + 1;
+				}
 			}
 			// no tile clear of other stacks: the open tile stays (counted), the next one is tried
 			if (best < 0) { out.flyerLeft = (out.flyerLeft || 0) + 1; appOf.set(o, appOf.get(o).filter(u => u !== t)); continue; }
 			post(best, o);
 			out.flyerShut++;
 		}
+	}
+	if (process.env.VMAPGEN_GOLD_TRACE) for (const [o, a] of appOf) {
+		if ((o.l || 0) !== l || o.type !== 'mine' || o.subtype !== 'goldMine') continue;
+		const open = a.filter(t => isFree(t) && !ring.has(t));
+		console.error(`[goldend] mine (${o.x},${o.y}) approach ${a.length} tiles ${a.map(t => (t % W) + ',' + ((t / W) | 0) + (isFree(t) ? '' : 'x') + (ring.has(t) ? 'r' : '')).join(' ')}; open ${open.length}`);
 	}
 	return out;
 }

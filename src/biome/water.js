@@ -119,11 +119,14 @@ function randomIslands(W, H, shape, starts, rng, noise, cover) {
 	const bound = f => Math.sqrt(f / Math.PI);
 	// area shares: players around 1, neutrals smaller, both spread
 	const shares = [];
-	const neutral = Math.round((shape.perStart || 0) * nP) + (shape.perStart ? 0 : Math.floor(rng() * (nP + 1)));
+	// no start on this level (every player underground): the islands are all neutral, four to seven of a start island's size, not one start-sized
+	// island and a neutral one (two land masses on a 144x144 for eight players, 2026-10-09)
+	const noStarts = !starts.length;
+	const neutral = noStarts ? 4 + Math.floor(rng() * 4) : Math.round((shape.perStart || 0) * nP) + (shape.perStart ? 0 : Math.floor(rng() * (nP + 1)));
 	const logn = sd => Math.exp((rng() + rng() + rng() - 1.5) * 2 * sd);
 	// every player's island the same share (a start on a big island against one on a small one was 3.3 to 1 on 144x144); the neutrals vary
-	for (let i = 0; i < nP; i++) shares.push({ start: true, w: 1 });
-	for (let i = 0; i < neutral; i++) shares.push({ start: false, w: 0.35 * logn(0.5) });
+	if (!noStarts) for (let i = 0; i < nP; i++) shares.push({ start: true, w: 1 });
+	for (let i = 0; i < neutral; i++) shares.push({ start: false, w: noStarts ? logn(0.35) : 0.35 * logn(0.5) });
 	const tot = shares.reduce((a, q) => a + q.w, 0);
 	for (const q of shares) q.R = Math.max(q.start ? minR : 6, bound(land * q.w / tot));
 	// the players' islands must fit at all
@@ -883,7 +886,7 @@ const ADOPT = {
 	islands: { border: 1, inlets: 0.5 },
 	normal: { border: 0, inlets: 0.5 },
 };
-function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = null, wetScale = 1) {
+function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = null, wetScale = 1, maxWetGiven = null) {
 	const N = W * H;
 	const cfg = ADOPT[content] || ADOPT.normal;
 	// The Water layout on a template map's Normal water (it was ignored: the water is each zone's outer part). The shape sets how wet
@@ -959,7 +962,11 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 		// the radius rule: the cells farthest from the centre, so that `keep` of the zone stays land
 		const dist = c => Math.hypot(c % W - cx, ((c / W) | 0) - cy);
 		const ranked = cells.map(c => [dist(c), c]).sort((a, b) => a[0] - b[0]);
-		const keepZone = shapeId || wetScale !== 1 ? 1 - Math.max(0, Math.min(0.95, (1 - keepFor(content, W)) * (shapeId ? zoneFactor.get(z) : 1) * wetScale)) : keepFor(content, W);
+		// the most of a zone the radius rule may wet on Normal water (buildAdoptedPlan tries 0.7 down to 0.55 until every zone keeps ground): Mediterranean
+		// on a 180x180 Coldshadow's Fantasy with 45% water wet the middle zones to 70% and drowned two of them (K, 2026-10-10: "huge mediterranean
+		// coldshadow ... extremely strange"). Islands keep their own rule.
+		const maxWet = content === 'islands' ? 0.95 : maxWetGiven !== null ? maxWetGiven : 0.95;
+		const keepZone = shapeId || wetScale !== 1 ? 1 - Math.max(0, Math.min(maxWet, (1 - keepFor(content, W)) * (shapeId ? zoneFactor.get(z) : 1) * wetScale)) : keepFor(content, W);
 		const R = ranked[Math.min(ranked.length - 1, Math.floor(ranked.length * keepZone))][0];
 		const wet = new Set();
 		for (const [d, c] of ranked) if (d > R) wet.add(c);
@@ -1025,19 +1032,39 @@ function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, gro
 	const startCells = starts.map(q => q.y * W + q.x);
 	// Amount of water (K, 2026-10-05: "this is not 45% water"): the engine's own calibration (keepFor) fixed the share whatever the
 	// slider said, 0.14 to 0.19 on a template map. The wet share of every zone is now scaled until the surface comes out at the
-	// amount asked, within 2 points, in at most six tries; no amount given runs once as before.
+	// amount asked, within 2 points, in at most twelve tries per cap; no amount given runs once as before.
 	const want = Number(coverage) > 0 ? Number(coverage) : null;
 	let scale = 1, mask = null, got = 0, unfit = 0;
-	for (let t = 0; t < (want ? 6 : 1); t++) {
-		const rng = xorshift(((seed || 1) ^ 0x5b3e17) >>> 0);
-		rng(); rng();
-		mask = adoptWater(W, H, zoneOf, content, rng, forced, null, shape, scale);
-		settle(mask, W, H, forced, startCells, { connect: content !== 'islands' });
-		unfit = check ? repairShore(mask, W, H, forced, check, null, false) : 0;
-		got = mask.reduce((a, v) => a + v, 0);
-		if (!want || Math.abs(got / (W * H) - want) <= 0.02) break;
-		scale = Math.max(0.1, Math.min(6, scale * want / Math.max(0.01, got / (W * H))));
+	// Zones left ground (K, 2026-10-10): the sea of a high amount took 70% of the middle zones of a 180x180 map and drowned two. The amount is
+	// tried with the most any zone may lose falling from 0.7 to 0.55 of its radius, and the first that leaves every zone of 60 cells or more
+	// 40% land is kept (the amount falls short when none reaches it, and says so in the log). VMAPGEN_ADOPT_MAX_WET fixes one cap.
+	const caps = !want || content === 'islands' ? [null] : process.env.VMAPGEN_ADOPT_MAX_WET ? [Number(process.env.VMAPGEN_ADOPT_MAX_WET)] : [0.7, 0.65, 0.6, 0.55];
+	const area = new Map();
+	for (let c = 0; c < W * H; c++) if (zoneOf[c] >= 0) area.set(zoneOf[c], (area.get(zoneOf[c]) || 0) + 1);
+	const minLand = m => {
+		const wet = new Map();
+		for (let c = 0; c < W * H; c++) if (m[c] && zoneOf[c] >= 0) wet.set(zoneOf[c], (wet.get(zoneOf[c]) || 0) + 1);
+		let low = 1;
+		for (const [z, n] of area) if (n >= 60) low = Math.min(low, 1 - (wet.get(z) || 0) / n);
+		return low;
+	};
+	for (const cap of caps) {
+		scale = 1;
+		for (let t = 0; t < (want ? 12 : 1); t++) {
+			const rng = xorshift(((seed || 1) ^ 0x5b3e17) >>> 0);
+			rng(); rng();
+			mask = adoptWater(W, H, zoneOf, content, rng, forced, null, shape, scale, cap);
+			settle(mask, W, H, forced, startCells, { connect: content !== 'islands' });
+			unfit = check ? repairShore(mask, W, H, forced, check, null, false) : 0;
+			got = mask.reduce((a, v) => a + v, 0);
+			if (process.env.VMAPGEN_WATER_TRACE) console.error('[water] cap ' + cap + ' try ' + t + ' scale ' + scale.toFixed(2) + ' got ' + (100 * got / (W * H)).toFixed(1) + '% minLand ' + minLand(mask).toFixed(2));
+			if (!want || Math.abs(got / (W * H) - want) <= 0.02) break;
+			scale = Math.max(0.1, Math.min(30, scale * want / Math.max(0.01, got / (W * H))));
+		}
+		if (cap === null || minLand(mask) >= 0.4) break;
 	}
+	if (want && content !== 'islands' && Math.abs(got / (W * H) - want) > 0.02)
+		console.error(`[gen] water: ${(100 * got / (W * H)).toFixed(1)}% reached of the ${(100 * want).toFixed(0)}% asked, the lowest zone keeps ${(100 * minLand(mask)).toFixed(0)}% land`);
 	return { mask, starts: starts.map(q => ({ ...q, moved: false })), shape: content === 'islands' ? 'islands' : 'lakes',
 		coverage: got / (W * H), unfit, islands: content === 'islands', hubCells: [], adopted: content };
 }
