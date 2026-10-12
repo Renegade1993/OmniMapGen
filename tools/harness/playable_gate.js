@@ -20,6 +20,9 @@ const fs = require('fs'), path = require('path');
 const { execFile } = require('child_process');
 const arg = (n, d) => { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : d; };
 const has = n => process.argv.includes(n);
+// a VMAPGEN_* switch set in the shell would change what the generator makes (297 are read in src): the children run without them, and the run says which it found
+const STRIPPED = Object.keys(process.env).filter(k => /^VMAPGEN_/.test(k) && k !== 'VMAPGEN_TEST_ROOT');
+console.log('environment: ' + (STRIPPED.length ? 'VMAPGEN_* found and removed from the generator runs: ' + STRIPPED.join(', ') : 'no VMAPGEN_* switch set'));
 const TIP = path.resolve(arg('--tip', path.join(__dirname, '..', '..')));
 const OUT = path.resolve(arg('--out', path.join(TIP, '.tmp', 'playable_gate')));
 const LANES = +arg('--lanes', 3), DEADLINE = Date.now() + 60000 * +arg('--deadline-min', 60), RANDOM = +arg('--random', 0), SEED = +arg('--seed', 1);
@@ -152,6 +155,7 @@ function generate(c, file) {
 	const a = [path.join(TIP, 'src', 'main', 'generate-cli.js')];
 	for (const [k, v] of Object.entries(o)) a.push('--' + k, String(v));
 	const env = { ...process.env, VCMI_ROOT: ROOT, NODE_PATH: NODE_MODULES }; delete env.NODE_OPTIONS;
+	for (const k of STRIPPED) delete env[k];
 	return new Promise(r => execFile(process.execPath, a, { env, cwd: TIP, timeout: 600000, windowsHide: true, maxBuffer: 1 << 26 },
 		(err, so, se) => { const txt = `${so || ''}${se || ''}`; fs.writeFileSync(file + '.log', txt); r(fs.existsSync(file) ? null : (err ? err.message.slice(0, 200) : 'no map written') + ' | ' + (txt.match(/error[^\n]*/i) || [''])[0].slice(0, 160)); }));
 }
