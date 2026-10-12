@@ -16,6 +16,7 @@
  *   edge-objects     no visited object's picture crosses the top or left edge of the map [K 10-08 14:3x outcasts and school of magic]
  *   free-standing    stacks that close nothing (no object, no passage) [K 10-08 15:2x "essentially freestanding"]
  *   water            the water share against the share asked, land share per zone (under 45% named), zones drowned or cut off, the shape of the water against the layout asked, every start walking to a town and a mine [lead 10-10, K's Mediterranean complaint]
+ *   water-type      the water against the Age of Empires map type the layout lever stands for (Research\AoE-map-types): measures per type (the amount of water is the waterCoverage lever's, judged by the water check, not here), thresholds proposed, not accepted [K 10-11: the AoE wikis are the source]
  *   river-ends       a river ends at a map edge or at water, never in the open, and runs under no visited object [K 10-07 18:3x creeks]
  */
 const sight = require('../mapsight/lib/sight');
@@ -484,15 +485,75 @@ function waterReport(M) {
 	else if (bigShare < 0.5) label = 'scattered lakes';
 	else label = 'one body off centre';
 	Object.assign(nums, { shapeSeen: label, mid, side, bigShare, bigAt: [Math.round(bigCx), Math.round(bigCy)], bodyShareOfMap, centDist, ringLand: ring ? ringLand / ring : null, raysLand, raysEdge, raysWater });
-	if (shapeId === 3 && label !== 'sea in the middle') items.push(`layout Mediterranean asked, the water makes: ${label} (middle box ${(100 * mid).toFixed(0)}% water, largest body ${(100 * bigShare).toFixed(0)}% of the water at (${nums.bigAt}))`);
-	if (shapeId === 2 && label !== 'ring') items.push(`layout Continental asked, the water makes: ${label}`);
-	if (shapeId === 1 && !/^edge strips \([12] side/.test(label)) items.push(`layout Coastal asked, the water makes: ${label}`);
-	if ((shapeId === 0 || shapeId === 4) && label !== 'scattered lakes') items.push(`layout ${SHAPES[shapeId]} asked, the water makes: ${label}`);
 
 	return verdict(items.length === 0,
 		`water ${(100 * share).toFixed(1)}% (asked ${asked === null ? '?' : (100 * asked).toFixed(0) + '%'}), shape: ${label}, zones under ${100 * LIMITS.waterLandMin}% land: ${low.length}, drowned: ${drowned.length}, cut off by water: ${cut.length} (walled in by scenery: ${walled.length}), starts stranded: ${startFail.length} of ${starts.length}${boats ? ' (boats needed)' : ''}`,
 		`within ${100 * LIMITS.waterTol} points of the share asked, every zone 45% land or more, none drowned or cut off, the layout asked, every start walks to a town and a mine`, items, nums);
 }
 
-const CHECKS = { 'water': waterReport, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
+/**
+ * The water against the AoE map type the waterShape lever stands for (Research\AoE-map-types, thresholds are proposals): 1 coastal, 2 continental, 3 mediterranean,
+ * 4 highland, 5 islands, 6 archipelago. Always reports the measures; the verdict names which of the type's measures the map misses. Shapes 0, 7 and 8 (lakes, random, the
+ * template's own water) have no AoE reference and are reported without a verdict.
+ */
+function waterType(M) {
+	const { W, H } = M, N = W * H, isW = i => WET.has(M.terr[i]);
+	let opts = {};
+	try { if (M.zones && M.zones.file) opts = JSON.parse(require('fs').readFileSync(M.zones.file, 'utf8')).options || {}; } catch (e) { opts = {}; }
+	const shapeId = opts['bio.waterShape'] !== undefined ? Math.round(Number(opts['bio.waterShape'])) : null;
+	const players = Number(opts.players) || 0;
+	let nw = 0; for (let i = 0; i < N; i++) if (isW(i)) nw++;
+	if (!nw) return { skipped: 'dry map' };
+	const share = nw / N;
+	// water bodies (4-connected) and land pieces (8-connected) on the surface
+	const comp = (pred, nb) => { const id = new Int32Array(N).fill(-1), sizes = [], cx = [], cy = []; for (let s0 = 0; s0 < N; s0++) { if (id[s0] >= 0 || !pred(s0)) continue; const k = sizes.length; let n = 0, sx = 0, sy = 0; const st = [s0]; id[s0] = k; while (st.length) { const c = st.pop(); n++; const x = c % W, y = (c / W) | 0; sx += x; sy += y; for (const [dx, dy] of nb) { const u = x + dx, v = y + dy; if (!M.inb(u, v)) continue; const j = M.idx(0, u, v); if (id[j] < 0 && pred(j)) { id[j] = k; st.push(j); } } } sizes.push(n); cx.push(sx / n); cy.push(sy / n); } return { id, sizes, cx, cy }; };
+	const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+	const wb = comp(isW, N4), lp = comp(i => !isW(i) && (M.ground(i) || M.blocked[i]), N8);
+	const order = wb.sizes.map((n, k) => [n, k]).sort((a, b) => b[0] - a[0]);
+	const big = order.length ? order[0][1] : -1, bigN = order.length ? order[0][0] : 0, second = order.length > 1 ? order[1][0] : 0;
+	const centDist = big >= 0 ? Math.hypot((wb.cx[big] - W / 2) / (W / 2), (wb.cy[big] - H / 2) / (H / 2)) : 1;
+	let raysLand = 0;
+	if (big >= 0) for (let k = 0; k < 16; k++) { const a = (k / 16) * 2 * Math.PI, ux = Math.cos(a), uy = Math.sin(a); let out = false, hit = 'edge'; for (let t = 0; t < 2 * Math.max(W, H); t += 0.5) { const x = Math.round(wb.cx[big] + ux * t), y = Math.round(wb.cy[big] + uy * t); if (!M.inb(x, y)) break; const i = M.idx(0, x, y), inb = wb.id[i] === big; if (!out) { if (!inb) out = true; else continue; } if (!isW(i)) { hit = 'land'; break; } if (!inb) { hit = 'water'; break; } } if (hit === 'land') raysLand++; }
+	const bw = Math.max(4, Math.round(0.12 * Math.min(W, H)));
+	const band = ([x0, y0, w, h]) => { let n = 0; for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) if (isW(M.idx(0, x, y))) n++; return n / (w * h); };
+	const sides = [band([0, 0, W, bw]), band([0, H - bw, W, bw]), band([0, 0, bw, H]), band([W - bw, 0, bw, H])];
+	const landTotal = lp.sizes.reduce((a, b) => a + b, 0) || 1;
+	const lorder = lp.sizes.slice().sort((a, b) => b - a);
+	const landBig = (lorder[0] || 0) / landTotal;
+	const pieces = f => lp.sizes.filter(n => n >= f * N).length;
+	const m = { waterShare: share, bigBodyShare: bigN / N, centDist, raysLand, sides, sidesMin: Math.min(...sides), sidesMax: Math.max(...sides), sidesOver35: sides.filter(v => v >= 0.35).length, sidesOver50: sides.filter(v => v >= 0.5).length, secondOverBig: bigN ? second / bigN : 0, landBig, pieces2: pieces(0.02), pieces1: pieces(0.01) };
+	const miss = [], T = { 1: 'coastal', 2: 'continental', 3: 'mediterranean', 4: 'highland', 5: 'islands', 6: 'archipelago' }[shapeId];
+	const need = (ok, text) => { if (!ok) miss.push(text); };
+	const pc = x => (100 * x).toFixed(0) + '%';
+	if (shapeId === 3) {
+		need(m.bigBodyShare >= 0.15, `largest water body ${pc(m.bigBodyShare)} of the map, 15% or more wanted`);
+		need(m.centDist <= 0.2, `its centre is ${m.centDist.toFixed(2)} from the map centre, 0.20 or less wanted`);
+		need(m.raysLand === 16, `land on ${m.raysLand} of 16 rays from its centre, 16 wanted`);
+		need(m.sidesMax < 0.05, `water in the outer band up to ${pc(m.sidesMax)}, under 5% on every side wanted`);
+		need(m.landBig >= 0.9, `largest land piece ${pc(m.landBig)} of the land, 90% or more wanted (one land ring)`);
+		need(m.secondOverBig <= 0.33, `a second water body ${pc(m.secondOverBig)} of the sea, a third or less wanted`);
+	} else if (shapeId === 5) {
+		need(m.pieces2 >= players, `${m.pieces2} land pieces of 2% or more for ${players} players, one each wanted`);
+		need(m.sidesMin >= 0.5, `the sea reaches the outer band only to ${pc(m.sidesMin)} on one side, 50% or more on all four wanted`);
+	} else if (shapeId === 6) {
+		need(m.pieces1 >= 4, `${m.pieces1} land pieces of 1% or more, 4 or more wanted`);
+		need(lorder[0] / landTotal <= 0.4, `largest piece ${pc(landBig)} of the land, 40% or less wanted`);
+		need(m.sidesMin >= 0.35, `the sea reaches the outer band only to ${pc(m.sidesMin)} on one side, 35% or more on all four wanted`);
+	} else if (shapeId === 2) {
+		need(m.landBig >= 0.9, `largest land piece ${pc(m.landBig)} of the land, 90% or more wanted`);
+		need(m.sidesOver35 === 4, `ocean in the outer band on ${m.sidesOver35} of 4 sides at 35% or more, all four wanted`);
+	} else if (shapeId === 1) {
+		need(m.landBig >= 0.8, `largest land piece ${pc(m.landBig)} of the land, 80% or more wanted`);
+		need(m.sidesOver35 >= 2, `sea in the outer band on ${m.sidesOver35} sides at 35% or more, 2 or more wanted`);
+	} else if (shapeId === 4) {
+		need(m.bigBodyShare < 0.05, `largest water body ${pc(m.bigBodyShare)} of the map, under 5% wanted (no sea)`);
+		need(m.landBig >= 0.95, `largest land piece ${pc(m.landBig)} of the land, 95% or more wanted`);
+		need(m.sidesMax < 0.05, `water in the outer band up to ${pc(m.sidesMax)}, under 5% on every side wanted`);
+	} else {
+		return { pass: true, value: `shape ${shapeId === null ? '?' : shapeId}: no AoE reference, measures only (water ${pc(share)}, largest body ${pc(m.bigBodyShare)}, centre ${centDist.toFixed(2)}, largest land piece ${pc(m.landBig)})`, limit: 'no reference', items: [], nums: m };
+	}
+	return verdict(miss.length === 0, `${T}: water ${pc(share)}, largest body ${pc(m.bigBodyShare)} at ${centDist.toFixed(2)} from the middle, rays on land ${raysLand}/16, sides ${sides.map(pc).join('/')}, largest land piece ${pc(landBig)}, pieces ${m.pieces2} (2%) ${m.pieces1} (1%)`, `the AoE ${T} measures (Research\\AoE-map-types\\${T}.md; thresholds proposed)`, miss, m);
+}
+
+const CHECKS = { 'water': waterReport, 'water-type': waterType, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
 module.exports = { CHECKS, LIMITS };
