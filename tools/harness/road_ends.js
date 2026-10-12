@@ -57,29 +57,33 @@ function scan(M, r) {
 		if (!end) continue;
 		let atDest = false;
 		for (const [dx, dy] of [[0, 0], ...N8]) if (M.inb(x + dx, y + dy) && dest.has(M.idx(l, x + dx, y + dy))) { atDest = true; break; }
-		// a road that stops at a building's door and starts again beyond it (the tavern of K's picture): the end is at a small building and another road piece lies 3 to R tiles off
+		// a road that stops at a building's door and starts again beyond it (the tavern of K's picture): the end is at a small building (tavern, school, scholar; not a mine, dwelling, bank, town, gate or monolith, which are road destinations) and another road piece lies 3 to R tiles off
 		const bld = [];
-		for (const o of M.objs) if (o.l === l && o.visitable && !o.pickup && o.cls !== 'monster' && o.cls !== 'town' && o.cls !== 'gate' && o.cls !== 'monolith' && M.approach(o).some(a => Math.abs((a % W) - x) <= 1 && Math.abs((Math.floor(a / W) % H) - y) <= 1)) bld.push(o);
+		for (const o of M.objs) if (o.l === l && o.visitable && o.cls === 'other' && !o.pickup && M.approach(o).some(a => Math.abs((a % W) - x) <= 1 && Math.abs((Math.floor(a / W) % H) - y) <= 1)) bld.push(o);
 		if (atDest && !bld.length) continue;
-		let best = null;
-		for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
-			const u = x + dx, v = y + dy;
-			if ((!dx && !dy) || !M.inb(u, v)) continue;
-			const k = M.idx(l, u, v), d = Math.max(Math.abs(dx), Math.abs(dy));
-			if (M.road[k] && comp[k] !== comp[i] && (!best || d < best.d)) best = { d, what: `another road piece at (${u},${v})` };
-		}
-		for (const t of towns) if (t.o.l === l) {
-			const d = Math.max(Math.abs(t.front[0] - x), Math.abs(t.front[1] - y));
-			if (d <= r && (!best || d < best.d)) best = { d, what: `the unroaded front tile (${t.front}) of ${t.o.type} (${t.o.at})` };
+		// the other road piece or town front must be a walk of r steps or fewer away over open ground (a pickup is open, a monster's tile is a fight, not a wall)
+		let best = null, far = null;
+		const walked = new Map([[i, 0]]), wq = [[x, y]];
+		for (let h = 0; h < wq.length; h++) {
+			const [qx, qy] = wq[h], d0 = walked.get(M.idx(l, qx, qy));
+			if (d0 >= r) continue;
+			for (const [dx, dy] of N8) {
+				const u = qx + dx, v = qy + dy;
+				if (!M.inb(u, v)) continue;
+				const k = M.idx(l, u, v);
+				if (walked.has(k)) continue;
+				if (M.road[k] && comp[k] !== comp[i]) {
+					if (!best) best = { d: d0 + 1, what: `another road piece at (${u},${v})` };
+					if (!far && d0 + 1 >= 3) far = { d: d0 + 1, what: `another road piece at (${u},${v})`, kind: 'building' };
+					continue;
+				}
+				if (!best) for (const t of towns) if (t.o.l === l && t.front[0] === u && t.front[1] === v) { best = { d: d0 + 1, what: `the unroaded front tile (${t.front}) of ${t.o.type} (${t.o.at})` }; break; }
+				if (!M.ground(k) || M.blocked[k]) continue;
+				walked.set(k, d0 + 1); wq.push([u, v]);
+			}
 		}
 		if (atDest) best = null;
-		let far = null;
-		if (bld.length) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
-			const u = x + dx, v = y + dy;
-			if (!M.inb(u, v)) continue;
-			const k = M.idx(l, u, v), d = Math.max(Math.abs(dx), Math.abs(dy));
-			if (d >= 3 && M.road[k] && comp[k] !== comp[i] && (!far || d < far.d)) far = { d, what: `another road piece at (${u},${v}) beyond ${bld[0].type} (${bld[0].at})`, kind: 'building' };
-		}
+		if (far && bld.length) far.what += ` beyond ${bld[0].type} (${bld[0].at})`; else far = null;
 		if (best) out.push({ l, x, y, ...best, kind: 'end' });
 		else if (far) out.push({ l, x, y, ...far });
 	}

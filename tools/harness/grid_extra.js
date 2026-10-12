@@ -7,10 +7,15 @@
  *   start-road       every start town has a road on its front or entrance tile, joined to a road of at least 8 tiles [K 10-08 15:5x islands start]
  *   town-spacing     two towns closer than 15 walking tiles are the extreme exception; never two starts, never a start and a neutral [K 10-08 15:0x]
  *   road-breaks      a gap of 1 to 4 tiles between two road ends, near a town especially [K 10-08 15:0x "the first incorrect road break"]
+ *   road-corners     two road tiles touching at a corner with neither shared side tile a road: VCMI draws each end as a dead end [K 10-10 road report; Opus Reviewer R27 10-11]
+ *   town-loot        a dear pile (artifact, Pandora's box; not a scroll) within 5 tiles of a town with no monster in its 3x3 and an open way in outside every ring [Opus Reviewer R28 10-11: Pandora's box (44,51) beside the town (45,48), seed 670084743]
+ *   loot-by-zone     a report with no limit: dear piles (not scrolls) by zone class (highLoot, player, lowLoot, standard, town) and by guard level, to compare between builds [Opus Reviewer R36 10-11: open dear loot traded into player zones]
  *   road-ends        a road that stops at a small building's door with another road piece 3 to 6 tiles beyond, or ends 6 tiles or less from another road piece or an unroaded town front [K 10-08 15:0x tavern and castle]
+ *   gold-front       a gold mine with a free entrance tile outside every stack's 3x3 ring (Opus Reviewer 10-09, K 10-08 "a completely unguarded gold mine in my start biome"; the engine guards all)
  *   prison-tiers     prisons of 90000 or more experience stay out of start and town zones and keep a monster beside them [K 10-07 18:3x]
  *   edge-objects     no visited object's picture crosses the top or left edge of the map [K 10-08 14:3x outcasts and school of magic]
  *   free-standing    stacks that close nothing (no object, no passage) [K 10-08 15:2x "essentially freestanding"]
+ *   water            the water share against the share asked, land share per zone (under 45% named), zones drowned or cut off, the shape of the water against the layout asked, every start walking to a town and a mine [lead 10-10, K's Mediterranean complaint]
  *   river-ends       a river ends at a map edge or at water, never in the open, and runs under no visited object [K 10-07 18:3x creeks]
  */
 const sight = require('../mapsight/lib/sight');
@@ -30,6 +35,10 @@ const LIMITS = {
 	gapShare: 0.5,                    // gaps per 100 road tiles
 	minStacks: 30, ineffective: 0.05,
 	riverOpen: 0, riverUnder: 0,
+	waterTol: 0.05,                   // water share against the share asked, in points of the surface
+	waterLandMin: 0.45,               // land share a zone keeps on a map with water (lead 10-10)
+	startLootShare: 1,                 // loot-by-zone is a report: no limit (K's road map holds 34% of its dear piles in player zones on 084ac2c, K's 18 about 7%)
+	townLootR: 5,                     // town-loot: tiles from a town's cells that make a pile "beside" it
 	endReach: 6,                      // road_ends.js: tiles round a road end that name another road piece or a town front
 };
 
@@ -121,6 +130,56 @@ function roadBreaks(M) {
 		{ gaps: gaps.length, nearTown: near.length, per100 });
 }
 
+/** Corner-only road steps (Opus's roaddiag.js): two road tiles that touch at a corner while neither tile beside them is a road. The game draws each as two dead ends. */
+function roadCorners(M) {
+	let tiles = 0; const list = [];
+	const has = (l, x, y) => M.inb(x, y) && M.road[M.idx(l, x, y)];
+	for (let l = 0; l < M.NL; l++) for (let y = 0; y < M.H; y++) for (let x = 0; x < M.W; x++) {
+		if (!has(l, x, y)) continue; tiles++;
+		for (const [dx, dy] of [[1, 1], [1, -1]]) if (has(l, x + dx, y + dy) && !has(l, x + dx, y) && !has(l, x, y + dy)) list.push({ l, a: [x, y], b: [x + dx, y + dy] });
+	}
+	if (tiles < 30) return { skipped: 'the map has almost no road' };
+	return verdict(list.length === 0, `${list.length} corner-only steps in ${tiles} road tiles`, '0 (each shows as two dead ends in the game)',
+		list.slice(0, 6).map(s => `L${s.l} (${s.a})-(${s.b})`), { steps: list.length, roadTiles: tiles });
+}
+
+/** A dear pile beside a town that a walker takes without a fight (Reviewer R28): outside every monster's 3x3 ring (own tile) and with an open approach tile outside every ring. */
+function townLoot(M) {
+	const towns = M.objs.filter(o => o.cls === 'town');
+	const hi = M.objs.filter(o => o.cls === 'high' && o.type !== 'spellScroll');
+	if (!towns.length || !hi.length) return { skipped: 'no towns or dear piles' };
+	const ring = new Set();
+	for (const m of M.monsters) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (M.inb(m.at[0] + dx, m.at[1] + dy)) ring.add(M.idx(m.l, m.at[0] + dx, m.at[1] + dy));
+	const near = hi.filter(o => towns.some(t => t.l === o.l && t.cells.some(c => cheb(c, o.at) <= LIMITS.townLootR)));
+	const bad = near.filter(o => !o.cells.some(([x, y]) => ring.has(M.idx(o.l, x, y))) && M.approach(o).some(i => M.ground(i) && !M.blocked[i] && !ring.has(i)));
+	return verdict(bad.length === 0, `${bad.length} of ${near.length} dear piles within ${LIMITS.townLootR} tiles of a town are open to a walker`, '0 (K and Reviewer R28; by this test the engine leaves 24% of them open, 97 of 411 on its 81 sample maps with towns, so the rule is stricter than the engine)',
+		bad.slice(0, 6).map(o => `${o.type} ${at(o)} beside a town, no guard ring on it and an open way in`), { open: bad.length, near: near.length });
+}
+
+/** Dear loot by zone (Reviewer R36). Start zones are playerStart or cpuStart (the sidecar's zone type; ours also carry the class player, highLoot, lowLoot, standard, town). */
+function lootByZone(M) {
+	const hi = M.objs.filter(o => o.cls === 'high' && o.type !== 'spellScroll');
+	if (!hi.length) return { skipped: 'no dear piles' };
+	if (!M.zones) return { skipped: 'no zone sidecar' };
+	let side = null; try { side = JSON.parse(require('fs').readFileSync(M.zones.file, 'utf8')); } catch (e) { /* the engine's sidecar has no classes */ }
+	const cls = { player: 0, highLoot: 0, lowLoot: 0, standard: 0, town: 0 }; let start = 0, none = 0, weak = 0, known = 0;
+	const idx = sight.index && sight.index();
+	for (const o of hi) {
+		const z = M.zoneAt(o.l, o.at[0], o.at[1]), zi = M.zones.zones.get(z);
+		if (zi && (zi.type === 'playerStart' || zi.type === 'cpuStart')) start++;
+		const lv = side && side.levels && side.levels[o.l];
+		if (lv && lv.classes) { const c = lv.classes[lv.zone[o.at[1] * M.W + o.at[0]]]; if (c in cls) cls[c]++; }
+		const g = M.monsters.filter(m => m.l === o.l && cheb(m.at, o.at) <= 1);
+		if (!g.length) { none++; continue; }
+		const ls = g.map(m => { const c = idx && idx.creature(m.subtype); return c && c.level != null ? c.level : null; }).filter(v => v !== null);
+		if (ls.length) { known++; if (Math.max(...ls) <= 2) weak++; }
+	}
+	const share = start / hi.length;
+	return verdict(share <= LIMITS.startLootShare, `${start} of ${hi.length} dear piles in start zones (${(100 * share).toFixed(1)}%); by class highLoot ${cls.highLoot}, player ${cls.player}, lowLoot ${cls.lowLoot}, standard ${cls.standard}, town ${cls.town}; ${weak} behind level 1 or 2 guards (of ${known} with a known guard level), ${none} with no guard beside them`,
+		"none: compare builds on the same map (084ac2c on K road map 2090: highLoot 28, player 20 of 58; the engine start-type zones hold 12.3% pooled on 81 sample maps, class names exist only in our sidecar)",
+		[], { start, n: hi.length, share, weak, known, none, ...cls });
+}
+
 function roadEnds(M) {
 	let roadTiles = 0, land = 0;
 	for (let i = 0; i < M.road.length; i++) { roadTiles += M.road[i]; if (M.ground(i)) land++; }
@@ -130,20 +189,40 @@ function roadEnds(M) {
 		ends.slice(0, 6).map(e => `road end L${e.l} (${e.x},${e.y}): ${e.d} tiles from ${e.what}`), { ends: ends.length, building: bld.length });
 }
 
+/** A gold mine a walker takes without a fight (Opus's gold_front.js: a free entrance tile outside every monster's ring; a tile holding another pile counts as blocked, K's 10-05 rule). */
+function goldFront(M) {
+	const ring = new Set();
+	for (const m of M.monsters) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (M.inb(m.at[0] + dx, m.at[1] + dy)) ring.add(M.idx(m.l, m.at[0] + dx, m.at[1] + dy));
+	const gold = M.objs.filter(q => q.cls === 'mine' && /gold/i.test(String(q.subtype || q.type)));
+	if (!gold.length) return { skipped: 'no gold mines' };
+	// K's rule (10-05, as approach-open): an entrance tile that holds another pile is blocked too, a walker takes the pile first and meets the next guard
+	const loot = new Set();
+	for (const o of M.objs) if (o.pickup || o.cls === 'bank' || o.cls === 'dwelling') for (const [x, y] of o.cells) if (M.inb(x, y)) loot.add(M.idx(o.l, x, y));
+	const open = gold.filter(q => M.approach(q).filter(i => M.ground(i) && !M.blocked[i] && !loot.has(i)).some(i => !ring.has(i)));
+	return verdict(open.length === 0, `${open.length} of ${gold.length} gold mines open to a walker`, '0 (the engine guards every gold mine)',
+		open.slice(0, 6).map(q => `${q.subtype || q.type} ${at(q)} has a free entrance tile outside every guard ring`), { open: open.length, n: gold.length });
+}
+
 function prisonTiers(M) {
 	const pr = M.objs.filter(o => o.type === 'prison');
 	if (!pr.length) return { skipped: 'no prisons' };
 	if (!M.zones) return { skipped: 'no zone sidecar' };
 	const bad = [], tiers = {}, byZone = {};
+	// guarded: a monster within 1 tile (the engine's way; the open-side test alone fails 290 of its 90000+ prisons on the 91 engine sample maps), or, Reviewer R1 10-10,
+	// every tile the prison is visited from closed by rock, scenery, other loot or a guard's 3x3 ring (e0cfc5c seed 902, 500000 prison L1 (19,34), stacks 2 tiles off)
+	const ring = new Set(), loot = new Map();
+	for (const m of M.monsters) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (M.inb(m.at[0] + dx, m.at[1] + dy)) ring.add(M.idx(m.l, m.at[0] + dx, m.at[1] + dy));
+	for (const o of M.objs) if (o.pickup || o.cls === 'bank' || o.cls === 'dwelling') for (const [x, y] of o.cells) if (M.inb(x, y)) loot.set(M.idx(o.l, x, y), o);
+	const openWay = o => M.approach(o).some(i => M.ground(i) && !M.blocked[i] && !ring.has(i) && (!loot.has(i) || loot.get(i) === o));
 	for (const o of pr) {
 		const exp = (o.options && o.options.experience) || 0, z = M.zones.zones.get(M.zoneAt(o.l, o.at[0], o.at[1])), zt = z ? z.type : '?';
 		tiers[exp] = (tiers[exp] || 0) + 1;
 		const row = byZone[zt] || (byZone[zt] = {}); row[exp] = (row[exp] || 0) + 1;
 		if (exp < 90000) continue;
 		const poor = /start|town|player/i.test(zt || '') || (z && z.townType !== undefined && z.townType !== null && /start/i.test(zt || ''));
-		const guarded = M.monsters.some(m => m.l === o.l && cheb(m.at, o.at) <= 1);
+		const guarded = M.monsters.some(m => m.l === o.l && cheb(m.at, o.at) <= 1) || (M.approach(o).length > 0 && !openWay(o));
 		if (poor) bad.push(`prison of ${exp} experience ${at(o)} in a ${zt} zone`);
-		else if (!guarded) bad.push(`prison of ${exp} experience ${at(o)} has no monster beside it`);
+		else if (!guarded) bad.push(`prison of ${exp} experience ${at(o)} has no monster beside it and an open way in (an entrance tile outside rock, loot and every guard ring)`);
 	}
 	return verdict(bad.length === 0, `${bad.length} of ${pr.length} prisons wrong; tiers ${JSON.stringify(tiers)}`, 'none of 90000+ in a start or town zone, all guarded', bad, { byZone, tiers });
 }
@@ -205,7 +284,7 @@ function freeStanding(M) {
 		if (!pass) idle.push(m);
 	}
 	const share = idle.length / stacks.length;
-	return verdict(share <= LIMITS.ineffective, `${idle.length} of ${stacks.length} stacks close nothing (${(100 * share).toFixed(1)}%)`, `<= ${100 * LIMITS.ineffective}% (the engine's own maps: about 3.6%)`,
+	return verdict(share <= LIMITS.ineffective, `${idle.length} of ${stacks.length} stacks close nothing (${(100 * share).toFixed(1)}%)`, `<= ${100 * LIMITS.ineffective}% (the engine's own maps, 69 of the 91 sample with 30+ stacks: pooled 4.9%, per map median 5.2%, 90th percentile 12.9%, highest 20.6%; 5% a map fails half of them, read the pooled share)`,
 		idle.slice(0, 6).map(m => `${m.subtype} stack ${at(m)} closes no object's access and no zone passage`), { idle: share, n: stacks.length });
 }
 
@@ -234,5 +313,186 @@ function riverEnds(M) {
 	return verdict(openEnds <= LIMITS.riverOpen && under <= LIMITS.riverUnder, `${tiles} river tiles, ${openEnds} ends in the open, ${under} under visited objects`, '0 and 0', bad);
 }
 
-const CHECKS = { 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-ends': roadEnds, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
+/**
+ * Water (lead's order 2026-10-10 19:5x, K's Mediterranean complaint): the water share of the surface against the share asked (the sidecar's bio.waterCoverage),
+ * the land share of every zone (a zone under 45% land is named), a zone drowned (under 5% land or under 40 land tiles) or cut off (its land lies in no piece a start reaches on foot),
+ * the shape the water makes against the layout asked (bio.waterShape: 3 Mediterranean wants a sea in the middle, 2 Continental a ring, 1 Coastal strips on one or two sides),
+ * and whether every start walks to another town and to a mine over land (shapes 5 Islands and 6 Archipelago need boats and are reported, not failed).
+ * Pass needs none of those to fail; the numbers are in nums for the tables.
+ */
+function waterReport(M) {
+	const { W, H } = M, N = W * H;
+	const isW = i => WET.has(M.terr[i]);
+	let nw = 0;
+	for (let i = 0; i < N; i++) if (isW(i)) nw++;
+	let opts = {};
+	try { if (M.zones && M.zones.file) opts = JSON.parse(require('fs').readFileSync(M.zones.file, 'utf8')).options || {}; } catch (e) { opts = {}; }
+	const asked = opts['bio.waterCoverage'] !== undefined ? Number(opts['bio.waterCoverage']) : null;
+	const shapeId = opts['bio.waterShape'] !== undefined ? Math.round(Number(opts['bio.waterShape'])) : null;
+	const content = opts['bio.waterContent'] !== undefined ? Math.round(Number(opts['bio.waterContent'])) : null;
+	const share = nw / N;
+	if (!nw && (asked === null || asked <= 0)) return { skipped: 'dry map' };
+	const SHAPES = ['lakes', 'coastal', 'continental', 'mediterranean', 'highland', 'islands', 'archipelago', 'random', 'template'];
+	const items = [], nums = { share, asked, shape: shapeId === null ? null : SHAPES[shapeId], content };
+	const boats = shapeId === 5 || shapeId === 6 || content === 2;
+
+	// the share against the share asked (a template's own water, shape 8, and an unknown ask are reported only)
+	if (asked !== null && asked > 0 && shapeId !== 8 && Math.abs(share - asked) > LIMITS.waterTol) items.push(`water ${(100 * share).toFixed(1)}% of the surface against ${(100 * asked).toFixed(0)}% asked`);
+
+	// land share of each zone on the surface
+	const zl = new Map();
+	if (M.zones && M.zones.zoneOf) {
+		for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+			const z = M.zoneAt(0, x, y);
+			if (z === undefined || z === null || z < 0) continue;
+			const r = zl.get(z) || { land: 0, water: 0 };
+			if (isW(M.idx(0, x, y))) r.water++; else r.land++;
+			zl.set(z, r);
+		}
+	}
+	const low = [], drowned = [];
+	for (const [z, r] of [...zl].sort((a, b) => a[0] - b[0])) {
+		const t = r.land + r.water, sh = r.land / t, zt = (M.zones.zones.get(z) || {}).type || '?';
+		if (r.water === 0) continue;
+		if (r.land < 40 || sh < 0.05) drowned.push(`zone ${z} (${zt}): ${r.land} land tiles of ${t}`);
+		else if (sh < LIMITS.waterLandMin) low.push(`zone ${z} (${zt}): ${(100 * sh).toFixed(1)}% land (${r.land} of ${t})`);
+	}
+	nums.zoneLand = Object.fromEntries([...zl].map(([z, r]) => [z, +(r.land / (r.land + r.water)).toFixed(3)]));
+	nums.lowZones = low.length; nums.drownedZones = drowned.length;
+	for (const s of drowned) items.push(`drowned ${s}`);
+	for (const s of low) items.push(`under ${100 * LIMITS.waterLandMin}% land: ${s}`);
+
+	// walking over land from each start: other towns, mines, and the zones whose land lies in a piece no start reaches
+	const soft = new Set();
+	for (const o of M.objs) {
+		if (o.l !== 0) continue;
+		if (o.cls === 'monster') soft.add(M.idx(0, o.at[0], o.at[1]));
+		else if (o.pickup) for (const [x, y] of (o.cells || [])) if (M.inb(x, y)) soft.add(M.idx(0, x, y));
+	}
+	// over land only (a boat is the way over water) and with water passable (what dwelling-reach walks): a zone reached the second way only is cut off by water,
+	// one reached neither way is walled in by scenery
+	const passLand = i => M.ground(i) && !isW(i) && (!M.blocked[i] || soft.has(i));
+	const passAll = i => (M.ground(i) || isW(i)) && (!M.blocked[i] || soft.has(i));
+	const starts = startTowns(M).filter(o => o.l === 0);
+	const towns = M.objs.filter(o => o.cls === 'town' && o.l === 0), mines = M.objs.filter(o => o.cls === 'mine' && o.l === 0);
+	// monoliths of one colour (and the gates) join places on the level as the dwelling-reach walk takes them
+	const portals = M.objs.filter(o => o.l === 0 && (o.cls === 'gate' || o.cls === 'monolith'));
+	const flood = (s, pass) => {
+		const seen = new Uint8Array(N), q = [], used = new Set();
+		const seed = i => { if (pass(i) && !seen[i]) { seen[i] = 1; q.push(i); } };
+		M.approach(s).forEach(seed);
+		for (;;) {
+			for (let h = 0; h < q.length; h++) {
+				const c = q[h], x = c % W, y = (c / W) | 0;
+				for (const [dx, dy] of N8) if (M.inb(x + dx, y + dy)) seed(M.idx(0, x + dx, y + dy));
+			}
+			q.length = 0;
+			let grew = false;
+			for (const p of portals) {
+				if (used.has(p) || !M.approach(p).some(i => seen[i])) continue;
+				used.add(p); grew = true;
+				for (const o of portals) if (o.type === p.type && o.subtype === p.subtype) M.approach(o).forEach(seed);
+				if (p.cls === 'gate') for (const o of portals) if (o.cls === 'gate') M.approach(o).forEach(seed);
+			}
+			if (!grew && !q.length) break;
+		}
+		return seen;
+	};
+	const reachSets = [], reachAll = [];
+	const startFail = [];
+	for (const s of starts) {
+		const seen = flood(s, passLand);
+		reachSets.push(seen); reachAll.push(flood(s, passAll));
+		const hits = list => list.filter(o => o !== s && M.approach(o).some(i => seen[i]));
+		const t = hits(towns), m = hits(mines);
+		if (!t.length || !m.length) startFail.push(`start ${at(s)} reaches ${t.length ? '' : 'no other town'}${!t.length && !m.length ? ' and ' : ''}${m.length ? '' : 'no mine'} on foot`);
+	}
+	nums.starts = starts.length; nums.startsStranded = startFail.length;
+	if (!boats) for (const s of startFail) items.push(s);
+	const reached = i => reachSets.some(r => r[i]);
+	const reachedAll = i => reachAll.some(r => r[i]);
+	const cut = [], walled = [];
+	if (!boats && starts.length) {
+		for (const [z, r] of [...zl].sort((a, b) => a[0] - b[0])) {
+			if (r.land < 40 || r.land / (r.land + r.water) < 0.05) continue;
+			let land = 0, ok = 0, okAll = 0;
+			for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+				if (M.zoneAt(0, x, y) !== z) continue;
+				const i = M.idx(0, x, y);
+				if (!passLand(i)) continue;
+				land++; if (reached(i)) ok++; if (reachedAll(i)) okAll++;
+			}
+			const nm = `zone ${z} (${(M.zones.zones.get(z) || {}).type || '?'})`;
+			if (land >= 40 && ok < 0.5 * land) { if (okAll >= 0.5 * land) cut.push(`${nm}: ${ok} of ${land} walkable land tiles reachable from a start on foot, ${okAll} with the water crossed`); else walled.push(`${nm}: ${okAll} of ${land} walkable tiles reachable even across water`); }
+		}
+	}
+	nums.cutZones = cut.length; nums.walledZones = walled.length;
+	for (const s of cut) items.push(`cut off by water: ${s}`);
+
+	// the shape of the water: bands along the four edges, the middle box, the largest body
+	const bw = Math.max(4, Math.round(0.12 * Math.min(W, H)));
+	const sides = [[0, 0, W, bw], [0, H - bw, W, bw], [0, 0, bw, H], [W - bw, 0, bw, H]];
+	const frac = ([x0, y0, w, h]) => { let n = 0; for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) if (isW(M.idx(0, x, y))) n++; return n / (w * h); };
+	const side = sides.map(frac);
+	const mid = frac([Math.round(W / 4), Math.round(H / 4), Math.round(W / 2), Math.round(H / 2)]);
+	const seenW = new Uint8Array(N); let big = 0, bigCx = 0, bigCy = 0, bigSeed = -1;
+	for (let s = 0; s < N; s++) {
+		if (!isW(s) || seenW[s]) continue;
+		const st = [s]; seenW[s] = 1; let n = 0, sx = 0, sy = 0;
+		while (st.length) {
+			const c = st.pop(); n++; const x = c % W, y = (c / W) | 0; sx += x; sy += y;
+			for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const u = x + dx, v = y + dy; if (!M.inb(u, v)) continue; const k = M.idx(0, u, v); if (isW(k) && !seenW[k]) { seenW[k] = 1; st.push(k); } }
+		}
+		if (n > big) { big = n; bigCx = sx / n; bigCy = sy / n; bigSeed = s; }
+	}
+	const bigShare = nw ? big / nw : 0;
+	// the largest body against a Mediterranean (lead 10-11, K: "a sea in the middle with land around the shore"): how central its centre of mass is (distance from the
+	// map centre as a share of the half side), the share of the map it covers, the land in a 3-tile band along its shore, and how many of 16 rays from its centre meet land
+	// (not the map edge) right after leaving the body
+	const inBody = new Uint8Array(N);
+	if (bigSeed >= 0) { const st = [bigSeed]; inBody[bigSeed] = 1; while (st.length) { const c = st.pop(), x = c % W, y = (c / W) | 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const u = x + dx, v = y + dy; if (!M.inb(u, v)) continue; const k = M.idx(0, u, v); if (isW(k) && !inBody[k]) { inBody[k] = 1; st.push(k); } } } }
+	let ring = 0, ringLand = 0;
+	for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+		const i = M.idx(0, x, y); if (inBody[i]) continue;
+		let near = false;
+		for (let dy = -3; dy <= 3 && !near; dy++) for (let dx = -3; dx <= 3; dx++) { if (M.inb(x + dx, y + dy) && inBody[M.idx(0, x + dx, y + dy)]) { near = true; break; } }
+		if (!near) continue;
+		ring++; if (!isW(i)) ringLand++;
+	}
+	let raysLand = 0, raysEdge = 0, raysWater = 0;
+	if (bigSeed >= 0) for (let k = 0; k < 16; k++) {
+		const a = (k / 16) * 2 * Math.PI, ux = Math.cos(a), uy = Math.sin(a);
+		let t = 0, out = false, hit = null;
+		for (; t < 2 * Math.max(W, H); t += 0.5) {
+			const x = Math.round(bigCx + ux * t), y = Math.round(bigCy + uy * t);
+			if (!M.inb(x, y)) { hit = 'edge'; break; }
+			const i = M.idx(0, x, y), inb = inBody[i];
+			if (!out) { if (!inb) out = true; else continue; }
+			if (!isW(i)) { hit = 'land'; break; }
+			if (!inb && isW(i)) { hit = 'water'; break; }
+		}
+		if (hit === 'land') raysLand++; else if (hit === 'water') raysWater++; else raysEdge++;
+	}
+	const bodyShareOfMap = big / N, centDist = Math.hypot((bigCx - W / 2) / (W / 2), (bigCy - H / 2) / (H / 2));
+	const centred = Math.abs(bigCx - W / 2) < 0.15 * W && Math.abs(bigCy - H / 2) < 0.15 * H;
+	const edgeSides = side.filter(v => v >= 0.35).length;
+	let label;
+	if (!nw) label = 'none';
+	else if (bigShare >= 0.6 && centred && mid >= 1.2 * share && mid >= 0.3) label = 'sea in the middle';
+	else if (edgeSides === 4) label = 'ring';
+	else if (edgeSides >= 1) label = `edge strips (${edgeSides} side${edgeSides > 1 ? 's' : ''})`;
+	else if (bigShare < 0.5) label = 'scattered lakes';
+	else label = 'one body off centre';
+	Object.assign(nums, { shapeSeen: label, mid, side, bigShare, bigAt: [Math.round(bigCx), Math.round(bigCy)], bodyShareOfMap, centDist, ringLand: ring ? ringLand / ring : null, raysLand, raysEdge, raysWater });
+	if (shapeId === 3 && label !== 'sea in the middle') items.push(`layout Mediterranean asked, the water makes: ${label} (middle box ${(100 * mid).toFixed(0)}% water, largest body ${(100 * bigShare).toFixed(0)}% of the water at (${nums.bigAt}))`);
+	if (shapeId === 2 && label !== 'ring') items.push(`layout Continental asked, the water makes: ${label}`);
+	if (shapeId === 1 && !/^edge strips \([12] side/.test(label)) items.push(`layout Coastal asked, the water makes: ${label}`);
+	if ((shapeId === 0 || shapeId === 4) && label !== 'scattered lakes') items.push(`layout ${SHAPES[shapeId]} asked, the water makes: ${label}`);
+
+	return verdict(items.length === 0,
+		`water ${(100 * share).toFixed(1)}% (asked ${asked === null ? '?' : (100 * asked).toFixed(0) + '%'}), shape: ${label}, zones under ${100 * LIMITS.waterLandMin}% land: ${low.length}, drowned: ${drowned.length}, cut off by water: ${cut.length} (walled in by scenery: ${walled.length}), starts stranded: ${startFail.length} of ${starts.length}${boats ? ' (boats needed)' : ''}`,
+		`within ${100 * LIMITS.waterTol} points of the share asked, every zone 45% land or more, none drowned or cut off, the layout asked, every start walks to a town and a mine`, items, nums);
+}
+
+const CHECKS = { 'water': waterReport, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
 module.exports = { CHECKS, LIMITS };

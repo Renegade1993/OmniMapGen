@@ -102,3 +102,111 @@ test('road-ends: a road that stops at a tavern door with another piece 5 tiles b
 	assert.ok(/another road piece at/.test(bad.items[0]), bad.items[0]);
 	assert.strictEqual(CHECKS['road-ends'](mk(false)).pass, true);
 });
+
+test('gold-front: a gold mine with a free entrance tile outside every stack ring fails, ringed it passes', () => {
+	const mine = { l: 0, cls: 'mine', type: 'mine', subtype: 'goldMine', x: 20, y: 20, at: [20, 20], entr: [[20, 20]], cells: [[20, 20]], visitable: true, template: { mask: ['A'] } };
+	const stack = (x, y) => ({ l: 0, cls: 'monster', type: 'monster', subtype: 'imp', at: [x, y], x, y, cells: [], entr: [[x, y]], visitable: false });
+	assert.strictEqual(CHECKS['gold-front'](fake(40, 40, [mine])).pass, false);
+	// the three tiles below the door (19..21, 21) all lie in the ring of a stack at (20,22)
+	assert.strictEqual(CHECKS['gold-front'](fake(40, 40, [mine, stack(20, 22)])).pass, true);
+});
+
+test('prison-tiers: 90000 experience in a start zone fails, 15000 there passes, 90000 in a treasure zone passes only with a monster beside it', () => {
+	const prison = (exp, x = 5, y = 5) => ({ l: 0, cls: 'low', type: 'prison', subtype: 'prison', pickup: true, options: { experience: exp }, x, y, at: [x, y], entr: [[x, y]], cells: [[x, y]], visitable: true, template: { mask: ['A'] } });
+	const stack = (x, y) => ({ l: 0, cls: 'monster', type: 'monster', subtype: 'imp', at: [x, y], x, y, cells: [], entr: [[x, y]], visitable: false });
+	const mk = (objs, type) => fake(40, 40, objs, { zones: { zones: new Map([[1, { type }]]), zoneOf: () => 1 }, zoneAt: () => 1 });
+	assert.strictEqual(CHECKS['prison-tiers'](mk([prison(90000), stack(5, 6)], 'playerStart')).pass, false);
+	assert.strictEqual(CHECKS['prison-tiers'](mk([prison(15000)], 'playerStart')).pass, true);
+	assert.strictEqual(CHECKS['prison-tiers'](mk([prison(90000)], 'treasure')).pass, false);
+	assert.strictEqual(CHECKS['prison-tiers'](mk([prison(500000), stack(5, 6)], 'treasure')).pass, true);
+});
+
+test('prison-tiers: guarded by the approach-tile rule, a stack two tiles off whose ring and rock close every entrance passes, one that leaves a tile open fails (Reviewer R1, e0cfc5c seed 902)', () => {
+	const prison = { l: 0, cls: 'low', type: 'prison', subtype: 'prison', pickup: true, options: { experience: 500000 }, x: 5, y: 5, at: [5, 5], entr: [[5, 5]], cells: [[5, 5]], visitable: true, template: { mask: ['A'] } };
+	const stack = { l: 0, cls: 'monster', type: 'monster', subtype: 'imp', at: [4, 7], x: 4, y: 7, cells: [], entr: [[4, 7]], visitable: false };
+	const mk = rock => {
+		const M = fake(40, 40, [prison, stack], { zones: { zones: new Map([[1, { type: 'treasure' }]]), zoneOf: () => 1 }, zoneAt: () => 1 });
+		if (rock) M.blocked[M.idx(0, 6, 6)] = 1;
+		return M;
+	};
+	// the entrance tiles are (4,6), (5,6), (6,6); the ring of (4,7) covers the first two, rock the third; no stack is beside the prison
+	assert.strictEqual(CHECKS['prison-tiers'](mk(true)).pass, true);
+	assert.strictEqual(CHECKS['prison-tiers'](mk(false)).pass, false);
+});
+
+test('river-ends: a river that stops in the open fails, one that runs to the map edge passes, one under a visited object fails', () => {
+	const W = 20, H = 20;
+	const mk = (y1, objs = []) => {
+		const rows = Array.from({ length: H }, (_, y) => Array.from({ length: W }, (_, x) => (x === 10 && y <= y1 ? 'gr0_rw0_' : 'gr0_')));
+		return fake(W, H, objs, { levels: [{ rows }] });
+	};
+	const r = CHECKS['river-ends'](mk(9));
+	assert.strictEqual(r.pass, false, r.value);
+	assert.ok(/in the open/.test(r.items[0]), r.items[0]);
+	assert.strictEqual(CHECKS['river-ends'](mk(H - 1)).pass, true);
+	const chest = { l: 0, cls: 'low', type: 'treasureChest', pickup: true, x: 10, y: 5, at: [10, 5], entr: [[10, 5]], cells: [[10, 5]], visitable: true, template: { mask: ['A'] } };
+	const under = CHECKS['river-ends'](mk(H - 1, [chest]));
+	assert.strictEqual(under.pass, false, under.value);
+	assert.ok(/under a visited object/.test(under.items[0]), under.items[0]);
+});
+
+test('water: a lake in the middle reads as a sea in the middle, a strip along the left edge as edge strips, a dry map is skipped, a zone with no land is drowned', () => {
+	const W = 40, H = 40;
+	const mk = wet => {
+		const M = fake(W, H, [], { header: { players: {} } });
+		for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (wet(x, y)) M.terr[M.idx(0, x, y)] = 'wt';
+		M.ground = i => M.terr[i] !== 'wt';
+		return M;
+	};
+	assert.strictEqual(CHECKS.water(mk(() => false)).skipped, 'dry map');
+	const sea = CHECKS.water(mk((x, y) => Math.abs(x - 20) < 10 && Math.abs(y - 20) < 10));
+	assert.strictEqual(sea.nums.shapeSeen, 'sea in the middle', sea.value);
+	assert.ok(sea.nums.centDist < 0.05 && Math.abs(sea.nums.bodyShareOfMap - 0.2256) < 0.001 && sea.nums.raysLand === 16, JSON.stringify(sea.nums));
+	const edge = CHECKS.water(mk(x => x < 8));
+	assert.ok(edge.nums.centDist > 0.5 && edge.nums.raysLand < 16, JSON.stringify(edge.nums));
+	const strip = CHECKS.water(mk(x => x < 8));
+	assert.ok(/^edge strips \(1 side\)/.test(strip.nums.shapeSeen), strip.value);
+	const zoned = mk((x, y) => x < 10 && y < 10);
+	const zone = (x, y) => (x < 10 && y < 10 ? 1 : 2);
+	zoned.zones = { zones: new Map([[1, { type: 'treasure' }], [2, { type: 'playerStart' }]]), zoneOf: (l, x, y) => zone(x, y) };
+	zoned.zoneAt = (l, x, y) => zone(x, y);
+	const d = CHECKS.water(zoned);
+	assert.strictEqual(d.nums.drownedZones, 1, d.value);
+	assert.ok(d.items.some(s => /drowned zone 1 \(treasure\)/.test(s)), d.items.join('|'));
+});
+
+test('road-corners: a staircase of corner-only steps fails, the same road with the side tile added passes (Reviewer R27, K road report 2026-10-10)', () => {
+	const M = fake(40, 40, []);
+	roadRow(M, 10, 5, 20);
+	roadRow(M, 30, 0, 29);
+	for (let k = 1; k <= 3; k++) M.road[M.idx(0, 20 + k, 10 + k)] = 1;
+	const bad = CHECKS['road-corners'](M);
+	assert.strictEqual(bad.pass, false, bad.value);
+	assert.strictEqual(bad.nums.steps, 3);
+	for (let k = 1; k <= 3; k++) M.road[M.idx(0, 20 + k - 1, 10 + k)] = 1;
+	const ok = CHECKS['road-corners'](M);
+	assert.strictEqual(ok.pass, true, ok.value);
+	assert.strictEqual(CHECKS['road-corners'](fake(40, 40, [])).skipped, 'the map has almost no road');
+});
+
+test('town-loot: a Pandora\'s box two tiles from a town with no monster fails, a monster beside it passes, one 9 tiles away is not beside the town (Reviewer R28)', () => {
+	const box = (x, y) => ({ l: 0, cls: 'high', type: 'pandoraBox', at: [x, y], x, y, entr: [[x, y]], cells: [[x, y]], pickup: true });
+	const mon = (x, y) => ({ l: 0, cls: 'monster', type: 'monster', at: [x, y], x, y, cells: [[x, y]] });
+	const open = fake(40, 40, [town(10, 10), box(11, 13)]);
+	const bad = CHECKS['town-loot'](open);
+	assert.strictEqual(bad.pass, false, bad.value);
+	assert.ok(/pandoraBox L0 \(11,13\)/.test(bad.items[0]), bad.items[0]);
+	assert.strictEqual(CHECKS['town-loot'](fake(40, 40, [town(10, 10), box(11, 13), mon(12, 13)])).pass, true);
+	assert.strictEqual(CHECKS['town-loot'](fake(40, 40, [town(10, 10), box(20, 20)])).pass, true);
+});
+
+test('loot-by-zone: a report that counts dear piles by zone class and names the guard-free ones, never a failure (Reviewer R36)', () => {
+	const box = (x, y) => ({ l: 0, cls: 'high', type: 'pandoraBox', at: [x, y], x, y, entr: [[x, y]], cells: [[x, y]], pickup: true });
+	const zones = { zones: new Map([[0, { id: 0, type: 'playerStart' }]]), file: 'nofile.json' };
+	const M = fake(40, 40, [box(5, 5), box(8, 8)], { zones, zoneAt: () => 0 });
+	const r = CHECKS['loot-by-zone'](M);
+	assert.strictEqual(r.pass, true, r.value);
+	assert.strictEqual(r.nums.start, 2);
+	assert.strictEqual(r.nums.none, 2);
+	assert.strictEqual(CHECKS['loot-by-zone'](fake(40, 40, [])).skipped, 'no dear piles');
+});

@@ -15,11 +15,10 @@ const { execFile } = require('child_process');
 const sight = require('../mapsight/lib/sight');
 
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
-const PROJECT = path.join(__dirname, '..', '..', '..');
-const REPORTS = process.env.K_REPORTS || path.join(PROJECT, '.tmp', 'k-reports');
-const ROOT = process.env.VMAPGEN_TEST_ROOT || path.join(PROJECT, 'VCMI', 'dmbtest');
-const K_USER = process.env.DMB_USER_DIR || path.join(require('os').homedir(), 'Documents', 'My Games', "Dead Man's Boots");
-const NODE_MODULES = path.join(PROJECT, 'VCMIMapGen', 'node_modules');
+const REPORTS = process.env.K_REPORTS || 'C:/AI Projects/Heroes 3/.tmp/k-reports';
+const ROOT = process.env.VMAPGEN_TEST_ROOT || 'C:/AI Projects/Heroes 3/VCMI/dmbtest';
+const K_USER = process.env.DMB_USER_DIR || require('path').join(require('os').homedir(), 'Documents', 'My Games', "Dead Man's Boots");
+const NODE_MODULES = 'C:/AI Projects/Heroes 3/VCMIMapGen/node_modules';
 const tips = arg('--tips', '').split(',').filter(Boolean).map(s => { const [n, d] = s.split(/=(.*)/s); return { n, d }; });
 const OUT = path.resolve(arg('--out', '.tmp/zone_links'));
 const RATIOS = arg('--ratios', 'default,0,1').split(',');
@@ -58,6 +57,13 @@ function links(M) {
 	return { links: all.length, guarded: all.filter(p => p.guarded).length, width: all.length ? all.reduce((a, p) => a + p.tiles, 0) / all.length : 0 };
 }
 
+/** The generator's own count (Opus's log line "doorway guards N of M doorway link(s)", one per level): the link guards themselves, not every stack beside a passage tile. */
+function doorway(file) {
+	let n = 0, m = 0;
+	try { for (const x of fs.readFileSync(file + '.log', 'utf8').matchAll(/doorway guards (\d+) of (\d+)/g)) { n += +x[1]; m += +x[2]; } } catch (e) { /* no log */ }
+	return { n, m };
+}
+
 (async () => {
 	fs.mkdirSync(OUT, { recursive: true });
 	const jobs = [];
@@ -77,16 +83,16 @@ function links(M) {
 	await Promise.all(Array.from({ length: LANES }, async () => {
 		while (next < jobs.length && Date.now() < DEADLINE && !fs.existsSync(path.join(OUT, 'STOP'))) {
 			const j = jobs[next++], err = await generate(j.tip, j.opt, j.seed, j.file);
-			rows.push({ j, err, v: err ? null : links(sight.load(j.file)) });
+			rows.push({ j, err, v: err ? null : { ...links(sight.load(j.file)), door: doorway(j.file) } });
 		}
 	}));
-	console.log('tip        case      ratio    maps  links per map  guarded per map  guarded share  passage width');
+	console.log('tip        case      ratio    maps  links per map  guarded per map  guarded share  passage width  doorway guards (generator count)');
 	const groups = new Map();
 	for (const r of rows) { const k = `${r.j.tip.n}|${r.j.c.id}|${r.j.r}`; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); }
 	for (const [k, g] of [...groups].sort()) {
 		const ok = g.filter(x => x.v), [t, c, r] = k.split('|');
 		const sum = f => ok.reduce((a, x) => a + f(x.v), 0);
-		console.log(`${t.padEnd(10)} ${c.padEnd(9)} ${r.padEnd(8)} ${String(ok.length).padStart(3)}/${g.length}  ${(sum(v => v.links) / Math.max(1, ok.length)).toFixed(1).padStart(12)}  ${(sum(v => v.guarded) / Math.max(1, ok.length)).toFixed(1).padStart(14)}  ${(100 * sum(v => v.guarded) / Math.max(1, sum(v => v.links))).toFixed(0).padStart(11)}%  ${(sum(v => v.width) / Math.max(1, ok.length)).toFixed(1).padStart(8)}`);
+		console.log(`${t.padEnd(10)} ${c.padEnd(9)} ${r.padEnd(8)} ${String(ok.length).padStart(3)}/${g.length}  ${(sum(v => v.links) / Math.max(1, ok.length)).toFixed(1).padStart(12)}  ${(sum(v => v.guarded) / Math.max(1, ok.length)).toFixed(1).padStart(14)}  ${(100 * sum(v => v.guarded) / Math.max(1, sum(v => v.links))).toFixed(0).padStart(11)}%  ${(sum(v => v.width) / Math.max(1, ok.length)).toFixed(1).padStart(8)}  ${sum(v => v.door.n)} of ${sum(v => v.door.m)}`);
 	}
 	for (const r of rows) if (r.err) console.log(`FAILED ${r.j.file}: ${r.err}`);
 })();
