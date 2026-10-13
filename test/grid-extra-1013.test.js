@@ -124,3 +124,13 @@ test('water-content: an empty sea fails the sea-to-land ratio, a sea with object
 	assert.strictEqual(full.nums.pickup, 40);
 	assert.ok(full.nums.ratio > 0.5 && full.pass === true, full.value);
 });
+
+test('road-terminals: dead ends are classified by the visiting tile they stand on; one in the open is floating, one on a monolith\'s visiting tile is at the monolith (K 10-11 road terminations)', () => {
+	const M = fake(60, 40, [mono(30, 20), town(5, 5), town(50, 30)]);
+	roadRow(M, 6, 3, 40); roadRow(M, 31, 40, 55);
+	roadRow(M, 21, 30, 35);                      // a spur from the monolith's visiting tile (30,21) to (35,21): ends in the open at (35,21)
+	const r = CHECKS['road-terminals'](M);
+	assert.ok(r.nums.cls.floating >= 1, JSON.stringify(r.nums.cls));
+	assert.ok(r.nums.cls.monolith >= 1, JSON.stringify(r.nums.cls));
+	assert.strictEqual(typeof r.nums.per100, 'number');
+});

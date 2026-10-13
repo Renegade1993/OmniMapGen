@@ -45,6 +45,8 @@ const WET = new Set(['wa', 'wt']);
 const RIVER = new Set(['rw', 'ri', 'rm', 'rl', 'ra', 'lr', 'ww', 'ut', 'pw', 'sr']);
 const BONUS = /shrine|school|university|library|learningStone|marletto|starAxis|arena|treeOfKnowledge|fountain|idolOfFortune|rallyFlag|stables|warriorsTomb|faerieRing|swanPond|temple|oasis|wateringHole|mysticalGarden|windmill|waterWheel|mermaid|buoy|siren|lighthouse|redwood|sanctuary|obelisk|gazebo|libraryOfEnlight|cartographer|knowledge|lean|magicWell|magicSpring|hillFort|witchHut|mercenary|trainingGround|stoneHenge/i;
 const SEA = /mermaid|buoy|siren|whirlpool|lighthouse|shipwreck|derelict|survivor|flotsam|seaChest|sea/i;
+const SEA_TREASURE = /^(flotsam|seaChest|shipwreckSurvivor|derelictShip|shipwreck|jetsam)$/;
+const SEA_SITE = /^(buoy|mermaids?|sirens?|whirlpool|seaBarrel|vialOfMana|observatory|oceanBottle|magellansMaps)$/;
 const cheb = (a, b) => Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]));
 let CREATURES = null;
 const level = n => { if (CREATURES === null) CREATURES = sight.index() || false; const c = CREATURES && CREATURES.creature(n); return c && c.level != null ? c.level : null; };
@@ -88,10 +90,10 @@ function measure(file) {
 	// objects
 	const by = (f) => M.objs.filter(f);
 	const starts = sight.starts(M);
-	r.startsL1 = starts.filter(s => s.l === 1).length;
+r.startsL1 = starts.filter(s => s.l === 1).length; r.starts = starts.length;
 	r.towns = by(o => o.cls === 'town').length; r.townsNeutral = Math.max(0, r.towns - starts.length);
 	const mines = by(o => o.cls === 'mine');
-	r.mines = mines.length; r.minesStarter = mines.filter(o => /sawmill|orePit/.test(String(o.subtype))).length; r.minesOther = r.mines - r.minesStarter;
+	r.mines = mines.length; r.minesStarter = mines.filter(o => /sawmill|orePit/.test(String(o.subtype)) && starts.some(s => s.l === o.l && cheb(s.at, o.at) <= 8)).length;   // neutral sawmills and ore pits do not count r.minesOther = r.mines - r.minesStarter;
 	r.dwellings = by(o => o.cls === 'dwelling').length;
 	r.banks = by(o => o.cls === 'bank').length;
 	const art = by(o => /artifact|relic/i.test(o.type) && o.cls !== 'monster' && o.type !== 'spellScroll');
@@ -106,9 +108,20 @@ function measure(file) {
 	r.monoliths = by(o => o.cls === 'monolith').length;
 	r.shipyards = by(o => /shipyard/i.test(o.type)).length;
 	const onWater = o => o.cells && o.cells.some(([x, y]) => M.inb(x, y) && isWet(M.idx(o.l, x, y)));
-	r.seaTreasure = by(o => onWater(o) && (o.pickup || o.cls === 'bank' || o.cls === 'high' || o.cls === 'low') && !SEA.test(o.type)).length;
-	r.seaSites = by(o => (SEA.test(o.type) || onWater(o)) && o.cls !== 'monster' && o.cls !== 'town' && !o.pickup && o.cls !== 'low' && o.cls !== 'high' && o.cls !== 'bank').length;
-	r.decor = by(o => o.cls === 'other' && !BONUS.test(o.type)).length;
+	// by object type (R9 3: the old counter missed flotsam, sea chests and wrecks)
+	r.seaTreasure = by(o => SEA_TREASURE.test(o.type)).length;
+	r.seaSites = by(o => o.cls !== 'monster' && o.cls !== 'town' && (SEA_SITE.test(o.type) || (onWater(o) && o.visitable && !SEA_TREASURE.test(o.type) && !o.pickup))).length;
+	// interior scenery only (R9 2): the walls between biomes are scenery too, so a tile within 3 of a zone border does not count
+	const nearBorder = new Uint8Array(N);
+	for (let l = 0; l < NL; l++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+		const z = M.zoneAt(l, x, y); if (z === undefined || z === null || z < 0) continue;
+		let edge = false;
+		for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) { if (!M.inb(x + dx, y + dy)) continue; const z2 = M.zoneAt(l, x + dx, y + dy); if (z2 !== undefined && z2 !== null && z2 >= 0 && z2 !== z) { edge = true; break; } }
+		if (edge) for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) if (M.inb(x + dx, y + dy)) nearBorder[M.idx(l, x + dx, y + dy)] = 1;
+	}
+	// the share of interior ground a scenery object covers (the lever scales the area the scenery takes, not the count of objects: mountains cover many tiles)
+	{ let inner = 0, covered = 0; for (let i = 0; i < N; i++) { if (!M.ground(i) || nearBorder[i]) continue; const z = M.zoneAt(Math.floor(i / (W * H)), i % W, Math.floor(i / W) % H); if (z === undefined || z === null || z < 0) continue; inner++; if (M.blocked[i]) covered++; } r.sceneryCover = inner ? covered / inner : 0; }
+	r.decor = by(o => o.cls === 'other' && !o.visitable && !BONUS.test(o.type) && !nearBorder[M.idx(o.l, o.at[0], o.at[1])]).length;
 
 	// monsters
 	const mons = M.monsters;
@@ -119,7 +132,11 @@ function measure(file) {
 	r.monsterLevel = lv.length ? lv.reduce((a, b) => a + b, 0) / lv.length : 0;
 	const nearMon = o => mons.some(m => m.l === o.l && cheb(m.at, o.at) <= 1);
 	const share = (list) => list.length ? list.filter(nearMon).length / list.length : null;
-	r.guardedHigh = share(by(o => o.cls === 'high' && o.type !== 'spellScroll')); r.guardedMines = share(mines); r.guardedDwellings = share(by(o => o.cls === 'dwelling'));
+const nearMon2 = o => mons.some(m => m.l === o.l && cheb(m.at, o.at) <= 2);
+	const share2 = (list) => list.length ? list.filter(nearMon2).length / list.length : null;
+	const gold = mines.filter(o => /gold/i.test(String(o.subtype)));
+	r.guardedGold = gold.length ? gold.filter(nearMon).length / gold.length : null;   // the guard pass of plan.js (line 8124) reads guardMines for gold mines only
+	r.guardedHigh = share(by(o => o.cls === 'high' && o.type !== 'spellScroll')); r.guardedMines = share2(mines); r.guardedDwellings = share2(by(o => o.cls === 'dwelling'));
 	r.guardedLow = share(by(o => o.cls === 'low'));
 	const nonMonsterNear = m => M.objs.some(o => o.cls !== 'monster' && o.cls !== 'other' && o.l === m.l && o.cells && o.cells.some(c => cheb(c, m.at) <= 1));
 	r.monsterGuardShare = mons.length ? mons.filter(nonMonsterNear).length / mons.length : null;
@@ -131,7 +148,20 @@ function measure(file) {
 		const ring = new Uint8Array(N);
 		for (const m of mons) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (M.inb(m.at[0] + dx, m.at[1] + dy)) ring[M.idx(m.l, m.at[0] + dx, m.at[1] + dy)] = 1;
 		const open = i => M.ground(i) && !M.blocked[i];
-		const pairs = new Map(); let bnd = 0, bndBlocked = 0, tot = 0;
+			const pairs = new Map(); let bnd = 0, bndBlocked = 0, tot = 0;
+			const passages = new Map();
+			for (let l = 0; l < NL; l++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+				const i = M.idx(l, x, y), z = M.zoneAt(l, x, y);
+				if (z === undefined || z === null || z < 0 || !open(i)) continue;
+				for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+					if (!M.inb(x + dx, y + dy)) continue;
+					const j = M.idx(l, x + dx, y + dy), z2 = M.zoneAt(l, x + dx, y + dy);
+					if (z2 === undefined || z2 === null || z2 < 0 || z2 === z || !open(j)) continue;
+					const key = `${l}:${Math.min(z, z2)}-${Math.max(z, z2)}`, p = passages.get(key) || { guarded: false, road: false };
+					if (ring[i] || ring[j]) p.guarded = true; if (M.road[i] || M.road[j]) p.road = true;
+					passages.set(key, p);
+				}
+			}
 		for (let l = 0; l < NL; l++) for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
 			const i = M.idx(l, x, y), z = M.zoneAt(l, x, y); if (z === undefined || z === null || z < 0) continue;
 			tot++;
@@ -150,9 +180,10 @@ function measure(file) {
 			}
 			if (edge && M.ground(i)) { bnd++; if (M.blocked[i]) bndBlocked++; }
 		}
-		const all = [...pairs.values()];
-		r.links = all.length; r.linkGuardShare = all.length ? all.filter(p => p.guarded).length / all.length : null;
-		r.linkRoadShare = all.length ? all.filter(p => p.road).length / all.length : null;
+			const all = [...passages.values()];
+			r.links = all.length; r.linkGuardShare = all.length ? all.filter(p => p.guarded).length / all.length : null;
+			r.linkRoadShare = all.length ? all.filter(p => p.road).length / all.length : null;
+			r.linksDirect = pairs.size;
 		r.borderShare = tot ? bnd / tot : 0; r.borderBlocked = bnd ? bndBlocked / bnd : 0;
 	}
 
@@ -186,7 +217,7 @@ const SPEC = {
 	zoneCap: { layouts: ['free'], points: [4, 12, 300], expect: [['nZones', +1]], notes: 'a cap below what Biome size gives holds the count down' },
 	highLootRatio: { layouts: ['free', 'tpl'], expect: [['fracHigh', +1], ['dear', +1]] },
 	townRatio: { layouts: ['free', 'tpl'], expect: [['townsNeutral', +1]] },
-	lowLootRatio: { layouts: ['free', 'tpl'], expect: [['fracLow', +1]] },
+	lowLootRatio: { layouts: ['free', 'tpl'], expect: [['fracLow', +1]], expectBy: { tpl: [['dear', -1]] }, notes: 'on a template the zones keep their number and the loot lightens as the setting rises (the lever\'s help), so dear piles are the measure there' },
 	borderSolidity: { layouts: ['free', 'tpl'], expect: [['borderBlocked', +1]] },
 	biomeWobble: { layouts: ['free'], expect: [['borderShare', +1]], notes: 'wiggling borders are longer' },
 	interconnectivity: { layouts: ['free'], expect: [['links', +1]] },
@@ -208,26 +239,26 @@ const SPEC = {
 	guardDensity: { layouts: ['free', 'tpl'], expect: [['monsters', +1]] },
 	objectGuardShare: { layouts: ['free'], expect: [['monsterGuardShare', +1]] },
 	guardTreasure: { layouts: ['free', 'tpl'], expect: [['guardedHigh', +1]] },
-	guardMines: { layouts: ['free', 'tpl'], expect: [['guardedMines', +1]] },
+	guardMines: { layouts: ['free', 'tpl'], expect: [['guardedGold', +1]], notes: 'the lever reaches gold mines (plan.js 8124); other mines stay as the neighbouring guards leave them (guardedMines is the side column)' },
 	guardDwellings: { layouts: ['free', 'tpl'], expect: [['guardedDwellings', +1]] },
 	guardBottlenecks: { layouts: ['free', 'tpl'], expect: [['linkGuardShare', +1]] },
 	chokeGuardRatio: { layouts: ['free', 'tpl'], expect: [['linkGuardShare', +1]] },
 	guardPortals: { layouts: ['free', 'tpl'], expect: [['guardedPortals', +1]] },
 	lootGuardWeight: { layouts: ['free', 'tpl'], expect: [['guardedHigh', +1]] },
-	mineGuardWeight: { layouts: ['free', 'tpl'], expect: [['guardedMines', +1]] },
+	mineGuardWeight: { layouts: ['free', 'tpl'], expect: [['guardedGold', +1]], notes: 'as guardMines: judged on gold mines' },
 	subterraneanGateRatio: { layouts: ['ug', 'tplug'], expect: [['gates', +1]] },
 	subterraneanNarrow: { layouts: ['ug', 'tplug'], expect: [['ugWide', -1]] },
-	undergroundStarts: { layouts: ['ug', 'tplug'], expect: [['startsL1', +1]], notes: '0 all overworld ... 4 default' },
+	undergroundStarts: { layouts: ['ug', 'tplug'], expect: [], stopChecks: { 0: m => m.startsL1 === 0, 1: m => m.startsL1 > 0 && m.startsL1 < m.starts, 2: m => m.startsL1 === m.starts }, notes: 'notched: 0 all overworld, 1 mixed, 2 all underground, 3 random, 4 template; judged stop by stop' },
 	subterraneanOpen: { layouts: ['ug', 'tplug'], expect: [['ugOpen', +1]] },
-	decorDensity: { layouts: ['free', 'tpl'], expect: [['decor', +1]] },
+	decorDensity: { layouts: ['free', 'tpl'], expect: [['sceneryCover', +1]], notes: 'interior ground covered by scenery (R9 2: not the count of objects, and not the walls between biomes)' },
 	rivers: { layouts: ['free', 'tpl'], expect: [['riverShare', +1]] },
 	riverAmount: { layouts: ['free', 'tpl'], expect: [['riverShare', +1]] },
-	teams: { layouts: ['free'], expect: [['teams', +1]] },
-	compOnly: { layouts: ['free'], expect: [['aiOnly', +1]] },
+	teams: { layouts: ['free'], exclude: [4, 5, 6, 7], expect: [['teams', +1]], notes: 'four players allow two or three teams; 4 to 7 need more players and are left out' },
+	compOnly: { layouts: ['free'], exclude: [-1], expect: [['starts', +1]], notes: 'computer-only seats are starts; -1 (random) is left out' },
 	roadDirt: { layouts: ['free'], base: { 'bio.roadGravel': 0, 'bio.roadCobblestone': 0 }, expect: [['roadDirt', +1]], notes: 'the other two road types off, so dirt is the only one left' },
 	roadGravel: { layouts: ['free'], base: { 'bio.roadDirt': 0, 'bio.roadCobblestone': 0 }, expect: [['roadGravel', +1]] },
 	roadCobblestone: { layouts: ['free'], base: { 'bio.roadDirt': 0, 'bio.roadGravel': 0 }, expect: [['roadCobble', +1]] },
-	waterContent: { layouts: ['free'], base: { 'bio.waterCoverage': 0.3, 'bio.waterShape': 3 }, expect: [['waterShare', +1]], notes: '-1 none, 0 normal at the amount below, 1 normal, 2 islands (stops)' },
+	waterContent: { layouts: ['free'], base: { 'bio.waterCoverage': 0.3, 'bio.waterShape': 3 }, expect: [], stopChecks: { 0: m => m.waterShare < 0.01, 1: m => m.waterShare > 0.1, 2: m => m.waterShare > 0.1 }, notes: 'notched: 0 none, 1 normal, 2 islands, -1 random; judged stop by stop' },
 	waterCoverage: { layouts: ['free', 'tpl'], base: { 'bio.waterContent': 1, 'bio.waterShape': 3 }, expect: [['waterShare', +1]] },
 	waterShape: { layouts: ['free'], base: { 'bio.waterCoverage': 0.3, 'bio.waterContent': 1 }, expect: [], shape: true, notes: 'what each shape makes is judged against the Age of Empires reference, here only that the picture changes' },
 	waterAccess: { layouts: ['free'], base: WATER, expect: [['shipyards', +1]] },
@@ -296,19 +327,20 @@ function report() {
 	for (const key of keys) {
 		const sp = SPEC[key]; const k = knobByKey[key];
 		for (const layout of sp.layouts.filter(l => layoutsAsked.includes(l))) {
-			const pts = pointsOf(key); const rowsAll = [];
+				const pts = pointsOf(key).filter(v => !(sp.exclude || []).includes(v)); const rowsAll = [];
 			for (const v of pts) {
 				const ms = []; for (let s = 1; s <= SEEDS; s++) { const f = path.join(OUT, layout, `${key}=${v}_s${s}.vmap`); if (fs.existsSync(f)) { const m = get(f); if (!m.error) ms.push(m); } }
 				rowsAll.push({ v, n: ms.length, ms });
 			}
 			const have = rowsAll.filter(r => r.n);
-			const names = [...new Set([...sp.expect.map(e => e[0])])];
+				const expect = (sp.expectBy && sp.expectBy[layout]) || sp.expect;
+				const names = [...new Set([...expect.map(e => e[0])])];
 			const vals = (name) => have.map(r => mean(r.ms.map(m => m[name])));
 			let verdict = 'NOT RUN'; const detail = [];
 			if (have.length >= 2) {
-				verdict = sp.expect.length ? 'NO EFFECT' : 'EFFECT';
-				let best = null;
-				for (const [name, dir] of sp.expect) {
+					verdict = expect.length ? 'NO EFFECT' : 'EFFECT';
+					let best = null;
+					for (const [name, dir] of expect) {
 					const v = vals(name), a = v[0], b = v[v.length - 1], rr = rel(a, b);
 					const dirRel = rr === null ? null : dir * rr;
 					let viol = 0; for (let i = 1; i < v.length; i++) if (v[i] !== null && v[i - 1] !== null && dir * (v[i] - v[i - 1]) < -0.05 * Math.max(Math.abs(v[0]), Math.abs(v[v.length - 1]), 1e-9)) viol++;
@@ -316,7 +348,17 @@ function report() {
 					if (dirRel !== null && (best === null || dirRel > best)) best = dirRel;
 					if (dirRel !== null && dirRel <= -0.05) verdict = 'WRONG';
 				}
-				if (verdict !== 'WRONG' && sp.expect.length) verdict = best === null ? 'NO DATA' : best >= 0.10 ? 'OK' : best >= 0.03 ? 'WEAK' : 'NO EFFECT';
+					if (verdict !== 'WRONG' && expect.length) verdict = best === null ? 'NO DATA' : best >= 0.10 ? 'OK' : best >= 0.03 ? 'WEAK' : 'NO EFFECT';
+					if (sp.stopChecks) {
+						let pass = 0, fail = 0;
+						for (const r of have) {
+							const fn = sp.stopChecks[r.v]; if (!fn) continue;
+							const mm = {}; for (const nm of Object.keys(r.ms[0])) mm[nm] = mean(r.ms.map(m => m[nm]));
+							const ok = fn(mm); if (ok) pass++; else fail++;
+							detail.push(`stop ${r.v}: ${ok ? 'as intended' : 'NOT as intended'} (${['waterShare', 'startsL1', 'starts'].filter(nm => mm[nm] !== undefined && mm[nm] !== null).map(nm => nm + ' ' + fmt(mm[nm])).join(', ')})`);
+						}
+						verdict = fail ? 'WRONG' : pass ? 'OK' : 'NO DATA';
+					}
 				if (sp.shape) {
 					const shapes = have.map(r => r.ms.map(m => m.waterShare).map(x => (x === null ? '?' : (100 * x).toFixed(0) + '%')).join('/'));
 					detail.push(`water share per shape ${shapes.join(' | ')}`);

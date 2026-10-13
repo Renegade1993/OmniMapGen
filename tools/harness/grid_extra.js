@@ -16,6 +16,7 @@
  *   edge-objects     no visited object's picture crosses the top or left edge of the map [K 10-08 14:3x outcasts and school of magic]
  *   free-standing    stacks that close nothing (no object, no passage) [K 10-08 15:2x "essentially freestanding"]
  *   approach-shadow  an entrance object's picture (monolith, gate; the passable V cells too) on an approach tile or on the cells of a pile, dwelling, mine or bank [K 10-11 monolith on the gem pond; lead 10-13]
+ *   road-terminals   road ends by the visiting tile they stand on; fails above 1.0 ends at a pile, a stack or nothing per 100 road tiles (a proposal) [K 10-11 road ending beside a lion]
  *   road-stubs       a lone road piece under 8 tiles that touches no visiting tile and no map edge [K 10-11 road terminations]
  *   water-objects    a land object with cells on water, a water object on land [K 10-12 Mediterranean XL]
  *   water-content    objects on the water per 1000 water tiles against loot objects on land per 1000 land tiles; ratio limit proposed [K 10-12 17:55 Mediterranean XL: not enough mod loot and structures on the water]
@@ -46,6 +47,7 @@ const LIMITS = {
 	startLootShare: 1,                 // loot-by-zone is a report: no limit (K's road map holds 34% of its dear piles in player zones on 084ac2c, K's 18 about 7%)
 	townLootR: 5,                     // town-loot: tiles from a town's cells that make a pile "beside" it
 	seaLootRatio: 0.5,                 // water-content: objects per 1000 water tiles over objects per 1000 land tiles (a proposal; K: "not enough mod loot + structures on the water")
+	looseEnds: 1.0,                    // road-terminals: dead ends at a pile, a stack or nothing per 100 road tiles; the engine's 91 sample maps: mean 0.04, most 1.00, so this is a gauge that trips only on a map worse than every engine map
 	stubMax: 8,                        // road-stubs: a road piece under this many tiles that touches no destination
 	endReach: 6,                      // road_ends.js: tiles round a road end that name another road piece or a town front
 };
@@ -720,6 +722,44 @@ function waterContent(M) {
 		`sea to land ratio ${LIMITS.seaLootRatio} or more (a proposal: K said "not enough mod loot + structures on the water", no number set)`, Object.entries(seaTypes).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${v} x ${k}`), { seaN, pickup: sea.pickup, site: sea.site, mod: sea.mod, monsters: sea.monster, waterTiles, landTiles, perWater, perLand, ratio });
 }
 
+
+/**
+ * K 10-11 "lots of incorrect road terminations" (the road that runs down from a white tower, a monolith, and ends there). A report with no limit: every road end
+ * (a road tile with one road neighbour, not at a map edge) by what it touches: town, mine, monolith, gate, dwelling, bank, small building, loot, a stack, nothing.
+ * The engine's own maps end 98% of their roads at a town, mine, monolith or gate (sight.roadEnds), so a road that ends at a monolith is the engine's pattern; K's rule of
+ * October 6th (item E) asks a road to run past a monolith as a thoroughfare and reach its steps by a spur.
+ */
+function roadTerminals(M) {
+	let roadTiles = 0, land = 0;
+	for (let i = 0; i < M.road.length; i++) { roadTiles += M.road[i]; if (M.ground(i)) land++; }
+	if (roadTiles < land / 100) return { skipped: 'the map has almost no road' };
+	// an end is a road tile with one road neighbour (or two that touch), not at a map edge. What it is AT is read from the exact tile: the open visiting tiles and entrance
+	// cells of the objects, ranked by how place-like the object is; a monster's 3x3 ring is a guard; every other end floats (nothing to arrive at).
+	const RANK = ['town', 'gate', 'monolith', 'mine', 'dwelling', 'bank', 'small building', 'high', 'low', 'stack'];
+	const at = new Map();
+	const put = (i, k) => { const r = at.get(i); if (r === undefined || RANK.indexOf(k) < RANK.indexOf(r)) at.set(i, k); };
+	for (const o of M.objs) {
+		if (o.cls === 'monster') { for (const [dx, dy] of [[0, 0], ...N8]) if (M.inb(o.at[0] + dx, o.at[1] + dy)) put(M.idx(o.l, o.at[0] + dx, o.at[1] + dy), 'stack'); continue; }
+		if (!o.visitable) continue;
+		const k = o.cls === 'other' ? (o.pickup ? 'low' : 'small building') : (o.cls === 'low' || o.cls === 'high' ? o.cls : o.cls);
+		const kind = RANK.includes(k) ? k : 'small building';
+		for (const i of [...M.approach(o).filter(a => M.ground(a) && !M.blocked[a]), ...o.entr.map(([x, y]) => M.idx(o.l, x, y))]) put(i, kind);
+	}
+	const cls = {};
+	let ends = 0;
+	for (let l = 0; l < M.NL; l++) for (let y = 1; y < M.H - 1; y++) for (let x = 1; x < M.W - 1; x++) {
+		const i = M.idx(l, x, y);
+		if (!M.road[i] || x === M.W - 1) continue;
+		const nb = N8.map(([dx, dy]) => [x + dx, y + dy]).filter(([u, v]) => M.inb(u, v) && M.road[M.idx(l, u, v)]);
+		if (nb.length > 1) continue;                 // a dead end: one road neighbour or none (the staircase tiles of a diagonal road are not ends)
+		ends++;
+		const k = at.get(i) || 'floating';
+		cls[k] = (cls[k] || 0) + 1;
+	}
+	const loose = (cls.floating || 0) + (cls.stack || 0) + (cls.low || 0) + (cls.high || 0), per100 = 100 * loose / Math.max(1, roadTiles);
+	return verdict(per100 <= LIMITS.looseEnds, `${ends} road ends: ${Object.entries(cls).sort((p, q) => q[1] - p[1]).map(([k, v]) => `${v} at ${k}`).join(', ') || 'none'}; ${loose} at a pile, a stack or nothing = ${per100.toFixed(2)} per 100 road tiles`, `at a pile, a stack or nothing at most ${LIMITS.looseEnds} per 100 road tiles (proposal: the engine's 91 sample maps, see the document; K 10-11: a road ending beside a lion)`, [], { ends, cls, loose, per100, roadTiles });
+}
+
 /** The engine's level table (CHeroHandler::loadExperience): level L needs EXP[L-1]; past 15 entries each gap is the one before plus a fifth. */
 const EXP = [0, 1000, 2000, 3200, 4600, 6200, 8000, 10000, 12200, 14700, 17500, 20600, 24320, 28784, 34140];
 for (let g = EXP[14] - EXP[13]; EXP.length < 80;) { g += Math.trunc(g / 5); EXP.push(EXP[EXP.length - 1] + g); }
@@ -762,5 +802,5 @@ function prisonHero(M) {
 }
 
 
-const CHECKS = { 'approach-shadow': approachShadow, 'road-stubs': roadStubs, 'water-objects': waterObjects, 'water-content': waterContent, 'prison-hero': prisonHero, 'water': waterReport, 'water-type': waterType, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
+const CHECKS = { 'approach-shadow': approachShadow, 'road-stubs': roadStubs, 'road-terminals': roadTerminals, 'water-objects': waterObjects, 'water-content': waterContent, 'prison-hero': prisonHero, 'water': waterReport, 'water-type': waterType, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
 module.exports = { CHECKS, LIMITS, levelOfExp, statRange, pictureCells, entranceObj };
