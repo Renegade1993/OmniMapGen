@@ -8244,7 +8244,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	if (process.env.VMAPGEN_SHADOW_LATE !== '0' && process.env.VMAPGEN_SHADOW_FREE !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = clearEntranceShadow(plans[l], l, W, H, blocked);
-			if (r.moved || r.dropped || r.left) console.error(`[gen] level ${l}: pickups drawn into an entrance's picture: ${r.moved} moved a step or two, ${r.dropped} cheap one(s) taken off, ${r.left} left`);
+			if (r.moved || r.dropped || r.left) console.error(`[gen] level ${l}: pickups drawn into an entrance's picture or standing on water: ${r.moved} moved a step or two, ${r.dropped} taken off (${r.guards || 0} guard(s) with them), ${r.left} left`);
 		}
 	// what each start takes with no fight, evened out last, once every guard stands (evenStartTakes). VMAPGEN_EVEN_TAKES=0 skips it.
 	if (process.env.VMAPGEN_EVEN_TAKES !== '0' && playerStarts.length > 1) {
@@ -9363,7 +9363,10 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 	const CHEAP = /^(resource|randomResource|treasureChest|campfire)$/;
 	const mons = pl.objects.filter(o => (o.l || 0) === l && /^(monster|randomMonster)/.test(o.type));
 	for (const o of pl.objects.slice()) {
-		if ((o.l || 0) !== l || !o.template || !o.template.mask || !PICK.test(o.type) || !pictureOnShadow(o.template, o.x, o.y, l, W, H, blocked)) continue;
+		if ((o.l || 0) !== l || !o.template || !o.template.mask || !PICK.test(o.type)) continue;
+		// on water too: a Pandora's box stood on the sea beside a shipyard (MapGen Dev's water-objects, coast108 seed 1, (89,18))
+		const wetHere = l === 0 && pl.p && pl.p.water && blockingCells(o.template, o.x, o.y).some(([fx, fy]) => fx >= 0 && fy >= 0 && fx < W && fy < H && pl.p.water[fy * W + fx]);
+		if (!wetHere && !pictureOnShadow(o.template, o.x, o.y, l, W, H, blocked)) continue;
 		const guard = mons.find(m => Math.max(Math.abs(m.x - o.x), Math.abs(m.y - o.y)) <= 1);
 		const own = blockingCells(o.template, o.x, o.y).map(([a, b]) => b * W + a);
 		// lift it, then look for a tile
@@ -9373,7 +9376,7 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 			for (let dy = -r; dy <= r && !to; dy++) for (let dx = -r; dx <= r && !to; dx++) {
 				if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
 				const x = o.x + dx, y = o.y + dy;
-				if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1 || road.has(y * W + x)) continue;
+				if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1 || road.has(y * W + x) || (l === 0 && pl.p && pl.p.water && pl.p.water[y * W + x])) continue;
 				if (guard && Math.max(Math.abs(guard.x - x), Math.abs(guard.y - y)) > 1) continue;
 				if (!footprintFits(o.template, x, y, l, W, H, blocked, true) || pictureOnShadow(o.template, x, y, l, W, H, blocked)) continue;
 				to = [x, y];
@@ -9382,9 +9385,23 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 			o.x = to[0]; o.y = to[1]; o.instanceName = `${o.type}_${o.x}_${o.y}_${l}`;
 			footprintBlock(o.template, o.x, o.y, l, W, H, blocked);
 			out.moved++;
-		} else if (CHEAP.test(o.type)) {
+		} else if (CHEAP.test(o.type) || wetHere) {   // one on water goes whatever it is worth: no hero reaches it from land
 			pl.objects.splice(pl.objects.indexOf(o), 1);
 			out.dropped++;
+			// and its guard, when it now watches nothing: no other object within a tile of it and no zone line in its ring (a doorway's
+			// guard stays). A stack beside nothing is a defect a player sees (the lead, 2026-10-13: the guard (88,18) on coast108 seed 1)
+			if (guard && pl.objects.includes(guard)) {
+				const near = pl.objects.some(q => q !== guard && (q.l || 0) === l && q.template && q.template.mask && !/^(monster|randomMonster)/.test(q.type)
+					&& !(DECOR_TYPES_SET.has(q.type) && !q.template.mask.some(r2 => /[AT]/.test(r2)))
+					&& blockingCells(q.template, q.x, q.y).concat(visitableCells(q.template, q.x, q.y)).some(([fx, fy]) => Math.max(Math.abs(fx - guard.x), Math.abs(fy - guard.y)) <= 1));
+				const z0 = pl.zone ? pl.zone[guard.y * W + guard.x] : -1;
+				let door = false;
+				if (pl.zone) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const x = guard.x + dx, y = guard.y + dy;
+					if (x >= 0 && y >= 0 && x < W && y < H && pl.zone[y * W + x] >= 0 && pl.zone[y * W + x] !== z0) door = true;
+				}
+				if (!near && !door) { clearScenery(pl, l, W, H, blocked, { gone: new Set([guard]) }); out.guards = (out.guards || 0) + 1; }
+			}
 		} else {
 			for (const c of own) blocked[base + c] |= OCCUPIED;
 			out.left++;
@@ -9477,7 +9494,9 @@ function evenStartTakes(plans, W, H, blocked, rng) {
 			if (MON.test(o.type)) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const x = o.x + dx, y = o.y + dy; if (x >= 0 && y >= 0 && x < W && y < H) ring[y * W + x] = 1; }
 			else if (PASS.test(o.type)) for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) pass.add(fy * W + fx);
 		}
-		const walk = c => !(blocked[base + c] & OCCUPIED) || pass.has(c);
+		// never over water: the grid does not always mark it by now, and a chest went down on the sea (coast108 seed 2, (66,71))
+		const wet = pl.p && pl.p.water && s.l === 0 ? pl.p.water : null;
+		const walk = c => !(wet && wet[c]) && (!(blocked[base + c] & OCCUPIED) || pass.has(c));
 		const dist = new Int32Array(N).fill(-1), q = [];
 		for (const c of approachCells(s.t.template, s.t.x, s.t.y, s.l, W, H, blocked)) if (!ring[c] && dist[c] < 0) { dist[c] = 0; q.push(c); }
 		for (let i = 0; i < q.length; i++) {
@@ -10735,4 +10754,4 @@ function sweepStranded(plan, W, H, levelIndex, playerStarts, droppedPairs, cross
 module.exports = { planLevel, fillLevel, planMap, chooseTemplateLayout, OBJECT_DEFS,
 	CLASS_TERRAIN_HINT, mainComponent, sweepStranded, openSealedPockets,
 	openSealedByObjects, carveUnderground, templateBottleneck, crossLevelAnchors, pinnedStartSeed,
-	holdFreePaths, templateZoneArray, scaledMines, ensureSignatureDwelling };
+	holdFreePaths, templateZoneArray, scaledMines, ensureSignatureDwelling, clearEntranceShadow };

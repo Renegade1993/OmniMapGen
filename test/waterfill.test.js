@@ -222,3 +222,25 @@ test('a mod\'s water-only objects go down on the water, carry their mod, and VMA
 		setModWater([]);
 	}
 });
+
+test('sea objects keep a tile of water all round them, so the shore pass cannot leave one on the beach', () => {
+	// MapGen Dev's water-objects on 3b5987a: sea chests on land on coast108 seeds 1 and 2 and cont108 seed 1 (the shore pass after
+	// fillWater turns some coastal water to land). VMAPGEN_SEA_OFF_SHORE=0 lets them touch the coast and fails this.
+	const { W, H, water, zone, blocked } = world();
+	const objects = [];
+	const harbours = placeHarbours({ W, H, l: 0, water, zone, blocked, rng: xorshift(5),
+		p: { waterAccess: 3 }, objects, towns: [{ x: 6, y: 20, l: 0 }], playerStarts: [], objectEntry: entry });
+	const before = objects.length;
+	fillWater({ W, H, l: 0, water, harbours, rng: xorshift(7), p: { waterTreasure: 6, waterBuildings: 4 }, objects, objectEntry: entry });
+	const SCENERY = /^(kelp|reef|rock|waterScenery|obstacle)/i;
+	const touching = [];
+	for (const o of objects.slice(before)) {
+		if (SCENERY.test(o.type) || /^(boat|shipyard)/.test(o.type)) continue;
+		for (const [x, y] of blockingCells(o.template, o.x, o.y).concat(visitableCells(o.template, o.x, o.y)))
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const u = x + dx, v = y + dy;
+				if (u < 0 || v < 0 || u >= W || v >= H || !water[v * W + u]) touching.push(`${o.type} (${o.x},${o.y})`);
+			}
+	}
+	assert.deepStrictEqual([...new Set(touching)], []);
+});
