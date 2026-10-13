@@ -3,7 +3,7 @@
 Built 2026-10-01 by the Opus Map Vision teammate after K played Coldshadow and found no neutral dragon dwellings
 where he expected them, roads that stop short or T into nothing, high-value loot lying unguarded, players starting
 underground, and snow wells on wasteland, while the lane's ratios all looked right. Research behind it, with the
-measurements: the project's research note "Opus Seeing The Map" of 2026-10-01 (not in this repository).
+measurements: `C:\AI Projects\Heroes 3\! LLM Files\Research\2026-10-01-Opus-Seeing-The-Map.md`.
 
 The rule this folder exists for: a generator change is judged by structure in place (where things are, what a road
 reaches, what guards what, what a hero can walk to, which level and zone), measured the same way on the engine's own
@@ -169,8 +169,8 @@ K, 2026-10-01: "engineer these gaps away".
 Run from `VCMIMapGen`. Point the asset index at the test install and at the mirror of K's mods (read only; the
 generator's crawler never guesses an install, and K's own folders are off limits):
 
-    export VCMI_ROOT="<project>/VCMI/dmbtest"
-    export VCMI_USER_DIR="<project>/.tmp/dmb/k-env/run"
+    export VCMI_ROOT="C:/AI Projects/Heroes 3/VCMI/dmbtest"
+    export VCMI_USER_DIR="C:/AI Projects/Heroes 3/.tmp/dmb/k-env/run"
 
 Without them the card still runs; dwelling tiers, the neutral-dragon lookup by creature and the mod-terrain part of
 the terrain check are off. The mirror is refreshed by `DMB\release\k_env_run.py`. The core terrain table is read from

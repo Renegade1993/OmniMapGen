@@ -20,7 +20,7 @@ const {
 	BIOME_CLASS, BIOME_DEFAULTS,
 	partitionBiomes, partitionSeeded, layoutZoneSeeds,
 	assignClasses, zoneDistances, physZoneDistances, biomeEdges,
-	assignConnections, ensureConnected, rimModeOf, nearestLand,
+	assignConnections, ensureConnected, rimModeOf, nearestLand, zonesWhole,
 	portalGateScale, MAX_START_SHARE, startOfOwner,
 } = require('./biomes');
 const { settleZonesOnLand } = require('./water');
@@ -2846,6 +2846,31 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				+ `${landCells} land cells, smallest ${Math.min(...land)}, `
 				+ `largest ${Math.max(...land)}`);
 		}
+		// A free layout's start owns the ground its town stands on: the footprint, the visiting tile and two steps out of its gate go to the
+		// start's own zone before the walls are drawn. The domain warp moves where a cell is measured from by up to a third of the zone
+		// spacing, so a start's own cell could fall to a neighbour, and the gate check in the capitals phase read the start's zone off that
+		// cell (36x36 eight players seed 901: red's (4,4) and orange's gate (2,18) in high-loot zone 9, both towns behind a guard by mapsight;
+		// 44 of 359 free maps on disk had a start cell outside its own zone). VMAPGEN_START_GROUND=0 off.
+		if (process.env.VMAPGEN_START_GROUND !== '0') {
+			const tpl = OBJECT_TEMPLATES.randomTown, dirs = allowedDirs(tpl);
+			let taken = 0;
+			playerStarts.forEach((s, i) => {
+				const cells = require('./content').footprintCells(tpl, s.x, s.y).map(([x, y]) => [x, y]);
+				for (const [vx, vy] of visitableCells(tpl, s.x, s.y))
+					for (const [dx, dy] of dirs) cells.push([vx + dx, vy + dy], [vx + 2 * dx, vy + 2 * dy]);
+				for (const [x, y] of cells) {
+					if (x < 0 || y < 0 || x >= W || y >= H) continue;
+					const c = y * W + x;
+					if ((water && water[c]) || zone[c] === i) continue;
+					zone[c] = i;
+					taken++;
+				}
+			});
+			if (taken) {
+				if (!water && process.env.VMAPGEN_ZONE_WHOLE !== '0') zonesWhole(zone, W, H, seeds);
+				console.error(`[gen] level ${levelIndex}: ${taken} cell(s) under the starts' towns and before their gates given to their own zones`);
+			}
+		}
 		zdist = zoneDistances(seeds, biomeEdges(zone, W, H, seeds.length, water));
 		// class assignment orders non-player zones by physical distance from
 		// the starts - near is poor, far is rich, like a template's
@@ -3134,12 +3159,22 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			if (c.aRef.l === levelIndex) viaOther.push(c.aRef.i);
 			else if (c.bRef.l === levelIndex) viaOther.push(c.bRef.i);
 		}
-		for (let k = 1; k < viaOther.length; k++) joined.push([viaOther[0], viaOther[k]]);
+		for (let k = 1; k < viaOther.length; k++) joined.push([viaOther[0], viaOther[k], 'level']);
 	}
 	const forced = ensureConnected(edges, connections, seeds.length, p, rng, joined);
 	if (forced)
 		console.error(`[gen] level ${levelIndex}: opened ${forced} extra biome `
 			+ 'border(s) to keep the map in one piece');
+	// The same count over pieces of land: water that cuts a zone in two leaves the zone joined on paper while a hero walks only one
+	// piece of it (the Opus Reviewer's R42: a Mediterranean sea drowns the middle zones the template's links ran through, and the
+	// ring zones round it met only through walls; K's 180x180 seed 669067840, two starts walked their own zone only). VMAPGEN_RING_LINKS=0 off.
+	if (water && tplZones && tplZones.length && !p.waterIslands && process.env.VMAPGEN_RING_LINKS !== '0') {
+		const med = (require('./water').shapeOf(p) || {}).id === 'mediterranean';
+		const r = ringLinks(edges, connections, joined, zone, water, W, H, playerStarts, p, rng, med);
+		if (r.steered || r.opened || r.left)
+			console.error(`[gen] level ${levelIndex}: land cut by water: ${r.steered} template doorway(s) held to the piece they join, `
+				+ `${r.opened} guarded link(s) opened between neighbouring pieces (the ring), ${r.left} piece(s) of ${r.min}+ tiles left to boats`);
+	}
 	// A start leaves its zone on foot. Since portal borders seal (queue 27) a
 	// start zone whose open borders all drew portals boxed its player into
 	// 35-74 walkable cells with monoliths as the only way out (36x36 p8 s2,
@@ -3724,6 +3759,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 					W, H, blocked)) continue;
 			if (!entranceOpen(townTpl, x, y, levelIndex,
 					W, H, blocked, null)) continue;
+			// the door and the tiles before it lie in the town's own zone: the spot is chosen by its anchor (the footprint's bottom right), and a door
+			// two tiles to its left opened into a start's zone, which then held two towns (144x144 eight players free seed 3: green's zone 3, the town
+			// of zone 27 at (107,5))
+			if (process.env.VMAPGEN_TOWN_OWN_DOOR !== '0' && visitableCells(townTpl, x, y).some(([vx, vy]) => zone[vy * W + vx] !== b
+					|| allowedDirs(townTpl).some(([dx, dy]) => { const nx = vx + dx, ny = vy + dy; return nx >= 0 && ny >= 0 && nx < W && ny < H && zone[ny * W + nx] !== b; }))) continue;
 			const walls = blockingCells(townTpl, x, y)
 				.map(([a, b2]) => b2 * W + a);
 			if (!townGuard.accepts(walls)) continue;
@@ -5796,6 +5836,100 @@ function evenStartLinks(tplZones, conns, connections, edgeInfo, unfulfilled, pla
 }
 
 /**
+ * Pieces of land, not zones, decide what the links join (planLevel, water on a template level). A zone's land is split into its
+ * 8-connected dry pieces; a piece of `min` tiles or more must be reached. Each template doorway is held to the stretch of its border
+ * between the two zones' largest pieces (or the longest stretch between pieces of that size), so it joins what it was meant to; a
+ * link through the other level, or a monolith pair unless noPairs, joins the two zones' largest pieces. Then, while a piece is not joined to the first
+ * start's, the longest stretch of a walled border (no template link) between a joined piece and an unjoined one opens as a doorway; it has
+ * no template link, so placeChokeGuards guards it as the strongest link either zone has (forcedStrength). A piece with no such border
+ * (an island) is left to boats and counted.
+ */
+function ringLinks(edges, connections, joined, zone, water, W, H, starts, p, rng, noPairs = false, min = 20) {
+	const N = W * H, piece = new Int32Array(N).fill(-1), size = [], pzone = [];
+	for (let s = 0; s < N; s++) {
+		if (piece[s] >= 0 || water[s] || zone[s] < 0) continue;
+		const id = size.length, q = [s];
+		piece[s] = id;
+		for (let h = 0; h < q.length; h++) {
+			const c = q[h], x = c % W, y = (c / W) | 0;
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const u = x + dx, v = y + dy, n = v * W + u;
+				if ((dx || dy) && u >= 0 && v >= 0 && u < W && v < H && piece[n] < 0 && !water[n] && zone[n] === zone[s]) { piece[n] = id; q.push(n); }
+			}
+		}
+		size.push(q.length); pzone.push(zone[s]);
+	}
+	const main = new Map();
+	size.forEach((n, i) => { const z = pzone[i]; if (!main.has(z) || n > size[main.get(z)]) main.set(z, i); });
+	const big = i => i >= 0 && size[i] >= min;
+	const parent = size.map((_, i) => i);
+	const find = a => { while (parent[a] !== a) { parent[a] = parent[parent[a]]; a = parent[a]; } return a; };
+	const union = (a, b) => { a = find(a); b = find(b); if (a !== b) parent[b] = a; };
+	// each border's stretches, grouped by the pair of pieces they lie between
+	const stretches = e => {
+		const by = new Map();
+		for (const c of e.borderCells) {
+			const x = c % W, y = (c / W) | 0;
+			for (const n of [x + 1 < W ? c + 1 : -1, y + 1 < H ? c + W : -1]) {
+				if (n < 0 || water[n] || zone[n] === zone[c] || (zone[n] !== e.a && zone[n] !== e.b)) continue;
+				const a = piece[c], b = piece[n];
+				if (!big(a) || !big(b)) continue;
+				const k = Math.min(a, b) * 1e7 + Math.max(a, b);
+				if (!by.has(k)) by.set(k, { a, b, cells: [] });
+				by.get(k).cells.push(c);
+			}
+		}
+		return [...by.values()];
+	};
+	const key = e => e.a * 100000 + e.b;
+	let steered = 0, opened = 0;
+	for (const e of edges) {
+		const kind = connections.get(key(e));
+		if (kind !== 'openRoad' && kind !== 'openNoRoad') continue;
+		const st = stretches(e);
+		if (!st.length) continue;
+		const mains = st.filter(s => (s.a === main.get(pzone[s.a])) && (s.b === main.get(pzone[s.b])));
+		const pick = (mains.length ? mains : st).sort((u, v) => v.cells.length - u.cells.length)[0];
+		if (st.length > 1) { e.doorAt = pick.cells; steered++; }
+		union(pick.a, pick.b);
+	}
+	// noPairs (the Mediterranean ring): only a join through the other level counts, as a pair a link became may never be placed (K's 180x180
+	// Mediterranean: 9 of its 18 pairs placed, 5 with no room on a drowned zone's shore strip; red's and tan's start links got none); the ring's
+	// neighbours get a guarded passage instead (on maps whose pairs all found room, 6 to 8 passages beside them). Otherwise a monolith pair is a join.
+	for (const [a, b, via] of joined) if ((via === 'level' || !noPairs) && main.has(a) && main.has(b)) union(main.get(a), main.get(b));
+	const s0 = (starts || []).map(s => piece[s.y * W + s.x]).find(big);
+	const root = () => find(s0 !== undefined ? s0 : main.get(pzone[size.indexOf(Math.max(...size))]));
+	const roadShare = p.openPathRoad / (p.openPathNoRoad + p.openPathRoad || 1);
+	// a piece with under half its zone's cells is a drowned zone's shore strip; the zones round the sea are joined to each other first, and a strip
+	// is joined on as a dead end, never walked through (the junction zones' strips hold Coldshadow's dragon dwellings: passages through them on
+	// K's 180 left 8 of its 11)
+	const area = new Map();
+	for (let c = 0; c < N; c++) if (zone[c] >= 0) area.set(zone[c], (area.get(zone[c]) || 0) + 1);
+	const strip = i => size[i] < 0.5 * area.get(pzone[i]);
+	for (let guard = 0; guard < size.length; guard++) {
+		let best = null, bestE = null, bestScore = -1;
+		for (const e of edges) {
+			if (connections.get(key(e)) !== 'blocked') continue;
+			for (const s of stretches(e)) {
+				const inA = find(s.a) === root();
+				if (inA === (find(s.b) === root())) continue;
+				const from = inA ? s.a : s.b, to = inA ? s.b : s.a;
+				const score = (strip(from) ? 0 : 2) + (strip(to) ? 0 : 1) + Math.min(0.99, s.cells.length / (W + H));
+				if (score > bestScore) { best = s; bestE = e; bestScore = score; }
+			}
+		}
+		if (!best) break;
+		connections.set(key(bestE), rng() < roadShare ? 'openRoad' : 'openNoRoad');
+		bestE.doorAt = best.cells;
+		union(best.a, best.b);
+		opened++;
+	}
+	let left = 0;
+	size.forEach((n, i) => { if (n >= min && find(i) !== root()) left++; });
+	return { steered, opened, left, min };
+}
+
+/**
  * Turn the template's connection list into the biome-edge connection map.
  * A template edge that exists geometrically opens with its declared road
  * flag; every geometric edge not in the template is walled, which is what
@@ -5896,6 +6030,25 @@ function fillLevel(plan, W, H, blocked) {
 					const nx = x + dx, ny = y + dy, n = ny * W + nx;
 					if ((dx || dy) && nx >= 0 && ny >= 0 && nx < W && ny < H && !reachable[n] && !isOccupied(n)) { reachable[n] = 1; st.push(n); grew = true; }
 				}
+			}
+		}
+		// and every other piece of 60 tiles or more: a zone whose links ran through the middle of a Mediterranean map was cut off by the sea and got
+		// no loot (108x108 Mediterranean seeds 1 and 2, zones 3, 4, 12, 13 empty); the late passes join such pieces to the rest (zone pieces joined
+		// again, scenery that sealed part of the level off). VMAPGEN_FILL_BIG_PIECES=0 off.
+		if (process.env.VMAPGEN_FILL_BIG_PIECES !== '0') {
+			const mark = new Uint8Array(W * H);
+			for (let s0 = 0; s0 < W * H; s0++) {
+				if (reachable[s0] || mark[s0] || isOccupied(s0)) continue;
+				const piece = [s0];
+				mark[s0] = 1;
+				for (let h = 0; h < piece.length; h++) {
+					const c = piece[h], x = c % W, y = (c / W) | 0;
+					for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+						const nx = x + dx, ny = y + dy, n = ny * W + nx;
+						if ((dx || dy) && nx >= 0 && ny >= 0 && nx < W && ny < H && !reachable[n] && !mark[n] && !isOccupied(n)) { mark[n] = 1; piece.push(n); }
+					}
+				}
+				if (piece.length >= 60) { for (const c of piece) reachable[c] = 1; grew = true; }
 			}
 		}
 		if (grew) followLinks(reachable, plan.links, W, H, isOccupied);
@@ -7495,7 +7648,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	if (process.env.VMAPGEN_JOIN_WAYS !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = joinZoneWaysIn(plans[l], l, W, H, blocked);
-			if (r.joined || r.left) console.error(`[gen] level ${l}: ways into zones joined to their zone: ${r.joined} (${r.rock} rock tile(s) carved, ${r.cleared} scenery piece(s) cleared${r.demolished ? `, ${r.demolished} building tile(s) given up` : ''}), ${r.left} left`);
+			if (r.joined || r.left) console.error(`[gen] level ${l}: ways into zones joined to their zone: ${r.joined} (${r.rock} rock tile(s) carved, ${r.cleared} scenery piece(s) cleared${r.demolished ? `, ${r.demolished} building tile(s) given up` : ''}${r.across ? `, ${r.across} across a line with an unlinked zone` : ''}), ${r.left} left`);
 		}
 	// A split level (splitLevels) is reached piece by piece through the other level: a gate or cross-level
 	// monolith opens once a hero reaches its other end, so the levels are swept together until nothing more opens.
@@ -7852,7 +8005,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	// Open stretches with no loot in them get a pile of their zone (fillBareWindows)
 	for (let l = 0; l < levels; l++) {
 		const r = fillBareWindows(plans[l], l, W, H, blocked, plans[l].p || params);
-		if (r.added || r.lifted) console.error(`[gen] level ${l}: loot-free stretches of ground given a pile: ${r.added}; sparse stretches lifted by ${r.lifted} pile(s)`);
+		if (r.added || r.lifted || r.floor) console.error(`[gen] level ${l}: loot-free stretches of ground given a pile: ${r.added}; sparse stretches lifted by ${r.lifted} pile(s)${r.floor ? `; ${r.floor} pile(s) for zones under one object a 100 tiles` : ''}`);
 	}
 	// Guards at portals Off: nothing stands in front of a portal end, whatever placed it (portalends.js)
 	if (Number(params.guardPortals) === 0)
@@ -8011,11 +8164,31 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	if (th.thinned) console.error(`[gen] level ${l}: road tiles taken out of 2x2 blocks: ${th.thinned}`);
 	// and no step that touches at a corner only (the game draws both tiles as dead ends there: a gap in the road; gateroad.js closeDiagonalSteps)
 	if (process.env.VMAPGEN_ROAD_DIAG !== '0') {
-		const dg = require('./gateroad').closeDiagonalSteps(plans[l], W, H, l, blocked, OCCUPIED, blockingCells, { clearScenery,
+		const dg = require('./gateroad').closeDiagonalSteps(plans[l], W, H, l, blocked, OCCUPIED, blockingCells, { clearScenery, visitableCells,
 			isDecor: o => (DECOR_TYPES_SET.has(o.type) || (o.template && require('./decor').isTerrainDecorAnimation(o.template.animation))) && o.template && o.template.mask && !o.template.mask.some(r2 => /[AT]/.test(r2)) });
-		if (dg.closed || dg.left) console.error(`[gen] level ${l}: road steps that met at a corner only: ${dg.closed} joined by a tile beside them (${dg.cleared} scenery piece(s) cleared), ${dg.left} left`);
+		if (dg.closed || dg.left) console.error(`[gen] level ${l}: road steps that met at a corner only: ${dg.closed} joined by a tile beside them (${dg.cleared} scenery piece(s) cleared), ${dg.left} left${dg.offVisit ? `, ${dg.offVisit} taken off a building's visiting tile` : ''}`);
+	}
+	// and no road piece that serves one place only (gateroad.js lonePieces)
+	if (process.env.VMAPGEN_ROAD_LONE !== '0') {
+		const lp = require('./gateroad').lonePieces(plans[l], W, H, l, visitableCells);
+		if (lp.pieces) console.error(`[gen] level ${l}: road pieces that serve one place only, taken up: ${lp.pieces} (${lp.cut} tile(s))`);
+		// a gate or monolith whose road was such a piece runs to the net now: the teleport pass took a road tile beside it as joined, even one
+		// leading nowhere (the Reviewer's maps2_d144p2u, the monolith (85,49,L1), 7 tiles joined to nothing; mapsight teleport off road)
+		if (lp.pieces && process.env.VMAPGEN_TELEPORT_ROADS !== '0') {
+			const r = require('./gateroad').teleportRoads(plans[l], W, H, l, blocked, OCCUPIED, visitableCells, blockingCells, { reach: 150 });
+			if (r.joined || r.none) console.error(`[gen] level ${l}: gates and monoliths whose road was taken up: ${r.joined} run to the road net, ${r.none} not reached`);
+		}
 	}
 	}
+	// A building no hero can step into: every tile it is entered from is covered by scenery, another building or a monolith's own tile
+	// (K, 2026-10-11: the two-way monolith blocking the gem pond, 108x108 four players seed 321088871, the pond (46,44) entered only from the
+	// monolith's door (45,45), its blocked corner (46,45) and a hills piece (47,45)). Scenery on an entry tile is cleared, before the late
+	// zone join and the guard passes, so the opened way is joined and guarded. VMAPGEN_OPEN_SHUT=0 skips it.
+	if (process.env.VMAPGEN_OPEN_SHUT !== '0')
+		for (let l = 0; l < levels; l++) {
+			const r = openShutEntries(plans[l], l, W, H, blocked);
+			if (r.opened || r.left) console.error(`[gen] level ${l}: buildings with no way in: ${r.opened} opened (scenery cleared), ${r.left} left`);
+		}
 	// The zones' pieces once more, now that everything stands: the scenery retile, the banks and the guard moves come after the join before the
 	// sweep and can shut a cave chamber's mouth (K's mods, 144x144 two levels, seed 6: zone 18 on level 1, a chamber of 178 tiles with 28 objects
 	// behind two scenery pieces and a bank; mapsight split zones). The same join: scenery cleared, rock carved, a building only when nothing
@@ -8023,7 +8196,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	if (process.env.VMAPGEN_JOIN_LATE !== '0' && process.env.VMAPGEN_JOIN_WAYS !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = joinZoneWaysIn(plans[l], l, W, H, blocked);
-			if (r.joined || r.left) console.error(`[gen] level ${l}: zone pieces joined again at the end: ${r.joined} (${r.rock} rock tile(s) carved, ${r.cleared} scenery piece(s) cleared${r.demolished ? `, ${r.demolished} building tile(s) given up` : ''}), ${r.left} left`);
+			if (r.joined || r.left) console.error(`[gen] level ${l}: zone pieces joined again at the end: ${r.joined} (${r.rock} rock tile(s) carved, ${r.cleared} scenery piece(s) cleared${r.demolished ? `, ${r.demolished} building tile(s) given up` : ''}${r.across ? `, ${r.across} across a line with an unlinked zone` : ''}), ${r.left} left`);
 		}
 	// The late passes (the seal sweeps, the zone joins, the roads, the piles) move scenery and stacks after the approach closing and can open an
 	// entrance it had shut: once more, for what is open now (MapGen Dev, 2026-10-10: 39 of 766 gold mines on the grid open to a walker, most of
@@ -8050,6 +8223,14 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			if (r.crossings) console.error(`[gen] level ${l}: zone joins with no fight the links do not make: ${r.crossings} step(s), ${r.posted} guard(s) posted, ${r.closed || 0} closed with scenery, ${r.left} step(s) left`);
 		}
 	if (process.env.VMAPGEN_WATCH) { const [wx, wy] = process.env.VMAPGEN_WATCH.split(',').map(Number); for (let l = 0; l < levels; l++) console.error('[watch] end of planMap level ' + l + ': ' + plans[l].objects.filter(o => (o.l || 0) === l && Math.abs(o.x - wx) <= 3 && Math.abs(o.y - wy) <= 3).map(o => o.type + '@' + o.x + ',' + o.y).join(' ')); }
+	// the gates and monoliths once more, last: the late passes after the road passes (the shut entries opened, the late zone join, the town
+	// fronts, the seal sweeps) clear scenery and carve rock, and a teleport the road could not reach before may be reached now (K's islands
+	// map seed 2094259454 on a changed layout: the monolith (60,28) on level 1, mapsight teleport off road). VMAPGEN_TELEPORT_LATE=0 skips it.
+	if (process.env.VMAPGEN_TELEPORT_ROADS !== '0' && process.env.VMAPGEN_TELEPORT_LATE !== '0')
+		for (let l = 0; l < levels; l++) {
+			const r = require('./gateroad').teleportRoads(plans[l], W, H, l, blocked, OCCUPIED, visitableCells, blockingCells, { reach: 150 });
+			if (r.joined || r.none) console.error(`[gen] level ${l}: gates and monoliths after the late passes: ${r.joined} run to the road net, ${r.none} not reached`);
+		}
 	// Integrity audit: every blocking cell of every written object must carry
 	// OCCUPIED in `blocked`. A cell that lost its mark is a hole the floods
 	// see through while the file keeps the wall - 72x72 s5 shipped green
@@ -8874,6 +9055,70 @@ function fillBareWindows(pl, l, W, H, blocked, p) {
 			for (let k = 0; k < want; k++) if (place(1 + i * WIN, 1 + j * WIN, 2)) out.lifted++; else break;
 		}
 	}
+	// A zone of 50 tiles or more holds at least one visited object, pile or guard a 100 of its tiles (mapsight's empty-zone rule): a sliver
+	// zone has no 8x8 window with 32 open tiles, so nothing above reaches it (the Opus Reviewer's b72p4u zone 9, 0 of 72; K's road map
+	// k108 seed 2090106454 zone 12, 1 of 107). Piles of its own kind, or the level's, go on free tiles a hero walks to from a town, gate or
+	// monolith, one at a time, the tile with the most free ground round it first. VMAPGEN_ZONE_FLOOR=0 off.
+	if (process.env.VMAPGEN_ZONE_FLOOR !== '0' && anyPile.length) {
+		const tiles = new Map(), n = new Map();
+		for (let c = 0; c < W * H; c++) { const z = pl.zone[c]; if (z >= 0 && !(water && water[c]) && (!pl.openMask || pl.openMask[c])) tiles.set(z, (tiles.get(z) || 0) + 1); }
+		const short = () => [...tiles].filter(([z, t]) => t >= 50 && (n.get(z) || 0) * 100 < t).map(([z]) => z);
+		for (const o of pl.objects) {
+			if ((o.l || 0) !== l || !o.template || !o.template.mask) continue;
+			const v = visitableCells(o.template, o.x, o.y)[0];
+			if (!v) continue;
+			const z = pl.zone[v[1] * W + v[0]];
+			if (z >= 0) n.set(z, (n.get(z) || 0) + 1);
+		}
+		if (short().length) {
+			// ground a hero walks: open land, or a monster's or a pickup's tile; from the tiles before every town, gate and monolith
+			const walkAt = new Uint8Array(W * H);
+			for (const o of pl.objects) if ((o.l || 0) === l && o.template && o.template.mask && /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|prison|randomMonster|monster)/.test(o.type))
+				for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) walkAt[fy * W + fx] = 1;
+			const walk = c => land(c) && (!(blocked[base + c] & OCCUPIED) || walkAt[c]);
+			const seen = new Uint8Array(W * H), st = [];
+			for (const o of pl.objects) {
+				if ((o.l || 0) !== l || !o.template || !o.template.mask || !/^(town|randomTown|subterraneanGate|monolith)/.test(o.type)) continue;
+				for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) for (const [dx, dy] of allowedDirs(o.template)) {
+					const c = (vx + dx >= 0 && vy + dy >= 0 && vx + dx < W && vy + dy < H) ? (vy + dy) * W + vx + dx : -1;
+					if (c >= 0 && !seen[c] && walk(c)) { seen[c] = 1; st.push(c); }
+				}
+			}
+			while (st.length) {
+				const c = st.pop(), x = c % W, y = (c / W) | 0;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const u = x + dx, v = y + dy;
+					if (u < 0 || v < 0 || u >= W || v >= H) continue;
+					const t = v * W + u;
+					if (!seen[t] && walk(t)) { seen[t] = 1; st.push(t); }
+				}
+			}
+			out.floor = 0;
+			for (const z of short()) {
+				while ((n.get(z) || 0) * 100 < tiles.get(z)) {
+					let best = -1, br = -1;
+					for (let c = 0; c < W * H; c++) {
+						if (pl.zone[c] !== z || !seen[c] || !free(c)) continue;
+						const x = c % W, y = (c / W) | 0;
+						if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
+						let room = 0;
+						for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && free((y + dy) * W + x + dx)) room++;
+						// a tile with fewer than two free tiles round it would plug a way
+						if (room >= 2 && room > br) { br = room; best = c; }
+					}
+					if (best < 0) break;
+					const src = piles.get(z) && piles.get(z).length ? piles.get(z) : anyPile;
+					const s = src[(out.floor + z) % src.length], x = best % W, y = (best / W) | 0;
+					pl.objects.push(objectEntry(s.type, x, y, l, s.template, s.subtype, s.options ? { ...s.options } : undefined));
+					footprintBlock(s.template, x, y, l, W, H, blocked);
+					markApproach(s.template, x, y, l, W, H, blocked);
+					walkAt[best] = 1;
+					n.set(z, (n.get(z) || 0) + 1);
+					out.floor++;
+				}
+			}
+		}
+	}
 	return out;
 }
 
@@ -8984,6 +9229,42 @@ function sceneryRoom(pl, l, W, H, blocked, tpl, zoneOk, score, waysOk = null, fo
 }
 
 /** Take out the scenery pieces sceneryRoom() chose, freeing every cell no other object blocks. Returns how many. */
+/** openShutEntries: the pass above. A tile a pickup or a monster stands on counts as a way in (taken or beaten); a tile under water or rock
+ * does not. Returns { opened, left }. */
+function openShutEntries(pl, l, W, H, blocked) {
+	const base = l * W * H, out = { opened: 0, left: 0 };
+	const GONE = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|prison|randomMonster|monster)/;
+	const water = pl.p && pl.p.water, om = pl.openMask;
+	const pass = new Set();
+	for (const o of pl.objects)
+		if ((o.l || 0) === l && o.template && o.template.mask && GONE.test(o.type))
+			for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) pass.add(fy * W + fx);
+	const isDecor = o => DECOR_TYPES_SET.has(o.type) && o.template && o.template.mask && !o.template.mask.some(r => /[AT]/.test(r));
+	for (const o of [...pl.objects]) {
+		if ((o.l || 0) !== l || !o.template || !o.template.mask || GONE.test(o.type) || isDecor(o) || !o.template.mask.some(r => /A/.test(r))) continue;
+		const ways = [];
+		for (const [vx, vy] of visitableCells(o.template, o.x, o.y))
+			for (const [dx, dy] of allowedDirs(o.template)) {
+				const x = vx + dx, y = vy + dy;
+				if (x < 0 || y < 0 || x >= W || y >= H) continue;
+				const c = y * W + x;
+				if ((water && water[c]) || (om && !om[c])) continue;
+				ways.push(c);
+			}
+		if (!ways.length || ways.some(c => !(blocked[base + c] & OCCUPIED) || pass.has(c))) continue;
+		let done = false;
+		for (const c of ways) {
+			const cx = c % W, cy = (c / W) | 0;
+			const on = pl.objects.filter(q => (q.l || 0) === l && q.template && q.template.mask && blockingCells(q.template, q.x, q.y).some(([fx, fy]) => fx === cx && fy === cy));
+			if (!on.length || !on.every(isDecor)) continue;
+			clearScenery(pl, l, W, H, blocked, { gone: new Set(on) });
+			if (!(blocked[base + c] & OCCUPIED)) { done = true; break; }
+		}
+		if (done) out.opened++; else out.left++;
+	}
+	return out;
+}
+
 function clearScenery(pl, l, W, H, blocked, spot) {
 	const gone = spot.gone, base = l * W * H;
 	if (!gone.size) return 0;
@@ -9762,7 +10043,7 @@ function joinZoneWaysIn(pl, l, W, H, blocked, opts = {}) {
 			}
 		}
 		if (process.env.VMAPGEN_JOIN_TRACE && round === 0) for (const o of pl.openings || []) console.error(`[join] L${l} opening ${o.kind} ${o.a}-${o.b} hole ${(o.hole || []).map(c => `${c % W},${(c / W) | 0}:${comp[c]}${walk(c) ? '' : 'X'}`).join(' ')}`);
-		if (process.env.VMAPGEN_JOIN_TRACE && round === 0) { const ids = (pl.zoneMeta || []).map(m => (m && m.spec ? m.spec.id : '?')); for (const [z, set] of waysOf()) { const cs = new Map(); for (const c of set) cs.set(comp[c], (cs.get(comp[c]) || 0) + 1); console.error(`[join] L${l} zone ${ids[z]}: ways ${set.size} in pieces ${JSON.stringify([...cs])}; openings ${(pl.openings || []).length}`); } }
+		if (process.env.VMAPGEN_JOIN_TRACE && round === 0) { const ids = (pl.zoneMeta || []).map(m => (m && m.spec ? m.spec.id : '?')); for (const [z, set] of waysOf()) { const cs = new Map(); for (const c of set) cs.set(comp[c], (cs.get(comp[c]) || 0) + 1); console.error(`[join] L${l} zone ${ids[z] ?? z}: ways ${set.size} in pieces ${JSON.stringify([...cs])}; openings ${(pl.openings || []).length}`); } }
 		let did = false;
 		// the zone's largest piece counts as a way in too: a zone whose only way in is a doorway opening on a small pocket
 		// had its town's gate in the body to join it; with the town gone (keptNeutralTowns) the body was never joined
@@ -9838,6 +10119,12 @@ function joinZoneWaysIn(pl, l, W, H, blocked, opts = {}) {
 					if (/^(monolith|subterraneanGate|whirlpool|shipyard|boat)/.test(o.type) || (/^(town|randomTown)$/.test(o.type) && o.options && o.options.owner)) continue;
 					for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) demAt.set(fy * W + fx, o);
 				}
+				// and when that finds no way either, the search may cross a zone line with a zone this one has no doorway to, at 5 a tile: a zone pinched
+				// to a neck two or three tiles wide between two such zones had its far lobe, and every zone whose doorway opened there, cut off and
+				// swept empty (K's settings 108x108 seed 7004: zone 0's lobe held the doorways of zones 10 and 15, both emptied). A step between zones
+				// it opens is guarded or closed by guardZoneJoins. VMAPGEN_JOIN_ACROSS=0 off.
+				for (const across of process.env.VMAPGEN_JOIN_ACROSS === '0' ? [false] : [false, true]) {
+				if (hit >= 0) break;
 				cost.fill(-1); prev.fill(-1);
 				const bk = [[]];
 				for (let c = 0; c < N; c++) if (comp[c] === main) { cost[c] = 0; bk[0].push(c); }
@@ -9854,12 +10141,15 @@ function joinZoneWaysIn(pl, l, W, H, blocked, opts = {}) {
 							if (zone[m] !== z) continue;
 							const w = !wall[m] ? (walk(m) ? 0 : 1) : demAt.has(m) ? 6 : -1;
 							if (w < 0) continue;
-							if (m !== target && !holes.has(m) && onLine(m) && !onLinkedLineOnly(m, z)) continue;
-							const nc = d + w;
+							const shut = m !== target && !holes.has(m) && onLine(m) && !onLinkedLineOnly(m, z);
+							if (shut && !across) continue;
+							const nc = d + w + (shut ? 4 : 0);
 							if (cost[m] >= 0 && cost[m] <= nc) continue;
 							cost[m] = nc; prev[m] = c; (bk[nc] || (bk[nc] = [])).push(m);
 						}
 					}
+				}
+				if (hit >= 0 && across) out.across = (out.across || 0) + 1;
 				}
 			}
 			if (hit < 0) { out.left++; continue; }
@@ -10138,7 +10428,7 @@ function sweepStranded(plan, W, H, levelIndex, playerStarts, droppedPairs, cross
 		const ids = (plan.zoneMeta || []).map(m => (m && m.spec ? m.spec.id : '?'));
 		const t = {}, r = {};
 		for (let c = 0; c < W * H; c++) { const z = plan.zone[c]; if (z < 0 || hard[c]) continue; t[z] = (t[z] || 0) + 1; if (reach[c]) r[z] = (r[z] || 0) + 1; }
-		console.error(`[drop] level ${levelIndex}: open tiles reached per zone: ` + Object.keys(t).map(z => `${ids[z]}:${r[z] || 0}/${t[z]}`).join(' '));
+		console.error(`[drop] level ${levelIndex}: open tiles reached per zone: ` + Object.keys(t).map(z => `${ids[z] ?? z}:${r[z] || 0}/${t[z]}`).join(' '));
 	}
 	if (dropped)
 		console.error(`[gen] level ${levelIndex}: dropped ${dropped} object(s) `

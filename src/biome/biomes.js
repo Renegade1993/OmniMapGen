@@ -475,7 +475,17 @@ function nearestLand(W, H, water, x, y) {
  * and 16 cut off below, 535 objects dropped). Every fragment but the zone's largest joins the neighbouring zone it
  * shares the most border with. The cells that hold a seed always stay with it. Mutates zone; returns cells moved.
  */
+// Repeated until a pass moves nothing (four at most): one pass could leave a fragment, a piece handed to a neighbour cutting
+// another zone in two (72x72 two levels four players seed 7003: two cells of zone 4 left between zones 6 and 2, the only place
+// zones 2 and 4 met, so their one doorway opened on those two cells and the rest of zone 4, 559 cells, had none and was
+// swept empty). Each fragment goes to the neighbour it shares the most border with.
 function zonesWhole(zone, W, H, seeds) {
+	let moved = 0;
+	for (let k = 0; k < 4; k++) { const m = zonesWholeOnce(zone, W, H, seeds); moved += m; if (!m) break; }
+	return moved;
+}
+
+function zonesWholeOnce(zone, W, H, seeds) {
 	const N = W * H, comp = new Int32Array(N).fill(-1), pieces = [];
 	for (let c = 0; c < N; c++) {
 		if (zone[c] < 0 || comp[c] >= 0) continue;
@@ -1103,6 +1113,6 @@ function ensureConnected(edges, connections, seedCount, params, rng, joined = []
 
 module.exports = { BIOME_CLASS, BIOME_DEFAULTS, partitionBiomes, partitionSeeded, wobbleWaves,
 	layoutZoneSeeds, symmetricEigen, spectralCoords, fitSimilarity, assignClasses, zoneDistances, physZoneDistances,
-	biomeEdges, assignConnections, ensureConnected, valueNoise,
+	biomeEdges, assignConnections, ensureConnected, valueNoise, zonesWhole,
 	rimModeOf, rimLobeScale, bordersOff, nearestLand,
 	REF_ZONES, portalGateScale, portalScale, MAX_START_SHARE, startOfOwner };

@@ -81,7 +81,9 @@ function carveBoundaries(edges, connections, zone, W, H, params, rng, edgeInfo) 
 			for (const R of [4, 3, 2]) { pool = border.filter(c => clearOfThird(c, R) && solid(c)); if (pool.length) break; }
 			if (!pool.length) for (const R of [4, 3, 2]) { pool = border.filter(c => clearOfThird(c, R)); if (pool.length) break; }
 		}
-		const from = pool.length ? pool : border;
+		let from = pool.length ? pool : border;
+		// a doorway held to one stretch of the border, the stretch between the two pieces of land it has to join (plan.js ringLinks)
+		if (e.doorAt && e.doorAt.length) { const at = new Set(e.doorAt), inAt = from.filter(c => at.has(c)); from = inAt.length ? inAt : e.doorAt; }
 		const pivot = from[(rng() * from.length) | 0];
 		const px = pivot % W, py = (pivot / W) | 0;
 		const narrow = !!process.env.VMAPGEN_GATES;

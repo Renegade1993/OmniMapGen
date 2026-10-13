@@ -2,7 +2,7 @@
 // towns per start zone. node kaudit.js [N]
 const fs = require('fs'), path = require('path');
 const sight = require('../mapsight/lib/sight');
-const dir = path.join(process.env.DMB_USER_DIR || path.join(require('os').homedir(), 'Documents', 'My Games', "Dead Man's Boots"), 'Maps', 'RandomMaps');
+const dir = path.join(require('os').homedir(), 'Documents', 'My Games', "Dead Man's Boots", 'Maps', 'RandomMaps');
 const n = Number(process.argv[2] || 8);
 const files = fs.readdirSync(dir).filter(f => f.endsWith('.vmap')).map(f => path.join(dir, f))
 	.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs).slice(0, n);

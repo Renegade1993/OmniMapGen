@@ -216,6 +216,49 @@ function trimRoadStubs(plan, W, H, l, visitableCells, blockingCells, allowedDirs
 }
 
 /**
+ * A road piece that serves fewer than two places goes whole (K, 2026-10-11, road ends that lead nowhere: a 4-tile road from a monolith in a
+ * zone with no other road, 108x108 four players seed 321088871 (45,45); every tile of it lay beside the monolith's door, so trimRoadStubs
+ * counted each end served). A place is a town, mine, monolith or gate whose visiting tile the piece runs on or beside; a piece at a town or
+ * at a kept end of a town's road stays. VMAPGEN_ROAD_LONE=0 skips it. Returns { cut, pieces }.
+ */
+function lonePieces(plan, W, H, l, visitableCells) {
+	const R = plan.roadCells, out = { cut: 0, pieces: 0 };
+	if (!R || !R.size) return out;
+	const near = new Map(), objs = [];
+	for (const o of plan.objects) {
+		if ((o.l || 0) !== l || !o.template || !o.template.mask || !SERVED.test(o.type)) continue;
+		const k = objs.length; objs.push(o);
+		for (const [vx, vy] of visitableCells(o.template, o.x, o.y))
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const x = vx + dx, y = vy + dy;
+				if (x < 0 || y < 0 || x >= W || y >= H) continue;
+				const c = y * W + x;
+				if (!near.has(c)) near.set(c, []);
+				near.get(c).push(k);
+			}
+	}
+	const kept = plan.roadEndsKept || new Set(), seen = new Set();
+	for (const s of [...R]) {
+		if (seen.has(s)) continue;
+		const comp = [s]; seen.add(s);
+		for (let i = 0; i < comp.length; i++) {
+			const x = comp[i] % W, y = (comp[i] / W) | 0;
+			for (const [dx, dy] of D8) { const u = x + dx, v = y + dy, m = v * W + u; if (u >= 0 && v >= 0 && u < W && v < H && R.has(m) && !seen.has(m)) { seen.add(m); comp.push(m); } }
+		}
+		const at = new Set();
+		let town = false;
+		for (const c of comp) {
+			if (kept.has(c)) town = true;
+			for (const k of near.get(c) || []) { at.add(k); if (/^(town|randomTown)$/.test(objs[k].type)) town = true; }
+		}
+		if (town || at.size >= 2) continue;
+		for (const c of comp) R.delete(c);
+		out.cut += comp.length; out.pieces++;
+	}
+	return out;
+}
+
+/**
  * A town with no road at its door joins the road of its own zone (K, 2026-10-05, an underground corner castle "with no road to it"; 13 of 656
  * towns on the 40 two-level grid maps). The way runs over free ground inside the town's zone, from the town's visiting tile to the nearest road
  * tile of that zone, or failing that over free ground to the nearest road within 60 tiles; no free way leaves the town as it was. Returns { joined, left }.
@@ -678,6 +721,28 @@ function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d =
 		}
 		if (!any) break;
 	}
+	// A step left on the visiting tile of a mine (or any building but a town, a gate or a monolith, whose roads run onto that tile) loses that
+	// tile's road when no side of it touches road and the road beside it stays one piece without it: the road then ends beside the entrance
+	// and is drawn as an end, where the corner showed a gap (K's road map seed 670084743, the mine at (103,100) beside a town's road)
+	if (d.visitableCells && process.env.VMAPGEN_DIAG_VISIT !== '0') {
+		const visit = new Set();
+		for (const o of plan.objects)
+			if ((o.l || 0) === l && o.template && o.template.mask && !/^(randomTown|town|subterraneanGate|monolith|randomMonster|monster)/.test(o.type)
+				&& !/^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|prison)$/.test(o.type))
+				for (const [vx, vy] of d.visitableCells(o.template, o.x, o.y)) { const c = at(vx, vy); if (c >= 0) visit.add(c); }
+		const side = c => { const x = c % W, y = (c / W) | 0; return [at(x + 1, y), at(x - 1, y), at(x, y + 1), at(x, y - 1)].some(t => t >= 0 && R.has(t)); };
+		const near = c => { const x = c % W, y = (c / W) | 0, r = []; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const t = at(x + dx, y + dy); if ((dx || dy) && t >= 0 && R.has(t)) r.push(t); } return r; };
+		for (const c of [...R]) {
+			if (!visit.has(c) || side(c)) continue;
+			const nb = near(c);
+			if (!nb.length) continue;
+			// the road beside still meets without this tile (a walk over road tiles within 12 of it)
+			const seen = new Set([c, nb[0]]), st = [nb[0]], x0 = c % W, y0 = (c / W) | 0;
+			while (st.length) for (const t of near(st.pop())) if (!seen.has(t) && Math.abs(t % W - x0) <= 12 && Math.abs(((t / W) | 0) - y0) <= 12) { seen.add(t); st.push(t); }
+			if (!nb.every(t => seen.has(t))) continue;
+			R.delete(c); out.offVisit = (out.offVisit || 0) + 1;
+		}
+	}
 	for (const c of R) {
 		const x = c % W, y = (c / W) | 0;
 		for (const [dx, dy] of [[1, 1], [1, -1]]) {
@@ -694,4 +759,4 @@ function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d =
 	return out;
 }
 
-module.exports = { roadlessGoals, teleportRoads, closeRoadGaps, trimRoadStubs, joinBareTowns, openTownFronts, roadsPastObjects, thinRoadBlocks, closeDiagonalSteps };
+module.exports = { roadlessGoals, teleportRoads, closeRoadGaps, trimRoadStubs, lonePieces, joinBareTowns, openTownFronts, roadsPastObjects, thinRoadBlocks, closeDiagonalSteps };

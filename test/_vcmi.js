@@ -23,7 +23,7 @@ const TEST_ROOT = process.env.VMAPGEN_TEST_ROOT
 // every test that generates would fail with a long stack; refuse once, here, and say what to set.
 if (!require('fs').existsSync(TEST_ROOT)) {
 	throw new Error(`The test install ${TEST_ROOT} does not exist. Set VMAPGEN_TEST_ROOT to the VCMI test install `
-		+ `(for the project's layout: VMAPGEN_TEST_ROOT="<project>/VCMI/dmbtest") and run the suite again.`);
+		+ `(for the project's layout: VMAPGEN_TEST_ROOT="C:/AI Projects/Heroes 3/VCMI/dmbtest") and run the suite again.`);
 }
 const TEST_USER_DIR = process.env.VMAPGEN_TEST_USER_DIR || null;
 

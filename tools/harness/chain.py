@@ -4,7 +4,7 @@ pythonw chain.py --stop-at HH:MM [--lanes auto|N] [--max-lanes 6] [--wait-for <r
 Waits (until the stop time) for the --wait-for run to log "finished" so two grids never overlap, then runs each named
 grid (.tmp/harness/grids/<name>.json into .tmp/harness/<name>) with run_grid.py under the same stop-at. Before each grid
 it sizes the lanes to the free commit (about 3 GB a lane, 6 GB spare; TESTING.md rule 10), widens by itself when other jobs end, and the 4 GB brake stops it. Ends by itself at the stop time or when the
-grids are done; a STOP file at .tmp/harness/CHAIN_STOP ends it too. Registered in the PC's script registry.
+grids are done; a STOP file at .tmp/harness/CHAIN_STOP ends it too. Registered in the agents' script registry (SCRIPT-REGISTRY.md).
 """
 import argparse
 import ctypes

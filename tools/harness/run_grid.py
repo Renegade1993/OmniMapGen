@@ -25,7 +25,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-PROJECT = os.environ.get("H3_PROJECT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+PROJECT = r"C:\AI Projects\Heroes 3"
 MAPGEN = os.path.join(PROJECT, "VCMIMapGen")
 RMGRUN = os.path.join(PROJECT, "VCMI", "rmgrun")
 DMBTEST = os.path.join(PROJECT, "VCMI", "dmbtest")

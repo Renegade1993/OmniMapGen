@@ -64,11 +64,12 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		&& (PICKUP.test(q.type) || visitableCells(q.template, q.x, q.y).length)
 		&& blockingCells(q.template, q.x, q.y).some(([a, b]) => Math.max(Math.abs(a - m.x), Math.abs(b - m.y)) <= 1));
 	const isFree = c => land(c) && !(blocked[base + c] & OCCUPIED);
+	const wayIn = c => isFree(c) || (process.env.VMAPGEN_WAY_PAST_GUARD !== '0' && monsterAt.has(c));
 	// guard spacing (content.js, the guard register): a tile within 2 of another stack takes a guard only where nothing else will do
 	const GAP = require('./content').GUARD_GAP;
-	const farAt = c => { const x = c % W, y = (c / W) | 0; for (const m of monsterAt) if (m !== c && Math.max(Math.abs(m % W - x), Math.abs(((m / W) | 0) - y)) < GAP) return false; return true; };
+	const farAt = (c, but = -1) => { const x = c % W, y = (c / W) | 0; for (const m of monsterAt) if (m !== c && m !== but && Math.max(Math.abs(m % W - x), Math.abs(((m / W) | 0) - y)) < GAP) return false; return true; };
 	// within 2 of another stack: never posted where an open tile can stay instead
-	const crowdAt = c => { const x = c % W, y = (c / W) | 0; for (const m of monsterAt) if (m !== c && Math.max(Math.abs(m % W - x), Math.abs(((m / W) | 0) - y)) <= 2) return true; return false; };
+	const crowdAt = (c, but = -1) => { const x = c % W, y = (c / W) | 0; for (const m of monsterAt) if (m !== c && m !== but && Math.max(Math.abs(m % W - x), Math.abs(((m / W) | 0) - y)) <= 2) return true; return false; };
 	const DEAR_TYPE = /^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact)$/;
 	// and a prison of 90000 experience or more, as guardDearLoot counts it (a flyer lands beside it): the thin step took the only guard of a
 	// 90000 prison when this knew only the piles (K's XL underground seed 1594927109, 2026-10-09)
@@ -180,10 +181,13 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		if (zone[c] !== zone[o.y * W + o.x]) return no('other zone');
 		// the object itself keeps a free way in: closing a mine's two open front tiles left only the tile under a subterranean gate in its
 		// guard's ring, and the mine was sealed (grid, 72x72 two levels four players seed 2, 2026-10-09)
-		if (appOf.get(o) && !appOf.get(o).some(a => a !== c && isFree(a))) return no('own last way');
+		// a guard's tile is a way in too (a hero beats it and steps there): two piles whose only free tile was a dead end below them, reached
+		// by a flyer alone, kept it open while their guard stood on the tile above (K's small underground map seed 1750425234, (6,5) and (7,5)
+		// level 1; dear piles open 11 of 36). VMAPGEN_WAY_PAST_GUARD=0 counts free tiles only.
+		if (appOf.get(o) && !appOf.get(o).some(a => a !== c && wayIn(a))) return no('own last way');
 		for (const q of owners.get(c) || []) {
 			if (q === o) continue;
-			if (!appOf.get(q).some(a => a !== c && isFree(a))) return no('last way of another');
+			if (!appOf.get(q).some(a => a !== c && wayIn(a))) return no('last way of another');
 		}
 		if (!simple(c) && !joinedWithout(c)) return no('would cut');
 		let st = singleTemplate(pl.biomeTerrain[zone[c]], rng);
@@ -209,6 +213,40 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 	// zone), and once the set became the start's ways to its own towns, the final gold run put a guard on green's way from (135,32) to its second town
 	// (136,77) at (139,44), grid 144x144 four players one level seed 1 (own town behind a guard; 084ac2c passes)
 	const roadBlock = c => byStartRoad(c);
+	// a stack's ring cuts a way when ground just outside it meets only through it (walked tiles; a monster or pickup counts as walked)
+	const cutsWay = c => {
+		const x = c % W, y = (c / W) | 0, R = new Set(), B = [];
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = at(x + dx, y + dy); if (n >= 0) R.add(n); }
+		for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { if (Math.max(Math.abs(dx), Math.abs(dy)) < 2) continue; const n = at(x + dx, y + dy); if (n >= 0 && walk(n)) B.push(n); }
+		if (B.length <= 1) return false;
+		const reach = through => {
+			const seen = new Uint8Array(W * H), st = [B[0]];
+			seen[B[0]] = 1;
+			while (st.length) {
+				const i = st.pop(), ix = i % W, iy = (i / W) | 0;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const n = at(ix + dx, iy + dy);
+					if (n < 0 || seen[n] || !walk(n) || (!through && R.has(n))) continue;
+					seen[n] = 1; st.push(n);
+				}
+			}
+			return seen;
+		};
+		const without = reach(false);
+		if (B.every(n => without[n])) return false;
+		const withR = reach(true);
+		return B.some(n => withR[n] && !without[n]);
+	};
+	// a guard on a corridor held clear (RESERVED) or beside a road, where no other tile in front of the object can take one: never on a road
+	// or a start's way, and only where its ring cuts no way. A dwelling whose whole front lay on a corridor kept no guard at all (K's large
+	// two players map seed 406757261, magic lantern (90,103), no monster within 6; three of ten dwellings open)
+	const wayGuardOk = (c, o) => {
+		if (process.env.VMAPGEN_GUARD_ON_WAY === '0') return false;
+		const x = c % W, y = (c / W) | 0;
+		if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) return false;
+		if (!isFree(c) || roads.has(c) || zone[c] !== zone[o.y * W + o.x] || byStartRoad(c)) return false;
+		return !cutsWay(c);
+	};
 	const besideFix = o => {
 		if (!DEAR.test(o.type, o) || monsterBeside(o)) return;
 		const foot = new Set(blockingCells(o.template, o.x, o.y).map(([a, b]) => at(a, b)));
@@ -244,7 +282,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			const cands = new Set();
 			for (const [vx, vy] of vis) for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const c = at(vx + dx, vy + dy); if (c >= 0 && c !== mc) cands.add(c); }
 			for (const c of cands) {
-				if (nearRoad ? !(isFree(c) && !(blocked[base + c] & RESERVED) && !roads.has(c) && zone[c] === zone[o.y * W + o.x] && c % W > 0 && ((c / W) | 0) > 0 && c % W < W - 1 && ((c / W) | 0) < H - 1) : !guardOk(c, o)) continue;
+				if (nearRoad === 'way' ? !wayGuardOk(c, o) : nearRoad ? !(isFree(c) && !(blocked[base + c] & RESERVED) && !roads.has(c) && zone[c] === zone[o.y * W + o.x] && c % W > 0 && ((c / W) | 0) > 0 && c % W < W - 1 && ((c / W) | 0) < H - 1) : !guardOk(c, o)) continue;
 				const cx = c % W, cy = (c / W) | 0;
 				if ([...monsterAt].some(k => k !== mc && Math.max(Math.abs(k % W - cx), Math.abs(((k / W) | 0) - cy)) <= 2)) continue;
 				if (!need.every(a => a === c || Math.max(Math.abs(a % W - cx), Math.abs(((a / W) | 0) - cy)) <= 1)) continue;
@@ -274,18 +312,22 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		out.objects++;
 		// no monster within reach of the approach: one goes on the approach tile whose ring covers the most of the rest
 		if (!app.some(c => ring.has(c))) {
+			// a guard that stands against this object's back and is no other object's goes to the approach tile instead of another being posted
+			// (and is no crowding there: it leaves where it stood)
+			const footTiles = [...new Set(blockingCells(o.template, o.x, o.y).map(([a, b]) => at(a, b)))];
+			const back = pl.objects.find(m => MON.test(m.type) && (m.l || 0) === l && m.guardCreature && !(blocked[base + m.y * W + m.x] & RESERVED)
+				&& footTiles.some(f => f >= 0 && Math.max(Math.abs(f % W - m.x), Math.abs(((f / W) | 0) - m.y)) <= 1) && !servesOther(m, o));
+			const backAt = back ? back.y * W + back.x : -1;
 			let best = -1, bn = -1;
 			for (const c of todo) {
-				if (!guardOk(c, o)) continue;
-				let n = crowdAt(c) ? -100 : farAt(c) ? 0 : -50;
+				const ok = guardOk(c, o);
+				if (!ok && (crowdAt(c, backAt) || !wayGuardOk(c, o))) continue;
+				// a tile a guard may usually take wins a tie
+				let n = (crowdAt(c, backAt) ? -100 : farAt(c, backAt) ? 0 : -50) + (ok ? 0.5 : 0);
 				for (const e of todo) if (Math.max(Math.abs(e % W - c % W), Math.abs(((e / W) | 0) - ((c / W) | 0))) <= 1) n++;
 				if (n > bn) { bn = n; best = c; }
 			}
 			if (best >= 0) {
-				// a guard that stands against this object's back and is no other object's goes to the approach tile instead of another being posted
-				const footTiles = [...new Set(blockingCells(o.template, o.x, o.y).map(([a, b]) => at(a, b)))];
-				const back = pl.objects.find(m => MON.test(m.type) && (m.l || 0) === l && m.guardCreature && !(blocked[base + m.y * W + m.x] & RESERVED)
-					&& footTiles.some(f => f >= 0 && Math.max(Math.abs(f % W - m.x), Math.abs(((f / W) | 0) - m.y)) <= 1) && !servesOther(m, o));
 				if (back) {
 					blocked[base + back.y * W + back.x] &= ~OCCUPIED;
 					monsterAt.delete(back.y * W + back.x);
@@ -311,11 +353,12 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			// not beside another stack: the tile stays open instead (approach-open has room under the engine's 7 to 18%; a second
 			// stack beside the first is the crowding the engine never shows)
 			if (guardOk(c, o) && !crowdAt(c)) { post(c, o); continue; }
+			if (!crowdAt(c) && wayGuardOk(c, o)) { post(c, o); out.onWay = (out.onWay || 0) + 1; continue; }
 			if (process.env.VMAPGEN_THIN_TRACE && /^creatureGenerator/.test(o.type)) { const k = 'dw open: ' + lastNo + (guardOk(c, o) ? ' (guard would crowd)' : ' (no guard: ' + ((blocked[base + c] & RESERVED) ? 'reserved' : roads.has(c) ? 'road' : 'near road/edge/zone') + ')'); why[k] = (why[k] || 0) + 1; }
 			skip.add(c);
 			out.left++;
 		}
-		if (open().length && resite(o, app)) out.left -= Math.min(out.left, skip.size);
+		if (open().length && (resite(o, app) || resite(o, app, 'way'))) out.left -= Math.min(out.left, skip.size);
 		besideFix(o);
 	}
 	// Phase 1c (K, 2026-10-08: "there are loads of monsters in ours that might be close to loot, but they aren't affectively guarding the loot, so they

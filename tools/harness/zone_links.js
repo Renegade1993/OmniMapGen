@@ -15,11 +15,10 @@ const { execFile } = require('child_process');
 const sight = require('../mapsight/lib/sight');
 
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
-const PROJECT = path.join(__dirname, '..', '..', '..');
-const REPORTS = process.env.K_REPORTS || path.join(PROJECT, '.tmp', 'k-reports');
-const ROOT = process.env.VMAPGEN_TEST_ROOT || path.join(PROJECT, 'VCMI', 'dmbtest');
-const K_USER = process.env.DMB_USER_DIR || path.join(require('os').homedir(), 'Documents', 'My Games', "Dead Man's Boots");
-const NODE_MODULES = path.join(PROJECT, 'VCMIMapGen', 'node_modules');
+const REPORTS = process.env.K_REPORTS || 'C:/AI Projects/Heroes 3/.tmp/k-reports';
+const ROOT = process.env.VMAPGEN_TEST_ROOT || 'C:/AI Projects/Heroes 3/VCMI/dmbtest';
+const K_USER = require('path').join(require('os').homedir(), 'Documents', 'My Games', "Dead Man's Boots");
+const NODE_MODULES = 'C:/AI Projects/Heroes 3/VCMIMapGen/node_modules';
 const tips = arg('--tips', '').split(',').filter(Boolean).map(s => { const [n, d] = s.split(/=(.*)/s); return { n, d }; });
 const OUT = path.resolve(arg('--out', '.tmp/zone_links'));
 const RATIOS = arg('--ratios', 'default,0,1').split(',');

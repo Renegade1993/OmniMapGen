@@ -912,6 +912,41 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 		zones.get(z).push(c);
 	}
 	const dirs4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+	// Mediterranean: one sea in the middle of the map with one ring of land round it out to the edges (K, 2026-10-11: "DO YOU EVEN KNOW WHAT A
+	// MEDITERRANEAN IS?!", and his reference, the Age of Empires map wikis' Mediterranean: a sea of about a quarter to a third of the map, a ragged
+	// shore, no scattered islands, no web of channels; `! LLM Files\Research\2026-10-11_Mediterranean-map-type-reference.md`). The rule below wetted
+	// each zone's own outer part and drew channels between all the zones. Here every zone gives up its cells nearest the map's centre, one wandering
+	// radius for the whole map; a zone whose centre lies inside the sea may lose up to 85% of its ground and keeps its outer edge, which joins the
+	// ring as shore; the others keep their share (maxWetGiven). wetScale sets the amount as for the other layouts. VMAPGEN_MED_SEA=0 keeps the old rule.
+	if (shapeId === 'mediterranean' && process.env.VMAPGEN_MED_SEA !== '0') {
+		const target = Math.round(N * Math.min(0.9, (1 - keepFor(content, W)) * wetScale));
+		const cap = maxWetGiven !== null ? maxWetGiven : 0.7;
+		const mx = W / 2, my = H / 2;
+		// the shore wanders: the radius swells and shrinks round the circle (four waves from the seed, the reference's shore is ragged), and the sea is a
+		// little longer one way
+		const ph1 = rng() * Math.PI * 2, ph2 = rng() * Math.PI * 2, ph3 = rng() * Math.PI * 2, ph4 = rng() * Math.PI * 2, st = 0.85 + rng() * 0.3;
+		const distAt = (x, y) => { const dx = (x - mx) * st, dy = (y - my) / st, an = Math.atan2(dy, dx); return Math.hypot(dx, dy) / (1 + 0.12 * Math.sin(3 * an + ph1) + 0.08 * Math.sin(5 * an + ph2) + 0.05 * Math.sin(9 * an + ph3) + 0.04 * Math.sin(14 * an + ph4)); };
+		const seaDist = c => distAt(c % W, (c / W) | 0);
+		const r0 = Math.sqrt(target / Math.PI);
+		const capOf = new Map(), order = [];
+		for (const [z, cells] of zones) {
+			let cx = 0, cy = 0;
+			for (const c of cells) { cx += c % W; cy += (c / W) | 0; }
+			cx /= cells.length; cy /= cells.length;
+			capOf.set(z, distAt(cx, cy) < r0 ? Math.max(cap, 0.85) : cap);
+			for (const c of cells) if (!forced[c]) order.push([seaDist(c), c]);
+		}
+		order.sort((u, v) => u[0] - v[0]);
+		const used = new Map();
+		let got = 0;
+		for (const [, c] of order) {
+			if (got >= target) break;
+			const z = zoneOf[c], n = used.get(z) || 0;
+			if (n >= Math.floor(capOf.get(z) * zones.get(z).length)) continue;
+			used.set(z, n + 1); mask[c] = 1; got++;
+		}
+		return mask;
+	}
 	// each zone's factor, scaled so the area-weighted mean is 1 (the overall amount of water stays what the layout asked for)
 	const zoneFactor = new Map();
 	if (shapeId) {

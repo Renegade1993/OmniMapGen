@@ -7,8 +7,8 @@
  *
  *   node tools/harness/k_cases.js [--seeds 3] [--lanes 2] [--out DIR] [--only small-ug,xl-p4-islands,isl1008-a,isl1008-b] [--nomods] [--deadline-min 40]
  *
- * K's maps come from the lead's read-only copies in K_REPORTS (default .tmp\k-reports\1006-* in the project folder), the options from
- * each map's .zones.json. The test install is VMAPGEN_TEST_ROOT (default VCMI\dmbtest in the project folder); the mods of
+ * K's maps come from the lead's read-only copies in K_REPORTS (default C:\AI Projects\Heroes 3\.tmp\k-reports\1006-*), the options from
+ * each map's .zones.json. The test install is VMAPGEN_TEST_ROOT (default C:\AI Projects\Heroes 3\VCMI\dmbtest); the mods of
  * K's user folder are read (read only) as he had them, so K's own seed gives his map again (--nomods leaves them out; the dwellings then
  * are placeholders and four checks see none). Every generation is a hidden child process with its own timeout, and the whole run
  * stops at the deadline or when a file STOP appears in --out. Nothing is written outside --out.
@@ -18,11 +18,10 @@ const path = require('path');
 const { execFile } = require('child_process');
 const { runChecks } = require('./playtest_checks');
 
-const PROJECT = path.join(__dirname, '..', '..', '..');
-const REPORTS = process.env.K_REPORTS || path.join(PROJECT, '.tmp', 'k-reports');
-const ROOT = process.env.VMAPGEN_TEST_ROOT || path.join(PROJECT, 'VCMI', 'dmbtest');
-const K_USER = process.env.DMB_USER_DIR || path.join(require('os').homedir(), 'Documents', 'My Games', "Dead Man's Boots");
-const NODE_MODULES = path.join(PROJECT, 'VCMIMapGen', 'node_modules');
+const REPORTS = process.env.K_REPORTS || 'C:/AI Projects/Heroes 3/.tmp/k-reports';
+const ROOT = process.env.VMAPGEN_TEST_ROOT || 'C:/AI Projects/Heroes 3/VCMI/dmbtest';
+const K_USER = require('path').join(require('os').homedir(), 'Documents', 'My Games', "Dead Man's Boots");
+const NODE_MODULES = 'C:/AI Projects/Heroes 3/VCMIMapGen/node_modules';
 
 // what K said about each map (roster\PLAYTEST-NOTES-2026-10-06.md) and the checks that carry it
 const CASES = [

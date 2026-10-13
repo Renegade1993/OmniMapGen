@@ -1,6 +1,6 @@
 # run1.ps1 <job file> [timeout seconds]: one engine generation, hidden, with a hard timeout (kills the process).
 param([string]$Job, [int]$Timeout = 120)
-$rr = if ($env:RMGRUN) { $env:RMGRUN } else { Join-Path $PSScriptRoot "..\..\..\VCMI\rmgrun" }
+$rr = "C:\AI Projects\Heroes 3\VCMI\rmgrun"
 $psi = New-Object System.Diagnostics.ProcessStartInfo
 $psi.FileName = "$rr\VCMI_rmg.exe"
 $psi.Arguments = "`"$Job`" --deadline $Timeout"
