@@ -28,3 +28,17 @@ test('a pile on a tile under an entrance picture is seen as drawn into it', () =
 	markShadow(blocked, 4 * W + 4);
 	assert.ok(pictureOnShadow(tpl, 4, 4, 0, W, H, blocked));
 });
+
+test("an unguarded prison under a gate's picture moves out of it, inside its own zone", () => {
+	// K, 2026-10-12: "prison is inaccesible in my start biome" (his seed 876637007: the prison (12,4), 4 of its tiles and 5 of its 6
+	// ways in under the subterranean gate (13,5)'s picture); plan.js clearEntranceShadow moves it up to six tiles within its zone
+	const { clearEntranceShadow } = require('../src/biome/plan');
+	const W2 = 16, H2 = 10, blocked = new Uint8Array(W2 * H2);
+	const prison = { type: 'prison', subtype: 'object', x: 4, y: 4, l: 0, template: pileTemplate('randomResource'), instanceName: 'prison_4_4_0' };
+	for (let y = 2; y <= 6; y++) for (let x = 2; x <= 6; x++) if (!(x === 4 && y === 4)) markShadow(blocked, y * W2 + x);
+	markShadow(blocked, 4 * W2 + 4);
+	const pl = { objects: [prison], p: {}, roadCells: new Set(), zone: new Int16Array(W2 * H2) };
+	const r = clearEntranceShadow(pl, 0, W2, H2, blocked);
+	assert.strictEqual(r.moved, 1);
+	assert.ok(!pictureOnShadow(prison.template, prison.x, prison.y, 0, W2, H2, blocked), `prison at (${prison.x},${prison.y})`);
+});

@@ -36,7 +36,7 @@ const { phase, setPhaseLevel } = require('../main/phases');
 const { linkBook } = require('./portals');
 const { fillBiome, blockingCells, footprintFits, footprintBlock, entranceOpen,
 	visitableCells, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED,
-	RESERVED, APPROACH, pictureOnShadow, markShadow, markApproach, allowedDirs, REMOVABLE_TYPES,
+	RESERVED, APPROACH, pictureOnShadow, markShadow, shadowAt, markApproach, allowedDirs, REMOVABLE_TYPES,
 	weldsMasses, MONSTER_OPTIONS, monsterOptions, scaledAmount, zoneGuardPool, engineGuard, scaledLinkGuard,
 	reachOnReserved } = require("./content");
 const { mineTemplate, STARTER_MINES, MINES_PER_PLAYER, STRUCTURES,
@@ -9359,9 +9359,17 @@ function townWayOut4(l, W, H, blocked, t, own) {
  */
 function clearEntranceShadow(pl, l, W, H, blocked) {
 	const out = { moved: 0, dropped: 0, left: 0 }, base = l * W * H, road = pl.roadCells || new Set();
-	const PICK = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox)/;
+	// a prison too (K, 2026-10-12: "prison is inaccesible in my start biome"; his seed 876637007, the prison (12,4) with 4 of its tiles and
+	// 5 of its 6 ways in under the subterranean gate (13,5)'s picture: the step in is legal, but the picture is the gate's)
+	const PICK = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|prison)/;
 	const CHEAP = /^(resource|randomResource|treasureChest|campfire)$/;
 	const mons = pl.objects.filter(o => (o.l || 0) === l && /^(monster|randomMonster)/.test(o.type));
+	// the tiles other objects (not scenery) stand on, and whether a picture at (x, y) would cover one
+	const taken = new Set();
+	// (a cheap pickup does not count: a moved prison may cover one, which is taken off; evenStartTakes, after this, tops a start up again)
+	for (const q of pl.objects) if ((q.l || 0) === l && q.template && q.template.mask && !CHEAP.test(q.type) && !(DECOR_TYPES_SET.has(q.type) && !q.template.mask.some(r2 => /[AT]/.test(r2))))
+		for (const [fx, fy] of blockingCells(q.template, q.x, q.y).concat(visitableCells(q.template, q.x, q.y))) taken.add(fy * W + fx);
+	const pictureOver = (tpl, x, y) => { const m = tpl.mask; for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) { if (!/[VBA]/.test(m[i][j])) continue; const fx = x - (m[i].length - 1 - j), fy = y - (m.length - 1 - i); if (taken.has(fy * W + fx)) return true; } return false; };
 	for (const o of pl.objects.slice()) {
 		if ((o.l || 0) !== l || !o.template || !o.template.mask || !PICK.test(o.type)) continue;
 		// on water too: a Pandora's box stood on the sea beside a shipyard (MapGen Dev's water-objects, coast108 seed 1, (89,18))
@@ -9372,17 +9380,30 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 		// lift it, then look for a tile
 		for (const c of own) blocked[base + c] &= ~OCCUPIED;
 		let to = null;
-		for (let r = 1; r <= 2 && !to; r++)
+		// an unguarded prison may go up to ten tiles, inside its own zone (K's 876637007: the prison (12,4) in a walled corner, nothing
+		// free within two, and its 3x3 picture over other objects within six)
+		const reach = !guard && o.type === 'prison' ? 10 : 2, z0 = pl.zone ? pl.zone[o.y * W + o.x] : -1;
+		for (let r = 1; r <= reach && !to; r++)
 			for (let dy = -r; dy <= r && !to; dy++) for (let dx = -r; dx <= r && !to; dx++) {
 				if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
 				const x = o.x + dx, y = o.y + dy;
 				if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1 || road.has(y * W + x) || (l === 0 && pl.p && pl.p.water && pl.p.water[y * W + x])) continue;
 				if (guard && Math.max(Math.abs(guard.x - x), Math.abs(guard.y - y)) > 1) continue;
+				if (r > 2 && pl.zone && pl.zone[y * W + x] !== z0) continue;
 				if (!footprintFits(o.template, x, y, l, W, H, blocked, true) || pictureOnShadow(o.template, x, y, l, W, H, blocked)) continue;
+				// its picture over no other object (the prison of K's 876637007 first landed with three piles under its picture)
+				if (pictureOver(o.template, x, y)) continue;
+				// and a way in that is open ground under no picture
+				const own2 = new Set(blockingCells(o.template, x, y).map(([a, b]) => b * W + a));
+				if (!approachCells(o.template, x, y, l, W, H, blocked).some(c => !own2.has(c) && !shadowAt(blocked, base + c))) continue;
 				to = [x, y];
 			}
 		if (to) {
 			o.x = to[0]; o.y = to[1]; o.instanceName = `${o.type}_${o.x}_${o.y}_${l}`;
+			// the cheap pickups its picture now covers go
+			const under = new Set(); { const m = o.template.mask; for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) if (/[VBA]/.test(m[i][j])) under.add((o.y - (m.length - 1 - i)) * W + o.x - (m[i].length - 1 - j)); }
+			const gone = pl.objects.filter(q => q !== o && (q.l || 0) === l && CHEAP.test(q.type) && q.template && blockingCells(q.template, q.x, q.y).some(([fx, fy]) => under.has(fy * W + fx)));
+			if (gone.length) { clearScenery(pl, l, W, H, blocked, { gone: new Set(gone) }); out.cleared = (out.cleared || 0) + gone.length; }
 			footprintBlock(o.template, o.x, o.y, l, W, H, blocked);
 			out.moved++;
 		} else if (CHEAP.test(o.type) || wetHere) {   // one on water goes whatever it is worth: no hero reaches it from land
