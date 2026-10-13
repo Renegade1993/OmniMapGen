@@ -97,7 +97,11 @@ function evaluate(file, c) {
 
 	const players = +c.opt.players;
 	const st = sight.starts(M);
-	if (st.length !== players) fails.push(`${st.length} start towns for ${players} players`);
+	// with compOnly set the map's seats are humans + computer-only (stockChoices.js: players is ignored then); -1 is a roll, so only fewer starts than humans is wrong there
+	const coRaw = c.opt['bio.compOnly'] !== undefined ? c.opt['bio.compOnly'] : c.opt.compOnly;
+	const co = coRaw === undefined ? null : Number(coRaw), humans = c.opt.humans !== undefined ? Number(c.opt.humans) : players;
+	const want = co === null ? players : (co > 0 ? Math.min(8, humans + co) : (co === 0 ? humans : null));
+	if (want !== null ? st.length !== want : st.length < humans) fails.push(`${st.length} start towns for ${want !== null ? want : 'at least ' + humans} seats (players ${players}, humans ${humans}, compOnly ${co === null ? 'unset' : co})`);
 	const WET = new Set(['wa', 'wt']);
 	const N = M.W * M.H * M.NL, isWet = i => WET.has(M.terr[i]);
 	let wet = 0; for (let i = 0; i < N; i++) if (isWet(i)) wet++;
