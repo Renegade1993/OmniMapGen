@@ -9364,6 +9364,17 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 	const PICK = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|prison)/;
 	const CHEAP = /^(resource|randomResource|treasureChest|campfire)$/;
 	const mons = pl.objects.filter(o => (o.l || 0) === l && /^(monster|randomMonster)/.test(o.type));
+	// every entrance standing now is marked, the gates laid after the fill too (K's 876637007: a gems pile (19,15) under a gate's
+	// picture the fill's marks did not know)
+	for (const e of pl.objects) {
+		if ((e.l || 0) !== l || !e.template || !e.template.mask || !/^(monolith|subterraneanGate)/.test(e.type)) continue;
+		const m = e.template.mask;
+		for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) {
+			if (!/[VBA]/.test(m[i][j])) continue;
+			const x = e.x - (m[i].length - 1 - j), y = e.y - (m.length - 1 - i);
+			if (x >= 0 && y >= 0 && x < W && y < H) markShadow(blocked, base + y * W + x);
+		}
+	}
 	// the tiles other objects (not scenery) stand on, and whether a picture at (x, y) would cover one
 	const taken = new Set();
 	// (a cheap pickup does not count: a moved prison may cover one, which is taken off; evenStartTakes, after this, tops a start up again)
