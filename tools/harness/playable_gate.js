@@ -151,14 +151,14 @@ function evaluate(file, c) {
 			const k = `${l}:${z}`; (byZone.get(k) || byZone.set(k, []).get(k)).push(i);
 		}
 		const zones = [...byZone].filter(([, a2]) => a2.length >= 40);
-		const ships = M.objs.filter(o => /shipyard/i.test(o.type));
+		const ships = M.objs.filter(o => /shipyard|^boat$/i.test(o.type));   // a boat waiting on the shore is a way off the island as much as a shipyard (waterfill.js puts one on every start island)
 		for (const ps of perStart) {
 			const missing = []; let reached = 0, tiles = 0;
 			for (let i = 0; i < N; i++) if (ps.sf[i]) tiles++;
 			for (const [k, arr] of zones) { let h = 0; for (const i of arr) if (ps.sf[i]) h++; if (h >= 0.5 * arr.length) reached++; else missing.push(`${k} ${h}/${arr.length}`); }
 			const ship = ships.some(o => M.approach(o).some(i => ps.sf[i]));
 			reachRows.push({ start: ps.t.at, tiles, zones: zones.length, reached, shipyard: ship });
-			if (missing.length && !ship) fails.push(`start (${ps.t.at}) reaches ${reached} of ${zones.length} land zones on foot and has no shipyard in reach; not reached: ${missing.slice(0, 4).join(', ')}${missing.length > 4 ? ' ...' : ''}`);
+			if (missing.length && !ship) fails.push(`start (${ps.t.at}) reaches ${reached} of ${zones.length} land zones on foot and has no shipyard or boat in reach; not reached: ${missing.slice(0, 4).join(', ')}${missing.length > 4 ? ' ...' : ''}`);
 			else if (missing.length) notes.push(`start (${ps.t.at}) reaches ${reached} of ${zones.length} land zones on foot, the rest by boat from a shipyard it can walk to`);
 		}
 	}
