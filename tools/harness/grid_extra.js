@@ -18,6 +18,7 @@
  *   approach-shadow  an entrance object's picture (monolith, gate; the passable V cells too) on an approach tile or on the cells of a pile, dwelling, mine or bank [K 10-11 monolith on the gem pond; lead 10-13]
  *   road-stubs       a lone road piece under 8 tiles that touches no visiting tile and no map edge [K 10-11 road terminations]
  *   water-objects    a land object with cells on water, a water object on land [K 10-12 Mediterranean XL]
+ *   water-content    objects on the water per 1000 water tiles against loot objects on land per 1000 land tiles; ratio limit proposed [K 10-12 17:55 Mediterranean XL: not enough mod loot and structures on the water]
  *   prison-hero      a prison hero's four stats against its level, from stored primarySkills or an engine log beside the map [K 10-11 Ayden level 30 with 1/1/2/1]
  *   water            the water share against the share asked, land share per zone (under 45% named), zones drowned or cut off, the shape of the water against the layout asked, every start walking to a town and a mine [lead 10-10, K's Mediterranean complaint]
  *   water-type      the water against the Age of Empires map type the layout lever stands for (Research\AoE-map-types): measures per type (the amount of water is the waterCoverage lever's, judged by the water check, not here), thresholds proposed, not accepted [K 10-11: the AoE wikis are the source]
@@ -44,6 +45,7 @@ const LIMITS = {
 	waterLandMin: 0.45,               // land share a zone keeps on a map with water (lead 10-10)
 	startLootShare: 1,                 // loot-by-zone is a report: no limit (K's road map holds 34% of its dear piles in player zones on 084ac2c, K's 18 about 7%)
 	townLootR: 5,                     // town-loot: tiles from a town's cells that make a pile "beside" it
+	seaLootRatio: 0.5,                 // water-content: objects per 1000 water tiles over objects per 1000 land tiles (a proposal; K: "not enough mod loot + structures on the water")
 	stubMax: 8,                        // road-stubs: a road piece under this many tiles that touches no destination
 	endReach: 6,                      // road_ends.js: tiles round a road end that name another road piece or a town front
 };
@@ -656,11 +658,13 @@ function waterObjects(M) {
 	let anyWater = false;
 	for (let i = 0; i < M.terr.length && !anyWater; i++) if (wet(i)) anyWater = true;
 	if (!anyWater) return { skipped: 'no water' };
+	// a template that names only water (the asset index: HotA's water shrine and observation tower stand on water, their land twins do not) is water-made whatever its type
+	const IDX = sight.index(), waterTemplate = o => { if (!IDX) return false; const s = IDX.anims.get(IDX.art(o.template && o.template.animation)); return !!s && s.size > 0 && [...s].every(n => n === 'water'); };
 	const onWater = [], onLand = [];
 	let hang = 0, checked = 0;
 	for (const o of M.objs) {
 		if (o.cls === 'monster' || WATER_UNSURE.test(String(o.type))) continue;
-		const native = WATER_NATIVE.test(String(o.type)) || WATER_NATIVE.test(String(o.subtype || ''));
+		const native = WATER_NATIVE.test(String(o.type)) || WATER_NATIVE.test(String(o.subtype || '')) || waterTemplate(o);
 		const cells = o.cells.filter(([x, y]) => M.inb(x, y)).map(([x, y]) => M.idx(o.l, x, y));
 		if (!cells.length) continue;
 		const real = o.pickup || o.visitable || ['town', 'mine', 'dwelling', 'bank'].includes(o.cls);
@@ -673,7 +677,47 @@ function waterObjects(M) {
 		else if (pictureCells(o).some(([x, y]) => M.inb(x, y) && wet(M.idx(o.l, x, y)))) hang++;
 	}
 	const items = [...onWater, ...onLand];
-	return verdict(items.length === 0, `${onWater.length} land objects with cells on water, ${onLand.length} water objects on land (of ${checked} objects looked at); ${hang} pictures hang over water by passable cells (note only)`, '0 (K 10-12: loot and structures on the Mediterranean XL water)', items.slice(0, 10), { onWater: onWater.length, onLand: onLand.length, hang, checked });
+	return verdict(items.length === 0, `${onWater.length} land objects with cells on water, ${onLand.length} water objects on land (of ${checked} objects looked at${IDX ? '' : '; asset index not loaded (set VCMI_ROOT and VCMI_USER_DIR): water-only templates known by type name only'}); ${hang} pictures hang over water by passable cells (note only)`, '0 (K 10-12: loot and structures on the Mediterranean XL water)', items.slice(0, 10), { onWater: onWater.length, onLand: onLand.length, hang, checked });
+}
+
+
+/** Objects made for the water: by type name, or by a template that names only water (the asset index). */
+const CORE_WATER = /^(flotsam|seaChest|shipwreckSurvivor|buoy|oceanBottle|shipwreck|derelictShip|sirens?|mermaids?|magellansMaps|whirlpool|boat|kelp|reef)$/;   // the base game's water objects; the rest on the water is mod content
+function waterMadeFn() {
+	const IDX = sight.index();
+	const tpl = o => { if (!IDX) return false; const s = IDX.anims.get(IDX.art(o.template && o.template.animation)); return !!s && s.size > 0 && [...s].every(n => n === 'water'); };
+	return { IDX, made: o => WATER_NATIVE.test(String(o.type)) || WATER_NATIVE.test(String(o.subtype || '')) || tpl(o) };
+}
+
+/**
+ * K 10-12 17:55, Mediterranean XL: "Not enough mod loot + structures on the water". Lead 10-12 17:58: count per water tile against the land zones. Objects on the
+ * water (pickups: flotsam, sea chests, jetsam, barrels; sites and banks: buoys, mermaids, sirens, whirlpools, shipwrecks, derelict ships, observatories, shrines, mod
+ * buildings) per 1000 water tiles, against the loot objects on land (pickups, sites, banks, dwellings, mines) per 1000 land tiles. The ratio limit is a proposal.
+ */
+function waterContent(M) {
+	const wet = i => WET.has(M.terr[i]);
+	let waterTiles = 0, landTiles = 0;
+	for (let i = 0; i < M.terr.length; i++) { if (wet(i)) waterTiles++; else if (M.ground(i)) landTiles++; }
+	if (waterTiles < 400) return { skipped: 'no water body' };
+	const { IDX, made } = waterMadeFn();
+	const sea = { pickup: 0, site: 0, mod: 0, monster: 0 }, seaTypes = {};
+	let land = 0;
+	for (const o of M.objs) {
+		const cells = o.cells.filter(([x, y]) => M.inb(x, y)).map(([x, y]) => M.idx(o.l, x, y));
+		if (!cells.length) continue;
+		if (o.cls === 'monster') { if (wet(cells[0])) sea.monster++; continue; }
+		const real = o.pickup || o.visitable || ['mine', 'dwelling', 'bank'].includes(o.cls);
+		if (!real) continue;
+		const onWater = cells.some(wet) || o.entr.some(([x, y]) => M.inb(x, y) && wet(M.idx(o.l, x, y)));
+		if (made(o) || onWater) {
+			if (o.pickup) sea.pickup++; else sea.site++;
+			if (!CORE_WATER.test(String(o.type))) sea.mod++;
+			seaTypes[nameOf(o)] = (seaTypes[nameOf(o)] || 0) + 1;
+		} else land++;
+	}
+	const seaN = sea.pickup + sea.site, perWater = 1000 * seaN / waterTiles, perLand = 1000 * land / Math.max(1, landTiles), ratio = perLand ? perWater / perLand : 0;
+	return verdict(ratio >= LIMITS.seaLootRatio, `${seaN} objects on the water (${sea.pickup} pickups, ${sea.site} sites and banks, ${sea.mod} from mods; ${sea.monster} stacks) on ${waterTiles} water tiles = ${perWater.toFixed(1)} per 1000; land ${land} objects on ${landTiles} tiles = ${perLand.toFixed(1)} per 1000; ratio sea to land ${ratio.toFixed(2)}${IDX ? '' : '; asset index not loaded: mod water objects known by type name only'}`,
+		`sea to land ratio ${LIMITS.seaLootRatio} or more (a proposal: K said "not enough mod loot + structures on the water", no number set)`, Object.entries(seaTypes).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => `${v} x ${k}`), { seaN, pickup: sea.pickup, site: sea.site, mod: sea.mod, monsters: sea.monster, waterTiles, landTiles, perWater, perLand, ratio });
 }
 
 /** The engine's level table (CHeroHandler::loadExperience): level L needs EXP[L-1]; past 15 entries each gap is the one before plus a fifth. */
@@ -718,5 +762,5 @@ function prisonHero(M) {
 }
 
 
-const CHECKS = { 'approach-shadow': approachShadow, 'road-stubs': roadStubs, 'water-objects': waterObjects, 'prison-hero': prisonHero, 'water': waterReport, 'water-type': waterType, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
+const CHECKS = { 'approach-shadow': approachShadow, 'road-stubs': roadStubs, 'water-objects': waterObjects, 'water-content': waterContent, 'prison-hero': prisonHero, 'water': waterReport, 'water-type': waterType, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
 module.exports = { CHECKS, LIMITS, levelOfExp, statRange, pictureCells, entranceObj };

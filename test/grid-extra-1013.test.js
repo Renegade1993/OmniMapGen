@@ -109,3 +109,18 @@ test('prison-hero: the level table gives 15000 level 10, 90000 level 20, 500000 
 		assert.strictEqual(CHECKS['prison-hero'](fake(20, 20, [pr('core:ayden', 500000)], { file })).pass, true);
 	} finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
+
+test('water-content: an empty sea fails the sea-to-land ratio, a sea with objects at the land density passes (K 10-12 17:55: not enough loot and structures on the water)', () => {
+	const flot = (x, y) => ({ l: 0, cls: 'low', type: 'flotsam', at: [x, y], x, y, entr: [[x, y]], cells: [[x, y]], pickup: true, template: { mask: ['A'] } });
+	const mk = (objs) => { const M = fake(60, 60, objs); for (let y = 0; y < 60; y++) for (let x = 30; x < 60; x++) M.terr[M.idx(0, x, y)] = 'wa'; return M; };
+	const land = []; for (let i = 0; i < 40; i++) land.push(pile(2 + (i % 20), 2 + ((i / 20) | 0) * 3));
+	assert.strictEqual(CHECKS['water-content'](fake(60, 60, land)).skipped, 'no water body');
+	const empty = CHECKS['water-content'](mk(land));
+	assert.strictEqual(empty.pass, false, empty.value);
+	assert.strictEqual(empty.nums.seaN, 0);
+	const sea = []; for (let i = 0; i < 40; i++) sea.push(flot(32 + (i % 20), 2 + ((i / 20) | 0) * 3));
+	const full = CHECKS['water-content'](mk([...land, ...sea]));
+	assert.strictEqual(full.nums.seaN, 40);
+	assert.strictEqual(full.nums.pickup, 40);
+	assert.ok(full.nums.ratio > 0.5 && full.pass === true, full.value);
+});
