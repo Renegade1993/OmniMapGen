@@ -22,11 +22,7 @@
  *   approach-open      dwellings and dear piles whose every approach tile is blocked by loot, a blocker or a guard's 3x3 ring [10-05 rule, the Reviewer's count]
  *   flyer-open         dear piles with no monster on or beside their tile (a flyer meets no guard) [10-05 flyer rule]
  *   biome-density      no large patch of one terrain whose 12x12 windows are nearly bare, joined to a start biome or not [15:44]
-<<<<<<< ours
- * and the seven of grid_extra.js (October 8th: start-road, town-spacing, road-breaks, road-ends, prison-tiers, edge-objects, free-standing, river-ends).
-=======
  * and the seven of grid_extra.js (October 8th: start-road, town-spacing, road-breaks, road-ends, gold-front, prison-tiers, edge-objects, free-standing, river-ends).
->>>>>>> theirs
  */
 const fs = require('fs');
 const path = require('path');
@@ -307,11 +303,7 @@ function flyerOpen(M) {
 const LIMITS = { slotTol: 0, slotW: 3, slotLen: 10, crowdShare: 0.05, twoGuards: 0.20, cold: { crowdShare: 0.02, twoGuards: 0.03 }, middle: 0.30, bareWindows: 12, townNoRoad: 0, minStacks: 30, minDear: 20, openDwelling: 0.20, openHigh: 0.15, flyerOpen: 0.01 };
 const CHECKS = { 'towns-per-start': townsPerStart, 'town-road': townRoad, 'dwelling-reach': dwellingReach, 'guard-clusters': guardClusters, 'dragons-middle': dragonsMiddle, 'coast-slots': coastSlots, 'biome-density': biomeDensity, 'approach-open': approachOpen, 'flyer-open': flyerOpen };
 
-<<<<<<< ours
-Object.assign(CHECKS, require('./grid_extra').CHECKS);               // start-road, town-spacing, road-breaks, road-ends, prison-tiers, edge-objects, free-standing, river-ends
-=======
 Object.assign(CHECKS, require('./grid_extra').CHECKS);               // start-road, town-spacing, road-breaks, road-ends, gold-front, prison-tiers, edge-objects, free-standing, river-ends
->>>>>>> theirs
 
 function runChecks(file, only) {
 	const M = sight.load(file), out = {};
