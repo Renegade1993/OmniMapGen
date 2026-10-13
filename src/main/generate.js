@@ -1562,7 +1562,10 @@ async function generateMap(params) {
 			if (!dry) console.error('[gen] islands: no layout kept the dragon zones together in 8 tries; they are islands of their own');
 		}
 		if (!dry) dry = dryLayout(null);
-		waterPlan = clusterMask || buildAdoptedPlan(params.mapW, params.mapH, dry.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage);
+		// a one-level map's dragon junctions (the zones the template keeps below ground) are islands in a Mediterranean (water.js adoptWater)
+		const isleZones = zonePlan.perLevel.length === 1 ? new Set((zonePlan.perLevel[0] || []).map((z, i) => (z && (z.wasUnderground || z.forcedLevel === 'underground') ? i : -1)).filter(i => i >= 0)) : null;
+		waterPlan = clusterMask || buildAdoptedPlan(params.mapW, params.mapH, dry.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage, isleZones && isleZones.size ? isleZones : null);
+		if (waterPlan && waterPlan.hubCells && waterPlan.hubCells.length) console.error(`[gen] water: the dragon junctions in the sea are islands, ${waterPlan.hubCells.length} tiles`);
 		console.error(`[gen] water: ${adoptMode} the engine's way, ${(100 * waterPlan.coverage).toFixed(1)}% of the surface`);
 	}
 	if (waterPlan && zonePlan && !adoptMode && !process.env.VMAPGEN_WATER_FORCE) {

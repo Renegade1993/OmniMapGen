@@ -504,15 +504,6 @@ function fillWater(ctx) {
 					for (let i = 0; i < tpl.mask[r].length; i++) {
 						const u = x - (tpl.mask[r].length - 1 - i), v = y - (tpl.mask.length - 1 - r);
 						if (!water[v * W + u] || id[v * W + u] !== b) { onWater = false; break; }
-						// and off the shoreline: the shore pass after this one turns some coastal water to land, and a sea chest stood on
-						// the beach (MapGen Dev's water-objects on 3b5987a, coast108 seeds 1 and 2 and cont108 seed 1, once every sea was
-						// stocked). Scenery may still touch the coast. VMAPGEN_SEA_OFF_SHORE=0 lets the rest touch it too.
-						if (kind !== 'kelp' && kind !== 'blocking' && process.env.VMAPGEN_SEA_OFF_SHORE !== '0')
-							for (let dy = -1; dy <= 1 && onWater; dy++) for (let dx = -1; dx <= 1; dx++) {
-								const nu = u + dx, nv = v + dy;
-								if (nu < 0 || nv < 0 || nu >= W || nv >= H || !water[nv * W + nu]) { onWater = false; break; }
-							}
-						if (!onWater) break;
 					}
 				if (!onWater || !footprintFits(tpl, x, y, 0, W, H, wb)) continue;
 				const walls = blockingCells(tpl, x, y).map(([u, v]) => v * W + u);

@@ -17,11 +17,8 @@ const { genEnv, testTmp } = require('./_vcmi');
 const sight = require('../tools/mapsight/lib/sight');
 
 const VALUE = { sawmill: 2000, orePit: 2000, alchemistLab: 3000, sulfurDune: 3000, crystalCavern: 3000, gemPond: 3000, goldMine: 5000 };
-// the values plan.js evenStartTakes weighs a take with: wood and ore are worth less than the dear resources, an artifact by its tier
-const RES = { wood: 300, ore: 300, mercury: 1000, sulfur: 1000, crystal: 1000, gems: 1000, gold: 750 };
-const ART = { Treasure: 5000, Minor: 10000, Major: 20000, Relic: 30000 };
-const valueOf = o => o.type === 'mine' ? VALUE[o.subtype] || 2500 : o.type === 'resource' ? RES[o.subtype] || 500 : o.type === 'randomResource' ? 750
-	: o.type === 'treasureChest' ? 1500 : /^randomArtifact/.test(o.type) ? ART[(o.type.match(/(Treasure|Minor|Major|Relic)$/) || [])[1]] || 10000 : 0;
+const valueOf = o => o.type === 'mine' ? VALUE[o.subtype] || 2500 : /^(resource|randomResource)$/.test(o.type) ? 750
+	: o.type === 'treasureChest' ? 1500 : /^randomArtifact/.test(o.type) ? 5000 : 0;
 
 test("36x36 two players two levels Coldshadow's Fantasy seed 1099575901: the starts' take with no fight and their ways out are even", () => {
 	const out = path.join(testTmp(), `vmapgen_take_even_${process.pid}.vmap`);

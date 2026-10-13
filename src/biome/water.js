@@ -242,10 +242,9 @@ function scoreField(W, H, shape, rng, starts = [], cover = 0.4) {
 	// ovular central ocean....i don't think this should be outlawed, but it should definitely be the exception not the rule ... i always
 	// prefer variability and some real variation range"). One seed in six keeps the plain oval; the others move the sea's centre up to a
 	// tenth of the map off the middle and give its shore two or three lobes (bays and peninsulas) of their own size, with a rougher coast.
-	// Drawn only for this layout, so no other layout's rolls move; a template's crossroads (a start marked hub: Jebus Cross) keeps the
-	// sea round the middle, the island it needs. VMAPGEN_MED_VARY=0 keeps the oval.
-	const med = { ox: 0, oy: 0, lobes: [], rough: 0.35, ring: process.env.VMAPGEN_MED_VARY !== '0' && !starts.some(q => q && q.hub) };
-	if (shape.id === 'mediterranean' && process.env.VMAPGEN_MED_VARY !== '0' && !starts.some(q => q && q.hub) && rng() >= 1 / 6) {
+	// Drawn only for this layout, so no other layout's rolls move. VMAPGEN_MED_VARY=0 keeps the oval.
+	const med = { ox: 0, oy: 0, lobes: [], rough: 0.35 };
+	if (shape.id === 'mediterranean' && process.env.VMAPGEN_MED_VARY !== '0' && rng() >= 1 / 6) {
 		med.ox = (rng() - 0.5) * 0.2; med.oy = (rng() - 0.5) * 0.2;
 		const n = 2 + (rng() < 0.5 ? 1 : 0);
 		for (let i = 0; i < n; i++) med.lobes.push([2 + ((rng() * 4) | 0), 0.08 + rng() * 0.22, rng() * Math.PI * 2]);
@@ -321,7 +320,7 @@ function scoreField(W, H, shape, rng, starts = [], cover = 0.4) {
 					const dx = (2 * x / (W - 1) - 1 - med.ox) / ex, dy = (2 * y / (H - 1) - 1 - med.oy) / ey, an = Math.atan2(dy, dx);
 					const lobe = Math.max(0.4, 1 + med.lobes.reduce((m, [k, amp, ph]) => m + amp * Math.sin(k * an + ph), 0));
 					// and a ring of land to the map's edges, whatever the lobes do (the oval reached the top and bottom edges on 3 of 12 seeds)
-					const de = Math.min(x, y, W - 1 - x, H - 1 - y), on = med.ring;
+					const de = Math.min(x, y, W - 1 - x, H - 1 - y), on = process.env.VMAPGEN_MED_VARY !== '0';
 					v = -Math.hypot(dx, dy) / lobe + med.rough * (n - 0.5) - (on ? 0.4 * Math.max(0, 1 - de / edgeBand) + (de < 4 ? 5 : 0) : 0);
 					break;
 				}
@@ -903,7 +902,7 @@ const ADOPT = {
 	islands: { border: 1, inlets: 0.5 },
 	normal: { border: 0, inlets: 0.5 },
 };
-function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = null, wetScale = 1, maxWetGiven = null) {
+function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = null, wetScale = 1, maxWetGiven = null, islandZones = null) {
 	const N = W * H;
 	const cfg = ADOPT[content] || ADOPT.normal;
 	// The Water layout on a template map's Normal water (it was ignored: the water is each zone's outer part). The shape sets how wet
@@ -946,11 +945,34 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 		const seaDist = c => distAt(c % W, (c / W) | 0);
 		const r0 = Math.sqrt(target / Math.PI);
 		const capOf = new Map(), order = [];
+		// A template's dragon junctions inside the sea are islands in it (K, 2026-10-12, his XL Mediterranean on Coldshadow: "Coldshadow
+		// dragon junctions are on the edges. Would prefer these either as a large single island or four smaller ones in the middle"; the
+		// two that the layout put near the middle were drowned to 35 and 20 tiles). Such a zone keeps the 80% of its ground farthest
+		// from its own border dry, and the sea takes the rest round it; the island is reached by boat (buildAdoptedPlan: settle leaves
+		// it apart, hubCells). VMAPGEN_MED_ISLES=0 drowns them as before.
+		const isle = [];
 		for (const [z, cells] of zones) {
 			let cx = 0, cy = 0;
 			for (const c of cells) { cx += c % W; cy += (c / W) | 0; }
 			cx /= cells.length; cy /= cells.length;
-			capOf.set(z, distAt(cx, cy) < r0 ? Math.max(cap, 0.85) : cap);
+			const inSea = distAt(cx, cy) < r0;
+			if (inSea && islandZones && islandZones.has(z) && process.env.VMAPGEN_MED_ISLES !== '0') {
+				const own = new Set(cells), depth = new Map();
+				let front = cells.filter(c => dirs4.some(([dx, dy]) => { const u = c % W + dx, v = ((c / W) | 0) + dy; return u < 0 || v < 0 || u >= W || v >= H || !own.has(v * W + u); }));
+				for (const c of front) depth.set(c, 1);
+				for (let d = 2; front.length; d++) {
+					const next = [];
+					for (const c of front) for (const [dx, dy] of dirs4) { const u = c % W + dx, v = ((c / W) | 0) + dy, n = v * W + u; if (u >= 0 && v >= 0 && u < W && v < H && own.has(n) && !depth.has(n)) { depth.set(n, d); next.push(n); } }
+					front = next;
+				}
+				const ranked = cells.slice().sort((a, b) => (depth.get(b) || 0) - (depth.get(a) || 0) || a - b);
+				const keep = new Set(ranked.slice(0, Math.max(9, Math.round((Number(process.env.VMAPGEN_MED_ISLE_KEEP) || 0.8) * cells.length))));
+				for (const c of keep) isle.push(c);
+				capOf.set(z, 1);
+				for (const c of cells) if (!forced[c] && !keep.has(c)) order.push([seaDist(c), c]);
+				continue;
+			}
+			capOf.set(z, inSea ? Math.max(cap, 0.85) : cap);
 			for (const c of cells) if (!forced[c]) order.push([seaDist(c), c]);
 		}
 		order.sort((u, v) => u[0] - v[0]);
@@ -962,6 +984,18 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 			if (n >= Math.floor(capOf.get(z) * zones.get(z).length)) continue;
 			used.set(z, n + 1); mask[c] = 1; got++;
 		}
+		// an island's ring of sea, whatever the radius left dry round it: two tiles of water all round the kept core (settle keeps them
+		// wet; one tile alone it dries as too thin)
+		const moat = new Uint8Array(N);
+		if (isle.length) {
+			const kept = new Set(isle);
+			for (const c of isle) for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+				const u = c % W + dx, v = ((c / W) | 0) + dy, n = v * W + u;
+				if (u >= 0 && v >= 0 && u < W && v < H && !kept.has(n) && !forced[n]) { if (!mask[n]) got++; mask[n] = 1; moat[n] = 1; }
+			}
+		}
+		mask.isle = isle;
+		mask.moat = moat;
 		return mask;
 	}
 	// each zone's factor, scaled so the area-weighted mean is 1 (the overall amount of water stays what the layout asked for)
@@ -1073,7 +1107,7 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 }
 
 /** The water plan of a template map made the engine's way (adoptWater), cleaned as buildWaterPlan's is. */
-function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, groups = null, shape = null, coverage = null) {
+function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, groups = null, shape = null, coverage = null, islandZones = null) {
 	// zones that make one island (a centralized island of several zones): their cells count as one zone to the water
 	if (groups && groups.length) {
 		const to = new Map();
@@ -1105,8 +1139,10 @@ function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, gro
 		for (let t = 0; t < (want ? 12 : 1); t++) {
 			const rng = xorshift(((seed || 1) ^ 0x5b3e17) >>> 0);
 			rng(); rng();
-			mask = adoptWater(W, H, zoneOf, content, rng, forced, null, shape, scale, cap);
-			settle(mask, W, H, forced, startCells, { connect: content !== 'islands' });
+			mask = adoptWater(W, H, zoneOf, content, rng, forced, null, shape, scale, cap, islandZones);
+			const isle = mask.isle || [], moat = mask.moat || null;
+			settle(mask, W, H, forced, startCells, { connect: content !== 'islands', apart: isle, ...(isle.length ? { wet: moat } : {}) });
+			mask.isle = isle;
 			unfit = check ? repairShore(mask, W, H, forced, check, null, false) : 0;
 			got = mask.reduce((a, v) => a + v, 0);
 			if (process.env.VMAPGEN_WATER_TRACE) console.error('[water] cap ' + cap + ' try ' + t + ' scale ' + scale.toFixed(2) + ' got ' + (100 * got / (W * H)).toFixed(1) + '% minLand ' + minLand(mask).toFixed(2));
@@ -1118,7 +1154,7 @@ function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, gro
 	if (want && content !== 'islands' && Math.abs(got / (W * H) - want) > 0.02)
 		console.error(`[gen] water: ${(100 * got / (W * H)).toFixed(1)}% reached of the ${(100 * want).toFixed(0)}% asked, the lowest zone keeps ${(100 * minLand(mask)).toFixed(0)}% land`);
 	return { mask, starts: starts.map(q => ({ ...q, moved: false })), shape: content === 'islands' ? 'islands' : 'lakes',
-		coverage: got / (W * H), unfit, islands: content === 'islands', hubCells: [], adopted: content };
+		coverage: got / (W * H), unfit, islands: content === 'islands', hubCells: (mask.isle || []).filter(c => !mask[c]), adopted: content };
 }
 
 module.exports = { WATER_SHAPES, MAX_COVERAGE, START_CLEAR, buildWaterPlan,
