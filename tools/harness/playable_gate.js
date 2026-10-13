@@ -92,8 +92,8 @@ function evaluate(file, c) {
 	let M;
 	try { M = sight.load(file); } catch (e) { return { fails: [`does not load: ${String(e.message).slice(0, 120)}`], notes }; }
 	try { const r = check.checkMap(file); for (const f of r.fails) fails.push('mapsight: ' + f); } catch (e) { fails.push(`mapsight check failed to run: ${String(e.message).slice(0, 100)}`); }
-	let rc = null; try { rc = runChecks(file, ['start-road', 'town-road']).checks; } catch (e) { notes.push('harness checks did not run: ' + String(e.message).slice(0, 80)); }
-	if (rc) for (const k of ['start-road', 'town-road']) { const r = rc[k]; if (r && !r.skipped && !r.error && !r.pass) fails.push(`${k}: ${r.value}`); }
+	let rc = null; try { rc = runChecks(file, ['start-road', 'town-road', 'water-objects']).checks; } catch (e) { notes.push('harness checks did not run: ' + String(e.message).slice(0, 80)); }
+	if (rc) for (const k of ['start-road', 'town-road', 'water-objects']) { const r = rc[k]; if (r && !r.skipped && !r.error && !r.pass) fails.push(`${k}: ${r.value}${k === 'water-objects' && r.items && r.items.length ? ' [' + r.items.slice(0, 3).join('; ') + ']' : ''}`); }   // a land object on water or a water object on land fails any map with water (lead 10-13 12:50, 3b5987a)
 
 	const players = +c.opt.players;
 	const st = sight.starts(M);
