@@ -6488,6 +6488,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	}
 	setPhaseLevel(0);
 	if (p.layoutOnly) return { plans, blocked };
+	require('./guardorigin').mark(plans, levels, 'Subterranean gates.');
 	// Subterranean gates.
 	//
 	// These are the only way down, so a two-level map with none is a map whose
@@ -7221,6 +7222,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 
 	}
 
+	require('./guardorigin').mark(plans, levels, 'The roads went down in planLevel,');
 	// The roads went down in planLevel, before the walls and ridges. The gates
 	// and monoliths of links with a road that landed here rather than on a
 	// held site join them now, over whatever ground is left (roadplan.js).
@@ -7238,6 +7240,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 					+ `${r.cells} cells in ${r.zones} zone(s)`
 					+ (r.failed ? `, ${r.failed} node(s) no road reached` : ''));
 		}
+	require('./guardorigin').mark(plans, levels, 'the engine s free paths between');
 	// the engine's free paths between each zone's links (holdFreePaths), on a
 	// template map, where the fill keeps its guards off them
 	if (p.zonePlan)
@@ -7246,6 +7249,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			if (held) console.error(`[gen] level ${l}: ${held} cell(s) held clear between each zone's links`);
 		}
 
+	require('./guardorigin').mark(plans, levels, 'A zone s pieces cut apart');
 	// A zone's pieces cut apart by the structural walls (interior ridges, rim rows) are joined before the content goes in, so the fill reaches
 	// them: the fill puts content only on ground a hero reaches from the zone's ways in, and a plain walled off then and opened by the join
 	// after the fill stayed bare (template maps only: the free layout's fill and its start balance were measured without it; K 10-05 21:45, "0 loot ... or a lot less than their neighbours": zone 21 of seed 7 at his water settings,
@@ -7255,11 +7259,13 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = joinZoneWaysIn(plans[l], l, W, H, blocked, { early: true });
 			if (r.joined) console.error(`[gen] level ${l}: before the fill, pieces of zones joined: ${r.joined} (${r.rock} rock tile(s) carved, ${r.cleared} scenery piece(s) cleared)`);
 		}
+	require('./guardorigin').mark(plans, levels, 'Content fill runs last, after the');
 	// Content fill runs last, after the gates have claimed their ground.
 	phase('resources');
 	plans.forEach((plan, i) => { if (i > 0) phase('resourcesBelow'); fillLevel(plan, W, H, blocked); });
 	if (process.env.VMAPGEN_RING_TRACE) console.error('[ringpass] after fill ' + plans.map(pl => pl.objects.filter(o => o.__ring).length).join('/'));
 
+	require('./guardorigin').mark(plans, levels, 'Roads go in after the fill,');
 	// Roads go in after the fill, so they route around what is actually there.
 	// A roaded biome opening on its own is two or three cells of road surface
 	// leading nowhere; a network between the towns is what a real map has, and
@@ -7571,6 +7577,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	}
 	for (let l = 0; l < levels; l++) leakTrace('before edges', blocked, W, H, l, plans[l].objects);
 	phase('edges');
+	require('./guardorigin').mark(plans, levels, 'Item 21 the rows just inside');
 	// Item 21: the rows just inside each zone's rim and along the map edge,
 	// blocked the way the engine's post-object pass blocks them (rimfill.js).
 	// After the fill and the roads so it costs neither anything; before the
@@ -7584,6 +7591,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	}
 	for (let l = 0; l < levels; l++) leakTrace('before paths', blocked, W, H, l, plans[l].objects);
 	phase('paths');
+	require('./guardorigin').mark(plans, levels, 'The content fill can close a');
 	// The content fill can close a pocket the structure-time pass opened:
 	// settle fills and placed objects land after openSealedByObjects ran, so
 	// a gate pocket sealed at fill time was never inspected. Sweep seals
@@ -7598,6 +7606,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				+ 'object(s) that sealed part of the level off');
 		guardDugBorders(plans[l].objects, l, W, H, blocked, plans[l].zone, plans[l].p, params.seed);
 	}
+	require('./guardorigin').mark(plans, levels, 'The sweep needs each level s');
 	// The sweep needs each level's own starts. planLevel already passes none
 	// for the underground, but this loop used to hand every level the surface
 	// starts, so mainComponent preferred whichever underground pocket sat under
@@ -7605,6 +7614,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	// outside it as unreachable.
 	for (let l = 0; l < levels; l++) leakTrace("before join and sweep", blocked, W, H, l, plans[l].objects);
 	const droppedPairs = new Set();
+	require('./guardorigin').mark(plans, levels, 'Every start zone holds the same');
 	// Every start zone holds the same number of towns once the fill is done (K, 2026-10-06 14:57, his 36x36 seed 1750425233: "did you see how many
 	// towns each side starts with?", red 2, blue 1). The plan counts the town spots a zone holds and gives the extra ones up (the start-town parity above), but a
 	// town the fill then finds no room for ("a zone 2 town found no room") broke it again, now on either side. Here the neutral towns of the richer start
@@ -7644,12 +7654,14 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			if (given) console.error(`[gen] start zones kept equal after the fill at ${least} town(s) each, ${given} neutral town(s) given up`);
 		}
 	}
+	require('./guardorigin').mark(plans, levels, 'every way into a zone joins');
 	// every way into a zone joins the zone's main body before anything is swept (joinZoneWaysIn)
 	if (process.env.VMAPGEN_JOIN_WAYS !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = joinZoneWaysIn(plans[l], l, W, H, blocked);
 			if (r.joined || r.left) console.error(`[gen] level ${l}: ways into zones joined to their zone: ${r.joined} (${r.rock} rock tile(s) carved, ${r.cleared} scenery piece(s) cleared${r.demolished ? `, ${r.demolished} building tile(s) given up` : ''}${r.across ? `, ${r.across} across a line with an unlinked zone` : ''}), ${r.left} left`);
 		}
+	require('./guardorigin').mark(plans, levels, 'A split level (splitLevels) is reached');
 	// A split level (splitLevels) is reached piece by piece through the other level: a gate or cross-level
 	// monolith opens once a hero reaches its other end, so the levels are swept together until nothing more opens.
 	// Swept one level at a time, every surface piece but the start's was "unreachable": Coldshadow's Fantasy seed 7
@@ -7670,6 +7682,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			startsOn(l).length ? startsOn(l) : (plans[l].entrances || []), droppedPairs, cross);
 	}
 
+	require('./guardorigin').mark(plans, levels, 'Even out what each player s');
 	// Even out what each player's start ring offers. The ring here is the
 	// same metric vmap_startparity.js measures a finished map with: object
 	// values whose visitable cells lie within 18 BFS steps of the town's
@@ -7692,34 +7705,40 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		// it added ships stranded.
 		sweepStranded(plans[l], W, H, l, startsOn(l), droppedPairs, cross);
 	}
+	require('./guardorigin').mark(plans, levels, 'every start has its sawmill and');
 	// every start has its sawmill and ore pit, over interior scenery if nothing else is left (ensureStartMines)
 	if (process.env.VMAPGEN_START_MINE_ROOM !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = ensureStartMines(plans[l], l, W, H, blocked, plans[l].biomeTerrain);
 			if (r.length) console.error(`[gen] level ${l}: starter mines placed late: ${r.join('; ')}`);
 		}
+	require('./guardorigin').mark(plans, levels, 'every start walks to its own');
 	// every start walks to its own zone's nearest sawmill and ore pit past no guard (freeStartMines)
 	if (process.env.VMAPGEN_FREE_START_MINES !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = freeStartMines(plans[l], l, W, H, blocked);
 			if (r.cleared || r.unreached) console.error(`[gen] level ${l}: start mines freed: ${r.cleared} scenery object(s) cleared, ${r.unreached} still behind a guard`);
 		}
+	require('./guardorigin').mark(plans, levels, 'every map keeps one of its');
 	// every map keeps one of its rich zones' dwellings (ensureSignatureDwelling)
 	if (process.env.VMAPGEN_SIGNATURE_DWELLING !== '0' && p.zonePlan && objectPools && (objectPools.__sigDw || (objectPools.__sigCands || []).length)) {
 		const r = ensureSignatureDwelling(plans, W, H, blocked, objectPools, p, rng);
 		if (r) console.error(`[gen] signature dwelling: ${r}`);
 	}
+	require('./guardorigin').mark(plans, levels, 'on a one-level map with water');
 	// on a one-level map with water the far junction zones' dragon dwellings move into the middle ones (gatherDragons)
 	{
 		const g = gatherDragons(plans, W, H, blocked, p, rng);
 		if (g) console.error(`[gen] dragon dwellings gathered to the middle: ${g}`);
 	}
+	require('./guardorigin').mark(plans, levels, 'every town, mine and dwelling reachable');
 	// every town, mine and dwelling reachable from its zone's links, roads and towns (unsealZones)
 	if (process.env.VMAPGEN_UNSEAL !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = unsealZones(plans[l], l, W, H, blocked);
 			if (r.opened || r.left || r.removed) console.error(`[gen] level ${l}: sealed objects opened: ${r.opened}, ${r.cleared} scenery piece(s) cleared, ${r.removed} removed, ${r.left} left sealed`);
 		}
+	require('./guardorigin').mark(plans, levels, 'Scenery art, chosen the way the');
 	// Scenery art, chosen the way the engine chooses it (retile.js): every
 	// earlier pass decided WHICH cells are blocked; here the decor on them is
 	// replaced by the zone's own obstacle sets, largest piece first. Measured
@@ -7770,6 +7789,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				console.error(`[gen] level ${l}: scenery retiled ${res.before} -> `
 					+ `${res.after} object(s), ${res.kept} kept where no set fits`);
 		}
+	require('./guardorigin').mark(plans, levels, 'The item-4 fringe, second reach a');
 	// The item-4 fringe, second reach: a lone one-cell decor object often
 	// gains its blocked neighbours only after it is placed (pack members,
 	// wall stones, early settle fills), which is why the in-fill merge
@@ -7820,6 +7840,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			console.error(`[gen] level ${l}: merged ${merged} lone decor `
 				+ 'object(s) into their masses');
 	}
+	require('./guardorigin').mark(plans, levels, 'second pass a pair whose other');
 	// second pass: a pair whose other half was dropped on the level that ran
 	// first has to go too, in both directions
 	if (droppedPairs.size)
@@ -7832,6 +7853,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		}
 	for (const plan of plans) for (const o of plan.objects) delete o.pairId;
 
+	require('./guardorigin').mark(plans, levels, 'A dwelling follows its linked town');
 	// A dwelling follows its linked town's faction, so a link to a town the
 	// sweeps removed leaves the engine resolving against nothing. Re-point
 	// those at the nearest surviving town, or drop the link if none is left,
@@ -7860,6 +7882,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		console.error(`[gen] re-pointed ${relinked} and cleared ${cleared} dwelling `
 			+ 'link(s) whose town did not survive');
 
+	require('./guardorigin').mark(plans, levels, 'A map with obelisks buries one');
 	// A map with obelisks buries one grail for the puzzle to point at, the way
 	// every one of the corpus maps does. The marker is special-cased by the
 	// engine reader (MapFormatJson.cpp:1150) and carries no template or
@@ -7877,6 +7900,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		}
 	}
 
+	require('./guardorigin').mark(plans, levels, 'Water treasure and scenery (waterfill.js, water');
 	// Water treasure and scenery (waterfill.js, water W2), last: on water only,
 	// where a harbour's boat can sail, after every pass that prunes objects it
 	// judges unreachable over land.
@@ -7886,6 +7910,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				rng: xorshift(((params.seed || 1) ^ 0x7a7e2) >>> 0), p: plan.p,
 				objects: plan.objects, objectEntry });
 
+	require('./guardorigin').mark(plans, levels, 'underground floor nothing uses becomes rock,');
 	// underground floor nothing uses becomes rock, as the engine's does (emptyrock.js)
 	for (let l = 0; l < levels; l++) {
 		const pl = plans[l];
@@ -7894,6 +7919,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			o => DECOR_TYPES_SET.has(o.type) && o.template && o.template.mask && !o.template.mask.some(r2 => /[AT]/.test(r2)), pl.p.caveChecker);
 		if (r) console.error(`[gen] level ${l}: ${r.turned} empty floor tile(s) turned to rock (${r.restored} kept to hold ways open, ${r.scenery} scenery removed)` + (r.fit ? `, art ${r.fit.before} -> ${r.fit.after}` : ''));
 	}
+	require('./guardorigin').mark(plans, levels, 'small scenery hugging a cave wall');
 	// small scenery hugging a cave wall becomes part of the wall, as the engine's rock does (caverock.js)
 	for (let l = 0; l < levels; l++) {
 		const pl = plans[l];
@@ -7903,12 +7929,14 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			blockingCells, pl.p.caveChecker);
 		if (n) console.error(`[gen] level ${l}: ${n} small scenery piece(s) against the cave wall turned to rock`);
 	}
+	require('./guardorigin').mark(plans, levels, 'no rock one tile wide (thinRockToFloor)');
 	// no rock one tile wide (thinRockToFloor)
 	if (process.env.VMAPGEN_THIN_ROCK !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = thinRockToFloor(plans[l], l, W, H, rng);
 			if (r.turned || r.left) console.error(`[gen] level ${l}: rock one tile wide: ${r.turned} tile(s) turned to floor under an obstacle, ${r.left} left`);
 		}
+	require('./guardorigin').mark(plans, levels, 'the retile, the empty floor turned');
 	// the retile, the empty floor turned to rock and the cave wall's scenery came after the last seal sweep: one more, so no
 	// part of a level they closed off stays closed (K's 252 line, 2026-10-05: an alchemist's lab and a library shut in)
 	for (let l = 0; l < levels; l++) {
@@ -7918,17 +7946,20 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		if (opened) console.error(`[gen] level ${l}: removed ${opened} scenery object(s) that the late passes sealed part of the level off with`);
 		guardDugBorders(plans[l].objects, l, W, H, blocked, plans[l].zone, plans[l].p, params.seed);
 	}
+	require('./guardorigin').mark(plans, levels, 'empty ground shut in by scenery');
 	// empty ground shut in by scenery is filled with scenery (fillEmptyPockets)
 	for (let l = 0; l < levels; l++) {
 		const r = fillEmptyPockets(plans[l], l, W, H, blocked, rng);
 		if (r.pockets) console.error(`[gen] level ${l}: ${r.pockets} empty pocket(s) shut in by scenery filled, ${r.tiles} tile(s), ${r.left} left open`);
 	}
+	require('./guardorigin').mark(plans, levels, 'Dear pickups a hero walks to');
 	// Dear pickups a hero walks to trade places with cheap ones only a fight reaches (lootswap.js)
 	if (process.env.VMAPGEN_LOOT_SWAP !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = require('./lootswap').swapLoot(plans[l], W, H, l, blocked, OCCUPIED, REMOVABLE_TYPES, blockingCells, visitableCells);
 			if (r.swapped || r.moved) console.error(`[gen] level ${l}: ${r.swapped} open dear pickup(s) traded places with guarded cheap ones (${r.guards} guard pair(s) traded too), ${r.moved || 0} moved into a guarded pocket`);
 		}
+	require('./guardorigin').mark(plans, levels, 'no guard stands where its ring');
 	// no guard stands where its ring covers a town's doorstep (guardsOffDoorsteps)
 	if (process.env.VMAPGEN_DOORSTEP_GUARDS !== '0')
 		for (let l = 0; l < levels; l++) {
@@ -7938,6 +7969,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			if (w.moved || w.left || w.removed) console.error(`[gen] level ${l}: guards on the way from a start to its zone's other towns: ${w.moved} moved, ${w.removed || 0} removed, ${w.left} left`);
 		}
 	if (process.env.VMAPGEN_RING_TRACE) console.error('[ringpass] before pileseal ' + plans.map(pl => pl.objects.filter(o => o.__ring).length).join('/'));
+	require('./guardorigin').mark(plans, levels, 'A valuable pile a hero reaches');
 	// A valuable pile a hero reaches without a fight moves into a dead end of its zone with its guard at the mouth (pileseal.js;
 	// the engine lays guarded piles only where they close, no switch)
 	for (let l = 0; l < levels; l++) {
@@ -7947,6 +7979,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			rng: xorshift(((params.seed || 1) ^ 0x51ea) + l * 977 >>> 0) });
 		console.error(`[gen] level ${l}: valuable piles open to a hero: ${r.open}, ${r.moved} moved into a dead end behind a guard, ${r.left} with no dead end ${JSON.stringify(r.why)}`);
 	}
+	require('./guardorigin').mark(plans, levels, 'A guard on every high-class pile');
 	// A guard on every high-class pile a hero takes without a fight (guardhigh.js; the base game's behaviour, no switch)
 	for (let l = 0; l < levels; l++) {
 		const r = require('./guardhigh').guardHigh(plans[l], W, H, l, blocked, {
@@ -7962,12 +7995,14 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			if (s.swapped || s.moved) console.error(`[gen] level ${l}: after the guard pass, ${s.swapped} open dear pickup(s) traded places with guarded cheap ones, ${s.moved || 0} moved into a guarded pocket`);
 		}
 	}
+	require('./guardorigin').mark(plans, levels, 'No pickup under a monster s');
 	// No pickup under a monster's sprite (declip.js; VMAPGEN_DECLIP=0 skips it)
 	if (process.env.VMAPGEN_DECLIP !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = require('./declip').declipMonsters(plans[l], W, H, l, blocked, blockingCells, require('./content').footprintCells);
 			if (r.moved || r.left) console.error(`[gen] level ${l}: ${r.moved} pickup(s) moved out from under a monster's sprite, ${r.left} left`);
 		}
+	require('./guardorigin').mark(plans, levels, 'every dear object with a monster');
 	// every dear object with a monster beside it (guardDearLoot)
 	if (process.env.VMAPGEN_DEAR_GUARD !== '0' && (params.guardTreasure === undefined || Number(params.guardTreasure) !== 0)
 		&& (params.lootGuardWeight === undefined || Number(params.lootGuardWeight) > 0))
@@ -7975,6 +8010,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = guardDearLoot(plans[l], l, W, H, blocked, plans[l].p || params, rng);
 			if (r.posted || r.left || r.moved) console.error(`[gen] level ${l}: dear loot and dwellings with no monster beside them: ${r.posted} guard(s) posted beside them, ${r.moved || 0} pile(s) moved into a guard's ring, ${r.left} left; gold mines guarded ${r.gold || 0}, no tile ${r.goldLeft || 0}`);
 		}
+	require('./guardorigin').mark(plans, levels, 'Every tile a dwelling or a');
 	// Every tile a dwelling or a dear pile is visited from is taken, in a monster's ring or closed by a terrain blocker, so a flyer meets a guard too
 	// (K, 2026-10-06: guard, loot, guard, wall; the gaps closed with blockers, not more guards)
 	const approachClosing = (l, only = null) => {
@@ -8002,11 +8038,13 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	if (process.env.VMAPGEN_DEAR_GUARD !== '0' && (params.guardTreasure === undefined || Number(params.guardTreasure) !== 0)
 		&& (params.lootGuardWeight === undefined || Number(params.lootGuardWeight) > 0))
 		for (let l = 0; l < levels; l++) approachClosing(l);
+	require('./guardorigin').mark(plans, levels, 'Open stretches with no loot in');
 	// Open stretches with no loot in them get a pile of their zone (fillBareWindows)
 	for (let l = 0; l < levels; l++) {
 		const r = fillBareWindows(plans[l], l, W, H, blocked, plans[l].p || params);
 		if (r.added || r.lifted || r.floor) console.error(`[gen] level ${l}: loot-free stretches of ground given a pile: ${r.added}; sparse stretches lifted by ${r.lifted} pile(s)${r.floor ? `; ${r.floor} pile(s) for zones under one object a 100 tiles` : ''}`);
 	}
+	require('./guardorigin').mark(plans, levels, 'Guards at portals Off nothing stands');
 	// Guards at portals Off: nothing stands in front of a portal end, whatever placed it (portalends.js)
 	if (Number(params.guardPortals) === 0)
 		for (let l = 0; l < levels; l++) {
@@ -8016,6 +8054,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	if (process.env.VMAPGEN_RING_TRACE) console.error('[ringpass] before roadrepair ' + plans.map(pl => pl.objects.filter(o => o.__ring).length).join('/'));
 	if (process.env.VMAPGEN_RING_TRACE) for (const pl of plans) { const hv = pl.objects.filter(o => /^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact)$/.test(o.type)); console.error('[ringpiles] high ' + hv.length + ', walled where laid ' + hv.filter(o => o.__walled && o.__walled[0] === o.x && o.__walled[1] === o.y).length + ', walled then moved ' + hv.filter(o => o.__walled && (o.__walled[0] !== o.x || o.__walled[1] !== o.y)).length + ', never walled ' + hv.filter(o => !o.__walled).length); }
 	if (process.env.VMAPGEN_RING_DUMP) require('fs').writeFileSync(process.env.VMAPGEN_RING_DUMP, JSON.stringify(plans.map((pl, l) => pl.objects.filter(o => /^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact|spellScroll)$/.test(o.type)).map(o => ({ l, type: o.type, at: [o.x, o.y], walled: o.__walled || null, guardAt: o.__guardAt || null, ring: (o.__ringLog || []).map(([x, y, k]) => [x, y, k, pl.openMask ? pl.openMask[y * W + x] : -1]), guardThere: !!(o.__guardAt && pl.objects.some(m => /^(monster|randomMonster)/.test(m.type) && m.x === o.__guardAt[0] && m.y === o.__guardAt[1])) }))).flat()));
+	require('./guardorigin').mark(plans, levels, 'The roads last word, on the');
 	// The roads' last word, on the final layout: no end at nothing (roadrepair.js)
 	if (process.env.VMAPGEN_ROAD_REPAIR !== '0' && process.env.VMAPGEN_ROAD_SPLINES === '0')
 		for (let l = 0; l < levels; l++) {
@@ -8023,11 +8062,13 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				o => DECOR_TYPES_SET.has(o.type) && o.template && o.template.mask && !o.template.mask.some(r => /[AT]/.test(r)));
 			console.error(`[gen] level ${l}: road repair joined ${r.joined} tile(s), cut ${r.cut} dead-end tile(s); ${plans[l].roadCells.size} road tiles`);
 		}
+	require('./guardorigin').mark(plans, levels, 'Every road net joined to the');
 	// Every road net joined to the starts' (roadweb.js): the engine's maps have one net with every town on it
 	{
 		const r = process.env.VMAPGEN_ROAD_SPLINES !== '0' ? { joined: 0 } : require('./roadweb').joinRoadNets(plans, W, H, blocked, OCCUPIED, REMOVABLE_TYPES, blockingCells, visitableCells);
 		if (r.joined) console.error(`[gen] road web: ${r.joined} road tile(s) joined the road nets to the starts' in ${r.rounds} round(s)`);
 	}
+	require('./guardorigin').mark(plans, levels, 'The road spline layer drew an');
 	// The road spline layer drew an edge to every held gate site before the gates were placed; a link whose pair landed
 	// elsewhere, or became monoliths, leaves that edge leading to nothing. Its own tiles (not shared with another edge)
 	// go; the rest of the tree stays. Part of the layer: it only takes back what it drew (VMAPGEN_ROAD_SPLINES=1).
@@ -8098,12 +8139,14 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			}
 			if (cut) console.error(`[gen] level ${l}: road spline edges to link ends never built taken back, ${cut} tile(s)`);
 		}
+	require('./guardorigin').mark(plans, levels, 'The last road pass the road');
 	// The last road pass: the road on the visiting tile of every gate and monolith (gateroad.js; VMAPGEN_TELEPORT_ROADS=0 skips it)
 	if (process.env.VMAPGEN_TELEPORT_ROADS !== '0' && process.env.VMAPGEN_ROAD_SPLINES !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = require('./gateroad').teleportRoads(plans[l], W, H, l, blocked, OCCUPIED, visitableCells, blockingCells, { reach: 150 });
 			if (r.onto || r.joined || r.none) console.error(`[gen] level ${l}: road onto the visiting tile of gates and monoliths: ${r.onto} the tile only, ${r.joined} by a longer run, ${r.none} not reached`);
 		}
+	require('./guardorigin').mark(plans, levels, 'The engine s mines stand on');
 	// The engine's mines stand on a road 19 to 35% of the time (tier-1 subset: road_mine_at engine 0.19, ours 0.02; its roads run to the
 	// mines of a zone with fewer than two road nodes); a mine here joins the road net within 30 tiles with that chance, over free floor
 	// Build Road Network Off on a template: the mines get no road of their own (the passages' roads, the gates' and monoliths', and the towns' doors stay)
@@ -8114,6 +8157,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				{ types: /^(mine|abandonedMine)$/, reach: 30, chance: 0.2, overGuards: false, rng: xorshift(((params.seed || 1) ^ 0x31ae5) + l * 7919 >>> 0) });
 			if (r.onto || r.joined) console.error(`[gen] level ${l}: mines on the road net: ${r.onto} beside it, ${r.joined} by a longer run`);
 		}
+	require('./guardorigin').mark(plans, levels, 'Two road pieces with an end');
 	// Two road pieces with an end four steps or fewer from each other over walkable ground are joined (gateroad.js closeRoadGaps;
 	// VMAPGEN_ROAD_GAPS=0 skips it)
 	if (process.env.VMAPGEN_ROAD_GAPS !== '0' && process.env.VMAPGEN_ROAD_SPLINES !== '0')
@@ -8121,12 +8165,14 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = require('./gateroad').closeRoadGaps(plans[l], W, H, l, blocked, OCCUPIED, blockingCells);
 			if (r.joined) console.error(`[gen] level ${l}: road gaps of four tiles or fewer closed: ${r.joined}`);
 		}
+	require('./guardorigin').mark(plans, levels, 'A road that ends at nothing');
 	// A road that ends at nothing is taken back to its junction (gateroad.js trimRoadStubs; VMAPGEN_ROAD_TRIM=0 skips it)
 	if (process.env.VMAPGEN_ROAD_TRIM !== '0' && process.env.VMAPGEN_ROAD_SPLINES !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = require('./gateroad').trimRoadStubs(plans[l], W, H, l, visitableCells, blockingCells, allowedDirs);
 			if (r.cut) console.error(`[gen] level ${l}: road ends at nothing taken back: ${r.cut} tile(s)`);
 		}
+	require('./guardorigin').mark(plans, levels, 'A town with no road at');
 	// A town with no road at its door joins the road of its own zone (gateroad.js joinBareTowns)
 	if (process.env.VMAPGEN_ROAD_SPLINES !== '0')
 		for (let l = 0; l < levels; l++) {
@@ -8145,6 +8191,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				}
 			}
 		}
+	require('./guardorigin').mark(plans, levels, 'The road passes after the gates');
 	// The road passes after the gates' and monoliths' own (the mines' roads, the gap close, the trim, the towns' join) can leave a road within
 	// reach of an end that had none when its pass ran: the gate of 144x144 two levels seed 3 (K's mods) stood 40 steps from a road laid after it.
 	// Once more, for the ends still without one. VMAPGEN_TELEPORT_ROADS=0 skips it.
@@ -8153,21 +8200,26 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = require('./gateroad').teleportRoads(plans[l], W, H, l, blocked, OCCUPIED, visitableCells, blockingCells, { reach: 150 });
 			if (r.onto || r.joined) console.error(`[gen] level ${l}: road onto the visiting tile of gates and monoliths, again after the late roads: ${r.onto} the tile only, ${r.joined} by a longer run`);
 		}
+	require('./guardorigin').mark(plans, levels, 'A road passes an object and');
 	// A road passes an object and does not run through it: the road behind a monolith, a gate or a mine goes round its footprint to the tiles it is entered from
 	for (let l = 0; l < levels; l++) {
 		const r = require('./gateroad').roadsPastObjects(plans[l], W, H, l, blocked, { OCCUPIED, visitableCells, blockingCells, allowedDirs });
 		if (r.fixed || r.left) console.error(`[gen] level ${l}: roads that ran through an object, taken round it: ${r.fixed}, ${r.left} left`);
+	require('./guardorigin').mark(plans, levels, 'the arms the bypass left hanging');
 	// the arms the bypass left hanging go back to their junction, as every road end is judged (the trim before)
 	if (r.fixed && process.env.VMAPGEN_ROAD_TRIM !== '0') require('./gateroad').trimRoadStubs(plans[l], W, H, l, visitableCells, blockingCells, allowedDirs);
+	require('./guardorigin').mark(plans, levels, 'and no 2x2 block of road');
 	// and no 2x2 block of road (roads are one tile wide)
 	const th = require('./gateroad').thinRoadBlocks(plans[l], W, H, l, { visitableCells });
 	if (th.thinned) console.error(`[gen] level ${l}: road tiles taken out of 2x2 blocks: ${th.thinned}`);
+	require('./guardorigin').mark(plans, levels, 'and no step that touches at');
 	// and no step that touches at a corner only (the game draws both tiles as dead ends there: a gap in the road; gateroad.js closeDiagonalSteps)
 	if (process.env.VMAPGEN_ROAD_DIAG !== '0') {
 		const dg = require('./gateroad').closeDiagonalSteps(plans[l], W, H, l, blocked, OCCUPIED, blockingCells, { clearScenery, visitableCells,
 			isDecor: o => (DECOR_TYPES_SET.has(o.type) || (o.template && require('./decor').isTerrainDecorAnimation(o.template.animation))) && o.template && o.template.mask && !o.template.mask.some(r2 => /[AT]/.test(r2)) });
 		if (dg.closed || dg.left) console.error(`[gen] level ${l}: road steps that met at a corner only: ${dg.closed} joined by a tile beside them (${dg.cleared} scenery piece(s) cleared), ${dg.left} left${dg.offVisit ? `, ${dg.offVisit} taken off a building's visiting tile` : ''}`);
 	}
+	require('./guardorigin').mark(plans, levels, 'and no road piece that serves');
 	// and no road piece that serves one place only (gateroad.js lonePieces)
 	if (process.env.VMAPGEN_ROAD_LONE !== '0') {
 		const lp = require('./gateroad').lonePieces(plans[l], W, H, l, visitableCells);
@@ -8180,6 +8232,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		}
 	}
 	}
+	require('./guardorigin').mark(plans, levels, 'A building no hero can step');
 	// A building no hero can step into: every tile it is entered from is covered by scenery, another building or a monolith's own tile
 	// (K, 2026-10-11: the two-way monolith blocking the gem pond, 108x108 four players seed 321088871, the pond (46,44) entered only from the
 	// monolith's door (45,45), its blocked corner (46,45) and a hills piece (47,45)). Scenery on an entry tile is cleared, before the late
@@ -8189,6 +8242,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = openShutEntries(plans[l], l, W, H, blocked);
 			if (r.opened || r.left) console.error(`[gen] level ${l}: buildings with no way in: ${r.opened} opened (scenery cleared), ${r.left} left`);
 		}
+	require('./guardorigin').mark(plans, levels, 'The zones pieces once more, now');
 	// The zones' pieces once more, now that everything stands: the scenery retile, the banks and the guard moves come after the join before the
 	// sweep and can shut a cave chamber's mouth (K's mods, 144x144 two levels, seed 6: zone 18 on level 1, a chamber of 178 tiles with 28 objects
 	// behind two scenery pieces and a bank; mapsight split zones). The same join: scenery cleared, rock carved, a building only when nothing
@@ -8198,12 +8252,14 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = joinZoneWaysIn(plans[l], l, W, H, blocked);
 			if (r.joined || r.left) console.error(`[gen] level ${l}: zone pieces joined again at the end: ${r.joined} (${r.rock} rock tile(s) carved, ${r.cleared} scenery piece(s) cleared${r.demolished ? `, ${r.demolished} building tile(s) given up` : ''}${r.across ? `, ${r.across} across a line with an unlinked zone` : ''}), ${r.left} left`);
 		}
+	require('./guardorigin').mark(plans, levels, 'The late passes (the seal sweeps,');
 	// The late passes (the seal sweeps, the zone joins, the roads, the piles) move scenery and stacks after the approach closing and can open an
 	// entrance it had shut: once more, for what is open now (MapGen Dev, 2026-10-10: 39 of 766 gold mines on the grid open to a walker, most of
 	// them closed when the pass ran). VMAPGEN_FINAL_CLOSE=0 skips it.
 	if (process.env.VMAPGEN_FINAL_CLOSE !== '0' && process.env.VMAPGEN_DEAR_GUARD !== '0' && (params.guardTreasure === undefined || Number(params.guardTreasure) !== 0)
 		&& (params.lootGuardWeight === undefined || Number(params.lootGuardWeight) > 0))
 		for (let l = 0; l < levels; l++) approachClosing(l, 'gold');
+	require('./guardorigin').mark(plans, levels, 'and the dear piles the late');
 	// and the dear piles the late passes opened (a road pass cleared the scenery in front of a town and opened a major's pocket beside the road:
 	// 36x36 eight players a36p8, (25,4), the Opus Reviewer's R21): a guard where one fits, else a trade with a guarded cheap pickup
 	if (process.env.VMAPGEN_FINAL_DEAR !== '0')
@@ -8215,6 +8271,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const s = process.env.VMAPGEN_LOOT_SWAP !== '0' ? require('./lootswap').swapLoot(plans[l], W, H, l, blocked, OCCUPIED, REMOVABLE_TYPES, blockingCells, visitableCells, { anyZone: true }) : {};
 			if (r.guarded || s.swapped || s.moved) console.error(`[gen] level ${l}: dear piles open after the late passes: ${r.guarded} guarded, ${s.swapped || 0} traded with guarded cheap ones, ${s.moved || 0} moved into a guarded pocket`);
 		}
+	require('./guardorigin').mark(plans, levels, 'last every walk between two zones');
 	// last: every walk between two zones that meets no guard is a doorway the links leave free (guardZoneJoins)
 	if (process.env.VMAPGEN_ZONE_JOINS !== '0')
 		for (let l = 0; l < levels; l++) {
@@ -8223,6 +8280,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			if (r.crossings) console.error(`[gen] level ${l}: zone joins with no fight the links do not make: ${r.crossings} step(s), ${r.posted} guard(s) posted, ${r.closed || 0} closed with scenery, ${r.left} step(s) left`);
 		}
 	if (process.env.VMAPGEN_WATCH) { const [wx, wy] = process.env.VMAPGEN_WATCH.split(',').map(Number); for (let l = 0; l < levels; l++) console.error('[watch] end of planMap level ' + l + ': ' + plans[l].objects.filter(o => (o.l || 0) === l && Math.abs(o.x - wx) <= 3 && Math.abs(o.y - wy) <= 3).map(o => o.type + '@' + o.x + ',' + o.y).join(' ')); }
+	require('./guardorigin').mark(plans, levels, 'the gates and monoliths once more,');
 	// the gates and monoliths once more, last: the late passes after the road passes (the shut entries opened, the late zone join, the town
 	// fronts, the seal sweeps) clear scenery and carve rock, and a teleport the road could not reach before may be reached now (K's islands
 	// map seed 2094259454 on a changed layout: the monolith (60,28) on level 1, mapsight teleport off road). VMAPGEN_TELEPORT_LATE=0 skips it.
@@ -8231,6 +8289,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = require('./gateroad').teleportRoads(plans[l], W, H, l, blocked, OCCUPIED, visitableCells, blockingCells, { reach: 150 });
 			if (r.joined || r.none) console.error(`[gen] level ${l}: gates and monoliths after the late passes: ${r.joined} run to the road net, ${r.none} not reached`);
 		}
+	require('./guardorigin').mark(plans, levels, 'Integrity audit every blocking cell of');
 	// Integrity audit: every blocking cell of every written object must carry
 	// OCCUPIED in `blocked`. A cell that lost its mark is a hole the floods
 	// see through while the file keeps the wall - 72x72 s5 shipped green
@@ -8246,9 +8305,11 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			}
 		}
 	}
+	require('./guardorigin').mark(plans, levels, 'VMAPGEN FILL TRACE what put() refused,');
 	// VMAPGEN_FILL_TRACE: what put() refused, by reason and kind, over the whole map
 	if (objectPools && objectPools.__smallCut && !objectPools.__smallCutLogged) { const c = objectPools.__smallCut; objectPools.__smallCutLogged = true; console.error(`[gen] a map at ${(c.f * 100).toFixed(0)}% of its template's smallest size keeps fewer piles: ${c.piles} of ${c.of} cut, with ${c.guards} guard(s); ${c.ends || 0} gate or monolith end(s) left to a stack within 2`); }
 	if (process.env.VMAPGEN_FILL_TRACE && objectPools && objectPools.__fillStat) console.error(`[fillstat] ${JSON.stringify(objectPools.__fillStat)}`);
+	require('./guardorigin').dump(plans, levels);
 	return { plans, blocked };
 }
 
@@ -8653,8 +8714,15 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		const byRoad = c => { const x = c % W, y = (c / W) | 0; for (let ey = -1; ey <= 1; ey++) for (let ex = -1; ex <= 1; ex++) if (roads.has((y + ey) * W + x + ex)) return true; return false; };
 		// of equal rank, the tile whose ring covers most of the open front
 		const cover = c => frontFree.filter(f => !ringed(f) && Math.max(Math.abs(f % W - c % W), Math.abs(((f / W) | 0) - ((c / W) | 0))) <= 1).length;
-		cands.sort((a, b) => (rank.get(a) + (crowdAt(a) ? 2 : 0) + (byRoad(a) ? 1 : 0) - cover(a) * 0.5) - (rank.get(b) + (crowdAt(b) ? 2 : 0) + (byRoad(b) ? 1 : 0) - cover(b) * 0.5));
-		const spot = cands.length ? cands[0] : -1;
+		// a tile within 2 of another stack is the crowding the engine never shows (the guard-stage rewrite, 2026-10-12: 17 of 53 gold guards on
+		// eight Coldshadow maps stood within 2 of another stack): it ranks under every tile clear of one, and when a ring already covers part of
+		// the front no second stack goes beside it, the approach closing shuts the rest with blockers (closeApproaches phase 1c). VMAPGEN_GOLD_SPACED=0 off.
+		const spaced = process.env.VMAPGEN_GOLD_SPACED !== '0';
+		const tightG = c => [...monsterAt].some(m => m !== c && Math.max(Math.abs(m % W - c % W), Math.abs(((m / W) | 0) - ((c / W) | 0))) <= 2);
+		const score = c => rank.get(c) + (crowdAt(c) ? 2 : 0) + (spaced && tightG(c) ? 20 : 0) + (byRoad(c) ? 1 : 0) - cover(c) * 0.5;
+		cands.sort((a, b) => score(a) - score(b));
+		let spot = cands.length ? cands[0] : -1;
+		if (spaced && spot >= 0 && tightG(spot) && frontFree.some(ringed)) { out.goldShared = (out.goldShared || 0) + 1; continue; }
 		if (spot < 0) { out.goldLeft = (out.goldLeft || 0) + 1; continue; }
 		const sized = lootGuardEntry(pl, l, W, o, p, rng, spot, tpl);
 		// no creature of the zone's pool fits the strength: the nearest concrete guard of the zone lends its creature and level, as for a dear pile

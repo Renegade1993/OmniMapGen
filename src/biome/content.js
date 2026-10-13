@@ -1832,7 +1832,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// measured with them there, and on 36x36 for eight the rule left
 			// two starts with no fight between them.
 			if (zoneMeta && MONSTER_TYPE.test(type) && reachOnReserved(tpl, x, y, l, W, H, blocked)) { rej('road'); continue; }
-			if (MONSTER_TYPE.test(type) && ((tries < tryBudget * 0.5 && guardCrowd(x, y)) || (tries < tryBudget * 0.9 && guardTightAt(x, y)))) { rej('crowd'); continue; }
+			// a monster never lands within 2 of another stack: what put() places is a roamer or a mine's or pile's stack standing loose, and the
+			// last tries' crowded tiles were the content fill's own crowded pairs (the guard-stage rewrite, 2026-10-12); with no room it is not
+			// placed (K, 2026-10-08: fewer guards is fine where it must be). VMAPGEN_ROAM_SPACED=0 lets the last tenth of the tries crowd, as before.
+			if (MONSTER_TYPE.test(type) && ((tries < tryBudget * 0.5 && guardCrowd(x, y)) || ((tries < tryBudget * 0.9 || process.env.VMAPGEN_ROAM_SPACED !== '0') && guardTightAt(x, y)))) { rej('crowd'); continue; }
 			const walls = blockingCells(tpl, x, y).map(([a, b]) => b * W + a);
 			// The engine lays a guarded pile only where its walls close (TreasurePlacer); ours walls it after, and a wall a road,
 			// a door or another object needs stays open. In a template zone valuable loot takes a nook first (five or more of its
