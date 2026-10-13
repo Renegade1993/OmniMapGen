@@ -2818,6 +2818,12 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const spaced = spots.filter(c => { const g = how.get(c).g; return !guardCrowd(g % W, (g / W) | 0); });
 		const spaced3 = spaced.length ? spaced : spots.filter(c => { const g = how.get(c).g; return !guardTightAt(g % W, (g / W) | 0); });
 		if (within && !spaced3.length) return null;
+		// with no pocket whose guard tile stands 3 or more from every other stack, a pocket is still walled (the walls take the room they
+		// took), but its guard tile is not held: the pile's guard is posted later where a spaced tile allows. A walled pile in a crowded
+		// pocket held its guard's tile 2 from another, two guards on one cluster of relics and boxes (the guard-stage rewrite, 2026-10-12,
+		// eight Coldshadow maps); leaving such piles loose instead let more of the fill land and crowded the Jebus Cross island
+		// (islands.test.js). VMAPGEN_WALL_SPACED=0 holds every pocket's guard tile, as before.
+		const WALL_SPACED = process.env.VMAPGEN_WALL_SPACED !== '0';
 		const e = within ? put(type, tpl, opts, subtype, 40, spaced3, true, true)
 			: put(type, tpl, opts, subtype, 32, spaced3.length ? spaced3 : spots.length ? spots : null);
 		if (process.env.VMAPGEN_RING_TRACE) { RING_T.calls = (RING_T.calls || 0) + 1; RING_T['spots ' + (spots.length ? 'some' : 'none')] = (RING_T['spots ' + (spots.length ? 'some' : 'none')] || 0) + 1; if (e) RING_T.placed = (RING_T.placed || 0) + 1; if (e && how.has(e.y * W + e.x)) RING_T.closable = (RING_T.closable || 0) + 1; }
@@ -2903,8 +2909,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				for (const sl of slots.slice()) if (near(sl, w)) { slots.splice(slots.indexOf(sl), 1); wall(sl); }
 			for (const sl of slots) { blocked[l * W * H + sl] |= APPROACH; cheapSlots.push(sl); RING_T.slots = (RING_T.slots || 0) + 1; }
 			blocked[l * W * H + g] |= APPROACH;
-			e.__guardAt = [g % W, (g / W) | 0];
-			holdGuard(g % W, (g / W) | 0);
+			if (!(WALL_SPACED && !within && guardTightAt(g % W, (g / W) | 0))) {
+				e.__guardAt = [g % W, (g / W) | 0];
+				holdGuard(g % W, (g / W) | 0);
+			}
 		}
 		return e;
 	};

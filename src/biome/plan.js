@@ -8281,6 +8281,13 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		}
 	if (process.env.VMAPGEN_WATCH) { const [wx, wy] = process.env.VMAPGEN_WATCH.split(',').map(Number); for (let l = 0; l < levels; l++) console.error('[watch] end of planMap level ' + l + ': ' + plans[l].objects.filter(o => (o.l || 0) === l && Math.abs(o.x - wx) <= 3 && Math.abs(o.y - wy) <= 3).map(o => o.type + '@' + o.x + ',' + o.y).join(' ')); }
 	require('./guardorigin').mark(plans, levels, 'the gates and monoliths once more,');
+	// Guards at portals Off once more, last: the late guard passes (the final close, the flyer guards) post after the sweep above, and a pile
+	// left loose by the walled-pile spacing took its guard beside a monolith end (portal-guards.test.js, the guard-stage rewrite 2026-10-12)
+	if (Number(params.guardPortals) === 0)
+		for (let l = 0; l < levels; l++) {
+			const r = require('./portalends').clearPortalEnds(plans[l], W, H, l, blocked, { OCCUPIED, blockingCells, visitableCells, allowedDirs });
+			if (r.removed) console.error(`[gen] level ${l}: guards at portals Off, after the late passes: ${r.removed} monster(s) beside a portal end taken away`);
+		}
 	// the gates and monoliths once more, last: the late passes after the road passes (the shut entries opened, the late zone join, the town
 	// fronts, the seal sweeps) clear scenery and carve rock, and a teleport the road could not reach before may be reached now (K's islands
 	// map seed 2094259454 on a changed layout: the monolith (60,28) on level 1, mapsight teleport off road). VMAPGEN_TELEPORT_LATE=0 skips it.
@@ -8576,7 +8583,10 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		if (spot === undefined) {
 			if (intoRing(o, 6)) { out.shared = (out.shared || 0) + 1; continue; }
 			spot = moveToGuardable(o);
-			if (spot < 0) spot = spots.length ? spots[0] : -1;
+			// the first tile beside it only when it stands clear of every other stack by 3: a guard within 2 of another is the crowding the engine
+			// never shows, and the late loot trades (lootswap) take a pile left open into a guarded pocket (the guard-stage rewrite, 2026-10-12: 72x72
+			// Coldshadow, guardDearLoot 11 of 51 stacks crowded). VMAPGEN_DEAR_SPACED=0 takes the first tile as before.
+			if (spot < 0) spot = spots.length && (process.env.VMAPGEN_DEAR_SPACED === '0' || !tight(spots[0])) ? spots[0] : -1;
 		}
 		// no free tile beside it: a one-tile scenery piece beside it makes room (a relic walled in on every side but by loot,
 		// its guard's tile taken by later scenery: 72x72 one level seed 1, DMB Dev's picture pass, 2026-10-05)
