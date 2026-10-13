@@ -20,8 +20,8 @@
  * route may pass a niche and a second guard, as a link guard behind a
  * treasure guard does.
  *
- * A gate dearer than GATE_SLACK times the median gate has every guard on its
- * route cut to that. A start whose home holds under HOME_SHARE of the median
+ * A gate dearer than GATE_SLACK times the median gate, or than GATE_EVEN times
+ * the cheapest, has every guard on its route cut to that. A start whose home holds under HOME_SHARE of the median
  * home is boxed in: its route is cut to the cheapest start's gate, so it
  * leaves early. A gate cheaper than the median over GATE_SLACK is raised to
  * that: every guard under it on the route, and the start measured again, until
@@ -35,6 +35,7 @@
 'use strict';
 
 const GATE_SLACK = 1.5;
+const GATE_EVEN = 1.3;
 const HOME_SHARE = 0.5;
 // how often a start's way out is raised and measured again, as each raise can
 // leave the next cheapest route the way out
@@ -290,7 +291,12 @@ function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, 
 	for (const m of measured) {
 		if (!m.gate || measured.length < 2) continue;
 		const boxed = m.home < HOME_SHARE * medHome;
-		const target = boxed ? minGate : GATE_SLACK * medGate;
+		// and with two starts never dearer than GATE_EVEN times the other's way out (once raised to the floor below): their median is
+		// their mean, and 1.5 times it let one start's way out cost 1.7 times the other's (K's small Coldshadow seed 1099575901,
+		// 2026-10-12: red 31136 against blue 18144, "a lot more creature value blocking me from anything substantive"). Three starts or
+		// more keep the median rule: cut to GATE_EVEN times the cheapest, every start would fall to the weakest one's guards.
+		const even = gates.length === 2 && process.env.VMAPGEN_GATE_EVEN !== '0' ? GATE_EVEN * Math.max(minGate, medGate / GATE_SLACK) : Infinity;
+		const target = boxed ? minGate : Math.min(GATE_SLACK * medGate, even);
 		if (m.gate.value <= target) continue;
 		for (const k of m.gate.route) {
 			if (value[k] <= target) continue;

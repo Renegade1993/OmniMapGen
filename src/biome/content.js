@@ -223,6 +223,13 @@ const TPL_PILE_LAND_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_RICH) || 0.5
 // 1.0 to 0.70 the same evening, measured per zone tile against the engine with K's mods (an open-tile count moves with
 // our scenery and had misled): treasure zones 10-16 guards 1.3x the engine's, now 1.0-1.1x
 const TPL_PILE_LAND_RICH_TREASURE = Number(process.env.VMAPGEN_TPL_PILE_LAND_RICH_TREASURE) || 0.70;
+// on the surface 0.85 (K, 2026-10-12: "larger coldshadow templates are looking loot sparse in a lot of the middle biomes"): loot value
+// per 100 open tiles of the treasure zones, his one-level 144x144 maps seeds 1240997561 and 1841119826, 55700 and 61100 against the
+// engine's one-level 74000-77000 (2 of 3 seeds pandoras 31-39 against 56-71), now 65600 and 83500 with guards crowded 1.1% and 1.0%;
+// two levels, the surface's 62800 against 82000-90000 now 69700, the underground's (80400, the engine's 65000-68000) left as it was.
+// A dry surface only: on his XL Mediterranean (water 0.45, seed 1583610596) the sea takes the treasure zones' land, they already
+// carried 140500 a 100 open tiles, and 0.85 crowded the guards 4.4% to 6.7%
+const TPL_PILE_LAND_RICH_TREASURE_SURFACE = Number(process.env.VMAPGEN_TPL_PILE_LAND_RICH_TREASURE_SURFACE) || 0.85;
 // Measured per zone tile, not per open tile (an open-tile count moves with our scenery): the engine lands about half of
 // the piles of a band from 50000 in every zone role (Coldshadow's Fantasy 144 L2, 28 engine maps against 5 of ours:
 // zone 21 guards 1.23 a 100 tiles against our 2.31, zones 17-20 1.0 against 1.4, at the shares above). Bands below keep
@@ -1010,7 +1017,7 @@ function entranceOpen(tpl, x, y, l, W, H, blocked, reachable, noRim = false) {
 			if (noRim && (nx === 0 || ny === 0 || nx === W - 1 || ny === H - 1)) continue;
 			const c = ny * W + nx;
 			if (own.has(c)) continue;                  // its own walls do not count
-			if (blocked[l * W * H + c] & OCCUPIED) continue;
+			if ((blocked[l * W * H + c] & OCCUPIED) || (FILL_SHADOW && shadowAt(blocked, l * W * H + c))) continue;
 			if (reachable && !reachable[c]) continue;
 			return true;
 		}
@@ -1039,6 +1046,39 @@ const RESERVED = 2;
  * accessibleArea of RmgObject.cpp:70-84.
  */
 const APPROACH = 4;
+/**
+ * A tile under a monolith's or a gate's picture (its passable V cells too), kept in a table of its own beside the `blocked` grid (a flag
+ * bit in the grid read as "taken" to every pass that tests a tile for any flag, and gold mines went unguarded, bare areas grew): a player
+ * sees no way in there
+ * there, so entranceOpen does not count it (K, 2026-10-11, the two-way monolith over the gem pond). plan.js fillLevel sets it.
+ */
+const SHADOWS = new WeakMap();
+// the fill's refusal and entranceOpen's read of the marks, on only with VMAPGEN_FILL_SHADOW=1: they cut K's 876637007 to 3 covered
+// objects (9 with clearEntranceShadow alone), but moved the fill so that a 108x108 two-player Coldshadow seed 3 crowded 5.1% of its
+// stacks within 2 tiles of another (approach-tiles.test.js, limit 5%; 4.x% before). Until that is worked out, clearEntranceShadow and
+// openShutEntries (plan.js) do the work.
+const FILL_SHADOW = process.env.VMAPGEN_FILL_SHADOW === '1';
+/** Mark tile `i` (level offset included) of a `blocked` grid as under an entrance's picture. */
+function markShadow(blocked, i) {
+	let s = SHADOWS.get(blocked);
+	if (!s) SHADOWS.set(blocked, s = new Uint8Array(blocked.length));
+	s[i] = 1;
+}
+/** Whether tile `i` of a `blocked` grid lies under an entrance's picture. */
+function shadowAt(blocked, i) {
+	const s = SHADOWS.get(blocked);
+	return !!(s && s[i]);
+}
+/** Whether any cell of a template's picture at (x, y), its V cells too, lies under an entrance's picture. */
+function pictureOnShadow(tpl, x, y, l, W, H, blocked) {
+	const m = (tpl && tpl.mask) || [];
+	for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) {
+		if (!/[VBA]/.test(m[i][j])) continue;
+		const fx = x - (m[i].length - 1 - j), fy = y - (m.length - 1 - i);
+		if (fx >= 0 && fy >= 0 && fx < W && fy < H && shadowAt(blocked, l * W * H + fy * W + fx)) return true;
+	}
+	return false;
+}
 const MONSTER_TYPE = /^(monster|randomMonster)/;
 
 function reserveCell(blocked, l, W, H, cell) {
@@ -1819,6 +1859,11 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			if (crossesEdge(tpl, x, y)) { if (zoneMeta && edgeSkips++ < tryBudget * 6) tries--; rej('edge'); continue; }
 			if (!footprintFits(tpl, x, y, l, W, H, blocked,
 					REMOVABLE_TYPES.has(type))) { rej('fits'); continue; }
+			// no picture over a monolith's or a gate's (markShadow, plan.js fillLevel): a pile or a dwelling drawn into one
+			// reads as shut or half hidden (MapGen Dev's approach-shadow on 71886b1: 0.35 objects a monolith or gate, the engine's 0.02).
+			// A guard keeps off too while it has other tries (three quarters of them): stacks standing in an entrance's picture crowded
+			// the entrance's own guard (approach-tiles.test.js, 108x108 seed 3: 22 of 421 stacks within 2 tiles of another)
+			if (FILL_SHADOW && (!MONSTER_TYPE.test(type) || tries < tryBudget * 0.75) && pictureOnShadow(tpl, x, y, l, W, H, blocked)) { rej('shadow'); continue; }
 			if (CLIP_RULE && tries < tryBudget * 0.75
 					&& (MONSTER_TYPE.test(type) ? monsterClips(x, y) : inMonsterShadow(tpl, x, y))) { rej('clip'); continue; }
 			// An object whose entrance has no open ground beside it is
@@ -2309,6 +2354,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		for (const { band, byDensity, want } of templatePiles(bands, cells.length, (zoneMeta && zoneMeta.richScale) || 1)) {
 			// a band under TPL_RICH_MIN placed after a richer one (a treasure zone's cheap last band: 1.5x the engine's chests
 			// and random resources, 1.1x its guards) lands at TPL_PILE_LAND_CHEAP_AFTER_RICH of its share
+			// the share a rich pile of this band lands at (a guarded pile of a band from TPL_RICH_MIN)
+			const richShare = band.min >= TPL_VERY_RICH_MIN ? (zoneMeta.spec.type === 'treasure' ? TPL_PILE_LAND_VERY_RICH_TREASURE : TPL_PILE_LAND_VERY_RICH)
+				: zoneMeta.spec.type === 'treasure' ? (l === 0 && !(Number(p.waterCoverage) > 0) ? TPL_PILE_LAND_RICH_TREASURE_SURFACE : TPL_PILE_LAND_RICH_TREASURE) : TPL_PILE_LAND_RICH;
+			if (process.env.VMAPGEN_PILE_TRACE && band.min >= TPL_RICH_MIN) console.error(`[pileshare] zone ${zoneMeta.spec.id} ${zoneMeta.spec.type} level ${l} band ${band.min} rich share ${richShare}`);
 			const later = afterRich && zoneMeta.spec.type !== 'treasure' ? TPL_PILE_LAND_AFTER_RICH
 				: afterRichBand && band.min < TPL_RICH_MIN ? TPL_PILE_LAND_CHEAP_AFTER_RICH : 1;
 			if (band.min >= TPL_VERY_RICH_MIN) afterRich = true;
@@ -2322,7 +2371,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					const guard = guarded ? engineGuard(pile.value, gIdx, rng, false, gPool) : null;
 					if (guard && gPool) guard.concrete = true;
 					const cls = !guard ? 'open' : band.min >= TPL_RICH_MIN ? 'rich' : 'guarded';
-					const share = cls === 'open' ? TPL_PILE_LAND_OPEN : cls === 'rich' ? (band.min >= TPL_VERY_RICH_MIN ? (zoneMeta.spec.type === 'treasure' ? TPL_PILE_LAND_VERY_RICH_TREASURE : TPL_PILE_LAND_VERY_RICH) : zoneMeta.spec.type === 'treasure' ? TPL_PILE_LAND_RICH_TREASURE : TPL_PILE_LAND_RICH) : TPL_PILE_LAND_GUARDED;
+					const share = cls === 'open' ? TPL_PILE_LAND_OPEN : cls === 'rich' ? richShare : TPL_PILE_LAND_GUARDED;
 					if (tally) {
 						const t = tally[cls];
 						t.piles = (t.piles || 0) + 1;
@@ -4698,7 +4747,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 module.exports = {
 	GUARD_GAP, fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	footprintCells, blockingCells, footprintFits, footprintBlock, visitableCells,
-	entranceOpen, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED,
+	entranceOpen, pictureOnShadow, markShadow, shadowAt, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED,
 	APPROACH, allowedDirs, markApproach, weldsMasses, REMOVABLE_TYPES, MONSTER_OPTIONS,
 	monsterOptions, scaledAmount, STACK_RANGE,
 	sliverCount, engineGuard, lootGuard, scaledLinkGuard, zoneGuardPool, nearestLevelDwelling, creepTier, reachOnReserved };

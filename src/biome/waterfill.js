@@ -40,9 +40,16 @@ const templatesOf = kind => WT.filter(t => t.kind === kind);
 // few one-visit sites, rare banks. Sirens and whirlpools are the engine's own
 // water objects (its water zone draws them into its treasure piles); a
 // whirlpool throws a ship to another, so they go down in pairs.
-const TREASURE_RATES = [
+// a 1000 cells of sailable water, the engine's own (Coldshadow's Fantasy 144x144 with water, one level and two, seed 1: sea chests 77
+// and 79 on 9457 and 9439 water tiles, derelict ships 18 and 14, flotsam 18 and 17, shipwrecks 9 and 12, survivors 8 and 10). Ours had
+// a fifth of its sea chests (K, 2026-10-12, his XL Mediterranean on Coldshadow: "Not enough mod loot + structures on the water"; his
+// map 8 loot objects a 1000 water tiles against the engine's 14). VMAPGEN_WATER_RATES=old keeps the earlier rates.
+const TREASURE_RATES = process.env.VMAPGEN_WATER_RATES === 'old' ? [
 	['flotsam', 2.2], ['seaChest', 1.8], ['shipwreckSurvivor', 0.6],
 	['derelictShip', 0.35], ['shipwreck', 0.35],
+] : [
+	['flotsam', 1.9], ['seaChest', 8.2], ['shipwreckSurvivor', 0.95],
+	['derelictShip', 1.7], ['shipwreck', 1.1],
 ];
 const BUILDING_RATES = [
 	['buoy', 0.6], ['mermaids', 0.4], ['sirens', 0.3], ['whirlpool', 0.3],
@@ -52,7 +59,8 @@ const SCENERY_RATE = { kelp: 5, blocking: 4 };
 // altar of mana, observatory, seafaring academy and sea shrine are made for the water and name no other ground. generate.js lists the
 // ones the install brings (setModWater, only when the map declares mods); they go down with the buildings, sharing MOD_RATE a 1000
 // cells of sailable water by their rmg rarity, scaled by waterBuildings.
-const MOD_RATE = 1.2;
+// 3.0 from 1.2 (K, 2026-10-12: "Not enough mod loot + structures on the water"; the engine has no mods to measure against)
+const MOD_RATE = process.env.VMAPGEN_WATER_RATES === 'old' ? 1.2 : 3.0;
 let MOD_WATER = [];
 function setModWater(list) { MOD_WATER = Array.isArray(list) ? list : []; }
 const MIN_BODY = 25;
@@ -270,6 +278,24 @@ function placeHarbours(ctx) {
 			if (wantBoat || wantYard) tryBoat(b, z);
 		}
 	});
+	// Every sea a harbour fits on gets one, so a boat sails it and fillWater stocks it: on the Mediterranean ring no town zone touched
+	// the central sea on some seeds, no harbour went down, and the sea stayed empty (K, 2026-10-12, his XL Mediterranean on Coldshadow:
+	// "Not enough mod loot + structures on the water"; MapGen Dev, 71886b1: med108 seed 1 held 1 sea object and med180 seed 1 held 4,
+	// against 39 and 102 on 54f27ea). A shipyard on the shore of a zone with a town, else a boat on any shore, in zone order.
+	// VMAPGEN_EVERY_SEA_HARBOUR=0 leaves a sea with no harbour as it is.
+	if (process.env.VMAPGEN_EVERY_SEA_HARBOUR !== '0')
+		bodies.forEach((body, b) => {
+			if (body.size < MIN_BODY || harbours.some(h => h.body === b)) return;
+			const shoreZones = new Set();
+			for (const c of body.cells) {
+				const x = c % W, y = (c / W) | 0;
+				for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]])
+					if (u >= 0 && v >= 0 && u < W && v < H && !water[v * W + u] && ashore(v * W + u)) shoreZones.add(zone[v * W + u]);
+			}
+			const order = [...shoreZones].sort((a, c) => a - c);
+			if (order.some(z => (townZones.has(z) || startZones.has(z)) && tryShipyard(b, z))) return;
+			order.some(z => tryBoat(b, z));
+		});
 	// "Every biome" (access 3): a zone that touches no water of its own sails from the nearest shore of
 	// a zone beside it. K, 2026-09-29, Jebus Cross with a Mediterranean sea held inside the crossroads
 	// zone: the four player biomes touched no water and got nothing, and the one shipyard on a shore of

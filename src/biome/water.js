@@ -238,6 +238,19 @@ function scoreField(W, H, shape, rng, starts = [], cover = 0.4) {
 	const side = (rng() * 4) | 0;                    // coastal: which edge
 	const stretch = 0.55 + rng() * 0.45;             // mediterranean: aspect
 	const alongX = rng() < 0.5;
+	// Mediterranean: the sea varies from seed to seed, an oval the rare case (K, 2026-10-12, a six-player open Mediterranean: "strange
+	// ovular central ocean....i don't think this should be outlawed, but it should definitely be the exception not the rule ... i always
+	// prefer variability and some real variation range"). One seed in six keeps the plain oval; the others move the sea's centre up to a
+	// tenth of the map off the middle and give its shore two or three lobes (bays and peninsulas) of their own size, with a rougher coast.
+	// Drawn only for this layout, so no other layout's rolls move; a template's crossroads (a start marked hub: Jebus Cross) keeps the
+	// sea round the middle, the island it needs. VMAPGEN_MED_VARY=0 keeps the oval.
+	const med = { ox: 0, oy: 0, lobes: [], rough: 0.35, ring: process.env.VMAPGEN_MED_VARY !== '0' && !starts.some(q => q && q.hub) };
+	if (shape.id === 'mediterranean' && process.env.VMAPGEN_MED_VARY !== '0' && !starts.some(q => q && q.hub) && rng() >= 1 / 6) {
+		med.ox = (rng() - 0.5) * 0.2; med.oy = (rng() - 0.5) * 0.2;
+		const n = 2 + (rng() < 0.5 ? 1 : 0);
+		for (let i = 0; i < n; i++) med.lobes.push([2 + ((rng() * 4) | 0), 0.08 + rng() * 0.22, rng() * Math.PI * 2]);
+		med.rough = 0.35 + rng() * 0.3;
+	}
 	const s = new Float64Array(W * H);
 	const edgeBand = 0.1 * Math.min(W, H) + 3;
 	// the Islands and Archipelago layouts (K, 2026-10-08: "the static/deterministic corner growth algorithm for map generation which i hate");
@@ -305,7 +318,11 @@ function scoreField(W, H, shape, rng, starts = [], cover = 0.4) {
 					break;
 				case 'mediterranean': {
 					const ex = alongX ? 1 : stretch, ey = alongX ? stretch : 1;
-					v = -Math.hypot(a / ex, b / ey) + 0.35 * (n - 0.5);
+					const dx = (2 * x / (W - 1) - 1 - med.ox) / ex, dy = (2 * y / (H - 1) - 1 - med.oy) / ey, an = Math.atan2(dy, dx);
+					const lobe = Math.max(0.4, 1 + med.lobes.reduce((m, [k, amp, ph]) => m + amp * Math.sin(k * an + ph), 0));
+					// and a ring of land to the map's edges, whatever the lobes do (the oval reached the top and bottom edges on 3 of 12 seeds)
+					const de = Math.min(x, y, W - 1 - x, H - 1 - y), on = med.ring;
+					v = -Math.hypot(dx, dy) / lobe + med.rough * (n - 0.5) - (on ? 0.4 * Math.max(0, 1 - de / edgeBand) + (de < 4 ? 5 : 0) : 0);
 					break;
 				}
 				default: {                           // lakes, highland

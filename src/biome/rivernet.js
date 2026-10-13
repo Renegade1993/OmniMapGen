@@ -88,7 +88,20 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 	for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) cost[y * W + x] = 1 + 6 * noise(x, y) + (under && under[y * W + x] ? 5 : 0);
 	const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 	const wetBeside = c => { if (!water) return false; const x = c % W, y = (c / W) | 0; return N4.some(([dx, dy]) => { const u = x + dx, v = y + dy; return u >= 0 && v >= 0 && u < W && v < H && water[v * W + u]; }); };
-	const onEdge = c => { const x = c % W, y = (c / W) | 0; return x === 0 || y === 0 || x === W - 1 || y === H - 1; };
+	// a level with a sea (a body of 200 tiles or more): a river runs between water and water or another river, never to the map edge (K,
+	// 2026-10-12, his XL Mediterranean on Coldshadow, "strange creek beginning and ends": 6 of his rivers' 9 ends lay on the map edge and
+	// 1 at the sea; the engine's own Coldshadow 144 with water has none on the edge). VMAPGEN_RIVER_SEA_ENDS=0 keeps the edge.
+	let sea = false;
+	if (water && process.env.VMAPGEN_RIVER_SEA_ENDS !== '0') {
+		const seen = new Uint8Array(N);
+		for (let c0 = 0; c0 < N && !sea; c0++) {
+			if (!water[c0] || seen[c0]) continue;
+			const q = [c0]; seen[c0] = 1;
+			for (let h = 0; h < q.length; h++) { const c = q[h], x = c % W, y = (c / W) | 0; for (const [dx, dy] of N4) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H && water[v * W + u] && !seen[v * W + u]) { seen[v * W + u] = 1; q.push(v * W + u); } } }
+			if (q.length >= 200) sea = true;
+		}
+	}
+	const onEdge = c => { if (sea) return false; const x = c % W, y = (c / W) | 0; return x === 0 || y === 0 || x === W - 1 || y === H - 1; };
 	const riverBeside = c => { const x = c % W, y = (c / W) | 0; return N4.some(([dx, dy]) => { const u = x + dx, v = y + dy; return u >= 0 && v >= 0 && u < W && v < H && cells.has(v * W + u); }); };
 	// an end: free ground on the edge, beside water, or beside a river already laid
 	// an end is in view: not under scenery

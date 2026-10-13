@@ -183,15 +183,17 @@ test('Every biome serves a town zone with a shipyard and a plain zone with a boa
 	assert.strictEqual(harbours.find(h => h.serves === 2).kind, 'boat', 'the plain zone');
 });
 
-test('below Every biome a zone off the shore gets nothing, as the engine\'s own rule has it', () => {
+test('below Every biome a zone off the shore gets no harbour of its own; the sea gets one boat so it can be sailed and stocked', () => {
+	// the engine's own rule gave this sea nothing; on the Mediterranean ring that left seas empty (K, 2026-10-12, "Not enough mod loot +
+	// structures on the water"), so every sea of 25 tiles or more gets a boat where no town zone touches it (waterfill.js)
 	const { W, H, water, zone, blocked } = ringWorld();
 	for (const access of [1, 2]) {
 		const objects = [];
 		const harbours = placeHarbours({ W, H, l: 0, water, zone, blocked: blocked.slice(), rng: xorshift(3),
 			p: { waterAccess: access }, objects, towns: [], playerStarts: [{ x: 6, y: 24 }, { x: 57, y: 24 }],
 			objectEntry: entry });
-		assert.strictEqual(harbours.length, 0, `access ${access}: no start or town zone has a shore`);
-		assert.strictEqual(objects.length, 0);
+		assert.deepStrictEqual(harbours.map(h => [h.kind, h.serves]), [['boat', undefined]], `access ${access}: one boat for the sea, serving no zone`);
+		assert.strictEqual(objects.length, 1);
 	}
 });
 

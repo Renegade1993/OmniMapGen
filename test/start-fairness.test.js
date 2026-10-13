@@ -100,5 +100,6 @@ test('a gate far cheaper than the others is raised to the median over one and a 
 test('two starts: the median is their mean, so the dearer one is cut and the cheaper one raised', () => {
 	const w = world([{ color: 'red', amount: 5 }, { color: 'blue', amount: 30 }]);
 	const r = evenStarts(w);
-	assert.deepStrictEqual(r.cuts.map(c => [c.color, c.to]), [['blue', 1.5 * 1750], ['red', 1750 / 1.5]]);
+	// the dearer is cut to 1.3 times the cheaper one's raised way out (startFairness GATE_EVEN, two starts only)
+	assert.deepStrictEqual(r.cuts.map(c => [c.color, c.to]), [['blue', 1.3 * (1750 / 1.5)], ['red', 1750 / 1.5]]);
 });

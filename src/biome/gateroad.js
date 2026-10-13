@@ -179,6 +179,27 @@ function trimRoadStubs(plan, W, H, l, visitableCells, blockingCells, allowedDirs
 	const nb = c => { const x = c % W, y = (c / W) | 0, r = []; for (const [dx, dy] of D8) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H && R.has(v * W + u)) r.push(v * W + u); } return r; };
 	const runs = c => { const ring = D8RING.map(([dx, dy]) => { const u = (c % W) + dx, v = ((c / W) | 0) + dy; return u >= 0 && v >= 0 && u < W && v < H && R.has(v * W + u) ? 1 : 0; }); let n = 0; for (let k = 0; k < 8; k++) if (ring[k] && !ring[(k + 7) % 8]) n++; return { n: ring.reduce((a, b) => a + b, 0), runs: n }; };
 	const isEnd = c => { const r = runs(c); return r.n <= 1 || (r.n === 2 && r.runs === 1); };
+	// An end beside a destination's door, and not on one, rests on nothing a player sees (K, 2026-10-12, his small Coldshadow seed
+	// 1099575901, the circled ends on level 1): where the road already runs over a door beside it, the end is one tile too many ((31,2)
+	// past the mine's door (32,2)); otherwise it goes one tile on, onto the door ((19,27), a diagonal step short of the gold mine's door
+	// (20,27)), when nothing stands there. VMAPGEN_ROAD_END_ON_DOOR=0 leaves both.
+	if (process.env.VMAPGEN_ROAD_END_ON_DOOR !== '0') {
+		const taken = new Set();
+		for (const o of plan.objects)
+			if ((o.l || 0) === l && o.template && o.template.mask && !/^(randomMonster|monster)/.test(o.type))
+				for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) taken.add(fy * W + fx);
+		const around = c => { const x = c % W, y = (c / W) | 0, r = []; for (const [dx, dy] of D8) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H) r.push(v * W + u); } return r; };
+		for (let pass = 0; pass < 4; pass++) {
+			let any = false;
+			for (const e of [...R]) {
+				if (!R.has(e) || hit.has(e) || !isEnd(e) || !around(e).some(c => hit.has(c))) continue;
+				if (nb(e).some(c => hit.has(c))) { R.delete(e); out.cut++; out.past = (out.past || 0) + 1; any = true; continue; }
+				const door = around(e).filter(c => hit.has(c) && !taken.has(c)).sort((a, b) => a - b)[0];
+				if (door !== undefined) { R.add(door); out.onDoor = (out.onDoor || 0) + 1; any = true; }
+			}
+			if (!any) break;
+		}
+	}
 	for (let pass = 0; pass < 12; pass++) {
 		let any = false;
 		for (const e of [...R]) {
