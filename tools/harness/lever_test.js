@@ -93,7 +93,7 @@ function measure(file) {
 r.startsL1 = starts.filter(s => s.l === 1).length; r.starts = starts.length;
 	r.towns = by(o => o.cls === 'town').length; r.townsNeutral = Math.max(0, r.towns - starts.length);
 	const mines = by(o => o.cls === 'mine');
-	r.mines = mines.length; r.minesStarter = mines.filter(o => /sawmill|orePit/.test(String(o.subtype)) && starts.some(s => s.l === o.l && cheb(s.at, o.at) <= 8)).length;   // neutral sawmills and ore pits do not count r.minesOther = r.mines - r.minesStarter;
+	r.mines = mines.length; r.minesStarter = mines.filter(o => /sawmill|orePit/.test(String(o.subtype)) && starts.some(s => s.l === o.l && cheb(s.at, o.at) <= 8)).length; r.minesOther = r.mines - r.minesStarter; /* start mines are the sawmills and ore pits within 8 tiles of a start town; a neutral sawmill counts as other */
 	r.dwellings = by(o => o.cls === 'dwelling').length;
 	r.banks = by(o => o.cls === 'bank').length;
 	const art = by(o => /artifact|relic/i.test(o.type) && o.cls !== 'monster' && o.type !== 'spellScroll');
