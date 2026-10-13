@@ -8223,6 +8223,15 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			if (r.crossings) console.error(`[gen] level ${l}: zone joins with no fight the links do not make: ${r.crossings} step(s), ${r.posted} guard(s) posted, ${r.closed || 0} closed with scenery, ${r.left} step(s) left`);
 		}
 	if (process.env.VMAPGEN_WATCH) { const [wx, wy] = process.env.VMAPGEN_WATCH.split(',').map(Number); for (let l = 0; l < levels; l++) console.error('[watch] end of planMap level ' + l + ': ' + plans[l].objects.filter(o => (o.l || 0) === l && Math.abs(o.x - wx) <= 3 && Math.abs(o.y - wy) <= 3).map(o => o.type + '@' + o.x + ',' + o.y).join(' ')); }
+	// no rock one tile wide once more, last: the passes after the first run open rock (a town's front tile, the zone joins), and a rock arm
+	// they leave one tile wide is drawn as black squares, no floor edge round it (K's small Coldshadow seed 876637007, level 1: (11,22),
+	// (11,23), (12,23) before the stronghold town, left when the town's front tile (12,22) was opened; 084ac2c the same). Floor under an
+	// obstacle, as the first run does: nothing a hero walks changes. VMAPGEN_THIN_ROCK_LATE=0 skips it.
+	if (process.env.VMAPGEN_THIN_ROCK !== '0' && process.env.VMAPGEN_THIN_ROCK_LATE !== '0')
+		for (let l = 0; l < levels; l++) {
+			const r = thinRockToFloor(plans[l], l, W, H, rng);
+			if (r.turned || r.left) console.error(`[gen] level ${l}: rock one tile wide after the late passes: ${r.turned} tile(s) turned to floor under an obstacle, ${r.left} left`);
+		}
 	// the gates and monoliths once more, last: the late passes after the road passes (the shut entries opened, the late zone join, the town
 	// fronts, the seal sweeps) clear scenery and carve rock, and a teleport the road could not reach before may be reached now (K's islands
 	// map seed 2094259454 on a changed layout: the monolith (60,28) on level 1, mapsight teleport off road). VMAPGEN_TELEPORT_LATE=0 skips it.
