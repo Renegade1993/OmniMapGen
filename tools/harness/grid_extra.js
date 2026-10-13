@@ -15,6 +15,10 @@
  *   prison-tiers     prisons of 90000 or more experience stay out of start and town zones and keep a monster beside them [K 10-07 18:3x]
  *   edge-objects     no visited object's picture crosses the top or left edge of the map [K 10-08 14:3x outcasts and school of magic]
  *   free-standing    stacks that close nothing (no object, no passage) [K 10-08 15:2x "essentially freestanding"]
+ *   approach-shadow  an entrance object's picture (monolith, gate; the passable V cells too) on an approach tile or on the cells of a pile, dwelling, mine or bank [K 10-11 monolith on the gem pond; lead 10-13]
+ *   road-stubs       a lone road piece under 8 tiles that touches no visiting tile and no map edge [K 10-11 road terminations]
+ *   water-objects    a land object with cells on water, a water object on land [K 10-12 Mediterranean XL]
+ *   prison-hero      a prison hero's four stats against its level, from stored primarySkills or an engine log beside the map [K 10-11 Ayden level 30 with 1/1/2/1]
  *   water            the water share against the share asked, land share per zone (under 45% named), zones drowned or cut off, the shape of the water against the layout asked, every start walking to a town and a mine [lead 10-10, K's Mediterranean complaint]
  *   water-type      the water against the Age of Empires map type the layout lever stands for (Research\AoE-map-types): measures per type (the amount of water is the waterCoverage lever's, judged by the water check, not here), thresholds proposed, not accepted [K 10-11: the AoE wikis are the source]
  *   river-ends       a river ends at a map edge or at water, never in the open, and runs under no visited object [K 10-07 18:3x creeks]
@@ -40,6 +44,7 @@ const LIMITS = {
 	waterLandMin: 0.45,               // land share a zone keeps on a map with water (lead 10-10)
 	startLootShare: 1,                 // loot-by-zone is a report: no limit (K's road map holds 34% of its dear piles in player zones on 084ac2c, K's 18 about 7%)
 	townLootR: 5,                     // town-loot: tiles from a town's cells that make a pile "beside" it
+	stubMax: 8,                        // road-stubs: a road piece under this many tiles that touches no destination
 	endReach: 6,                      // road_ends.js: tiles round a road end that name another road piece or a town front
 };
 
@@ -555,5 +560,162 @@ function waterType(M) {
 	return verdict(miss.length === 0, `${T}: water ${pc(share)}, largest body ${pc(m.bigBodyShare)} at ${centDist.toFixed(2)} from the middle, rays on land ${raysLand}/16, sides ${sides.map(pc).join('/')}, largest land piece ${pc(landBig)}, pieces ${m.pieces2} (2%) ${m.pieces1} (1%)`, `the AoE ${T} measures (Research\\AoE-map-types\\${T}.md; thresholds proposed)`, miss, m);
 }
 
-const CHECKS = { 'water': waterReport, 'water-type': waterType, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
-module.exports = { CHECKS, LIMITS };
+/** ---- 2026-10-13 checks (lead's order, brief Tuesday): entrance pictures over approach tiles, lone road pieces, land objects on water, prison hero against its level ---- */
+
+/** An entrance object: a monolith end, a gate, a portal or whirlpool-like object a hero steps onto to be moved. */
+const entranceObj = o => o.cls === 'monolith' || o.cls === 'gate' || /monolith|subterraneanGate|portal|dimensionDoor/i.test(String(o.type));
+
+/** Every tile the object's picture stands on: each visible mask cell (V, B, A), the passable V ones too. [x, y] pairs. */
+function pictureCells(o) {
+	const m = (o.template && o.template.mask) || [], out = [];
+	for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) if (/[VBA]/.test(m[i][j])) out.push([o.x - (m[i].length - 1 - j), o.y - (m.length - 1 - i)]);
+	return out;
+}
+
+const nameOf = o => `${o.type}${o.subtype && o.subtype !== o.type ? ':' + o.subtype : ''}`;
+
+/**
+ * K 10-11 "two-way monolith blocking nearby gem pond": a monolith's picture (its passable V cells included) lies on the entrance of the pond, so the pond
+ * cannot be entered and cannot be seen. Lead 10-13: a monolith and any entrance object counts as a blocker when the approaches to a pile are counted.
+ * For every pile (dear or cheap), dwelling, mine, bank and prison: the approach tiles an entrance object's picture covers, and its own cells under one.
+ */
+function approachShadow(M) {
+	const shadow = new Map();
+	for (const e of M.objs.filter(entranceObj)) for (const [x, y] of pictureCells(e)) if (M.inb(x, y)) shadow.set(M.idx(e.l, x, y), e);
+	if (!shadow.size) return { skipped: 'no entrance objects' };
+	const targets = M.objs.filter(o => !entranceObj(o) && (o.pickup || ['dwelling', 'mine', 'bank'].includes(o.cls)));
+	const bad = [];
+	let lostTiles = 0, partial = 0;
+	for (const o of targets) {
+		const ap = M.approach(o).filter(i => M.ground(i) && !M.blocked[i]);
+		const lost = ap.filter(i => shadow.has(i) && shadow.get(i) !== o);
+		const own = pictureCells(o).filter(([x, y]) => M.inb(x, y) && shadow.has(M.idx(o.l, x, y)) && shadow.get(M.idx(o.l, x, y)) !== o);
+		lostTiles += lost.length;
+		if (lost.length) partial++;
+		// failing: every open way in lies under the picture, or the picture covers the object's own cells (K's pond); a picture over some of several approach tiles is a count
+		if (!(lost.length && ap.length === lost.length) && !own.length) continue;
+		const e = shadow.get(lost.length ? lost[0] : M.idx(o.l, own[0][0], own[0][1]));
+		bad.push(`${nameOf(o)} ${at(o)}: ${lost.length} of ${M.approach(o).length} approach tiles and ${own.length} of its ${pictureCells(o).length} picture cells under ${e.type} ${at(e)}; ${ap.length - lost.length} open approach tiles left`);
+	}
+	return verdict(bad.length === 0, `${bad.length} of ${targets.length} piles, dwellings, mines and banks lose every open approach tile to an entrance object's picture or have it on their own cells; ${partial} more lose some approach tiles (${lostTiles} in all)`, '0 (K 10-11: a monolith standing on the gem pond; the engine leaves it on 18 of its 91 sample maps and shuts 3 objects, 141 more lose a tile)', bad.slice(0, 8), { bad: bad.length, targets: targets.length, lostTiles, partial });
+}
+
+/**
+ * K 10-11 "lots of incorrect road terminations": a lone road piece (an 8-connected road of fewer than stubMax tiles) that joins fewer than two places (a visiting
+ * tile or entrance of a town, mine, dwelling, bank, gate, monolith or any visitable building) and no map edge. Each shows as a road that starts or ends in
+ * the open or leads nowhere (K 10-11: a 3 tile road to a monolith from nowhere). sight.roadEnds judges ends, not whole pieces: its 'at nothing' needs a junction or turn 2 tiles back and its 'proper' accepts any visitable object.
+ */
+function roadStubs(M) {
+	let roadTiles = 0, land = 0;
+	for (let i = 0; i < M.road.length; i++) { roadTiles += M.road[i]; if (M.ground(i)) land++; }
+	if (roadTiles < land / 100) return { skipped: 'the map has almost no road' };
+	const dest = new Map();
+	for (const o of M.objs) {
+		if (!o.visitable || o.pickup || o.cls === 'monster') continue;      // a road that ends at loot or a stack joins nothing
+		for (const i of [...M.approach(o).filter(k => M.ground(k) && !M.blocked[k]), ...o.entr.map(([x, y]) => M.idx(o.l, x, y))]) { if (!dest.has(i)) dest.set(i, new Set()); dest.get(i).add(o); }   // a shut approach tile (rock, another object) is no way in
+	}
+	const { W, H } = M, comp = new Int32Array(M.NL * W * H).fill(-1), tiles = [];
+	for (let s = 0; s < comp.length; s++) {
+		if (!M.road[s] || comp[s] >= 0) continue;
+		const id = tiles.length, mine = [s], st = [s]; comp[s] = id;
+		while (st.length) {
+			const c = st.pop(), l = Math.floor(c / (W * H)), x = c % W, y = Math.floor(c / W) % H;
+			for (const [dx, dy] of N8) { if (!M.inb(x + dx, y + dy)) continue; const k = M.idx(l, x + dx, y + dy); if (M.road[k] && comp[k] < 0) { comp[k] = id; st.push(k); mine.push(k); } }
+		}
+		tiles.push(mine);
+	}
+	const bad = [];
+	for (const t of tiles) {
+		if (t.length >= LIMITS.stubMax) continue;
+		const objs = new Set();
+		let edge = false;
+		for (const c of t) {
+			const l = Math.floor(c / (W * H)), x = c % W, y = Math.floor(c / W) % H;
+			if (x === 0 || y === 0 || x === W - 1 || y === H - 1) edge = true;
+			for (const o of dest.get(c) || []) objs.add(o);                      // a road tile on a visiting or entrance tile
+		}
+		// a road joins two places: a short piece that touches fewer than two visitable objects (and no map edge) goes nowhere
+		if (objs.size >= 2 || edge) continue;
+		const c0 = t[0], one = [...objs][0];
+		bad.push(`road piece of ${t.length} tiles at L${Math.floor(c0 / (W * H))} (${c0 % W},${Math.floor(c0 / W) % H}) ${one ? `reaches only ${nameOf(one)} ${at(one)}` : "touches no visiting tile"}`);
+	}
+	return verdict(bad.length === 0, `${bad.length} lone road pieces under ${LIMITS.stubMax} tiles that join fewer than two places (${tiles.length} road pieces in all)`, '0 (K 10-11 road terminations)', bad.slice(0, 8), { stubs: bad.length, pieces: tiles.length });
+}
+
+/** Objects made for the water (the generator's H3_WATER and the mods' sea objects): they stand on water and nowhere else. */
+const WATER_NATIVE = /^(flotsam|seaChest|shipwreckSurvivor|buoy|oceanBottle|shipwreck|derelictShip|sirens?|mermaids?|magellansMaps|whirlpool|boat|shipyard)$|sea|ocean|jetsam|kelp|vial|observatory|academy|altar|shrine|ship|reef|water|coral|iceberg/i;
+
+/**
+ * K 10-12 Mediterranean XL "loot and structures on the water": an object that needs land (a pile, mine, dwelling, bank, town, prison or any building) with a
+ * blocked or visiting cell on a water tile, and a water-made object (flotsam, sea chest, shipwreck, ...) on land. Pictures hanging over water by their passable
+ * V cells are counted apart (a note, no failure).
+ */
+function waterObjects(M) {
+	const wet = i => WET.has(M.terr[i]);
+	let anyWater = false;
+	for (let i = 0; i < M.terr.length && !anyWater; i++) if (wet(i)) anyWater = true;
+	if (!anyWater) return { skipped: 'no water' };
+	const onWater = [], onLand = [];
+	let hang = 0, checked = 0;
+	for (const o of M.objs) {
+		if (o.cls === 'monster') continue;
+		const native = WATER_NATIVE.test(String(o.type)) || WATER_NATIVE.test(String(o.subtype || ''));
+		const cells = o.cells.filter(([x, y]) => M.inb(x, y)).map(([x, y]) => M.idx(o.l, x, y));
+		if (!cells.length) continue;
+		const real = o.pickup || o.visitable || ['town', 'mine', 'dwelling', 'bank'].includes(o.cls);
+		if (!real) continue;
+		checked++;
+		const wetCells = cells.filter(wet);
+		const entr = o.entr.filter(([x, y]) => M.inb(x, y)).map(([x, y]) => M.idx(o.l, x, y));
+		if (native) { if (cells.every(i => !wet(i)) && entr.every(i => !wet(i))) onLand.push(`${nameOf(o)} ${at(o)} is a water object on land`); continue; }
+		if (wetCells.length || entr.some(wet)) onWater.push(`${nameOf(o)} ${at(o)} (${o.cls}): ${wetCells.length} of ${cells.length} cells on water${entr.some(wet) ? ', its entrance too' : ''}`);
+		else if (pictureCells(o).some(([x, y]) => M.inb(x, y) && wet(M.idx(o.l, x, y)))) hang++;
+	}
+	const items = [...onWater, ...onLand];
+	return verdict(items.length === 0, `${onWater.length} land objects with cells on water, ${onLand.length} water objects on land (of ${checked} objects looked at); ${hang} pictures hang over water by passable cells (note only)`, '0 (K 10-12: loot and structures on the Mediterranean XL water)', items.slice(0, 10), { onWater: onWater.length, onLand: onLand.length, hang, checked });
+}
+
+/** The engine's level table (CHeroHandler::loadExperience): level L needs EXP[L-1]; past 15 entries each gap is the one before plus a fifth. */
+const EXP = [0, 1000, 2000, 3200, 4600, 6200, 8000, 10000, 12200, 14700, 17500, 20600, 24320, 28784, 34140];
+for (let g = EXP[14] - EXP[13]; EXP.length < 80;) { g += Math.trunc(g / 5); EXP.push(EXP[EXP.length - 1] + g); }
+const levelOfExp = e => { let l = 1; while (l < EXP.length && EXP[l] <= e) l++; return l; };
+/** Four primary stats of a hero of level L: the class start (4 to 8 points over all classes) plus one point a level gained. */
+const statRange = L => [L - 1 + 4, L - 1 + 8];
+
+/**
+ * Lead 10-13 (K 10-11, Nate's prison hero Ayden: level 30, 500000 experience, stats 1/1/2/1): a prison hero's stats must match its level. The map stores an
+ * experience and, as generated, no stats; the engine must roll one primary point per level. This reads what the map stores (explicit primarySkills) and what an
+ * engine run logged beside the map (MAP.prison.log, lines "Prison hero core:x: level L, experience E, attack a, defence d, power p, knowledge k", from
+ * tools/harness/prison_hero.js --run), and fails a hero whose four stats sum below level - 1 + 4 or above level - 1 + 8. Secondary skills are not in the engine's line.
+ */
+function prisonHero(M) {
+	const pr = M.objs.filter(o => o.type === 'prison');
+	if (!pr.length) return { skipped: 'no prisons' };
+	const fs = require('fs'), log = M.file + '.prison.log';
+	const engine = new Map();
+	if (fs.existsSync(log)) for (const line of fs.readFileSync(log, 'utf8').split(/\r?\n/)) {
+		const m = /Prison hero (\S+): level (\d+), experience (\d+), attack (\d+), defence (\d+), power (\d+), knowledge (\d+)/.exec(line);
+		if (m) engine.set(m[1], { level: +m[2], exp: +m[3], stats: [+m[4], +m[5], +m[6], +m[7]] });
+	}
+	const bad = [], rows = [];
+	let judged = 0, unjudged = 0;
+	for (const o of pr) {
+		const opt = o.options || {}, exp = opt.experience || 0, L = levelOfExp(exp), name = String(opt.type || '');
+		const sk = opt.primarySkills ? [opt.primarySkills.attack || 0, opt.primarySkills.defence || 0, opt.primarySkills.spellpower || 0, opt.primarySkills.knowledge || 0] : null;
+		const eng = engine.get(name);
+		const stats = eng ? eng.stats : sk;
+		const lvl = eng ? eng.level : L;
+		if (L <= 1) continue;
+		if (!stats) { unjudged++; rows.push({ name, exp, level: L, stats: null }); continue; }
+		judged++;
+		const sum = stats.reduce((a, b) => a + b, 0), [lo, hi] = statRange(lvl);
+		rows.push({ name, exp, level: lvl, stats, sum, source: eng ? 'engine log' : 'map' });
+		if (sum < lo || sum > hi) bad.push(`prison hero ${name} ${at(o)}: level ${lvl} (${exp} experience), stats ${stats.join('/')} sum ${sum}, a hero of that level has ${lo} to ${hi} (${eng ? 'engine log' : 'stored in the map'})`);
+	}
+	if (!judged && unjudged) return { skipped: `${unjudged} prison heroes with experience and no stats in the map or an engine log (${log}); run prison_hero.js --run to read what the engine makes of them`, rows };
+	return verdict(bad.length === 0, `${bad.length} of ${judged} prison heroes with a level above 1 have stats that do not match it${unjudged ? `; ${unjudged} more not judged (no stats stored, no engine log)` : ''}`, 'four stats sum to level - 1 + 4 .. 8 (K 10-11 Ayden: level 30, 1/1/2/1)', bad.slice(0, 8), { judged, unjudged, rows });
+}
+
+
+const CHECKS = { 'approach-shadow': approachShadow, 'road-stubs': roadStubs, 'water-objects': waterObjects, 'prison-hero': prisonHero, 'water': waterReport, 'water-type': waterType, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
+module.exports = { CHECKS, LIMITS, levelOfExp, statRange, pictureCells, entranceObj };
