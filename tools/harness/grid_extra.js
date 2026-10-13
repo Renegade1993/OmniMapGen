@@ -643,7 +643,8 @@ function roadStubs(M) {
 }
 
 /** Objects made for the water (the generator's H3_WATER and the mods' sea objects): they stand on water and nowhere else. */
-const WATER_NATIVE = /^(flotsam|seaChest|shipwreckSurvivor|buoy|oceanBottle|shipwreck|derelictShip|sirens?|mermaids?|magellansMaps|whirlpool|boat|shipyard)$|sea|ocean|jetsam|kelp|vial|observatory|academy|altar|shrine|ship|reef|water|coral|iceberg/i;
+const WATER_NATIVE = /^(flotsam|seaChest|shipwreckSurvivor|buoy|oceanBottle|starBottle|shipwreck|derelictShip|sirens?|mermaids?|magellansMaps|whirlpool|boat|jetsam|kelp|reef|vialOfMana)$|^sea|ocean|jetsam|coral/i;   // observatory and starBottle (mod objects) are not listed: not shown to be water-only, so they are judged as neither
+const WATER_UNSURE = /^(observatory|starBottle)$/;   // a shipyard, a watering place, a shrine and an altar are land: the shipyard stands on the shore
 
 /**
  * K 10-12 Mediterranean XL "loot and structures on the water": an object that needs land (a pile, mine, dwelling, bank, town, prison or any building) with a
@@ -658,7 +659,7 @@ function waterObjects(M) {
 	const onWater = [], onLand = [];
 	let hang = 0, checked = 0;
 	for (const o of M.objs) {
-		if (o.cls === 'monster') continue;
+		if (o.cls === 'monster' || WATER_UNSURE.test(String(o.type))) continue;
 		const native = WATER_NATIVE.test(String(o.type)) || WATER_NATIVE.test(String(o.subtype || ''));
 		const cells = o.cells.filter(([x, y]) => M.inb(x, y)).map(([x, y]) => M.idx(o.l, x, y));
 		if (!cells.length) continue;
