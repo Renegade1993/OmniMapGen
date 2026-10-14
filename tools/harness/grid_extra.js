@@ -35,6 +35,7 @@ const RIVERS = new Set(['rw', 'ri', 'rm', 'rl', 'ra', 'lr', 'ww', 'ut', 'pw', 's
 const WET = new Set(['wa', 'wt']);
 
 const LIMITS = {
+	startResN: 14, startResTier: 1, startResStrength: 6000,   // primary resources read within 14 tiles of a start; a guard above tier 1 or strength 6000 fails (engine: 1% guarded, tier 1)
 	roadMin: 8,                       // tiles of road a start's road must join
 	closeWalk: 15,                    // town to town, walking tiles
 	closeShare: 0.05,                 // share of neutral towns with a neighbour inside it
@@ -802,7 +803,78 @@ function prisonHero(M) {
 }
 
 
-const CHECKS = { 'approach-shadow': approachShadow, 'road-stubs': roadStubs, 'road-terminals': roadTerminals, 'water-objects': waterObjects, 'water-content': waterContent, 'prison-hero': prisonHero, 'water': waterReport, 'water-type': waterType, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
+/** ---- 2026-10-14 checks (lead's order, K's two defects of the day): primary resources behind high-tier guards in a start's biome, stacks no hero can reach or see ---- */
+
+/**
+ * K 2026-10-14: "my wood (being a primary resource) blocked behind high-tier creatures is not how the game should be (least of all in a starting biome)".
+ * For every start: its primary resources within N tiles of the start town (Chebyshev, N = LIMITS.startResN): the sawmills, the ore pits and the wood and ore piles; the
+ * guard that controls one is a monster whose 3x3 ring covers a tile its approach is taken from or its entrance tile. A resource fails when its strongest controlling
+ * guard is above tier T (LIMITS.startResTier) or stronger than S (LIMITS.startResStrength, amount x creature aiValue).
+ * How N, T and S were chosen: the engine's own maps (.tmp\opus-seeing\engine_matched, 162 maps, 456 starts): the nearest sawmill of a start lies 8 tiles from its town at the
+ * median, 13 at p90, 14 at p95; the nearest ore pit 5, 12, 13; so N = 14 reads what a start can reach as its own. The engine guards 1% of those mines (7 of 893, all tier 1),
+ * so T = 1. S = 6000 is a gauge only (a tier 1 stack of 30 to 40 is under it): the engine's random stacks carry no amount in the map, so no engine strength was measured.
+ */
+function startResourceGuard(M) {
+	const sight = require('../mapsight/lib/sight');
+	const IDX = sight.index();
+	const tierOf = m => { const c = IDX && IDX.creature && IDX.creature(m.subtype); return c ? c.level : 0; };
+	const strOf = m => { const c = IDX && IDX.creature && IDX.creature(m.subtype); return c ? (+(m.options && m.options.amount) || 1) * c.aiValue : 0; };
+	const starts = M.startList || sight.starts(M);
+	if (!starts || !starts.length) return { skipped: 'no starts' };
+	const N = LIMITS.startResN, T = LIMITS.startResTier, S = LIMITS.startResStrength;
+	const cheb = (a, b) => Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]));
+	const isPrimary = o => (o.cls === 'mine' && /^(sawmill|orePit)$/.test(String(o.subtype))) || (o.type === 'resource' && /^(wood|ore)$/.test(String(o.subtype)));
+	const items = [];
+	let checked = 0, guarded = 0, bad = 0, strong = 0;
+	for (const t of M.objs.filter(o => o.cls === 'town' && starts.some(s => (s.l || 0) === (o.l || 0) && cheb(s.at, o.at) <= 1))) {
+		for (const o of M.objs.filter(x => isPrimary(x) && (x.l || 0) === (t.l || 0) && cheb(x.at, t.at) <= N)) {
+			checked++;
+			const cover = new Set(M.approach(o)); cover.add(M.idx(o.l || 0, o.entr[0][0], o.entr[0][1]));
+			const g = M.monsters.filter(m => (m.l || 0) === (o.l || 0) && [-1, 0, 1].some(dy => [-1, 0, 1].some(dx => M.inb(m.at[0] + dx, m.at[1] + dy) && cover.has(M.idx(m.l || 0, m.at[0] + dx, m.at[1] + dy)))));
+			if (!g.length) continue;
+			guarded++;
+			const top = g.reduce((a, b) => (tierOf(b) > tierOf(a) || (tierOf(b) === tierOf(a) && strOf(b) > strOf(a)) ? b : a));
+			if (tierOf(top) > T || strOf(top) > S) {
+				bad++; if (strOf(top) > S) strong++;
+				items.push(`${nameOf(o)} L${o.l || 0} (${o.at}) ${cheb(o.at, t.at)} tiles from the start town (${t.at}): controlled by ${top.subtype} x${(top.options && top.options.amount) || '?'} (tier ${tierOf(top)}, strength ${Math.round(strOf(top))}) at (${top.at})`);
+			}
+		}
+	}
+	if (!checked) return { skipped: 'no primary resource near a start' };
+	return verdict(bad === 0, `${bad} of ${checked} primary resources within ${N} tiles of a start are controlled by a guard above tier ${T} or strength ${S} (${guarded} guarded at all)`, `0 (the engine guards 1% of them, tier 1)`, items, { checked, guarded, bad, strong, N, T, S });
+}
+
+/**
+ * K 2026-10-14: "enchanter got placed behind a crater (decorative blocker) again". A monster stack no hero or flyer can reach or see: (sealed) none of its eight
+ * neighbours is open ground (ground, not blocked, not another stack's tile), or (hidden) its tile lies under the picture of a blocking decorative object drawn after it
+ * (the object's anchor row below the stack's, or the same row and further right; HoMM3 draws by the anchor row, the picture reaches up and left of the anchor).
+ */
+function guardBlocked(M) {
+	if (!M.monsters.length) return { skipped: 'no monster stacks' };
+	const at = new Set(M.monsters.map(m => M.idx(m.l || 0, m.at[0], m.at[1])));
+	const decor = M.objs.filter(o => o.cls === 'other' && !o.visitable && !o.pickup && o.template && /[BA]/.test((o.template.mask || []).join('')));
+	const pic = new Map();
+	for (const d of decor) for (const [x, y] of pictureCells(d)) if (M.inb(x, y)) { const k = M.idx(d.l || 0, x, y); if (!pic.has(k)) pic.set(k, []); pic.get(k).push(d); }
+	const items = [];
+	let sealed = 0, hidden = 0;
+	for (const m of M.monsters) {
+		const l = m.l || 0, [x, y] = m.at;
+		let free = 0;
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+			if (!dx && !dy) continue;
+			const u = x + dx, v = y + dy;
+			if (!M.inb(u, v)) continue;
+			const i = M.idx(l, u, v);
+			if (M.ground(i) && !M.blocked[i] && !at.has(i)) free++;
+		}
+		if (!free) { sealed++; items.push(`${m.subtype || m.type} x${(m.options && m.options.amount) || '?'} L${l} (${x},${y}): no free neighbour`); }
+		const over = (pic.get(M.idx(l, x, y)) || []).filter(d => d.y > y || (d.y === y && d.x > x));
+		if (over.length) { hidden++; items.push(`${m.subtype || m.type} x${(m.options && m.options.amount) || '?'} L${l} (${x},${y}): under the picture of ${nameOf(over[0])} (${over[0].x},${over[0].y}) drawn after it`); }
+	}
+	return verdict(sealed + hidden === 0, `${sealed} stacks with no free neighbour, ${hidden} under the picture of a blocking decorative object (of ${M.monsters.length})`, '0', items, { sealed, hidden, stacks: M.monsters.length });
+}
+
+const CHECKS = { 'start-resource-guard': startResourceGuard, 'guard-blocked': guardBlocked, 'approach-shadow': approachShadow, 'road-stubs': roadStubs, 'road-terminals': roadTerminals, 'water-objects': waterObjects, 'water-content': waterContent, 'prison-hero': prisonHero, 'water': waterReport, 'water-type': waterType, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
 /**
  * Is the asset index the water checks need loaded? It needs VCMI_ROOT and VCMI_USER_DIR (the user folder's mods hold the HotA water shrines and
  * observation towers): with the root alone the index loads without them, and a water map then fails water-objects on objects that are water-only
