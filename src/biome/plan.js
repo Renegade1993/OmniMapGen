@@ -1964,6 +1964,14 @@ function crossLinks(zonePlan, l) {
 /** A subterranean gate's ground held: the footprint OCCUPIED, the cells before it RESERVED. */
 function holdGateGround(tpl, x, y, l, W, H, blocked) {
 	for (const [a, b] of blockingCells(tpl, x, y)) blocked[l * W * H + b * W + a] |= OCCUPIED;
+	// its picture too, for the fill to keep off: the gate itself is laid after the fill, and K's 876637007 kept a gold mine and a major
+	// under the pictures of gates held this way (2026-10-14)
+	const m = tpl.mask || [];
+	for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) {
+		if (!/[VBA]/.test(m[i][j])) continue;
+		const fx = x - (m[i].length - 1 - j), fy = y - (m.length - 1 - i);
+		if (fx >= 0 && fy >= 0 && fx < W && fy < H) markShadow(blocked, l * W * H + fy * W + fx);
+	}
 	for (const [vx, vy] of visitableCells(tpl, x, y))
 		for (const [dx, dy] of allowedDirs(tpl)) {
 			const nx = vx + dx, ny = vy + dy;
@@ -9268,7 +9276,7 @@ function ensureSignatureDwelling(plans, W, H, blocked, objectPools, p, rng) {
  * the same zone, and `waysOk(ways)` when given. Returns { l, x, y, cost, ways, gone } or null; clearScenery() then takes
  * the pieces out.
  */
-function sceneryRoom(pl, l, W, H, blocked, tpl, zoneOk, score, waysOk = null, footOk = null) {
+function sceneryRoom(pl, l, W, H, blocked, tpl, zoneOk, score, waysOk = null, footOk = null, useShadow = true) {
 	const zone = pl.zone, base = l * W * H;
 	if (!zone) return null;
 	const onLine = c => {
@@ -9303,13 +9311,19 @@ function sceneryRoom(pl, l, W, H, blocked, tpl, zoneOk, score, waysOk = null, fo
 			}
 		}
 		if (!ok) continue;
+		// no picture over an entrance's, and no way in under one (K's 876637007: the signature dwelling sulfurousLair (13,2) went where
+		// every way in lay under the gate (13,5)'s picture, 2026-10-14). VMAPGEN_FILL_SHADOW=0 off, as for the fill.
+		const shadowOn = useShadow && process.env.VMAPGEN_FILL_SHADOW === '1';
+		if (shadowOn && pictureOnShadow(tpl, x, y, l, W, H, blocked)) continue;
 		// the object's own footprint is no way in (a mine entered from its sides counted its own two side tiles)
 		const own = new Set(blockingCells(tpl, x, y).map(([fx, fy]) => fy * W + fx));
-		const ways = approachCells(tpl, x, y, l, W, H, blocked).filter(c => zone[c] === z && !own.has(c) && !cover.scenAt.has(c) && !cover.other.has(c));
+		const ways = approachCells(tpl, x, y, l, W, H, blocked).filter(c => zone[c] === z && !own.has(c) && !cover.scenAt.has(c) && !cover.other.has(c) && !(shadowOn && shadowAt(blocked, base + c)));
 		if (ways.length < 2 || (waysOk && !waysOk(ways)) || (footOk && !footOk(own))) continue;
 		const sc = score(x, y);
 		if (!best || cost < best.cost || (cost === best.cost && sc < best.sc)) best = { l, x, y, cost, sc, ways, gone };
 	}
+	// no room clear of the pictures: the old rule, so a dragon zone still gets its dwelling (876637007's zone 18 found none, 2026-10-14)
+	if (!best && useShadow && process.env.VMAPGEN_FILL_SHADOW === '1') return sceneryRoom(pl, l, W, H, blocked, tpl, zoneOk, score, waysOk, footOk, false);
 	return best;
 }
 
@@ -9498,12 +9512,14 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 							const g = gy * W + gx;
 							if (gx < 1 || gy < 1 || gx >= W - 1 || gy >= H - 1 || own2.has(g) || road.has(g) || taken.has(g) || shadowAt(blocked, base + g)) continue;
 							if ((l === 0 && pl.p && pl.p.water && pl.p.water[g]) || (pl.zone && pl.zone[g] !== z0)) continue;
-							if (!footprintFits(guard.template, gx, gy, l, W, H, blocked, true)) continue;
+							// a monster is no removable object: its tile may not be another object's way in (the Opus Reviewer, pass 51)
+							if (!footprintFits(guard.template, gx, gy, l, W, H, blocked, false)) continue;
 							const open = ways.filter(c => c !== g && Math.max(Math.abs(c % W - gx), Math.abs(((c / W) | 0) - gy)) > 1).length;
 							if (!best || open < best.open) best = { to: [x, y], g: [gx, gy], open };
 						}
 					}
-				if (best) { to = best.to; guardTo = best.g; }
+				// only where the guard takes every open way in: one left open is the defect this pass exists to end (pass 51)
+				if (best && !best.open) { to = best.to; guardTo = best.g; }
 				if (!guardTo) for (const c of gOwn) blocked[base + c] |= OCCUPIED;
 				if (process.env.VMAPGEN_SHADOW_TRACE) console.error(`[shadow]   pair spot ${to ? to.join(',') + ' guard ' + guardTo.join(',') : 'none'}`);
 			}
@@ -9517,7 +9533,11 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 			footprintBlock(o.template, o.x, o.y, l, W, H, blocked);
 			if (counted) for (const c of ownAll()) taken.add(c);
 			if (guardTo) {
+				// its tiles leave and join the taken ones as a pickup's do (pass 51: the pass-48 hole, for the guard)
+				const gAll = () => blockingCells(guard.template, guard.x, guard.y).concat(visitableCells(guard.template, guard.x, guard.y)).map(([fx, fy]) => fy * W + fx);
+				for (const c of gAll()) taken.delete(c);
 				guard.x = guardTo[0]; guard.y = guardTo[1]; guard.instanceName = `${guard.type}_${guard.x}_${guard.y}_${l}`;
+				for (const c of gAll()) taken.add(c);
 				footprintBlock(guard.template, guard.x, guard.y, l, W, H, blocked);
 				out.pairs = (out.pairs || 0) + 1;
 			}

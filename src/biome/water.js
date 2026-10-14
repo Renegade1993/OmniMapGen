@@ -1146,13 +1146,19 @@ function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, gro
 		for (const g of groups) for (const z of g) to.set(z, g[0]);
 		zoneOf = zoneOf.map(z => (to.has(z) ? to.get(z) : z));
 	}
-	const forced = forcedAround(starts, W, H, START_CLEAR);
+	// with dragon islands the ring gives up land to them, and a start's own ground goes three tiles wider: at 7 the sea came within 3 of a
+	// start town that the layout set 4 tiles seaward of its planned spot, 22 tiles free round it (MapGen Dev's water gate on 80e0387,
+	// w_mediterranean_108_s7001, (100,74), 2026-10-14)
+	// only where the islands are made: a Mediterranean (adoptWater); on K's xl-p4-islands it moved a road end and a guard crowd
+	const medShape = content !== 'islands' && shape !== null && process.env.VMAPGEN_MED_SEA !== '0'
+		&& (WATER_SHAPES[Math.max(0, Math.min(WATER_SHAPES.length - 1, Math.round(Number(shape) || 0)))] || {}).id === 'mediterranean';
+	const forced = forcedAround(starts, W, H, START_CLEAR + (medShape && islandZones && islandZones.size && process.env.VMAPGEN_MED_ISLES !== '0' ? 3 : 0));
 	const startCells = starts.map(q => q.y * W + q.x);
 	// Amount of water (K, 2026-10-05: "this is not 45% water"): the engine's own calibration (keepFor) fixed the share whatever the
 	// slider said, 0.14 to 0.19 on a template map. The wet share of every zone is now scaled until the surface comes out at the
 	// amount asked, within 2 points, in at most twelve tries per cap; no amount given runs once as before.
 	const want = Number(coverage) > 0 ? Number(coverage) : null;
-	let scale = 1, mask = null, got = 0, unfit = 0;
+	let scale = 1, mask = null, got = 0, unfit = 0, aimed = null;
 	// Zones left ground (K, 2026-10-10): the sea of a high amount took 70% of the middle zones of a 180x180 map and drowned two. The amount is
 	// tried with the most any zone may lose falling from 0.7 to 0.55 of its radius, and the first that leaves every zone of 60 cells or more
 	// 40% land is kept (the amount falls short when none reaches it, and says so in the log). VMAPGEN_ADOPT_MAX_WET fixes one cap.
@@ -1163,7 +1169,9 @@ function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, gro
 		const wet = new Map();
 		for (let c = 0; c < W * H; c++) if (m[c] && zoneOf[c] >= 0) wet.set(zoneOf[c], (wet.get(zoneOf[c]) || 0) + 1);
 		let low = 1;
-		for (const [z, n] of area) if (n >= 60) low = Math.min(low, 1 - (wet.get(z) || 0) / n);
+		// a dragon junction made an island is mostly sea by design: it is not a zone the sea may not drown (the Opus Reviewer, pass 51: with it
+		// counted the low was about 0 on every island map, all four caps ran and the last was kept whatever it left the others)
+		for (const [z, n] of area) if (n >= 60 && !(islandZones && islandZones.has(z))) low = Math.min(low, 1 - (wet.get(z) || 0) / n);
 		return low;
 	};
 	for (const cap of caps) {
@@ -1183,12 +1191,13 @@ function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, gro
 			// tiles and starts' second towns stood 8 to 11 tiles from the first (3 of 12 seeds, K's Mediterranean options); all from the sea,
 			// a 72x72 at 30% asked came out at 18.5% water (test/water-amount.test.js), 2026-10-14
 			const aim = want ? Math.max(0.05, want - Math.min(0.01, (mask.isle ? mask.isle.length : 0) / (W * H))) : want;
+			aimed = aim;
 			if (!want || Math.abs(got / (W * H) - aim) <= 0.02) break;
 			scale = Math.max(0.1, Math.min(30, scale * aim / Math.max(0.01, got / (W * H))));
 		}
 		if (cap === null || minLand(mask) >= 0.4) break;
 	}
-	if (want && content !== 'islands' && Math.abs((got + (mask.isle ? mask.isle.length : 0)) / (W * H) - want) > 0.02)
+	if (want && content !== 'islands' && Math.abs(got / (W * H) - (aimed || want)) > 0.02)
 		console.error(`[gen] water: ${(100 * got / (W * H)).toFixed(1)}% reached of the ${(100 * want).toFixed(0)}% asked, the lowest zone keeps ${(100 * minLand(mask)).toFixed(0)}% land`);
 	return { mask, starts: starts.map(q => ({ ...q, moved: false })), shape: content === 'islands' ? 'islands' : 'lakes',
 		coverage: got / (W * H), unfit, islands: content === 'islands', hubCells: (mask.isle || []).filter(c => !mask[c]), isleAt: mask.isleAt || [], adopted: content };

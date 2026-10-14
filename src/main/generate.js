@@ -1352,7 +1352,11 @@ async function generateMap(params) {
 				banks.push({ subtype: o.subtype, aiValue: o.aiValue || 0, weight, rmg: o.rmg,
 					tpl: t.raw, tpls: placeables(o).map(x => ({ raw: x.raw, terrains: x.allowedTerrains || null })),
 					mod: id.split(':')[0], creatures: o.bankCreatures || [] });
-			if (/^creatureGenerator/.test(o.type) && o.creature) {
+			// a dwelling every template of which stands on water only is the sea's (the water objects above), never a land zone's: a coral
+			// reef stood on a dragon island's dirt (MapGen Dev's water gate on 80e0387, w_mediterranean_144_s1, (89,56), 2026-10-14)
+			const seaOnly = placeables(o).every(x => Array.isArray(x.allowedTerrains) && x.allowedTerrains.length
+				&& x.allowedTerrains.every(a => String(a).slice(String(a).lastIndexOf(':') + 1).toLowerCase() === 'water'));
+			if (/^creatureGenerator/.test(o.type) && o.creature && !seaOnly) {
 				const scope = id.split(':')[0];
 				const cre = resolveCreature(scope, o.creature);
 				if (cre && cre.level >= 1)
@@ -1578,7 +1582,8 @@ async function generateMap(params) {
 			const held = dryLayout(anchorsOf(waterPlan));
 			const again = buildAdoptedPlan(params.mapW, params.mapH, held.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage, isleZones);
 			if (process.env.VMAPGEN_WATER_TRACE) console.error('[water] islands ' + JSON.stringify(waterPlan.isleAt) + ' then ' + JSON.stringify(again.isleAt) + ' land at each ' + again.isleAt.map(q => again.mask[q.y * params.mapW + q.x] ? 'wet' : 'dry').join(',') + ', island tiles ' + again.hubCells.length + ' of ' + waterPlan.hubCells.length);
-			if (again.isleAt && again.isleAt.length === waterPlan.isleAt.length) waterPlan = again;
+			// taken only when every island middle is dry (the Opus Reviewer, pass 51: the count alone was checked)
+			if (again.isleAt && again.isleAt.length === waterPlan.isleAt.length && again.isleAt.every(q => !again.mask[q.y * params.mapW + q.x])) waterPlan = again;
 			isleAnchors = anchorsOf(waterPlan);
 		}
 		console.error(`[gen] water: ${adoptMode} the engine's way, ${(100 * waterPlan.coverage).toFixed(1)}% of the surface`);

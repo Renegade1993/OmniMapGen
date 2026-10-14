@@ -107,7 +107,11 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 		if (inb(o.x, o.y) && ring[at] >= 0) return true;
 		return approach(o).every(c => hard[c] || ring[c] >= 0);
 	};
-	const lows = objs.filter(o => LOW.includes(o.type) && oneTile(o) && !open(o) && (!opts.anyZone || shut(o)));
+	// a pile under a monolith's or a gate's picture is no partner: the dear one would land there, drawn into the entrance (the Opus Reviewer,
+	// pass 51: a relic beside the monolith (81,98) on 14101422). With VMAPGEN_FILL_SHADOW=1, as the fill's rule.
+	const { pictureOnShadow } = require('./content');
+	const underPic = o => process.env.VMAPGEN_FILL_SHADOW === '1' && o.template && pictureOnShadow(o.template, o.x, o.y, l, W, H, blocked);
+	const lows = objs.filter(o => LOW.includes(o.type) && oneTile(o) && !open(o) && (!opts.anyZone || shut(o)) && !underPic(o));
 	// the engine leaves some of its dear loot open too (Coldshadow's Fantasy: 10 to 19% of it): swap only down to that
 	// share (VMAPGEN_LOOT_OPEN, default 0.14), dearest first
 	const all = objs.filter(o => HIGH.includes(o.type)).length;
@@ -187,7 +191,7 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 			const cls = plan.classes, hc = cls ? cls[zone(h)] : undefined;
 			const tierAt = o => { const g = guardOf(o); return g ? tierOf(g) : 0; };
 			// a player zone's dear loot stays in that zone: no start gets another's (the lead, 15:20: never into a player start zone)
-			const pool = lows.concat(objs.filter(o => (o.type === 'spellScroll' || o.type === 'artifact') && oneTile(o) && shut(o) && !open(o)))
+			const pool = lows.concat(objs.filter(o => (o.type === 'spellScroll' || o.type === 'artifact') && oneTile(o) && shut(o) && !open(o) && !underPic(o)))
 				.filter(o => !cls || (cls[zone(o)] === hc && (hc !== 'player' || zone(o) === zone(h))));
 			const lo = pool.filter(o => !used.has(o)).sort((a, b) => ((tierAt(a) >= 4 ? 0 : 1) - (tierAt(b) >= 4 ? 0 : 1))
 				|| (Math.abs(a.x - h.x) + Math.abs(a.y - h.y)) - (Math.abs(b.x - h.x) + Math.abs(b.y - h.y)))[0];

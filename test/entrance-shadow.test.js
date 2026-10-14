@@ -71,10 +71,14 @@ test("a guarded major under a gate's picture with its guard's ring all under it 
 	const guard = { type: 'randomMonster', subtype: 'object', x: 6, y: 5, l: 0, template: tpl, instanceName: 'guard_6_5_0' };
 	for (let y = 1; y <= 8; y++) for (let x = 1; x <= 7; x++) markShadow(blocked, y * W2 + x);
 	blocked[5 * W2 + 6] |= OCCUPIED;
+	// beyond the picture, rock but for a pocket of three tiles, (8,4), (8,5) and (9,5): one guard there takes every way in, as on K's map
+	for (let y = 0; y < H2; y++) for (let x = 8; x < W2; x++) if (!((x === 8 && (y === 4 || y === 5)) || (x === 9 && y === 5))) blocked[y * W2 + x] |= OCCUPIED;
 	const pl = { objects: [major, guard], p: {}, roadCells: new Set(), zone: new Int16Array(W2 * H2) };
 	const r = clearEntranceShadow(pl, 0, W2, H2, blocked);
 	assert.strictEqual(r.pairs, 1, JSON.stringify(r));
 	assert.ok(!pictureOnShadow(tpl, major.x, major.y, 0, W2, H2, blocked), `major at (${major.x},${major.y})`);
 	assert.ok(Math.max(Math.abs(guard.x - major.x), Math.abs(guard.y - major.y)) <= 1, `guard at (${guard.x},${guard.y}), major at (${major.x},${major.y})`);
 	assert.ok(pl.objects.includes(guard), 'the guard stays on the map');
+	const ways = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]].map(([dx, dy]) => [major.x + dx, major.y + dy]).filter(([x, y]) => !(blocked[y * W2 + x] & OCCUPIED) && !(x === guard.x && y === guard.y));
+	assert.ok(ways.every(([x, y]) => Math.max(Math.abs(x - guard.x), Math.abs(y - guard.y)) <= 1), `an open way in outside the guard's ring: ${JSON.stringify(ways)}`);
 });

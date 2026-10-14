@@ -1863,7 +1863,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// reads as shut or half hidden (MapGen Dev's approach-shadow on 71886b1: 0.35 objects a monolith or gate, the engine's 0.02).
 			// A guard keeps off too while it has other tries (three quarters of them): stacks standing in an entrance's picture crowded
 			// the entrance's own guard (approach-tiles.test.js, 108x108 seed 3: 22 of 421 stacks within 2 tiles of another)
-			if (FILL_SHADOW && (!MONSTER_TYPE.test(type) || tries < tryBudget * 0.75) && pictureOnShadow(tpl, x, y, l, W, H, blocked)) { rej('shadow'); continue; }
+			// On with VMAPGEN_FILL_SHADOW=1 only: on by default it cleared K's 876637007 (objects under a picture 4 -> 0) but K's six cases
+			// gained 4 FAIL lines (approach-open, flyer-open, free-standing; check79, 2026-10-14). Until that is worked out it stays opt-in.
+			const shadowRule = FILL_SHADOW && (!MONSTER_TYPE.test(type) || tries < tryBudget * 0.75);
+			if (shadowRule && pictureOnShadow(tpl, x, y, l, W, H, blocked)) { rej('shadow'); continue; }
 			if (CLIP_RULE && tries < tryBudget * 0.75
 					&& (MONSTER_TYPE.test(type) ? monsterClips(x, y) : inMonsterShadow(tpl, x, y))) { rej('clip'); continue; }
 			// An object whose entrance has no open ground beside it is
