@@ -134,3 +134,21 @@ test('road-terminals: dead ends are classified by the visiting tile they stand o
 	assert.ok(r.nums.cls.monolith >= 1, JSON.stringify(r.nums.cls));
 	assert.strictEqual(typeof r.nums.per100, 'number');
 });
+
+test('assetIndexReady: refuses without VCMI_USER_DIR, and the gate says so and exits 2 (the Opus Reviewer\'s pass 53, 2026-10-14)', () => {
+	const { assetIndexReady } = require('../tools/harness/grid_extra');
+	const keep = { r: process.env.VCMI_ROOT, u: process.env.VCMI_USER_DIR };
+	try {
+		process.env.VCMI_ROOT = 'C:/nowhere'; delete process.env.VCMI_USER_DIR;
+		const r = assetIndexReady();
+		assert.strictEqual(r.ok, false);
+		assert.match(r.why, /VCMI_USER_DIR/);
+		delete process.env.VCMI_ROOT;
+		assert.match(assetIndexReady().why, /VCMI_ROOT/);
+	} finally { if (keep.r !== undefined) process.env.VCMI_ROOT = keep.r; if (keep.u !== undefined) process.env.VCMI_USER_DIR = keep.u; }
+	const { spawnSync } = require('node:child_process');
+	const env = { ...process.env }; delete env.VCMI_USER_DIR; env.VCMI_ROOT = 'C:/nowhere';
+	const g = spawnSync(process.execPath, [require('node:path').join(__dirname, '..', 'tools', 'harness', 'playable_gate.js'), '--tip', __dirname, '--out', require('node:os').tmpdir() + '/gate_refuse_test'], { env, encoding: 'utf8', timeout: 60000 });
+	assert.strictEqual(g.status, 2, g.stderr);
+	assert.match(g.stderr, /REFUSED TO RUN/);
+});

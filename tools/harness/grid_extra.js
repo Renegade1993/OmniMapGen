@@ -803,4 +803,20 @@ function prisonHero(M) {
 
 
 const CHECKS = { 'approach-shadow': approachShadow, 'road-stubs': roadStubs, 'road-terminals': roadTerminals, 'water-objects': waterObjects, 'water-content': waterContent, 'prison-hero': prisonHero, 'water': waterReport, 'water-type': waterType, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
-module.exports = { CHECKS, LIMITS, levelOfExp, statRange, pictureCells, entranceObj };
+/**
+ * Is the asset index the water checks need loaded? It needs VCMI_ROOT and VCMI_USER_DIR (the user folder's mods hold the HotA water shrines and
+ * observation towers): with the root alone the index loads without them, and a water map then fails water-objects on objects that are water-only
+ * (the Opus Reviewer's pass 53, 2026-10-14: no warning printed). Ready means both variables set, the index loaded, and the HotA water shrine's art
+ * (avxl4sh0) known as water-only. Returns { ok, why }.
+ */
+function assetIndexReady() {
+	if (!process.env.VCMI_ROOT) return { ok: false, why: 'VCMI_ROOT is not set' };
+	if (!process.env.VCMI_USER_DIR) return { ok: false, why: 'VCMI_USER_DIR is not set (the user folder holds the HotA water objects)' };
+	const IDX = sight.index();
+	if (!IDX) return { ok: false, why: 'the asset index did not load' };
+	const s = IDX.anims.get('avxl4sh0');
+	if (!s || ![...s].every(n => n === 'water')) return { ok: false, why: 'the index lacks the HotA water shrine (avxl4sh0 as water-only): VCMI_USER_DIR does not point at the folder with the HotA mods' };
+	return { ok: true, why: '' };
+}
+
+module.exports = { CHECKS, LIMITS, levelOfExp, statRange, pictureCells, entranceObj, assetIndexReady };

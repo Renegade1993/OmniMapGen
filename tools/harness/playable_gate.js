@@ -38,6 +38,17 @@ process.env.VCMI_ROOT = process.env.VCMI_ROOT || ROOT;
 const sight = require('../mapsight/lib/sight');
 const check = require('../mapsight/lib/check');
 const { runChecks } = require('./playtest_checks');
+// the water checks read the asset index (VCMI_ROOT and VCMI_USER_DIR); without it a water map fails water-objects on HotA water-only objects and nothing says why.
+// The gate refuses to run unless the index is ready (--no-index runs anyway, and the verdicts then say so in the GATE.md header).
+{
+	const ready = require('./grid_extra').assetIndexReady();
+	if (!ready.ok && !has('--no-index')) {
+		console.error(`\nplayable_gate: REFUSED TO RUN: the asset index is not ready: ${ready.why}.\nSet VCMI_ROOT (for example C:/AI Projects/Heroes 3/VCMI/dmbtest) and VCMI_USER_DIR (the Dead Man's Boots user folder, forward slashes) and run again, or pass --no-index to run without water-object judgement.\n`);
+		process.exit(2);
+	}
+	if (!ready.ok) console.error(`playable_gate: WARNING: running without the asset index (${ready.why}); water-objects verdicts are not reliable`);
+	global.__INDEX_NOTE = ready.ok ? '' : ', NO ASSET INDEX (' + ready.why + ')';
+}
 const { KNOBS } = require(path.join(TIP, 'src/biome/knobs'));
 const { BIOME_DEFAULTS } = require(path.join(TIP, 'src/biome/biomes'));
 const cheb = (a, b) => Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]));
@@ -208,7 +219,7 @@ function generate(c, file) {
 	const failing = all.filter(r => !r.pass);
 	fs.writeFileSync(path.join(OUT, 'cases.json'), JSON.stringify(failing.map(r => ({ name: r.name, opt: r.opt })), null, 1));
 	// the tables
-	const md = [`# Minimally playable gate (tip ${path.basename(TIP)}, ${new Date().toLocaleDateString("en-CA")}${SETS.length ? ", switches " + SETS.join(" ") : ""})`, '',
+	const md = [`# Minimally playable gate (tip ${path.basename(TIP)}, ${new Date().toLocaleDateString("en-CA")}${SETS.length ? ", switches " + SETS.join(" ") : ""}${global.__INDEX_NOTE || ""})`, '',
 		`${all.length} configurations run, ${all.length - failing.length} pass, ${failing.length} fail. Failing configurations are in cases.json (names and full options) and rerun with --cases.`, ''];
 	const cause = {};
 	for (const r of failing) for (const f of r.fails) { const k = f.replace(/\(\d[^)]*\)|\d+/g, 'N').slice(0, 70); (cause[k] = cause[k] || []).push(r.name); }
