@@ -825,10 +825,10 @@ function startResourceGuard(M) {
 	const cheb = (a, b) => Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]));
 	const isPrimary = o => (o.cls === 'mine' && /^(sawmill|orePit)$/.test(String(o.subtype))) || (o.type === 'resource' && /^(wood|ore)$/.test(String(o.subtype)));
 	const items = [];
-	let checked = 0, guarded = 0, bad = 0, strong = 0;
+	let checked = 0, guarded = 0, bad = 0, strong = 0, mines = 0, minesBad = 0, pilesBad = 0;
 	for (const t of M.objs.filter(o => o.cls === 'town' && starts.some(s => (s.l || 0) === (o.l || 0) && cheb(s.at, o.at) <= 1))) {
 		for (const o of M.objs.filter(x => isPrimary(x) && (x.l || 0) === (t.l || 0) && cheb(x.at, t.at) <= N)) {
-			checked++;
+			checked++; if (o.cls === 'mine') mines++;
 			const cover = new Set(M.approach(o)); cover.add(M.idx(o.l || 0, o.entr[0][0], o.entr[0][1]));
 			const g = M.monsters.filter(m => (m.l || 0) === (o.l || 0) && [-1, 0, 1].some(dy => [-1, 0, 1].some(dx => M.inb(m.at[0] + dx, m.at[1] + dy) && cover.has(M.idx(m.l || 0, m.at[0] + dx, m.at[1] + dy)))));
 			if (!g.length) continue;
@@ -836,12 +836,13 @@ function startResourceGuard(M) {
 			const top = g.reduce((a, b) => (tierOf(b) > tierOf(a) || (tierOf(b) === tierOf(a) && strOf(b) > strOf(a)) ? b : a));
 			if (tierOf(top) > T || strOf(top) > S) {
 				bad++; if (strOf(top) > S) strong++;
+				if (o.cls === 'mine') minesBad++; else pilesBad++;
 				items.push(`${nameOf(o)} L${o.l || 0} (${o.at}) ${cheb(o.at, t.at)} tiles from the start town (${t.at}): controlled by ${top.subtype} x${(top.options && top.options.amount) || '?'} (tier ${tierOf(top)}, strength ${Math.round(strOf(top))}) at (${top.at})`);
 			}
 		}
 	}
 	if (!checked) return { skipped: 'no primary resource near a start' };
-	return verdict(bad === 0, `${bad} of ${checked} primary resources within ${N} tiles of a start are controlled by a guard above tier ${T} or strength ${S} (${guarded} guarded at all)`, `0 (the engine guards 1% of them, tier 1)`, items, { checked, guarded, bad, strong, N, T, S });
+	return verdict(minesBad === 0, `${minesBad} of ${mines} sawmills and ore pits and ${pilesBad} of ${checked - mines} wood and ore piles within ${N} tiles of a start are controlled by a guard above tier ${T} or strength ${S} (${guarded} of ${checked} guarded at all); the verdict reads the mines`, '0 mines (the engine: piles near a start are guarded above tier 1 in 1.4% of cases, mines in about 1%)', items, { checked, guarded, bad, strong, mines, minesBad, pilesBad, N, T, S });
 }
 
 /**

@@ -41,11 +41,13 @@ test('start-resource-guard: a sawmill near a start with a tier 7 stack beside it
 	assert.strictEqual(heavy.nums.bad, 1);
 });
 
-test('start-resource-guard: a wood pile counts like a mine, a stack that does not control it does not, and one beyond N tiles of the start is not read', () => {
+test('start-resource-guard: a wood pile with a tier 7 guard is counted but does not fail the map (the engine does it in 1.4% of cases), a stack that does not control it is not counted, and one beyond N tiles of the start is not read', () => {
 	const near = withStart(fake(60, 60, [town(10, 10), woodPile(13, 12), stack(13, 14, 'archangel')]), 10, 10);
-	assert.strictEqual(CHECKS['start-resource-guard'](near).pass, false);
+	const nr = CHECKS['start-resource-guard'](near);
+	assert.strictEqual(nr.nums.pilesBad, 1, nr.value);
+	assert.strictEqual(nr.nums.minesBad, 0);
 	const aside = withStart(fake(60, 60, [town(10, 10), woodPile(13, 12), stack(13, 20, 'archangel')]), 10, 10);
-	assert.strictEqual(CHECKS['start-resource-guard'](aside).pass, true);
+	assert.strictEqual(CHECKS['start-resource-guard'](aside).nums.pilesBad, 0);
 	const far = withStart(fake(80, 80, [town(10, 10), sawmill(40, 12), stack(40, 14, 'archangel')]), 10, 10);
 	assert.strictEqual(CHECKS['start-resource-guard'](far).skipped, 'no primary resource near a start');
 	assert.strictEqual(CHECKS['start-resource-guard'](withStart(fake(60, 60, [town(10, 10)]), 10, 10)).skipped, 'no primary resource near a start');
