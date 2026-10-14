@@ -20,8 +20,8 @@
  * route may pass a niche and a second guard, as a link guard behind a
  * treasure guard does.
  *
- * A gate dearer than GATE_SLACK times the median gate, or than GATE_EVEN times
- * the cheapest, has every guard on its route cut to that. A start whose home holds under HOME_SHARE of the median
+ * A gate dearer than GATE_SLACK times the median gate, or, with two starts, than
+ * GATE_EVEN times the other's (floored at the median over GATE_SLACK), has every guard on its route cut to that. A start whose home holds under HOME_SHARE of the median
  * home is boxed in: its route is cut to the cheapest start's gate, so it
  * leaves early. A gate cheaper than the median over GATE_SLACK is raised to
  * that: every guard under it on the route, and the start measured again, until

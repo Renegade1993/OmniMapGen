@@ -1489,7 +1489,7 @@ async function generateMap(params) {
 	// smaller ones". Each seed picks. Centralized: those zones, and the zone linked to three or more of them, are laid in a ring
 	// round the map's centre (layoutAnchors, the layout's own pull toward a point) and make ONE island (the water treats them as
 	// one zone). Otherwise each is an island of its own, as the rule gives. VMAPGEN_ISLAND_CLUSTER=1 or 0 forces a variant.
-	let clusterAnchors = null, clusterPlan = null, clusterMask = null;
+	let clusterAnchors = null, clusterPlan = null, clusterMask = null, isleAnchors = null;
 	if (adoptMode === 'islands' && zonePlan.perLevel.length === 1 && process.env.VMAPGEN_ISLAND_CLUSTER !== '0') {
 		const forced = new Set((zonePlan.zones || []).filter(z => z.forcedLevel === 'underground').map(z => z.id));
 		const coin = (Math.imul((params.seed || 1) >>> 0, 2654435761) >>> 9) & 1;
@@ -1562,7 +1562,25 @@ async function generateMap(params) {
 			if (!dry) console.error('[gen] islands: no layout kept the dragon zones together in 8 tries; they are islands of their own');
 		}
 		if (!dry) dry = dryLayout(null);
-		waterPlan = clusterMask || buildAdoptedPlan(params.mapW, params.mapH, dry.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage);
+		// a one-level map's dragon junctions (the zones the template keeps below ground) are islands in a Mediterranean (water.js adoptWater)
+		const isleZones = zonePlan.perLevel.length === 1 ? new Set((zonePlan.perLevel[0] || []).map((z, i) => (z && (z.wasUnderground || z.forcedLevel === 'underground') ? i : -1)).filter(i => i >= 0)) : null;
+		waterPlan = clusterMask || buildAdoptedPlan(params.mapW, params.mapH, dry.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage, isleZones && isleZones.size ? isleZones : null);
+		if (waterPlan && waterPlan.hubCells && waterPlan.hubCells.length) console.error(`[gen] water: the dragon junctions in the sea are islands, ${waterPlan.hubCells.length} tiles`);
+		// each junction's seed held on its own island in the map's layout (water.js adoptWater isleAt). Held only in the last layout,
+		// the other zones shuffled round the pins and one treasure zone lost all its land (K's 1583610596, 2026-10-14); so the dry
+		// layout is drawn again with the pins and the water is cut from that one, as the cluster above does
+		const anchorsOf = plan => {
+			const a = zonePlan.perLevel[0].map(() => null);
+			for (const q of plan.isleAt) a[q.z] = { x: q.x, y: q.y, pin: true };
+			return a;
+		};
+		if (!clusterMask && waterPlan && waterPlan.isleAt && waterPlan.isleAt.length) {
+			const held = dryLayout(anchorsOf(waterPlan));
+			const again = buildAdoptedPlan(params.mapW, params.mapH, held.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage, isleZones);
+			if (process.env.VMAPGEN_WATER_TRACE) console.error('[water] islands ' + JSON.stringify(waterPlan.isleAt) + ' then ' + JSON.stringify(again.isleAt) + ' land at each ' + again.isleAt.map(q => again.mask[q.y * params.mapW + q.x] ? 'wet' : 'dry').join(',') + ', island tiles ' + again.hubCells.length + ' of ' + waterPlan.hubCells.length);
+			if (again.isleAt && again.isleAt.length === waterPlan.isleAt.length) waterPlan = again;
+			isleAnchors = anchorsOf(waterPlan);
+		}
 		console.error(`[gen] water: ${adoptMode} the engine's way, ${(100 * waterPlan.coverage).toFixed(1)}% of the surface`);
 	}
 	if (waterPlan && zonePlan && !adoptMode && !process.env.VMAPGEN_WATER_FORCE) {
@@ -1686,7 +1704,7 @@ async function generateMap(params) {
 			// HotA's twelve more it made 1.4 to 2.0 times the corpus's portals)
 			monolithChannels: useMods && zonePlan ? modChannels(assetIndex.objects) : [],
 			waterMask: waterPlan ? waterPlan.mask : null, caveChecker,
-			...(clusterAnchors ? { layoutAnchors: clusterAnchors } : {}),
+			...(clusterAnchors ? { layoutAnchors: clusterAnchors } : isleAnchors ? { layoutAnchors: isleAnchors, islesHeld: true } : {}),
 			// a crossroads island left to boats is one more island the planner counts boats for
 			waterIslands: !!(waterPlan && (waterPlan.islands || (waterPlan.hubCells && waterPlan.hubCells.length))),
 			hubCells: waterPlan && waterPlan.hubCells ? waterPlan.hubCells : null,

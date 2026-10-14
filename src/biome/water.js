@@ -478,7 +478,8 @@ function settle(m, W, H, forced, startCells, opts = {}) {
 			const islet = Math.max(30, Math.round(0.01 * N));
 			for (let k = 0; k < lc.sizes.length; k++) {
 				if (k === main) continue;
-				if (!withStart.has(k) && lc.sizes[k] < islet) {
+				// a held island stays whatever its size: a dragon junction's under 1% of the map was drowned here (K's 1583610596, 2026-10-14)
+				if (!withStart.has(k) && !held.has(k) && lc.sizes[k] < islet) {
 					for (let c = 0; c < N; c++) if (lc.id[c] === k && !forced[c]) m[c] = 1;
 					changed = true;
 				} else if (connect && !held.has(k)) {
@@ -903,7 +904,7 @@ const ADOPT = {
 	islands: { border: 1, inlets: 0.5 },
 	normal: { border: 0, inlets: 0.5 },
 };
-function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = null, wetScale = 1, maxWetGiven = null) {
+function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = null, wetScale = 1, maxWetGiven = null, islandZones = null) {
 	const N = W * H;
 	const cfg = ADOPT[content] || ADOPT.normal;
 	// The Water layout on a template map's Normal water (it was ignored: the water is each zone's outer part). The shape sets how wet
@@ -946,12 +947,65 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 		const seaDist = c => distAt(c % W, (c / W) | 0);
 		const r0 = Math.sqrt(target / Math.PI);
 		const capOf = new Map(), order = [];
+		// A template's dragon junctions are islands in the sea (K, 2026-10-12, his XL Mediterranean on Coldshadow: "Coldshadow dragon
+		// junctions are on the edges. Would prefer these either as a large single island or four smaller ones in the middle"; the two
+		// that the layout put near the middle were drowned to 35 and 20 tiles). Each gets a round island of its share of the land near
+		// the middle, a moat of sea round it; the island is reached by boat (buildAdoptedPlan: settle leaves it apart, hubCells), and
+		// the map's layout holds the junction's seed on it (isleAt; generate.js isleAnchors). VMAPGEN_MED_ISLES=0 drowns them as before.
+		const isle = [], isleAt = [], kept = new Set(), isleZ = new Set();
+		// the island is the zone's share of the land, as the map's layout will give it: at 80% of its dry cells it was 1.45 times that on
+		// K's 1583610596, and the layout handed the surplus to an unplayed start and four treasure zones. It is a round piece with a
+		// wandering shore about the zone's deepest tile, drawn a little toward the middle when it would reach the ring of land: the zone's
+		// own deepest cells made a spine six tiles wide on a long zone, a road down it and its loot and guards packed along it (seed 55,
+		// 2026-10-14)
+		const keepShare = Number(process.env.VMAPGEN_MED_ISLE_KEEP) || Math.min(0.8, Math.max(0.3, 1 - target / N));
+		if (islandZones && process.env.VMAPGEN_MED_ISLES !== '0') for (const [z, cells] of zones) {
+			if (!islandZones.has(z)) continue;
+			let cx = 0, cy = 0;
+			for (const c of cells) { cx += c % W; cy += (c / W) | 0; }
+			cx /= cells.length; cy /= cells.length;
+			// every junction gets its island, wherever the dry layout put it (its middle is drawn in below): one whose centre lay outside
+			// the sea had none, and the second layout's four did not match the first's three (seed 66, 2026-10-14)
+			isleZ.add(z);
+			const own = new Set(cells), depth = new Map();
+			let front = cells.filter(c => dirs4.some(([dx, dy]) => { const u = c % W + dx, v = ((c / W) | 0) + dy; return u < 0 || v < 0 || u >= W || v >= H || !own.has(v * W + u); }));
+			for (const c of front) depth.set(c, 1);
+			for (let d = 2; front.length; d++) {
+				const next = [];
+				for (const c of front) for (const [dx, dy] of dirs4) { const u = c % W + dx, v = ((c / W) | 0) + dy, n = v * W + u; if (u >= 0 && v >= 0 && u < W && v < H && own.has(n) && !depth.has(n)) { depth.set(n, d); next.push(n); } }
+				front = next;
+			}
+			const deep = cells.slice().sort((p, q) => (depth.get(q) || 0) - (depth.get(p) || 0) || p - q)[0];
+			// at least 150 tiles, room for a junction's dwellings and its guarded loot
+			const area = Math.max(150, Math.round(keepShare * cells.length)), R = Math.sqrt(area / Math.PI);
+			let ox = deep % W, oy = (deep / W) | 0;
+			// and within a fifth of the side from the middle, so the whole island stays inside gatherDragons' 28%: at the sea's edge the
+			// dwellings of an island out there were carried to another with one guard and stood open (six seeds, 29% of dwellings, 2026-10-14)
+			const inner = 0.2 * Math.min(W, H);
+			for (let t = 0; t < 60 && (distAt(ox, oy) > r0 - R - 4 || Math.hypot(ox - mx, oy - my) > inner); t++) { ox += (mx - ox) * 0.08; oy += (my - oy) * 0.08; }
+			ox = Math.round(ox); oy = Math.round(oy);
+			const ph = (Math.imul(z + 1, 2654435761) >>> 0) / 4294967296 * Math.PI * 2;
+			const cand = [];
+			const box = Math.ceil(2 * R) + 2;
+			for (let y = Math.max(0, oy - box); y <= Math.min(H - 1, oy + box); y++) for (let x = Math.max(0, ox - box); x <= Math.min(W - 1, ox + box); x++) {
+				const c = y * W + x;
+				if (forced[c] || kept.has(c) || distAt(x, y) > r0 - 3) continue;
+				const an = Math.atan2(y - oy, x - ox);
+				cand.push([Math.hypot(x - ox, y - oy) / (1 + 0.2 * Math.sin(3 * an + ph) + 0.1 * Math.sin(5 * an + 2 * ph)), c]);
+			}
+			cand.sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+			for (const [, c] of cand.slice(0, area)) { kept.add(c); isle.push(c); }
+			// the zone's own seed goes on the island's middle: the map's layout is drawn again with this water, and unheld it moved the
+			// junctions into the sea and gave three of the four islands to treasure zones (K's 1583610596, 2026-10-14)
+			isleAt.push({ z, x: ox, y: oy });
+		}
 		for (const [z, cells] of zones) {
 			let cx = 0, cy = 0;
 			for (const c of cells) { cx += c % W; cy += (c / W) | 0; }
 			cx /= cells.length; cy /= cells.length;
-			capOf.set(z, distAt(cx, cy) < r0 ? Math.max(cap, 0.85) : cap);
-			for (const c of cells) if (!forced[c]) order.push([seaDist(c), c]);
+			const inSea = distAt(cx, cy) < r0;
+			capOf.set(z, isleZ.has(z) ? 1 : inSea ? Math.max(cap, 0.85) : cap);
+			for (const c of cells) if (!forced[c] && !kept.has(c)) order.push([seaDist(c), c]);
 		}
 		order.sort((u, v) => u[0] - v[0]);
 		const used = new Map();
@@ -962,6 +1016,18 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 			if (n >= Math.floor(capOf.get(z) * zones.get(z).length)) continue;
 			used.set(z, n + 1); mask[c] = 1; got++;
 		}
+		// an island's ring of sea, whatever the radius left dry round it: two tiles of water all round the kept core (settle keeps them
+		// wet; one tile alone it dries as too thin)
+		const moat = new Uint8Array(N);
+		if (isle.length) {
+			for (const c of isle) for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+				const u = c % W + dx, v = ((c / W) | 0) + dy, n = v * W + u;
+				if (u >= 0 && v >= 0 && u < W && v < H && !kept.has(n) && !forced[n]) { if (!mask[n]) got++; mask[n] = 1; moat[n] = 1; }
+			}
+		}
+		mask.isle = isle;
+		mask.isleAt = isleAt;
+		mask.moat = moat;
 		return mask;
 	}
 	// each zone's factor, scaled so the area-weighted mean is 1 (the overall amount of water stays what the layout asked for)
@@ -1073,7 +1139,7 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 }
 
 /** The water plan of a template map made the engine's way (adoptWater), cleaned as buildWaterPlan's is. */
-function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, groups = null, shape = null, coverage = null) {
+function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, groups = null, shape = null, coverage = null, islandZones = null) {
 	// zones that make one island (a centralized island of several zones): their cells count as one zone to the water
 	if (groups && groups.length) {
 		const to = new Map();
@@ -1105,20 +1171,27 @@ function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, gro
 		for (let t = 0; t < (want ? 12 : 1); t++) {
 			const rng = xorshift(((seed || 1) ^ 0x5b3e17) >>> 0);
 			rng(); rng();
-			mask = adoptWater(W, H, zoneOf, content, rng, forced, null, shape, scale, cap);
-			settle(mask, W, H, forced, startCells, { connect: content !== 'islands' });
+			mask = adoptWater(W, H, zoneOf, content, rng, forced, null, shape, scale, cap, islandZones);
+			const isle = mask.isle || [], isleAt = mask.isleAt || [], moat = mask.moat || null;
+			settle(mask, W, H, forced, startCells, { connect: content !== 'islands', apart: isle, ...(isle.length ? { wet: moat } : {}) });
+			mask.isle = isle;
+			mask.isleAt = isleAt;
 			unfit = check ? repairShore(mask, W, H, forced, check, null, false) : 0;
 			got = mask.reduce((a, v) => a + v, 0);
 			if (process.env.VMAPGEN_WATER_TRACE) console.error('[water] cap ' + cap + ' try ' + t + ' scale ' + scale.toFixed(2) + ' got ' + (100 * got / (W * H)).toFixed(1) + '% minLand ' + minLand(mask).toFixed(2));
-			if (!want || Math.abs(got / (W * H) - want) <= 0.02) break;
-			scale = Math.max(0.1, Math.min(30, scale * want / Math.max(0.01, got / (W * H))));
+			// the islands come out of the sea as far as 1 point of water (the loop below lands within 2 of its aim), the rest out of the land ring: all from the ring, it lost their 1300
+			// tiles and starts' second towns stood 8 to 11 tiles from the first (3 of 12 seeds, K's Mediterranean options); all from the sea,
+			// a 72x72 at 30% asked came out at 18.5% water (test/water-amount.test.js), 2026-10-14
+			const aim = want ? Math.max(0.05, want - Math.min(0.01, (mask.isle ? mask.isle.length : 0) / (W * H))) : want;
+			if (!want || Math.abs(got / (W * H) - aim) <= 0.02) break;
+			scale = Math.max(0.1, Math.min(30, scale * aim / Math.max(0.01, got / (W * H))));
 		}
 		if (cap === null || minLand(mask) >= 0.4) break;
 	}
-	if (want && content !== 'islands' && Math.abs(got / (W * H) - want) > 0.02)
+	if (want && content !== 'islands' && Math.abs((got + (mask.isle ? mask.isle.length : 0)) / (W * H) - want) > 0.02)
 		console.error(`[gen] water: ${(100 * got / (W * H)).toFixed(1)}% reached of the ${(100 * want).toFixed(0)}% asked, the lowest zone keeps ${(100 * minLand(mask)).toFixed(0)}% land`);
 	return { mask, starts: starts.map(q => ({ ...q, moved: false })), shape: content === 'islands' ? 'islands' : 'lakes',
-		coverage: got / (W * H), unfit, islands: content === 'islands', hubCells: [], adopted: content };
+		coverage: got / (W * H), unfit, islands: content === 'islands', hubCells: (mask.isle || []).filter(c => !mask[c]), isleAt: mask.isleAt || [], adopted: content };
 }
 
 module.exports = { WATER_SHAPES, MAX_COVERAGE, START_CLEAR, buildWaterPlan,

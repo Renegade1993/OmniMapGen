@@ -42,3 +42,39 @@ test("an unguarded prison under a gate's picture moves out of it, inside its own
 	assert.strictEqual(r.moved, 1);
 	assert.ok(!pictureOnShadow(prison.template, prison.x, prison.y, 0, W2, H2, blocked), `prison at (${prison.x},${prison.y})`);
 });
+
+test("two prisons moved out of a gate's picture: the second's picture covers none of the first's tiles", () => {
+	// the Opus Reviewer, pass 48 (2026-10-14): clearEntranceShadow never counted a moved pickup's new tiles as taken, so a second one moved
+	// after it could land with its picture over the first
+	const { clearEntranceShadow } = require('../src/biome/plan');
+	const W2 = 20, H2 = 12, blocked = new Uint8Array(W2 * H2);
+	const tpl = { animation: 'AVXprison', mask: ['VVV', 'VBA'], visitableFrom: ['+++', '+-+', '+++'] };
+	// rows 0 to 6 are under the picture; the first lands at (4,8), and the second's first free tile (6,8) would draw over its door (4,8)
+	const a = { type: 'prison', subtype: 'object', x: 10, y: 2, l: 0, template: tpl, instanceName: 'prison_10_2_0' };
+	const b = { type: 'prison', subtype: 'object', x: 10, y: 4, l: 0, template: tpl, instanceName: 'prison_10_4_0' };
+	for (let y = 0; y <= 6; y++) for (let x = 0; x < W2; x++) markShadow(blocked, y * W2 + x);
+	const pl = { objects: [a, b], p: {}, roadCells: new Set(), zone: new Int16Array(W2 * H2) };
+	const r = clearEntranceShadow(pl, 0, W2, H2, blocked);
+	assert.strictEqual(r.moved, 2);
+	const cells = (o, re) => { const out = []; o.template.mask.forEach((row, i) => [...row].forEach((ch, j) => { if (re.test(ch)) out.push((o.y - (o.template.mask.length - 1 - i)) * W2 + o.x - (row.length - 1 - j)); })); return out; };
+	const solidA = new Set(cells(a, /[BA]/)), solidB = new Set(cells(b, /[BA]/));
+	assert.ok(!cells(b, /[VBA]/).some(c => solidA.has(c)) && !cells(a, /[VBA]/).some(c => solidB.has(c)), `a at (${a.x},${a.y}), b at (${b.x},${b.y})`);
+});
+
+test("a guarded major under a gate's picture with its guard's ring all under it moves with its guard", () => {
+	// brief item 3 (2026-10-14): K's 876637007 kept a major artifact under the gate (28,26)'s picture, nowhere free in its guard's ring;
+	// clearEntranceShadow moves the two together, up to four tiles in its zone, the guard beside it over its open ways in
+	const { clearEntranceShadow } = require('../src/biome/plan');
+	const W2 = 20, H2 = 12, blocked = new Uint8Array(W2 * H2);
+	const tpl = pileTemplate('randomResource');
+	const major = { type: 'randomArtifactMajor', subtype: 'object', x: 5, y: 5, l: 0, template: tpl, instanceName: 'major_5_5_0' };
+	const guard = { type: 'randomMonster', subtype: 'object', x: 6, y: 5, l: 0, template: tpl, instanceName: 'guard_6_5_0' };
+	for (let y = 1; y <= 8; y++) for (let x = 1; x <= 7; x++) markShadow(blocked, y * W2 + x);
+	blocked[5 * W2 + 6] |= OCCUPIED;
+	const pl = { objects: [major, guard], p: {}, roadCells: new Set(), zone: new Int16Array(W2 * H2) };
+	const r = clearEntranceShadow(pl, 0, W2, H2, blocked);
+	assert.strictEqual(r.pairs, 1, JSON.stringify(r));
+	assert.ok(!pictureOnShadow(tpl, major.x, major.y, 0, W2, H2, blocked), `major at (${major.x},${major.y})`);
+	assert.ok(Math.max(Math.abs(guard.x - major.x), Math.abs(guard.y - major.y)) <= 1, `guard at (${guard.x},${guard.y}), major at (${major.x},${major.y})`);
+	assert.ok(pl.objects.includes(guard), 'the guard stays on the map');
+});

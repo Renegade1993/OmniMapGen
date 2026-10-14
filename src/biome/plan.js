@@ -2298,6 +2298,37 @@ function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = 
 	// a layout with pinned zones (surfaceCluster, MapGen Dev's islands) is never the preset: the preset ignores pins
 	const usePreset = preset && preset.length === tplZones.length && !(anchors && anchors.some(a => a && a.pin));
 	let best = null;
+	// held dragon islands (generate.js isleAnchors): the land round each pinned junction seed is that junction's alone. A free seed on
+	// one took the island and left the junction a tile (K's Mediterranean options, seeds 11, 22, 44 and 55, 2026-10-14)
+	let heldIsle = null;
+	if (water && p && p.islesHeld && anchors) {
+		heldIsle = new Uint8Array(W * H);
+		anchors.forEach(a => {
+			if (!a || !a.pin || water[a.y * W + a.x] || heldIsle[a.y * W + a.x]) return;
+			const q = [a.y * W + a.x];
+			heldIsle[q[0]] = 1;
+			for (let h = 0; h < q.length; h++) {
+				const c = q[h], x = c % W, y = (c / W) | 0;
+				for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+					const u = x + dx, v = y + dy, n = v * W + u;
+					if (u >= 0 && v >= 0 && u < W && v < H && !water[n] && !heldIsle[n]) { heldIsle[n] = 1; q.push(n); }
+				}
+			}
+		});
+	}
+	const offIsle = (x0, y0) => {
+		const seen = new Uint8Array(W * H), q = [y0 * W + x0];
+		seen[q[0]] = 1;
+		for (let h = 0; h < q.length; h++) {
+			const c = q[h], x = c % W, y = (c / W) | 0;
+			if (!water[c] && !heldIsle[c]) return { x, y };
+			for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+				const u = x + dx, v = y + dy, n = v * W + u;
+				if (u >= 0 && v >= 0 && u < W && v < H && !seen[n]) { seen[n] = 1; q.push(n); }
+			}
+		}
+		return { x: x0, y: y0 };
+	};
 	// up to twice the tries while the best layout still loses a start, starves a zone or misses a link: K's 252 eight-player seed
 	// 620090276 with the stretch pick laid its underground from new anchors, and none of the eight candidates kept every link (two
 	// missing). VMAPGEN_LAYOUT_EXTRA=0 stops at the tries.
@@ -2320,6 +2351,7 @@ function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = 
 		if (water)
 			for (const q of s)
 				if (water[q.y * W + q.x]) Object.assign(q, nearestLand(W, H, water, q.x, q.y));
+		if (heldIsle) s.forEach((q, i) => { if (!(anchors[i] && anchors[i].pin) && heldIsle[q.y * W + q.x]) Object.assign(q, offIsle(q.x, q.y)); });
 		// the surface's borders wander more than the underground's (mapsight shape against Coldshadow's Fantasy:
 		// surface 1.7 brings zone ragged and compactness inside the engine's range, below 1.0 does)
 		const warpHere = p.zoneWarp ?? (levelIndex ? Number(process.env.VMAPGEN_ZONE_WARP_BELOW || 1)
@@ -2811,7 +2843,8 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			seed: params.seed || 1, levelIndex, p,
 			preset: p.zonePlan.presetSeeds && p.zonePlan.presetSeeds[levelIndex],
 			anchors: p.layoutAnchors || (!water && p.zonePlan.perLevel.length === 1 ? surfaceCluster(tplZones, tplConns, W, H, levelIndex, new Set((p.zonePlan.zones || []).filter(z => z.forcedLevel === 'underground').map(z => z.id))) : null),
-			hubs: water && p.hubCells && p.hubCells.length ? p.hubCells : null });
+			// held dragon islands are whole zones of their own; a crossroads island's zone keeps a shore piece too (settleZonesOnLand)
+			hubs: water && p.hubCells && p.hubCells.length && !p.islesHeld ? p.hubCells : null });
 		({ seeds, zone } = best);
 		if (best.tries > 1)
 			console.error(`[gen] level ${levelIndex}: ${best.k < 0 ? 'the free layout the starts came from' : `zone layout ${best.k + 1} of ${best.tries}`} kept, `
@@ -8244,7 +8277,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	if (process.env.VMAPGEN_SHADOW_LATE !== '0' && process.env.VMAPGEN_SHADOW_FREE !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = clearEntranceShadow(plans[l], l, W, H, blocked);
-			if (r.moved || r.dropped || r.left) console.error(`[gen] level ${l}: pickups drawn into an entrance's picture or standing on water: ${r.moved} moved a step or two, ${r.dropped} taken off (${r.guards || 0} guard(s) with them), ${r.left} left`);
+			if (r.moved || r.dropped || r.left) console.error(`[gen] level ${l}: pickups drawn into an entrance's picture or standing on water: ${r.moved} moved a step or two (${r.pairs || 0} with their guard), ${r.dropped} taken off (${r.guards || 0} guard(s) with them), ${r.left} left`);
 		}
 	// what each start takes with no fight, evened out last, once every guard stands (evenStartTakes). VMAPGEN_EVEN_TAKES=0 skips it.
 	if (process.env.VMAPGEN_EVEN_TAKES !== '0' && playerStarts.length > 1) {
@@ -9144,6 +9177,20 @@ function fillBareWindows(pl, l, W, H, blocked, p) {
 						// a tile with fewer than two free tiles round it would plug a way
 						if (room >= 2 && room > br) { br = room; best = c; }
 					}
+					// none: a zone whose open ground is all path (MapGen Dev's 350 gate on d900c2f: five one-level zones of 50 to 140 tiles,
+					// every open tile reserved; r1_45_72p2f zone 3, 27 open of 103, one pile). A cheap pile goes on a path tile a hero walks
+					// (not a road, not before a door): it is taken in passing and blocks nothing (the piles here are resource piles). VMAPGEN_ZONE_FLOOR_PATH=0 off.
+					if (best < 0 && process.env.VMAPGEN_ZONE_FLOOR_PATH !== '0') {
+						const loose = c => land(c) && !(blocked[base + c] & (OCCUPIED | APPROACH)) && !roads.has(c);
+						for (let c = 0; c < W * H; c++) {
+							if (pl.zone[c] !== z || !seen[c] || !loose(c)) continue;
+							const x = c % W, y = (c / W) | 0;
+							if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
+							let room = 0;
+							for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && loose((y + dy) * W + x + dx)) room++;
+							if (room >= 1 && room > br) { br = room; best = c; }
+						}
+					}
 					if (best < 0) break;
 					const src = piles.get(z) && piles.get(z).length ? piles.get(z) : anyPile;
 					const s = src[(out.floor + z) % src.length], x = best % W, y = (best / W) | 0;
@@ -9390,7 +9437,20 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 		const own = blockingCells(o.template, o.x, o.y).map(([a, b]) => b * W + a);
 		// lift it, then look for a tile
 		for (const c of own) blocked[base + c] &= ~OCCUPIED;
-		let to = null;
+		// its own tiles are not another object's; where it ends up they are, for the pickups moved after it (the Opus Reviewer, pass 48)
+		const ownAll = () => blockingCells(o.template, o.x, o.y).concat(visitableCells(o.template, o.x, o.y)).map(([fx, fy]) => fy * W + fx);
+		const counted = !CHEAP.test(o.type);
+		if (counted) for (const c of ownAll()) taken.delete(c);
+		let to = null, guardTo = null;
+		// a tile for it: on open ground off the road and the water, its picture on no shadow and over no other object, and a way in under no picture
+		const spotOk = (x, y) => {
+			if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1 || road.has(y * W + x) || (l === 0 && pl.p && pl.p.water && pl.p.water[y * W + x])) return false;
+			if (!footprintFits(o.template, x, y, l, W, H, blocked, true) || pictureOnShadow(o.template, x, y, l, W, H, blocked)) return false;
+			// its picture over no other object (the prison of K's 876637007 first landed with three piles under its picture)
+			if (pictureOver(o.template, x, y)) return false;
+			const own2 = new Set(blockingCells(o.template, x, y).map(([a, b]) => b * W + a));
+			return approachCells(o.template, x, y, l, W, H, blocked).some(c => !own2.has(c) && !shadowAt(blocked, base + c));
+		};
 		// an unguarded prison may go up to ten tiles, inside its own zone (K's 876637007: the prison (12,4) in a walled corner, nothing
 		// free within two, and its 3x3 picture over other objects within six)
 		const reach = !guard && o.type === 'prison' ? 10 : 2, z0 = pl.zone ? pl.zone[o.y * W + o.x] : -1;
@@ -9398,17 +9458,56 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 			for (let dy = -r; dy <= r && !to; dy++) for (let dx = -r; dx <= r && !to; dx++) {
 				if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
 				const x = o.x + dx, y = o.y + dy;
-				if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1 || road.has(y * W + x) || (l === 0 && pl.p && pl.p.water && pl.p.water[y * W + x])) continue;
 				if (guard && Math.max(Math.abs(guard.x - x), Math.abs(guard.y - y)) > 1) continue;
 				if (r > 2 && pl.zone && pl.zone[y * W + x] !== z0) continue;
-				if (!footprintFits(o.template, x, y, l, W, H, blocked, true) || pictureOnShadow(o.template, x, y, l, W, H, blocked)) continue;
-				// its picture over no other object (the prison of K's 876637007 first landed with three piles under its picture)
-				if (pictureOver(o.template, x, y)) continue;
-				// and a way in that is open ground under no picture
-				const own2 = new Set(blockingCells(o.template, x, y).map(([a, b]) => b * W + a));
-				if (!approachCells(o.template, x, y, l, W, H, blocked).some(c => !own2.has(c) && !shadowAt(blocked, base + c))) continue;
-				to = [x, y];
+				if (spotOk(x, y)) to = [x, y];
 			}
+		// none in its guard's ring: the two move together, up to four tiles in its zone, the guard onto a tile beside it, when the guard watches nothing
+		// else and stands on no zone line (K's 876637007 kept a major artifact under the gate (28,26)'s picture and a relic under (4,22)'s,
+		// each guard's ring full; brief item 3, 2026-10-14). VMAPGEN_SHADOW_PAIR=0 leaves them.
+		if (!to && guard && pl.objects.includes(guard) && process.env.VMAPGEN_SHADOW_PAIR !== '0') {
+			// what else it guards: anything but a cheap pile, a monster or scenery within a tile of it; a monolith or a gate only when the guard
+			// stands at its door (the gate (28,26)'s picture reaches the guard (28,24), which guards the pickups, not the gate)
+			const near1 = cells => cells.some(([fx, fy]) => Math.max(Math.abs(fx - guard.x), Math.abs(fy - guard.y)) <= 1);
+			const others = pl.objects.some(q => q !== o && q !== guard && (q.l || 0) === l && q.template && q.template.mask && !/^(monster|randomMonster)/.test(q.type)
+				&& !CHEAP.test(q.type) && !(DECOR_TYPES_SET.has(q.type) && !q.template.mask.some(r2 => /[AT]/.test(r2)))
+				&& (/^(monolith|subterraneanGate)/.test(q.type) ? near1(visitableCells(q.template, q.x, q.y))
+					: near1(blockingCells(q.template, q.x, q.y).concat(visitableCells(q.template, q.x, q.y)))));
+			let line = false;
+			const zg = pl.zone ? pl.zone[guard.y * W + guard.x] : -1;
+			if (pl.zone) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const x = guard.x + dx, y = guard.y + dy;
+				if (x >= 0 && y >= 0 && x < W && y < H && pl.zone[y * W + x] !== zg) line = true;
+			}
+			if (process.env.VMAPGEN_SHADOW_TRACE) console.error(`[shadow] ${o.type} (${o.x},${o.y}) guard (${guard.x},${guard.y}) watches others ${others}, on a zone line ${line}`);
+			if (!others && !line) {
+				const gOwn = blockingCells(guard.template, guard.x, guard.y).map(([a, b]) => b * W + a);
+				for (const c of gOwn) blocked[base + c] &= ~OCCUPIED;
+				// the guard's tile is the one whose ring takes the most of the new spot's open ways in; the first spot it takes them all at
+				// wins, else the one leaving fewest (the approach closing ran before this pass: the first try left (32,26) open beside a major)
+				let best = null;
+				for (let r = 1; r <= 4 && !(best && !best.open); r++)
+					for (let dy = -r; dy <= r && !(best && !best.open); dy++) for (let dx = -r; dx <= r && !(best && !best.open); dx++) {
+						if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+						const x = o.x + dx, y = o.y + dy;
+						if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1 || (pl.zone && pl.zone[y * W + x] !== z0)) continue;
+						if (!spotOk(x, y)) continue;
+						const own2 = new Set(blockingCells(o.template, x, y).concat(visitableCells(o.template, x, y)).map(([a, b]) => b * W + a));
+						const ways = approachCells(o.template, x, y, l, W, H, blocked).filter(c => !own2.has(c) && !(blocked[base + c] & OCCUPIED));
+						for (let gy = y - 1; gy <= y + 1; gy++) for (let gx = x - 1; gx <= x + 1; gx++) {
+							const g = gy * W + gx;
+							if (gx < 1 || gy < 1 || gx >= W - 1 || gy >= H - 1 || own2.has(g) || road.has(g) || taken.has(g) || shadowAt(blocked, base + g)) continue;
+							if ((l === 0 && pl.p && pl.p.water && pl.p.water[g]) || (pl.zone && pl.zone[g] !== z0)) continue;
+							if (!footprintFits(guard.template, gx, gy, l, W, H, blocked, true)) continue;
+							const open = ways.filter(c => c !== g && Math.max(Math.abs(c % W - gx), Math.abs(((c / W) | 0) - gy)) > 1).length;
+							if (!best || open < best.open) best = { to: [x, y], g: [gx, gy], open };
+						}
+					}
+				if (best) { to = best.to; guardTo = best.g; }
+				if (!guardTo) for (const c of gOwn) blocked[base + c] |= OCCUPIED;
+				if (process.env.VMAPGEN_SHADOW_TRACE) console.error(`[shadow]   pair spot ${to ? to.join(',') + ' guard ' + guardTo.join(',') : 'none'}`);
+			}
+		}
 		if (to) {
 			o.x = to[0]; o.y = to[1]; o.instanceName = `${o.type}_${o.x}_${o.y}_${l}`;
 			// the cheap pickups its picture now covers go
@@ -9416,6 +9515,12 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 			const gone = pl.objects.filter(q => q !== o && (q.l || 0) === l && CHEAP.test(q.type) && q.template && blockingCells(q.template, q.x, q.y).some(([fx, fy]) => under.has(fy * W + fx)));
 			if (gone.length) { clearScenery(pl, l, W, H, blocked, { gone: new Set(gone) }); out.cleared = (out.cleared || 0) + gone.length; }
 			footprintBlock(o.template, o.x, o.y, l, W, H, blocked);
+			if (counted) for (const c of ownAll()) taken.add(c);
+			if (guardTo) {
+				guard.x = guardTo[0]; guard.y = guardTo[1]; guard.instanceName = `${guard.type}_${guard.x}_${guard.y}_${l}`;
+				footprintBlock(guard.template, guard.x, guard.y, l, W, H, blocked);
+				out.pairs = (out.pairs || 0) + 1;
+			}
 			out.moved++;
 		} else if (CHEAP.test(o.type) || wetHere) {   // one on water goes whatever it is worth: no hero reaches it from land
 			pl.objects.splice(pl.objects.indexOf(o), 1);
@@ -9436,6 +9541,7 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 			}
 		} else {
 			for (const c of own) blocked[base + c] |= OCCUPIED;
+			if (counted) for (const c of ownAll()) taken.add(c);
 			out.left++;
 		}
 	}
@@ -10786,4 +10892,4 @@ function sweepStranded(plan, W, H, levelIndex, playerStarts, droppedPairs, cross
 module.exports = { planLevel, fillLevel, planMap, chooseTemplateLayout, OBJECT_DEFS,
 	CLASS_TERRAIN_HINT, mainComponent, sweepStranded, openSealedPockets,
 	openSealedByObjects, carveUnderground, templateBottleneck, crossLevelAnchors, pinnedStartSeed,
-	holdFreePaths, templateZoneArray, scaledMines, ensureSignatureDwelling, clearEntranceShadow };
+	holdFreePaths, templateZoneArray, scaledMines, ensureSignatureDwelling, clearEntranceShadow, fillBareWindows };
