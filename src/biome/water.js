@@ -958,7 +958,9 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 		// wandering shore about the zone's deepest tile, drawn a little toward the middle when it would reach the ring of land: the zone's
 		// own deepest cells made a spine six tiles wide on a long zone, a road down it and its loot and guards packed along it (seed 55,
 		// 2026-10-14)
-		const keepShare = Number(process.env.VMAPGEN_MED_ISLE_KEEP) || Math.min(0.8, Math.max(0.3, 1 - target / N));
+		// the land share (VMAPGEN_MED_ISLE_FACTOR scales it; at 0.8 the 108 start below was freed but w_mediterranean_144_s7001 lost a start's way out). At the full share a start on a 108 stood boxed in at the shore (22 tiles, w_mediterranean_108_s7001),
+		// and widening the start's own dry ground instead drowned other zones (the Opus Reviewer, pass 52 on 0.3.9: K's 1583610596)
+		const keepShare = Number(process.env.VMAPGEN_MED_ISLE_KEEP) || Math.min(0.8, Math.max(0.3, (Number(process.env.VMAPGEN_MED_ISLE_FACTOR) || 1) * (1 - target / N)));
 		if (islandZones && process.env.VMAPGEN_MED_ISLES !== '0') for (const [z, cells] of zones) {
 			if (!islandZones.has(z)) continue;
 			let cx = 0, cy = 0;
@@ -1146,13 +1148,7 @@ function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, gro
 		for (const g of groups) for (const z of g) to.set(z, g[0]);
 		zoneOf = zoneOf.map(z => (to.has(z) ? to.get(z) : z));
 	}
-	// with dragon islands the ring gives up land to them, and a start's own ground goes three tiles wider: at 7 the sea came within 3 of a
-	// start town that the layout set 4 tiles seaward of its planned spot, 22 tiles free round it (MapGen Dev's water gate on 80e0387,
-	// w_mediterranean_108_s7001, (100,74), 2026-10-14)
-	// only where the islands are made: a Mediterranean (adoptWater); on K's xl-p4-islands it moved a road end and a guard crowd
-	const medShape = content !== 'islands' && shape !== null && process.env.VMAPGEN_MED_SEA !== '0'
-		&& (WATER_SHAPES[Math.max(0, Math.min(WATER_SHAPES.length - 1, Math.round(Number(shape) || 0)))] || {}).id === 'mediterranean';
-	const forced = forcedAround(starts, W, H, START_CLEAR + (medShape && islandZones && islandZones.size && process.env.VMAPGEN_MED_ISLES !== '0' ? 3 : 0));
+	const forced = forcedAround(starts, W, H, START_CLEAR);
 	const startCells = starts.map(q => q.y * W + q.x);
 	// Amount of water (K, 2026-10-05: "this is not 45% water"): the engine's own calibration (keepFor) fixed the share whatever the
 	// slider said, 0.14 to 0.19 on a template map. The wet share of every zone is now scaled until the surface comes out at the
