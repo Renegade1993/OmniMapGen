@@ -2,7 +2,9 @@
 
 A random map generator for [VCMI](https://vcmi.eu), the open-source Heroes of Might and Magic III
 engine. It writes `.vmap` files the game loads directly. Dead Man's Boots (DMB), a VCMI fork, runs it
-from its MapGen tab; it also runs on its own from the command line.
+as a mode of the lobby's Random Map window (single-player, hotseat and multiplayer; in a multiplayer lobby
+the host picks it and the players who join see the host's settings); it also runs on its own from the
+command line.
 
 It reads the game's configuration and every active mod from the VCMI install it is given, the way
 the engine loads them (submods at any depth, and each mod's patches to the objects it names), so mod
@@ -19,8 +21,8 @@ mods: towns, mines, guards by level, treasure, creature banks and dwellings per 
 
 ## Installing it in the game
 
-OmniMapGen is a random map generator add-on for Dead Man's Boots' map generator framework. It needs
-Dead Man's Boots (DMB) at its addon API level 4. Install and enable it from DMB's launcher like any other
+OmniMapGen is a VCMI mod. It needs a client with the map generator framework, which Dead Man's
+Boots (DMB) has, at its addon API level 4. Install and enable it from DMB's launcher like any other
 mod; the launcher also turns on the VCMI Extras submod (extendedLobby) whose lobby art the tab
 draws with. Or unzip `omnimapgen.zip` from the latest release into the `Mods` folder of your
 game's user folder and enable it in the launcher. The mod carries its own Node runtime; nothing
@@ -68,7 +70,7 @@ the engine's own templates, DMB's Golem Foundry). Beside the main checkout it is
 git archive, a worktree or any other folder name it with `VMAPGEN_TEST_ROOT`, or the suite stops at the first test
 file and says so:
 
-    export VMAPGEN_TEST_ROOT="<project>/VCMI/dmbtest"
+    export VMAPGEN_TEST_ROOT="/path/to/VCMI/dmbtest"
     node --test "test/*.test.js"
 
 `VMAPGEN_TEST_USER_DIR` names a user folder with mods; by default none is read, so the suite gives the same maps on any
@@ -97,21 +99,6 @@ map again) and prints the checks for his map and for the new ones. A fix has lan
 | `src/preview` | a PNG preview of a map, and a `.vmap` reader |
 | `mod` | the mod as it installs, less the generator's code and Node: `mod.json`, the tab's pages and texts (`Content/config`, written by `tools/gen_vcmi_ui.js`), three templates of its own, `generator/generate.cmd` |
 | `tools` | packages the mod (`make_mod.js`); builds the tab's configs from the generator's settings; a settings fuzzer; an extractor for the game's own object templates |
-
-## Release names
-
-Each release is named after a land of Heroes III, the lighter ones of the good factions first and the darker ones for the later, elite versions:
-
-1. Erathia (0.3.0 beta 1, the first beta)
-2. Steadwick
-3. AvLee
-4. Vori
-5. Bracada
-6. The Contested Lands
-7. Krewlod
-8. Tatalia
-9. Nighon
-10. Eeofol
 
 ## License
 

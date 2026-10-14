@@ -339,8 +339,11 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 		: null;
 
 	const zone = new Int16Array(W * H).fill(-1);
-	// the same domain warp as partitionSeeded (the free layout's borders wandered no more than a template's did)
-	const warpK = process.env.VMAPGEN_ZONE_WARP !== undefined ? Number(process.env.VMAPGEN_ZONE_WARP) : (p.zoneWarp ?? 1.7);
+	// the same domain warp as partitionSeeded (the free layout's borders wandered no more than a template's did), scaled by the Border
+	// wobble slider as there: unscaled, wobble 0 was not straight lines and the slider moved border length a few percent at most
+	// (MapGen Dev's lever test, the lead, 2026-10-14)
+	const wobbleFree = Number.isFinite(Number(p.biomeWobble)) ? Math.min(2, Math.max(0, Number(p.biomeWobble)) / BIOME_DEFAULTS.biomeWobble) : 1;
+	const warpK = process.env.VMAPGEN_ZONE_WARP !== undefined ? Number(process.env.VMAPGEN_ZONE_WARP) : (p.zoneWarp ?? 1.7) * wobbleFree;
 	let wx = null, wy = null;
 	if (warpK > 0) {
 		const spacing = Math.sqrt(land / Math.max(1, seeds.length));
