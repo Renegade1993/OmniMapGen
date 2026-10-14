@@ -24,6 +24,9 @@ const arg = (n, d) => { const i = process.argv.indexOf(n); return i > 0 ? proces
 const has = n => process.argv.includes(n);
 // a VMAPGEN_* switch set in the shell would change what the generator makes (297 are read in src): the children run without them, and the run says which it found
 const STRIPPED = Object.keys(process.env).filter(k => /^VMAPGEN_/.test(k) && k !== 'VMAPGEN_TEST_ROOT');
+// --set KEY=VALUE (repeatable): a generator switch the run sets on purpose (an A/B of one switch, e.g. --set VMAPGEN_MED_VARY=0); it is printed and written to the GATE.md header
+const SETS = process.argv.reduce((a, x, i, v) => (x === '--set' && v[i + 1] ? a.concat(v[i + 1]) : a), []);
+if (SETS.length) console.log('switches set on purpose: ' + SETS.join(', '));
 console.log('environment: ' + (STRIPPED.length ? 'VMAPGEN_* found and removed from the generator runs: ' + STRIPPED.join(', ') : 'no VMAPGEN_* switch set'));
 const TIP = path.resolve(arg('--tip', path.join(__dirname, '..', '..')));
 const OUT = path.resolve(arg('--out', path.join(TIP, '.tmp', 'playable_gate')));
@@ -173,6 +176,7 @@ function generate(c, file) {
 	for (const [k, v] of Object.entries(o)) a.push('--' + k, String(v));
 	const env = { ...process.env, VCMI_ROOT: ROOT, NODE_PATH: NODE_MODULES }; delete env.NODE_OPTIONS;
 	for (const k of STRIPPED) delete env[k];
+	for (const kv of SETS) { const i = kv.indexOf('='); env[kv.slice(0, i)] = kv.slice(i + 1); }
 	return new Promise(r => execFile(process.execPath, a, { env, cwd: TIP, timeout: 600000, windowsHide: true, maxBuffer: 1 << 26 },
 		(err, so, se) => { const txt = `${so || ''}${se || ''}`; fs.writeFileSync(file + '.log', txt); r(fs.existsSync(file) ? null : (err ? err.message.slice(0, 200) : 'no map written') + ' | ' + (txt.match(/error[^\n]*/i) || [''])[0].slice(0, 160)); }));
 }
@@ -204,7 +208,7 @@ function generate(c, file) {
 	const failing = all.filter(r => !r.pass);
 	fs.writeFileSync(path.join(OUT, 'cases.json'), JSON.stringify(failing.map(r => ({ name: r.name, opt: r.opt })), null, 1));
 	// the tables
-	const md = [`# Minimally playable gate (tip ${path.basename(TIP)}, ${new Date().toLocaleDateString('en-CA')})`, '',
+	const md = [`# Minimally playable gate (tip ${path.basename(TIP)}, ${new Date().toLocaleDateString("en-CA")}${SETS.length ? ", switches " + SETS.join(" ") : ""})`, '',
 		`${all.length} configurations run, ${all.length - failing.length} pass, ${failing.length} fail. Failing configurations are in cases.json (names and full options) and rerun with --cases.`, ''];
 	const cause = {};
 	for (const r of failing) for (const f of r.fails) { const k = f.replace(/\(\d[^)]*\)|\d+/g, 'N').slice(0, 70); (cause[k] = cause[k] || []).push(r.name); }
