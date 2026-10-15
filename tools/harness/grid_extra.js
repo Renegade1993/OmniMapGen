@@ -35,6 +35,7 @@ const RIVERS = new Set(['rw', 'ri', 'rm', 'rl', 'ra', 'lr', 'ww', 'ut', 'pw', 's
 const WET = new Set(['wa', 'wt']);
 
 const LIMITS = {
+	blockerTypes: /^crater/i,         // decorative blockers whose picture hiding a stack fails guard-blocked
 	startResN: 14, startResTier: 1, startResStrength: 6000,   // primary resources read within 14 tiles of a start; a guard above tier 1 or strength 6000 fails (engine: 1% guarded, tier 1)
 	roadMin: 8,                       // tiles of road a start's road must join
 	closeWalk: 15,                    // town to town, walking tiles
@@ -847,17 +848,19 @@ function startResourceGuard(M) {
 
 /**
  * K 2026-10-14: "enchanter got placed behind a crater (decorative blocker) again". A monster stack no hero or flyer can reach or see: (sealed) none of its eight
- * neighbours is open ground (ground, not blocked, not another stack's tile), or (hidden) its tile lies under the picture of a blocking decorative object drawn after it
- * (the object's anchor row below the stack's, or the same row and further right; HoMM3 draws by the anchor row, the picture reaches up and left of the anchor).
+ * neighbours is open ground (ground, not blocked, not another stack's tile), or (hidden) its tile lies under the picture of a crater drawn after it (the object's anchor
+ * row below the stack's, or the same row and further right; HoMM3 draws by the anchor row, the picture reaches up and left of the anchor). Only craters decide: on the
+ * engine's own maps (108 maps, 14,377 stacks) 38% of the stacks lie under some blocking decorative picture (mountains 226 per 1000, trees about 100), so those say nothing; a crater
+ * covers 0.1 per 1000 stacks there and 0.2 to 0.4 on ours (K's 18: 3 of 7,273; the 350 gate: 13 of 62,866), a rock 2.5 against 6 to 8 (counted, not judged).
  */
 function guardBlocked(M) {
 	if (!M.monsters.length) return { skipped: 'no monster stacks' };
 	const at = new Set(M.monsters.map(m => M.idx(m.l || 0, m.at[0], m.at[1])));
-	const decor = M.objs.filter(o => o.cls === 'other' && !o.visitable && !o.pickup && o.template && /[BA]/.test((o.template.mask || []).join('')));
+	const decor = M.objs.filter(o => o.cls === 'other' && !o.visitable && !o.pickup && o.template && /[BA]/.test((o.template.mask || []).join('')) && LIMITS.blockerTypes.test(String(o.type)));
 	const pic = new Map();
 	for (const d of decor) for (const [x, y] of pictureCells(d)) if (M.inb(x, y)) { const k = M.idx(d.l || 0, x, y); if (!pic.has(k)) pic.set(k, []); pic.get(k).push(d); }
 	const items = [];
-	let sealed = 0, hidden = 0;
+	let sealed = 0, hidden = 0, rocks = 0;
 	for (const m of M.monsters) {
 		const l = m.l || 0, [x, y] = m.at;
 		let free = 0;
@@ -870,9 +873,10 @@ function guardBlocked(M) {
 		}
 		if (!free) { sealed++; items.push(`${m.subtype || m.type} x${(m.options && m.options.amount) || '?'} L${l} (${x},${y}): no free neighbour`); }
 		const over = (pic.get(M.idx(l, x, y)) || []).filter(d => d.y > y || (d.y === y && d.x > x));
-		if (over.length) { hidden++; items.push(`${m.subtype || m.type} x${(m.options && m.options.amount) || '?'} L${l} (${x},${y}): under the picture of ${nameOf(over[0])} (${over[0].x},${over[0].y}) drawn after it`); }
+		if (over.length && over.every(d => /^rock/i.test(String(d.type)))) rocks++;
+		else if (over.length) { hidden++; items.push(`${m.subtype || m.type} x${(m.options && m.options.amount) || '?'} L${l} (${x},${y}): under the picture of ${nameOf(over[0])} (${over[0].x},${over[0].y}) drawn after it`); }
 	}
-	return verdict(sealed + hidden === 0, `${sealed} stacks with no free neighbour, ${hidden} under the picture of a blocking decorative object (of ${M.monsters.length})`, '0', items, { sealed, hidden, stacks: M.monsters.length });
+	return verdict(sealed + hidden === 0, `${sealed} stacks with no free neighbour, ${hidden} under the picture of a crater drawn after them (${rocks} more under a rock, a gauge: the engine 2.5 per 1000 stacks, ours 6 to 8) (of ${M.monsters.length})`, '0 (the engine: 1 stack in 14,377 under a crater, none with no free neighbour)', items, { sealed, hidden, rocks, stacks: M.monsters.length });
 }
 
 const CHECKS = { 'start-resource-guard': startResourceGuard, 'guard-blocked': guardBlocked, 'approach-shadow': approachShadow, 'road-stubs': roadStubs, 'road-terminals': roadTerminals, 'water-objects': waterObjects, 'water-content': waterContent, 'prison-hero': prisonHero, 'water': waterReport, 'water-type': waterType, 'start-road': startRoad, 'town-spacing': townSpacing, 'road-breaks': roadBreaks, 'road-corners': roadCorners, 'town-loot': townLoot, 'loot-by-zone': lootByZone, 'road-ends': roadEnds, 'gold-front': goldFront, 'prison-tiers': prisonTiers, 'edge-objects': edgeObjects, 'free-standing': freeStanding, 'river-ends': riverEnds };
