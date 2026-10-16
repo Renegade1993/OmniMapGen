@@ -14,6 +14,7 @@
  *   node tools/mapsight/mapsight.js report  --engine DIR --ours DIR --out DIR [--match REGEX] (one file per template)
  *   node tools/mapsight/mapsight.js patches --ours FILE... --engine DIR --match REGEX --out DIR [--n 10] (random discovery)
  *   node tools/mapsight/mapsight.js minimap --ours FILE --engine FILE --out DIR [--cell 4] (the whole map at a glance)
+ *   node tools/mapsight/mapsight.js zonemap OUT.png MAP [MAP ...] (zones coloured by role, land share, the land's offset from the zone's middle)
  *   node tools/mapsight/mapsight.js zonesheet --ours FILE --engine FILE --out DIR [--zones 1,9] [--px 3] (each zone, ours beside the engine's, one scale)
  *   node tools/mapsight/mapsight.js neighbours|motifs|outliers|walk --ours FILE... --engine FILE...   (discovery, lib/discover.js)
  *   node tools/mapsight/mapsight.js starts  --ours FILE --engine FILE --out DIR (each player's first screen)
@@ -211,6 +212,7 @@ function main() {
 	if (cmd === 'patches') return require('./lib/patches').main(args);
 	if (cmd === 'minimap') return require('./lib/minimap').main(args);
 	if (cmd === 'zonesheet') return require('./lib/zonesheet').main(args);
+	if (cmd === 'zonemap') return require('./lib/zonemap').main(args);
 	if (cmd === 'discover-all') return require('./lib/discoverall').main(args);
 	if (cmd === 'zones') return require('./lib/zones').main(args);
 	if (cmd === 'guards') return require('./lib/guards').main(args);

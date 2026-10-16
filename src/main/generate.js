@@ -1494,25 +1494,75 @@ async function generateMap(params) {
 	// round the map's centre (layoutAnchors, the layout's own pull toward a point) and make ONE island (the water treats them as
 	// one zone). Otherwise each is an island of its own, as the rule gives. VMAPGEN_ISLAND_CLUSTER=1 or 0 forces a variant.
 	let clusterAnchors = null, clusterPlan = null, clusterMask = null, isleAnchors = null;
-	if (adoptMode === 'islands' && zonePlan.perLevel.length === 1 && process.env.VMAPGEN_ISLAND_CLUSTER !== '0') {
+	// K, 2026-10-15 (the lead's order 09:33): "on island maps where there is room, we should have variation between 4 (or perhaps more on larger maps)
+	// smaller islands containing the dragon dwellings, and one large island having them all". On every island layout (Islands content, or the
+	// Islands or Archipelago layout whatever the content), the lever Dragon islands (dragonIslandLayout: 0 by seed, 1 several small, 2 one large)
+	// picks; by seed, one large only where there is room for it: a map of 108 or more a side. VMAPGEN_ISLAND_CLUSTER=1 or 0 still forces it.
+	const isleShape = WATER_SHAPES[Math.round(Number(biomeParams.waterShape))];
+	let dragonIslesApart = false, dragonRing = null, startRing = false, ringOf = () => null;   // several small dragon islands: each keeps its own dwellings (plan.js gatherDragons stands aside)
+	const isleLayout = adoptMode === 'islands' || !!(adoptMode && isleShape && isleShape.islands);
+	if (isleLayout && zonePlan.perLevel.length === 1 && process.env.VMAPGEN_ISLAND_CLUSTER !== '0') {
 		const forced = new Set((zonePlan.zones || []).filter(z => z.forcedLevel === 'underground').map(z => z.id));
 		const coin = (Math.imul((params.seed || 1) >>> 0, 2654435761) >>> 9) & 1;
-		// EXPERIMENTAL, off unless VMAPGEN_ISLAND_CLUSTER=1: the layout does not hold the cluster (see the log, 2026-10-03)
-		if (forced.size >= 2 && process.env.VMAPGEN_ISLAND_CLUSTER === '1' && coin >= 0) {
+		const lever = Math.round(Number(biomeParams.dragonIslandLayout) || 0), room = Math.min(params.mapW, params.mapH) >= 108;
+		// several small dragon islands sit in a ring round the map's centre (K, 2026-10-06, "the coldshadow dwellings only spawn in the middle",
+		// still binding: the lead, 2026-10-15 10:20): each dragon zone's seed is drawn toward its point on that ring, as the one-large cluster's are
+		ringOf = () => {
+			if (process.env.VMAPGEN_DRAGON_RING === '0') return null;
+			const ring = [...forced].sort((a, b) => a - b), order = zonePlan.perLevel[0].map(z => z.id), out = order.map(() => null);
+			const rr = Number(process.env.VMAPGEN_DRAGON_RING_R || 0.2) * Math.min(params.mapW, params.mapH), turn = Math.PI / 4 + coin * Math.PI / ring.length;
+			ring.forEach((id, j) => { const a = turn + (j * 2 * Math.PI) / ring.length; out[order.indexOf(id)] = { x: params.mapW / 2 + rr * Math.cos(a), y: params.mapH / 2 + rr * Math.sin(a), k: 25 }; });
+			return out;
+		};
+		// Auto draws one large by seed where there is room; a layout try whose start islands are cramped is refused, and with none kept the dragon
+		// zones are islands of their own (VMAPGEN_DRAGON_AUTO_LARGE=0: Auto never draws one large)
+		const large = process.env.VMAPGEN_ISLAND_CLUSTER === '1' || lever === 2 || (lever === 0 && room && coin === 1 && process.env.VMAPGEN_DRAGON_AUTO_LARGE !== '0');
+		if (forced.size >= 2 && large) {
 			const ids = new Set(forced);
 			const linkedTo = id => zonePlan.connections.filter(c => (c.a === id && forced.has(c.b)) || (c.b === id && forced.has(c.a))).length;
 			for (const z of zonePlan.perLevel[0]) if (!ids.has(z.id) && linkedTo(z.id) >= 3) ids.add(z.id);
 			const order = zonePlan.perLevel[0].map(z => z.id);
 			clusterPlan = { ids: [...ids], order, ring: [...ids].filter(id => forced.has(id)).sort((a, b) => a - b),
 				hub: [...ids].filter(id => !forced.has(id)) };
-		} else if (forced.size >= 2) console.error('[gen] islands: the forced-underground zones are islands of their own');
+		} else if (forced.size >= 2) {
+			dragonIslesApart = true;
+			dragonRing = ringOf();   // the ring round the centre (ringOf, above)
+		}
+		if (!clusterPlan && forced.size >= 2) console.error(`[gen] islands: the dragon zones are islands of their own (${lever === 1 ? 'the lever' : !room ? 'under 108 a side' : 'by seed'})`);
 	}
 	if (adoptMode) {
+		// on island and Mediterranean water the zones' areas are balanced harder (exponent 1.2 against 0.8): on ten Archipelago 108 seeds the worst
+		// start-zone land spread went 9.64 to 2.82 (MapGen Dev, balance_switches.js, 2026-10-15). VMAPGEN_ISLE_BALANCE=0 off.
+		// (island layouts only: on the Mediterranean it cut a start off from its land zones, start-reach-water.test.js 108 seed 7001, and failed
+		// two of MapGen Dev's ten Mediterranean 108 cases against one)
+		if (isleLayout && process.env.VMAPGEN_ISLE_BALANCE !== '0') biomeParams.zoneBalanceExp = 1.2;
 		const origin = starts.map(s => waterOrigins.get(s.color) || { x: s.x, y: s.y });
+		// on island and Mediterranean water the starts stand evenly on a ring round the map's centre, each keeping its own direction from it in
+		// turn (the lead, 2026-10-15 09:58, after K: "interested in balance though... the zones look to be offset from the center a lot": the four
+		// starts' middle sat 0.14 of the width off the centre on Archipelago, the start zones' land 1.73 times apart). VMAPGEN_START_RING=0 off.
+		// The ring's radius 0.46 of the side: at 0.36 six starts on 144x144 squeezed the zones between them (the Opus Reviewer, pass 86: 4 zones
+		// under 40% land on seeds 2042393645 and 46, against 1 and 0), at 0.46 1 and 0, and ten Archipelago 108 seeds kept their balance.
+		// (island layouts only: on the Mediterranean, whose starts already stood round its sea (0.01 off the centre), the ring made the start zones'
+		// land spread worse, median 1.54 to 2.26 on ten 108 seeds)
+		if (isleLayout && origin.length >= 2 && process.env.VMAPGEN_START_RING !== '0') {
+			startRing = true;
+			const cx = params.mapW / 2, cy = params.mapH / 2, rr = Number(process.env.VMAPGEN_START_RING_R || 0.46) * Math.min(params.mapW, params.mapH);
+			const ang = origin.map(q => Math.atan2(q.y - cy, q.x - cx)), byAng = origin.map((q, i) => i).filter(i => !(starts[i].l > 0)).sort((i, j) => ang[i] - ang[j]);
+			const a0 = ang[byAng[0]], n = byAng.length;
+			byAng.forEach((i, k) => { const a = a0 + (2 * Math.PI * k) / n; origin[i] = { ...origin[i], x: Math.round(cx + rr * Math.cos(a)), y: Math.round(cy + rr * Math.sin(a)) }; });
+			// and each player's own start is that point, for the map's layout and its town (the layout drew from it; the town stood where the free
+			// water plan had moved it inland)
+			for (const i of byAng) { const p = players.find(q => q.color === starts[i].color); if (p) p.townPos = { ...p.townPos, x: origin[i].x, y: origin[i].y }; }
+			starts = makeStarts();
+			biomeParams.startRingAim = process.env.VMAPGEN_START_RING_AIM !== '0';   // each town on its own ring direction (plan.js cellsByCentre)
+			console.error(`[gen] water: the starts on an even ring round the centre, ${Math.round(rr)} tiles out`);
+		}
+		// layoutForWater (island layouts only): the trial layouts are balanced as the map's own is, so the water is cut for the layout the map gets
+		// (on the Mediterranean it failed three tests, start-reach-water 108 and 144 seed 7001 and lever-gaps' sea in the middle)
 		const dryLayout = anchors => planMap({
 			W: params.mapW, H: params.mapH,
 			levels: zonePlan.perLevel.length, playerStarts: starts.map((s, k) => ({ ...s, x: origin[k].x, y: origin[k].y })),
-			params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: null, layoutOnly: true, waterIslands: false,
+			params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: null, layoutOnly: true, layoutForWater: isleLayout, waterIslands: false,
 				...(anchors ? { layoutAnchors: anchors } : {}) },
 			terrainShortIds, tileIdsByShort, numTiles: tiles.length,
 			objectPools: { banks, dwellings, coreBanks, chests, terrainNames }, terrainInfo: assetIndex.terrains,
@@ -1520,71 +1570,222 @@ async function generateMap(params) {
 		const wetLayout = (plan, anchors) => planMap({
 			W: params.mapW, H: params.mapH,
 			levels: zonePlan.perLevel.length, playerStarts: starts.map((s, k) => ({ ...s, x: plan.starts[k] ? plan.starts[k].x : origin[k].x, y: plan.starts[k] ? plan.starts[k].y : origin[k].y })),
-			params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: plan.mask, layoutOnly: true, waterIslands: !!plan.islands,
+			params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: plan.mask, layoutOnly: true, layoutForWater: isleLayout, waterIslands: !!plan.islands,
 				...(anchors ? { layoutAnchors: anchors } : {}) },
 			terrainShortIds, tileIdsByShort, numTiles: tiles.length,
 			objectPools: { banks, dwellings, coreBanks, chests, terrainNames }, terrainInfo: assetIndex.terrains,
 		}).plans[0];
-		let dry = null;
-		if (clusterPlan) {
-			// The layout is a force drawing, and a spring to a point does not hold five zones in one piece: of four seeds one
-			// came out whole. So the anchors are tried in turn (the ring turned and widened a little each time) until the
-			// cluster's zones touch one another through each other, at most 12 tries; none, and the zones are islands of their own.
-			const { order, ring, hub, ids } = clusterPlan;
-			const cx = params.mapW / 2, cy = params.mapH / 2, base = Number(process.env.VMAPGEN_CLUSTER_RING || 0.18) * Math.min(params.mapW, params.mapH);
-			const idx = ids.map(id => order.indexOf(id));
-			for (let k = 0; k < 8 && !dry; k++) {
-				const d = base * (0.85 + 0.06 * (k % 6)), turn = Math.PI / 4 + k * 0.41;
-				const anchors = order.map(() => null);
-				ring.forEach((id, j) => { const a = turn + (j * 2 * Math.PI) / ring.length; anchors[order.indexOf(id)] = { x: cx + d * Math.cos(a), y: cy + d * Math.sin(a), k: 25 }; });
-				for (const id of hub) anchors[order.indexOf(id)] = { x: cx, y: cy, k: 25 };
-				const trial = dryLayout(anchors);
-				// a mask from the dry layout, a layout drawn with it, a mask from that, and a layout drawn with THAT one: the last
-				// is the map's own (the layout is only deterministic for the same water), and it must leave the cluster's land in
-				// one piece. Water moves the layout, so nothing short of drawing it again with the final water says.
-				const mask1 = buildAdoptedPlan(params.mapW, params.mapH, trial.zone, adoptMode, origin, params.seed || 1, shoreCheck, [idx]);
-				const wet1 = wetLayout(mask1, anchors);
-				const mask2 = buildAdoptedPlan(params.mapW, params.mapH, wet1.zone, adoptMode, origin, params.seed || 1, shoreCheck, [idx]);
-				const wet2 = wetLayout(mask2, anchors);
-				const Wd = params.mapW, Hd = params.mapH, m = mask2.mask, comp = new Int32Array(Wd * Hd).fill(-1), sizes = [];
-				for (let s0 = 0; s0 < Wd * Hd; s0++) {
-					if (m[s0] || comp[s0] >= 0) continue;
-					let n = 0; const st = [s0]; comp[s0] = sizes.length;
-					while (st.length) { const c = st.pop(); n++; const x = c % Wd, y = (c / Wd) | 0;
-						for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < Wd && v < Hd && !m[v * Wd + u] && comp[v * Wd + u] < 0) { comp[v * Wd + u] = sizes.length; st.push(v * Wd + u); } } }
-					sizes.push(n);
-				}
-				const inCluster = new Set(idx), per = new Map();
-				let landCells = 0;
-				for (let c = 0; c < Wd * Hd; c++) if (inCluster.has(wet2.zone[c]) && comp[c] >= 0) { per.set(comp[c], (per.get(comp[c]) || 0) + 1); landCells++; }
-				const best = Math.max(0, ...per.values());
-				if (landCells > 0 && best >= 0.95 * landCells) {
-					clusterAnchors = anchors; dry = wet2; clusterMask = mask2;
-					console.error(`[gen] islands: a centralized island of zones ${ids.join(', ')} (layout try ${k + 1}, ${best} land cells in one piece)`);
+		// On island layouts the map's own layout is checked once the water is cut (layoutCheck, below) and, failing, the water and layout are
+		// drawn again with the next layout seed, at most 8 tries, the one with fewest problems kept (the lead, 2026-10-15 12:02: the layout was
+		// judged on the try and not on the final map; K's seed 2042393645 kept a zone at 37% land). VMAPGEN_LAYOUT_CHECK=0: one try, unchecked.
+		const medLayout = !!(adoptMode && isleShape && isleShape.id === 'mediterranean' && process.env.VMAPGEN_LAYOUT_CHECK_MED !== '0');
+		const layoutTries = (isleLayout || medLayout) && process.env.VMAPGEN_LAYOUT_CHECK !== '0' ? Number(process.env.VMAPGEN_LAYOUT_CHECK_TRIES || 8) : 1;
+		const apart0 = dragonIslesApart, ring0 = dragonRing;
+		let keptTry = null;
+		// the map's own layout, drawn as planOnce draws it (same water, anchors and starts), and what is wrong with it: (a) a zone of 60 cells or
+		// more under 40% land (K, 2026-10-10); (b) the dragon zones of one large not in one piece, or a dragon zone of several small off the
+		// middle ring or without land (K, 2026-10-06, "the coldshadow dwellings only spawn in the middle"); (c) a start island under 200 tiles or
+		// under half the middle start's, or two starts on one island; (d) a dragon zone's land on a start's island, a tenth of its land or more. A way off the start's island
+		// (monolith, land link, or shipyard) is decided with the objects and is the playable gate's line.
+		const layoutCheck = () => {
+			const Wd = params.mapW, Hd = params.mapH, N = Wd * Hd, m = waterPlan.mask, cx = Wd / 2, cy = Hd / 2, side = Math.min(Wd, Hd);
+			const fin = planMap({
+				W: Wd, H: Hd, levels: zonePlan.perLevel.length, playerStarts: starts,
+				params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: m, layoutOnly: true, layoutForWater: true,
+					...(clusterAnchors ? { layoutAnchors: clusterAnchors } : isleAnchors ? { layoutAnchors: isleAnchors, islesHeld: true } : {}),
+					...(dragonIslesApart ? { dragonIslesApart: true } : {}),
+					waterIslands: !!(waterPlan.islands || (waterPlan.hubCells && waterPlan.hubCells.length)),
+					hubCells: waterPlan.hubCells || null },
+				terrainShortIds, tileIdsByShort, numTiles: tiles.length,
+				objectPools: { banks, dwellings, coreBanks, chests, terrainNames }, terrainInfo: assetIndex.terrains,
+			}).plans[0], z = fin.zone;
+			const comp = new Int32Array(N).fill(-1), sizes = [];
+			for (let s0 = 0; s0 < N; s0++) {
+				if (m[s0] || comp[s0] >= 0) continue;
+				let n = 0; const st = [s0]; comp[s0] = sizes.length;
+				while (st.length) { const c = st.pop(); n++; const x = c % Wd, y = (c / Wd) | 0;
+					for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const u = x + dx, v = y + dy, k = v * Wd + u; if (u >= 0 && v >= 0 && u < Wd && v < Hd && !m[k] && comp[k] < 0) { comp[k] = sizes.length; st.push(k); } } }
+				sizes.push(n);
+			}
+			const zs = zonePlan.perLevel[0], cells = zs.map(() => 0), land = zs.map(() => 0), sx = zs.map(() => 0), sy = zs.map(() => 0), onComp = zs.map(() => new Map());
+			for (let c = 0; c < N; c++) {
+				const q = z[c];
+				if (!(q >= 0) || q >= zs.length) continue;
+				cells[q]++;
+				if (m[c]) continue;
+				land[q]++; sx[q] += c % Wd; sy[q] += (c / Wd) | 0; onComp[q].set(comp[c], (onComp[q].get(comp[c]) || 0) + 1);
+			}
+			const bad = [];
+			// on the Mediterranean only the start zones' land is judged: its dragon junctions are islands in the sea by design (under 40% land), and
+			// the starts share the land ring. Each start zone 200 land tiles or more and half the middle one's, the largest at most the spread
+			// factor over the smallest (MapGen Dev's w_mediterranean_108_s7001: green's start zone 97 land tiles against 336 to 691, its start
+			// walking 30; the ten Mediterranean 108 seeds' start-zone land worst 6.03 times apart). VMAPGEN_LAYOUT_CHECK_MED=0 off.
+			if (!isleLayout) {
+				const spreadMed = Number(process.env.VMAPGEN_LAYOUT_CHECK_SPREAD || 2);
+				const sz = [...new Set(starts.filter(q => !(q.l > 0)).map(q => z[Math.round(q.y) * Wd + Math.round(q.x)]).filter(i => i >= 0 && i < zs.length))];
+				const sl = sz.map(i => land[i]).sort((a, b) => a - b), mid = sl[sl.length >> 1];
+				for (const i of sz) if (land[i] < 200 || land[i] < 0.5 * mid) bad.push(`start zone ${i} with ${land[i]} land tiles against a middle ${mid}`);
+				if (sl.length >= 2 && sl[sl.length - 1] > spreadMed * sl[0]) bad.push(`start zones' land ${sl[0]} to ${sl[sl.length - 1]} tiles`);
+				// and the 40% land rule for every zone of the ring (K, 2026-10-10), the dragon junctions apart: a layout drawn again for the starts
+				// once kept zone 9 at 2 land tiles, the ring's way through it gone and zone 1 reached by no start on foot (start-reach-water 108 seed 7001)
+				zs.forEach((zt, i) => {
+					if (!zt || zt.wasUnderground || zt.forcedLevel === 'underground') return;
+					if (land[i] < 40) bad.push(`zone ${i} with ${land[i]} land tiles`);
+					else if (cells[i] >= 60 && land[i] < 0.4 * cells[i]) bad.push(`zone ${i} ${Math.round(100 * land[i] / cells[i])}% land`);
+				});
+				return bad;
+			}
+			zs.forEach((t, i) => { if (cells[i] >= 60 && land[i] < 0.4 * cells[i]) bad.push(`zone ${i} ${Math.round(100 * land[i] / cells[i])}% land`); });
+			const dragons = zs.map((t, i) => (t && (t.wasUnderground || t.forcedLevel === 'underground') ? i : -1)).filter(i => i >= 0);
+			if (clusterAnchors && clusterPlan) {
+				const grp = clusterPlan.ids.map(id => clusterPlan.order.indexOf(id)), per = new Map();
+				let all = 0;
+				for (const i of grp) for (const [k, n] of onComp[i]) { per.set(k, (per.get(k) || 0) + n); all += n; }
+				const most = Math.max(0, ...per.values());
+				if (!all || most < 0.95 * all) bad.push(`the dragon island in ${per.size} pieces (${most} of ${all} land tiles in one)`);
+			} else if (clusterPlan && (process.env.VMAPGEN_ISLAND_CLUSTER === '1' || Math.round(Number(biomeParams.dragonIslandLayout) || 0) === 2)) {
+				// One large set by the lever and fallen back to several small (Auto may fall back): the dragon group split over 5 islands on
+				// MapGen Dev's i_islands_144_s8 and i_archipelago_108_s8 with dragonIslandLayout 2, judged clean as several small
+				bad.push('One large fell back to several small');
+			} else if (dragonIslesApart && dragonRing) {
+				for (const i of dragons) {
+					if (!land[i]) { bad.push(`dragon zone ${i} without land`); continue; }
+					const r = Math.hypot(sx[i] / land[i] - cx, sy[i] / land[i] - cy) / side;
+					if (r > 0.32) bad.push(`dragon zone ${i} off the middle ring (${r.toFixed(2)} of the side out)`);
 				}
 			}
-			if (!dry) console.error('[gen] islands: no layout kept the dragon zones together in 8 tries; they are islands of their own');
-		}
-		if (!dry) dry = dryLayout(null);
-		// a one-level map's dragon junctions (the zones the template keeps below ground) are islands in a Mediterranean (water.js adoptWater)
-		const isleZones = zonePlan.perLevel.length === 1 ? new Set((zonePlan.perLevel[0] || []).map((z, i) => (z && (z.wasUnderground || z.forcedLevel === 'underground') ? i : -1)).filter(i => i >= 0)) : null;
-		waterPlan = clusterMask || buildAdoptedPlan(params.mapW, params.mapH, dry.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage, isleZones && isleZones.size ? isleZones : null);
-		if (waterPlan && waterPlan.hubCells && waterPlan.hubCells.length) console.error(`[gen] water: the dragon junctions in the sea are islands, ${waterPlan.hubCells.length} tiles`);
-		// each junction's seed held on its own island in the map's layout (water.js adoptWater isleAt). Held only in the last layout,
-		// the other zones shuffled round the pins and one treasure zone lost all its land (K's 1583610596, 2026-10-14); so the dry
-		// layout is drawn again with the pins and the water is cut from that one, as the cluster above does
-		const anchorsOf = plan => {
-			const a = zonePlan.perLevel[0].map(() => null);
-			for (const q of plan.isleAt) a[q.z] = { x: q.x, y: q.y, pin: true };
-			return a;
+			const startAt = starts.filter(s => !(s.l > 0)).map(s => comp[Math.round(s.y) * Wd + Math.round(s.x)]), startIsles = [...new Set(startAt)];
+			if (startIsles.length < startAt.length && !startIsles.includes(-1)) bad.push(`${startAt.length - startIsles.length + 1} starts on one island`);
+			if (startIsles.some(k => k < 0)) bad.push('a start in the sea');
+			const isl = startIsles.filter(k => k >= 0), sl = isl.map(k => sizes[k]).sort((a, b) => a - b), mid = sl[sl.length >> 1];
+			for (const k of isl) if (sizes[k] < 200 || sizes[k] < 0.5 * mid) bad.push(`a start island of ${sizes[k]} tiles against a middle ${mid}`);
+			// (e) the start islands more than twice apart (VMAPGEN_LAYOUT_CHECK_SPREAD): capping a start zone's land did not even them (seeds
+			// 2042393645 and 46 went 1.16 and 2.14 to 2.13 and 2.45), an island holds its neighbours' land too
+			const spreadMax = Number(process.env.VMAPGEN_LAYOUT_CHECK_SPREAD || 2);
+			if (sl.length >= 2 && sl[sl.length - 1] > spreadMax * sl[0]) bad.push(`start islands ${sl[0]} to ${sl[sl.length - 1]} tiles`);
+			const startSet = new Set(isl);
+			for (const i of dragons) {
+				let n = 0;
+				for (const [k, v] of onComp[i]) if (startSet.has(k)) n += v;
+				if (land[i] && n >= 0.1 * land[i]) bad.push(`dragon zone ${i} with ${n} of its ${land[i]} land tiles on a start's island`);
+			}
+			return bad;
 		};
-		if (!clusterMask && waterPlan && waterPlan.isleAt && waterPlan.isleAt.length) {
-			const held = dryLayout(anchorsOf(waterPlan));
-			const again = buildAdoptedPlan(params.mapW, params.mapH, held.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage, isleZones);
-			if (process.env.VMAPGEN_WATER_TRACE) console.error('[water] islands ' + JSON.stringify(waterPlan.isleAt) + ' then ' + JSON.stringify(again.isleAt) + ' land at each ' + again.isleAt.map(q => again.mask[q.y * params.mapW + q.x] ? 'wet' : 'dry').join(',') + ', island tiles ' + again.hubCells.length + ' of ' + waterPlan.hubCells.length);
-			// taken only when every island middle is dry (the Opus Reviewer, pass 51: the count alone was checked)
-			if (again.isleAt && again.isleAt.length === waterPlan.isleAt.length && again.isleAt.every(q => !again.mask[q.y * params.mapW + q.x])) waterPlan = again;
-			isleAnchors = anchorsOf(waterPlan);
+		for (let lt = 0; lt < layoutTries; lt++) {
+			biomeParams.layoutSeed = lt ? (((params.seed || 1) + lt * 7919) >>> 0) || 1 : undefined;
+			clusterAnchors = null; clusterMask = null; isleAnchors = null; dragonIslesApart = apart0; dragonRing = ring0;
+			let dry = null;
+			if (clusterPlan) {
+				// The layout is a force drawing, and a spring to a point does not hold five zones in one piece: of four seeds one
+				// came out whole. So the anchors are tried in turn (the ring turned and widened a little each time) until the
+				// cluster's zones touch one another through each other, at most 12 tries; none, and the zones are islands of their own.
+				const { order, ring, hub, ids } = clusterPlan;
+				const cx = params.mapW / 2, cy = params.mapH / 2, base = Number(process.env.VMAPGEN_CLUSTER_RING || 0.18) * Math.min(params.mapW, params.mapH);
+				const idx = ids.map(id => order.indexOf(id));
+				for (let k = 0; k < (lt ? 3 : 8) && !dry; k++) {   // 3 on a layout drawn again
+					const d = base * (0.85 + 0.06 * (k % 6)), turn = Math.PI / 4 + k * 0.41;
+					const anchors = order.map(() => null);
+					ring.forEach((id, j) => { const a = turn + (j * 2 * Math.PI) / ring.length; anchors[order.indexOf(id)] = { x: cx + d * Math.cos(a), y: cy + d * Math.sin(a), k: 25 }; });
+					for (const id of hub) anchors[order.indexOf(id)] = { x: cx, y: cy, k: 25 };
+					const trial = dryLayout(anchors);
+					// a mask from the dry layout, a layout drawn with it, a mask from that, and a layout drawn with THAT one: the last
+					// is the map's own (the layout is only deterministic for the same water), and it must leave the cluster's land in
+					// one piece. Water moves the layout, so nothing short of drawing it again with the final water says.
+					const mask1 = buildAdoptedPlan(params.mapW, params.mapH, trial.zone, adoptMode, origin, params.seed || 1, shoreCheck, [idx], biomeParams.waterShape, biomeParams.waterCoverage, null, biomeParams.islandShape);
+					const wet1 = wetLayout(mask1, anchors);
+					const mask2 = buildAdoptedPlan(params.mapW, params.mapH, wet1.zone, adoptMode, origin, params.seed || 1, shoreCheck, [idx], biomeParams.waterShape, biomeParams.waterCoverage, null, biomeParams.islandShape);   // the layout's own water (without it One large made one land mass of an Archipelago map)
+					const wet2 = wetLayout(mask2, anchors);
+					const Wd = params.mapW, Hd = params.mapH, m = mask2.mask, comp = new Int32Array(Wd * Hd).fill(-1), sizes = [];
+					for (let s0 = 0; s0 < Wd * Hd; s0++) {
+						if (m[s0] || comp[s0] >= 0) continue;
+						let n = 0; const st = [s0]; comp[s0] = sizes.length;
+						while (st.length) { const c = st.pop(); n++; const x = c % Wd, y = (c / Wd) | 0;
+							for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < Wd && v < Hd && !m[v * Wd + u] && comp[v * Wd + u] < 0) { comp[v * Wd + u] = sizes.length; st.push(v * Wd + u); } } }
+						sizes.push(n);
+					}
+					const inCluster = new Set(idx), per = new Map();
+					let landCells = 0;
+					for (let c = 0; c < Wd * Hd; c++) if (inCluster.has(wet2.zone[c]) && comp[c] >= 0) { per.set(comp[c], (per.get(comp[c]) || 0) + 1); landCells++; }
+					const best = Math.max(0, ...per.values());
+					// and no start on that island: a start whose zone joined it walked 45 and 38 tiles before a dragon zone's guards (K's 144 six-player
+					// Archipelago options, seeds 2042393645 and 47; the gate's floor is 50)
+					const bestComp = [...per].find(([, n]) => n === best), startZ = new Set(zonePlan.perLevel[0].map((z, i) => (z && /Start$/.test(z.type || '') ? i : -1)).filter(i => i >= 0));
+					let onIsle = false;
+					if (bestComp) for (let c = 0; c < Wd * Hd && !onIsle; c++) if (comp[c] === bestComp[0] && startZ.has(wet2.zone[c])) onIsle = true;
+					// and every start's own island holds room: its zone's land 200 tiles or more and half the middle start's or more (the short
+					// starts of one large, 45 and 38 tiles, stood on cramped start islands; the lead, 2026-10-15 10:58: a failed try is drawn again; at three quarters
+					// of the middle every try of three seeds was refused)
+					const sz = [...new Set(origin.map(q => wet2.zone[Math.round(q.y) * Wd + Math.round(q.x)]).filter(z => z >= 0))];
+					const sl = sz.map(z => { let n = 0; for (let c = 0; c < Wd * Hd; c++) if (wet2.zone[c] === z && !m[c]) n++; return n; }).sort((a, b) => a - b);
+					const roomy = !sl.length || (sl[0] >= 200 && sl[0] >= 0.5 * sl[sl.length >> 1]);
+					if (!roomy || onIsle) console.error(`[gen] islands: one large, layout try ${k + 1} refused: ${onIsle ? 'a start zone on the dragon island' : 'a start island of ' + sl[0] + ' land tiles against a middle ' + sl[sl.length >> 1]}`);
+					if (landCells > 0 && best >= 0.95 * landCells && !onIsle && roomy) {
+						clusterAnchors = anchors; dry = wet2; clusterMask = mask2;
+						console.error(`[gen] islands: a centralized island of zones ${ids.join(', ')} (layout try ${k + 1}, ${best} land cells in one piece)`);
+					}
+				}
+				if (!dry) { dragonIslesApart = true; dragonRing = ringOf(); console.error(`[gen] islands: no layout kept the dragon zones together, apart from every start, in ${lt ? 3 : 8} tries; they are islands of their own, on the middle ring`); }
+			}
+			if (!dry) dry = dryLayout(dragonRing);
+			let cutFrom = dry;   // the layout the water below is cut from
+			// a one-level map's dragon junctions (the zones the template keeps below ground) are islands in a Mediterranean (water.js adoptWater)
+			const isleZones = zonePlan.perLevel.length === 1 ? new Set((zonePlan.perLevel[0] || []).map((z, i) => (z && (z.wasUnderground || z.forcedLevel === 'underground') ? i : -1)).filter(i => i >= 0)) : null;
+			waterPlan = clusterMask || buildAdoptedPlan(params.mapW, params.mapH, dry.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage, isleZones && isleZones.size ? isleZones : null, biomeParams.islandShape);
+			if (waterPlan && waterPlan.hubCells && waterPlan.hubCells.length) console.error(`[gen] water: the dragon junctions in the sea are islands, ${waterPlan.hubCells.length} tiles`);
+			// each junction's seed held on its own island in the map's layout (water.js adoptWater isleAt). Held only in the last layout,
+			// the other zones shuffled round the pins and one treasure zone lost all its land (K's 1583610596, 2026-10-14); so the dry
+			// layout is drawn again with the pins and the water is cut from that one, as the cluster above does
+			const anchorsOf = plan => {
+				const a = zonePlan.perLevel[0].map(() => null);
+				for (const q of plan.isleAt) a[q.z] = { x: q.x, y: q.y, pin: true };
+				return a;
+			};
+			if (!clusterMask && waterPlan && waterPlan.isleAt && waterPlan.isleAt.length) {
+				const held = dryLayout(anchorsOf(waterPlan));
+				const again = buildAdoptedPlan(params.mapW, params.mapH, held.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage, isleZones, biomeParams.islandShape);
+				if (process.env.VMAPGEN_WATER_TRACE) console.error('[water] islands ' + JSON.stringify(waterPlan.isleAt) + ' then ' + JSON.stringify(again.isleAt) + ' land at each ' + again.isleAt.map(q => again.mask[q.y * params.mapW + q.x] ? 'wet' : 'dry').join(',') + ', island tiles ' + again.hubCells.length + ' of ' + waterPlan.hubCells.length);
+				// taken only when every island middle is dry (the Opus Reviewer, pass 51: the count alone was checked)
+				if (again.isleAt && again.isleAt.length === waterPlan.isleAt.length && again.isleAt.every(q => !again.mask[q.y * params.mapW + q.x])) { waterPlan = again; cutFrom = held; }
+				isleAnchors = anchorsOf(waterPlan);
+			}
+			// on island water every zone is pinned on the middle of the land the water kept for it: the map's own layout is drawn again on the water,
+			// and unpinned its zones took in sea the water was not cut for (seed 2042393645 zone 18: 55% land as cut, 37% as drawn) and put a start's
+			// town on a point of its island facing the sea (K's 1583610596, Archipelago, a start walking 6 tiles). VMAPGEN_ISLE_PIN_ALL=0: junctions only.
+			if (!clusterMask && waterPlan && waterPlan.islands && cutFrom && process.env.VMAPGEN_ISLE_PIN_ALL !== '0') {
+				const W0 = params.mapW, a = isleAnchors ? isleAnchors.slice() : zonePlan.perLevel[0].map(() => null), sum = new Map();
+				for (let c = 0; c < W0 * params.mapH; c++) {
+					const z = cutFrom.zone[c];
+					if (z < 0 || waterPlan.mask[c]) continue;
+					const e = sum.get(z) || sum.set(z, { x: 0, y: 0, n: 0, cells: [] }).get(z);
+					e.x += c % W0; e.y += (c / W0) | 0; e.n++; e.cells.push(c);
+				}
+				let pinned = 0;
+				for (const [z, e] of sum) {
+					// a start's zone follows its start, as the layout draws it (pinned too, starts walked 24 and 26 tiles on seeds 22 and 26), except where the
+					// starts stand on the even ring: pinned there, MapGen Dev's ten Archipelago 108 seeds went loot spread median 1.78 to 1.48, start-zone land
+					// 1.75 to 1.69, every start 148 tiles or more (VMAPGEN_PIN_STARTS=0 or 1 forces it)
+					const zt = zonePlan.perLevel[0][z];
+					if (z >= a.length || a[z] || (zt && /Start$/.test(zt.type || '') && !(process.env.VMAPGEN_PIN_STARTS === '1' || (startRing && process.env.VMAPGEN_PIN_STARTS !== '0')))) continue;
+					const mx = e.x / e.n, my = e.y / e.n;
+					let best = e.cells[0], bd = Infinity;
+					for (const c of e.cells) { const d = (c % W0 - mx) ** 2 + (((c / W0) | 0) - my) ** 2; if (d < bd) { bd = d; best = c; } }
+					a[z] = { x: best % W0, y: (best / W0) | 0, pin: true };
+					pinned++;
+				}
+				if (pinned) { isleAnchors = a; console.error(`[gen] water: ${pinned} zone(s) pinned on the middle of their own island for the map's layout`); }
+			}
+			if (layoutTries > 1) {
+				const bad = layoutCheck();
+				console.error(`[gen] ${isleLayout ? 'islands' : 'Mediterranean'}: final layout, try ${lt + 1}${lt ? ` (layout seed ${biomeParams.layoutSeed})` : ''}: ${bad.length ? bad.length + ' problem(s): ' + bad.join('; ') : 'clean'}`);
+				if (!keptTry || bad.length < keptTry.bad.length)
+					keptTry = { lt, bad, seed: biomeParams.layoutSeed, waterPlan, clusterAnchors, clusterMask, isleAnchors, dragonIslesApart, dragonRing };
+				if (!bad.length) break;
+			}
+		}
+		if (keptTry && keptTry.bad.length) {
+			({ waterPlan, clusterAnchors, clusterMask, isleAnchors, dragonIslesApart, dragonRing } = keptTry);
+			biomeParams.layoutSeed = keptTry.seed;
+			console.error(`[gen] ${isleLayout ? 'islands' : 'Mediterranean'}: no final layout clean in ${layoutTries} tries; try ${keptTry.lt + 1} kept, ${keptTry.bad.length} problem(s)`);
 		}
 		console.error(`[gen] water: ${adoptMode} the engine's way, ${(100 * waterPlan.coverage).toFixed(1)}% of the surface`);
 	}
@@ -1710,6 +1911,7 @@ async function generateMap(params) {
 			monolithChannels: useMods && zonePlan ? modChannels(assetIndex.objects) : [],
 			waterMask: waterPlan ? waterPlan.mask : null, caveChecker,
 			...(clusterAnchors ? { layoutAnchors: clusterAnchors } : isleAnchors ? { layoutAnchors: isleAnchors, islesHeld: true } : {}),
+			...(dragonIslesApart ? { dragonIslesApart: true } : {}),
 			// a crossroads island left to boats is one more island the planner counts boats for
 			waterIslands: !!(waterPlan && (waterPlan.islands || (waterPlan.hubCells && waterPlan.hubCells.length))),
 			hubCells: waterPlan && waterPlan.hubCells ? waterPlan.hubCells : null,
@@ -1718,6 +1920,8 @@ async function generateMap(params) {
 		// pileCommon: the engine's common treasure pool (src/rmg/piles.js), for
 		// template zones' piles with VMAPGEN_TPL_PILE_MODEL=engine
 		objectPools: { banks, dwellings, engineDwellings, dwellingFactions, coreBanks, chests, terrainNames,
+			// the humans' lobby picks (--heroes): no prison holds one
+			pickedHeroes: new Set((params.pickedHeroes || []).map(h => String(h).toLowerCase())),
 			pileCommon: require('../rmg/piles').commonPool(assetIndex.objects, useMods,
 				h3TerrainRows([roots.userDir, roots.installDir].filter(Boolean))), ...(concreteGuards ? { guards: guardPool(registry) } : {}),
 			// the game's own template for a core object the engine's piles can draw and ours has no art for
@@ -2008,11 +2212,16 @@ async function generateMap(params) {
 			+ `(${[...new Set(pool.map(c => c.name))].join(', ') || 'none usable'})`);
 	}
 	if (picked.size) {
+		// a crater swap draws from the creatures the guard's own zone allows (the Opus Reviewer, pass 58: the whole registry ignored a
+		// template zone's allowed and banned monsters)
+		const all = guardPool(registry), zgp = require('../biome/content').zoneGuardPool;
+		const poolAt = o => { const pl = plans[o.l || 0], meta = pl && pl.zone && pl.zoneMeta && pl.zoneMeta[pl.zone[o.y * params.mapW + o.x]]; return meta && meta.spec ? zgp(all, meta.spec) : all; };
 		const c = concretizeGuards(objects, picked, { registry, h3, useMods: guardMods,
-			W: params.mapW, H: params.mapH });
+			W: params.mapW, H: params.mapH, poolAt });
 		for (const mod of c.mods) usedMods.add(mod);
 		console.error(`[gen] concrete guards: ${c.placed} written as their creature, `
-			+ `${c.kept} kept as placeholders (no template the map can use)`);
+			+ `${c.kept} kept as placeholders (no template the map can use)`
+			+ (c.swapped || c.coveredLeft ? `; ${c.swapped} written as another creature of their level, their own picture under a crater drawn after them, ${c.coveredLeft} with no such creature` : ''));
 	}
 	// The free layout's guards, and any placeholder a template zone's rule
 	// left, as the creature the game rolls for a placeholder at load

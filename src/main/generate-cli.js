@@ -13,7 +13,7 @@ const KNOWN = new Set(['w', 'h', 'players', 'out', 'seed', 'threads', 'perode',
 	'template', 'accommodate', 'listtemplates', 'humans', 'render', 'observer',
 	'aionly', 'preset', 'listknobs', 'vcmiroot', 'vcmiuserdir', 'guardtheme',
 	'guardthemeshare', 'theme', 'dwellingthemeshare', 'bankthemeshare', 'strict', 'factions',
-	'humancolors']);
+	'humancolors', 'heroes']);
 
 /**
  * Parse `--key value` pairs, and refuse anything else.
@@ -176,6 +176,15 @@ async function main() {
 		? [...new Set(String(opt.humancolors).split(',').map(s => s.trim().toLowerCase()).filter(Boolean))] : null;
 	for (const c of humanColors || [])
 		if (!COLORS.includes(c)) fail(`--humanColors: "${c}" is no player colour; colours: ${COLORS.join(', ')}`);
+	// --heroes red=core:gird,tan=core:solmyr (DMB at Begin, DMB Dev 2026-10-14): the heroes the humans picked in the lobby. None is placed
+	// anywhere on the map: the game drops a pick that a hero already on the map is (CGameState pickNextHeroType), and on K's first try
+	// of seed 693382086 the guest's Solmyr stood in a prison (25,29), so the guest got a random hero
+	const pickedHeroes = [];
+	for (const pair of String(opt.heroes || '').split(',').map(s => s.trim()).filter(Boolean)) {
+		const [c, hero] = pair.split('=').map(s => (s || '').trim());
+		if (!COLORS.includes(c.toLowerCase()) || !hero) fail(`--heroes: "${pair}" is not colour=hero (colours: ${COLORS.join(', ')}; a hero as scope:name, core:solmyr)`);
+		pickedHeroes.push(hero.includes(':') ? hero : `core:${hero}`);
+	}
 	const nPlayers = humanColors ? Math.max(counts.nPlayers, humanColors.length) : counts.nPlayers;
 	if (RANDOM_SIZE) { W = H = stock.randomSize(humanColors ? Math.max(counts.nPlayers, humanColors.length) : counts.nPlayers, roll); }
 	const humans = humanColors ? humanColors.length : counts.humans;
@@ -268,6 +277,7 @@ async function main() {
 			: [],
 		strictTemplate: opt.strict === '1' || opt.strict === 'true',
 		humans,
+		pickedHeroes,
 		// --observer 1: the LAST player slot is sealed in an underground
 		// chamber with no way in or out, the rest become AI-only contestants.
 		observerColor,

@@ -217,6 +217,14 @@ const KNOBS = [
 		help: 'Where the water goes. ' + WATER_SHAPES.map(s => `${s.label}: ${s.help}`).join(' ') + ' Random: one of the land layouts, picked from the seed. Template: as the template places its water.',
 		min: 0, max: WATER_SHAPES.length + 1, step: 1, default: WATER_SHAPES.length + 1,
 		stops: [...WATER_SHAPES.map((s, i) => [i, s.label]), [WATER_SHAPES.length, 'Random'], [WATER_SHAPES.length + 1, 'Template']] },
+	// K, 2026-10-14, on the Archipelago picture: "islands should be way less strictly circular"; every rule a control
+	{ key: 'islandShape', page: 'water', label: 'Island shape',
+		help: 'How islands are drawn on Islands and Archipelago: 0 round; higher stretches, bends and lobes each island its own way, with ragged coasts, and a few stay near round.',
+		min: 0, max: 1.5, step: 0.05 },
+	// K, 2026-10-15: the dragon dwellings on several small islands or all on one large one, varying by seed
+	{ key: 'dragonIslandLayout', page: 'water', label: 'Dragon islands',
+		help: 'On island maps, where the template\'s dragon dwellings go: Auto picks one of the two by seed (one large only on maps of 108 or more a side, and only where every start keeps a roomy island); Several small puts each dragon zone on an island of its own; One large puts them all on one island in the middle.',
+		min: 0, max: 2, step: 1, stops: [[0, 'Auto'], [1, 'Several small'], [2, 'One large']] },
 	{ key: 'waterAccess', page: 'water', label: 'Harbours',
 		help: 'Where heroes can get a boat. Starts: a shipyard at each start on the shore. Towns: a shipyard in every biome with a town on the shore, as the game\'s own generator does. Every biome: a boat in every other biome on the shore too, and a biome that touches no water gets its harbour on the nearest shore beside it. Lakes under 25 tiles get none; on Islands and Archipelago every player still starts with a shipyard and a boat. From Starts up, a template\'s crossroads that the sea leaves alone in the middle is an island you sail to; at None a land strip joins it to the shore.',
 		min: 0, max: 3, step: 1, stops: [[0, 'None'], [1, 'Starts'], [2, 'Towns'], [3, 'Every biome']] },

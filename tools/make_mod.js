@@ -379,9 +379,9 @@ function buildModJson(text, { pager, atBegin, classic = false, api4 = false }) {
 		if (!/\n\t\t"name" : "[^"]*",/.test(text)) throw new Error('mod/mod.json: no mapGenerator "name" line');
 		// "arguments": the options beyond the Generate set DMB may send at Begin;
 		// the CLI refuses an option it does not know, so DMB sends --humanColors
-		// (the seated humans' colours, K's B2) only to a generator that names it
+		// (the seated humans' colours, K's B2) and --heroes (their hero picks, DMB Dev 2026-10-14) only to a generator that names them
 		text = text.replace(/\n\t\t"name" : "[^"]*",/,
-			'\n\t\t"name" : "Omni Map Gen",\n\t\t"atBegin" : true,\n\t\t"arguments" : [ "humanColors" ],');
+			'\n\t\t"name" : "Omni Map Gen",\n\t\t"atBegin" : true,\n\t\t"arguments" : [ "humanColors", "heroes" ],');
 	}
 	return text;
 }

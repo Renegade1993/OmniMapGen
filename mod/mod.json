@@ -1,7 +1,7 @@
 {
 	"name" : "OmniMapGen",
 	"description" : "Random maps made in the lobby: Coldshadow's Fantasy, the one template approved so far, and free layouts, with the active mods' towns, creatures, banks and dwellings placed the way the game's own generator places them. Adds Omni Map Gen as a mode of the Random Map window in single-player, hotseat and multiplayer lobbies: the golden arrows at the top of that window pick it, and in a multiplayer lobby the host picks the mode and its settings and the players who join see them. Needs a client with the map generator framework (DMB).",
-	"version" : "0.3.11",
+	"version" : "0.3.12",
 	"author" : "Renegade1993",
 	"contact" : "https://github.com/Renegade1993/OmniMapGen",
 	"licenseName" : "MIT",

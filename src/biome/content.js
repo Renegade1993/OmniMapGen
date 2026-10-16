@@ -3385,7 +3385,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const prisonPile = new Map();
 	if (fill.prisons || (pileMan && pileMan.has('prison'))) {
 		if (!objectPools.prisonHeroes)
-			objectPools.prisonHeroes = makePrisonHeroPool(players.length, rng);
+			objectPools.prisonHeroes = makePrisonHeroPool(players.length, rng, objectPools.pickedHeroes);
 		// Prisons by tier (K, 2026-10-07: "the highest-yielding prisons would be in high loot areas behind significant guards"; the
 		// engine's rule, TreasurePlacer::addPrisons and HotA's template format: tier values 2500, 5000, 10000, 20000 and 30000 for 0, 5000,
 		// 15000, 90000 and 500000 experience, a tier only where the zone's treasure reaches its value). The piles draw them by that rule

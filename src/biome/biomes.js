@@ -166,6 +166,9 @@ const BIOME_DEFAULTS = {
 	// waterBuildings the sites a boat visits (mermaids, buoys, sirens,
 	// whirlpools), as the land's own levers split pickups from buildings.
 	waterAccess: 2,
+	// Island shape (water.js adoptWater): 0 round islands, 1 ragged (K, 2026-10-14)
+	islandShape: 1,
+	dragonIslandLayout: 0,
 	waterTreasure: 1,
 	waterBuildings: 1,
 };

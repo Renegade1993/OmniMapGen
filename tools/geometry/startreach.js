@@ -21,7 +21,9 @@ function reach(f) {
 	const rows = [];
 	for (const t of M.objs.filter(o => o.cls === 'town' && o.options && o.options.owner)) {
 		const seen = new Uint8Array(NL * WH), q = [];
-		const push = k => { const l = Math.floor(k / WH), r = k % WH; if (pass(l, r % W, (r / W) | 0) && !seen[k]) { seen[k] = 1; q.push(k); } };
+		// a key off the grid (an entrance on the last level's bottom row: ring's ey + 1) read as ground past the arrays and, unmarkable in
+		// seen, was queued without end (RangeError on a Mediterranean 144 seed 7001 map, 2026-10-15)
+		const push = k => { if (!(k >= 0 && k < NL * WH)) return; const l = Math.floor(k / WH), r = k % WH; if (pass(l, r % W, (r / W) | 0) && !seen[k]) { seen[k] = 1; q.push(k); } };
 		ring(t, push);
 		const usedM = new Set(), usedG = new Set();
 		let boat = null;

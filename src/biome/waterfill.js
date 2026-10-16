@@ -278,6 +278,42 @@ function placeHarbours(ctx) {
 			if (wantBoat || wantYard) tryBoat(b, z);
 		}
 	});
+	// A start whose own zone has no shore on a sea a harbour fits gets one on the shore of a zone beside it, as near the start as it fits: a
+	// shipyard, else a boat (the lead, 2026-10-15 11:50: every start on island or Mediterranean water has a way off, a monolith, a land link or
+	// a shipyard or boat in its reach). On the Mediterranean the starts stand in the corners, away from the sea; on MapGen Dev's med_108_s7
+	// the land ring is cut in two by zone lines (Coldshadow's links run through the dragon junctions, islands in the sea), and two starts
+	// reached 10 of 20 land zones with no shipyard or boat. VMAPGEN_START_HARBOUR=0 off.
+	if (process.env.VMAPGEN_START_HARBOUR !== '0' && (ctx.islands || Math.round(Number(p.waterShape)) === 3))   // island water, or Mediterranean (water.js WATER_SHAPES 3)
+		for (const st of playerStarts) {
+			const sz = zone[st.y * W + st.x];
+			if (!(sz >= 0) || onShore.has(sz) || harbours.some(h => h.zone === sz)) continue;
+			// the zones beside the start's, by their shore cells nearest the start
+			const beside = new Set();
+			for (let c = 0; c < W * H; c++) {
+				if (zone[c] !== sz) continue;
+				const x = c % W, y = (c / W) | 0;
+				for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]])
+					if (u >= 0 && v >= 0 && u < W && v < H && zone[v * W + u] >= 0 && zone[v * W + u] !== sz && onShore.has(zone[v * W + u])) beside.add(zone[v * W + u]);
+			}
+			const opts = [];
+			bodies.forEach((body, b) => {
+				if (body.size < MIN_BODY) return;
+				const best = new Map();
+				for (const c of body.cells) {
+					const x = c % W, y = (c / W) | 0;
+					for (const [u, v] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+						if (u < 0 || v < 0 || u >= W || v >= H || water[v * W + u]) continue;
+						const z = zone[v * W + u];
+						if (!beside.has(z) || !ashore(v * W + u)) continue;
+						const d = sqDist(v * W + u, st);
+						if (!best.has(z) || d < best.get(z)) best.set(z, d);
+					}
+				}
+				for (const [z, d] of best) opts.push({ b, z, d });
+			});
+			opts.sort((p, q) => p.d - q.d || p.z - q.z || p.b - q.b);
+			opts.some(o => tryShipyard(o.b, o.z, st)) || opts.some(o => tryBoat(o.b, o.z, d => zone[d] === o.z, false, st));
+		}
 	// Every sea a harbour fits on gets one, so a boat sails it and fillWater stocks it: on the Mediterranean ring no town zone touched
 	// the central sea on some seeds, no harbour went down, and the sea stayed empty (K, 2026-10-12, his XL Mediterranean on Coldshadow:
 	// "Not enough mod loot + structures on the water"; MapGen Dev, 71886b1: med108 seed 1 held 1 sea object and med180 seed 1 held 4,

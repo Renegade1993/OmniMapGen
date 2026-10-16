@@ -17,7 +17,8 @@
  *   empty zones   a zone of the template with under 1 object a hero visits per 100 of its tiles (K's 72x72 seed
  *                 1805021841, 2026-10-03, "huge step backwards": 19 of 21 zones empty after a sweep dropped 362 objects;
  *                 the engine's zones carry 5 or more per 100 tiles)
- *   split zones   a zone whose open land falls into walkable pieces, the largest under 70% of it and more than 40 tiles
+ *   split zones   a zone whose open land falls into walkable pieces, the largest under 70% of it and more than 40 tiles, and a piece
+ *                 of 40 tiles or more no start reaches (pieces the starts reach round through other zones are a note; the lead, 2026-10-15)
  *                 elsewhere: a part a hero reaches only by monolith or not at all (K's 36x36 s641954708, 2026-10-04: "top
  *                 right biome is half untraversable"; portals are not walking)
  *   own town      a town in a start's own zone that the start reaches only by fighting a guard (the same map: the
@@ -40,8 +41,9 @@ function checkMap(file) {
 	if (sealed.length) fails.push(`sealed ${sealed.length} (${sealed.slice(0, 4).map(o => `${o.cls} ${o.type}${o.subtype ? ':' + o.subtype : ''} (${o.at.join(',')}${o.l ? ',L' + o.l : ''})`).join(' ')}${sealed.length > 4 ? ' ...' : ''})`);
 	const empty = emptyZones(A.M);
 	if (empty.length) fails.push(`empty zones ${empty.length} (${empty.slice(0, 6).map(e => `${e.zone}${e.l ? ',L' + e.l : ''}: ${e.n}/${e.tiles}`).join(' ')})`);
-	const split = splitZones(A.M);
-	if (split.length) fails.push(`split zones ${split.length} (${split.slice(0, 5).map(e => `${e.zone}${e.l ? ',L' + e.l : ''}: ${e.main}/${e.open}`).join(' ')})`);
+	const splitAll = splitZones(A.M), split = splitAll.filter(e => e.cut.length), reachedSplit = splitAll.filter(e => !e.cut.length);
+	if (split.length) fails.push(`split zones ${split.length} (${split.slice(0, 5).map(e => `${e.zone}${e.l ? ',L' + e.l : ''}: ${e.main}/${e.open}, cut off ${e.cut.join('+')}`).join(' ')})`);
+	if (reachedSplit.length) notes.push(`zones in pieces every one of which a start reaches ${reachedSplit.length} (${reachedSplit.slice(0, 5).map(e => `${e.zone}${e.l ? ',L' + e.l : ''}: ${e.pieces.join('+')}`).join(' ')}), a note only`);
 	const own = ownTownsBehindGuards(A);
 	if (own.length) fails.push(`own town behind a guard ${own.length} (${own.slice(0, 4).map(o => `${o.who} to (${o.at.join(',')}${o.l ? ',L' + o.l : ''})`).join(' ')})`);
 	const off = teleportsOffRoad(A.M);
@@ -108,12 +110,15 @@ function creaturesOver(M) {
  * (a hero fights through), never another object or rock; touching a monolith or subterranean gate jumps to every
  * other one of its kind (generous: a pair is not resolved, so this only ever misses a seal, never invents one).
  */
-function sealedObjects(M) {
+function reachFromStarts(M) {
 	const { W, H, NL, objs, idx, inb } = M;
 	const N = NL * W * H;
 	const passable = new Uint8Array(N);
 	for (let i = 0; i < N; i++) passable[i] = M.ground(i) && !M.blocked[i] ? 1 : 0;
-	for (const o of objs) if (o.cls === 'monster') for (const [x, y] of o.cells) passable[idx(o.l, x, y)] = 1;
+	// a pickup too, as the comment above says: the hero who reaches it takes it, and the tile is ground (the lead, 2026-10-15 14:42: a
+	// Pandora's box on an alchemist's lab's only way in, MapGen Dev's i_islands_108_s3, is no seal while the box itself is reachable; the
+	// walk reaches it only then). It read monsters alone before.
+	for (const o of objs) if (o.cls === 'monster' || o.pickup) for (const [x, y] of o.cells) passable[idx(o.l, x, y)] = 1;
 	const portalKey = o => /^monolith|^subterraneanGate|^whirlpool/.test(o.type) ? (o.type === 'subterraneanGate' ? 'gate' : o.type.replace(/(Entrance|Exit)$/, '') + ':' + (o.subtype || '')) : null;
 	const byKey = new Map();
 	for (const o of objs) { const k = portalKey(o); if (k) (byKey.get(k) || byKey.set(k, []).get(k)).push(o); }
@@ -124,7 +129,7 @@ function sealedObjects(M) {
 		(touch.get(i) || touch.set(i, []).get(i)).push(o);
 	}
 	const starts = objs.filter(o => o.cls === 'town' && o.options && o.options.owner);
-	if (!starts.length) return [];
+	if (!starts.length) return null;
 	let seen, sail = false;
 	for (let pass = 0; pass < 2; pass++) {
 		seen = new Uint8Array(N);
@@ -148,6 +153,13 @@ function sealedObjects(M) {
 		sail = true;
 		for (let i = 0; i < N; i++) if ((M.terr[i] === 'wt' || M.terr[i] === 'wa') && !M.blocked[i]) passable[i] = 1;
 	}
+	return seen;
+}
+
+/** The towns, mines and dwellings the walk from the starts (reachFromStarts) never comes beside. */
+function sealedObjects(M) {
+	const { objs, idx, inb } = M, seen = reachFromStarts(M);
+	if (!seen) return [];
 	return objs.filter(o => (o.cls === 'town' || o.cls === 'mine' || o.cls === 'dwelling') && o.visitable
 		&& !o.entr.some(([ex, ey]) => { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (inb(ex + dx, ey + dy) && seen[idx(o.l, ex + dx, ey + dy)]) return true; return false; }));
 }
@@ -222,8 +234,10 @@ function splitZones(M) {
 	if (!M.zoneAt) return [];
 	const W = M.W, H = M.H, out = [];
 	const mon = new Set();
-	for (const o of M.objs) if (o.cls === 'monster') for (const [x, y] of o.cells) mon.add(o.l * W * H + y * W + x);
+	// guards and pickups, as the comment above says (it read monsters alone; the lead's ruling of 2026-10-15 on loot in a way in)
+	for (const o of M.objs) if (o.cls === 'monster' || o.pickup) for (const [x, y] of o.cells) mon.add(o.l * W * H + y * W + x);
 	const sail = M.objs.some(o => /^(boat|shipyard)$/.test(o.type));
+	const reached = reachFromStarts(M);
 	for (let l = 0; l < M.NL; l++) {
 		const pass = (x, y) => { const i = M.idx(l, x, y); return M.ground(i) && (!M.blocked[i] || mon.has(l * W * H + y * W + x)); };
 		// seas: open water, 8-connected
@@ -252,12 +266,13 @@ function splitZones(M) {
 			if (comp[c] >= 0 || !pass(x, y)) continue;
 			const z = M.zoneAt(l, x, y);
 			if (z === undefined || z === null || z < 0) continue;
-			let n = 0;
+			let n = 0, got = 0;
 			const q = [c], seas = new Set();
 			comp[c] = 1;
 			while (q.length) {
 				const k = q.pop(), kx = k % W, ky = (k / W) | 0;
 				n++;
+				if (!reached || reached[M.idx(l, kx, ky)]) got++;
 				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
 					const u = kx + dx, v = ky + dy;
 					if (u < 0 || v < 0 || u >= W || v >= H) continue;
@@ -268,17 +283,21 @@ function splitZones(M) {
 				}
 			}
 			if (!byZone.has(z)) byZone.set(z, []);
-			byZone.get(z).push({ n, seas });
+			byZone.get(z).push({ n, got, seas });
 		}
 		for (const [z, pieces] of byZone) {
 			// pieces sharing a sea join
 			const parent = pieces.map((_, i) => i), find = a => { while (parent[a] !== a) a = parent[a] = parent[parent[a]]; return a; };
 			for (let a = 0; a < pieces.length; a++) for (let b = a + 1; b < pieces.length; b++)
 				if ([...pieces[a].seas].some(s => pieces[b].seas.has(s))) parent[find(a)] = find(b);
-			const sum = new Map();
-			pieces.forEach((p, i) => sum.set(find(i), (sum.get(find(i)) || 0) + p.n));
+			const sum = new Map(), got = new Map();
+			pieces.forEach((p, i) => { sum.set(find(i), (sum.get(find(i)) || 0) + p.n); got.set(find(i), (got.get(find(i)) || 0) + p.got); });
 			const open = pieces.reduce((a, p) => a + p.n, 0), main = Math.max(...sum.values());
-			if (open >= 100 && main < 0.7 * open && open - main > 40) out.push({ zone: z, l, main, open });
+			// a piece of 40 tiles or more that no start reaches (by foot through guards and pickups, by monolith, gate or boat) fails the zone;
+			// pieces the starts reach round through the zones beside it are a note (the lead, 2026-10-15 15:33: the 8 split zones of MapGen
+			// Dev's triage were every piece reachable, playable as they are)
+			const cut = [...sum].filter(([g, n]) => n >= 40 && !got.get(g)).map(([, n]) => n);
+			if (open >= 100 && main < 0.7 * open && open - main > 40) out.push({ zone: z, l, main, open, cut, pieces: [...sum.values()].sort((a, b) => b - a) });
 		}
 	}
 	return out.sort((a, b) => a.l - b.l || a.zone - b.zone);

@@ -639,15 +639,18 @@ function prisonOptions(hero, rng) {
 /**
  * The per-map prison hero pool: the 144-hero core roster, shuffled, minus
  * the reserve PrisonHeroPlacer::init keeps for players to hire (16 each).
- * Drawn with pop(), so no hero is imprisoned twice.
+ * Drawn with pop(), so no hero is imprisoned twice. exclude: heroes (scope:name, any case) no prison may hold, the humans' lobby picks
+ * (--heroes, DMB Dev 2026-10-14: a pick that a hero on the map already is gets dropped for a random one); taken out after the shuffle,
+ * so a map with none is drawn as before.
  */
-function makePrisonHeroPool(playerCount, rng) {
+function makePrisonHeroPool(playerCount, rng, exclude = null) {
 	const roster = [...SPECIALS.prison.heroes];
 	for (let i = roster.length - 1; i > 0; i--) {
 		const j = (rng() * (i + 1)) | 0;
 		[roster[i], roster[j]] = [roster[j], roster[i]];
 	}
-	return roster.slice(0, Math.max(0, roster.length - 16 * Math.max(1, playerCount)));
+	const pool = roster.slice(0, Math.max(0, roster.length - 16 * Math.max(1, playerCount)));
+	return exclude && exclude.size ? pool.filter(h => !exclude.has(String(h).toLowerCase())) : pool;
 }
 
 /**

@@ -1140,7 +1140,7 @@ function guardDugBorders(objects, l, W, H, blocked, zone, p, seed) {
  * Only the one-cell scenery is eligible. A guard or a portal is there for a
  * reason; a rock is not.
  */
-function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, towns, links = [], water = null, seedAll = false, zoneOf = null, digBorders = false) {
+function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, towns, links = [], water = null, seedAll = false, zoneOf = null, digBorders = false, opts = null) {
 	const base = levelIndex * W * H;
 	// Nothing standing on a zone border is taken out: a pocket opened through a border wall is a passage between zones
 	// the template may never link. With wandering borders (biomes.js zone warp) this pass cut 2 to 7 such holes a map
@@ -1449,10 +1449,50 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 		return dug;
 	};
 
+	// On the Mediterranean (opts.seaShores) the shores of a sea a boat or shipyard is on are reached, a hero sails there: the far half of the
+	// land ring, which only a boat reaches, read as a pocket from each start, and the pass peeled up to 128 scenery pieces a sweep and then
+	// deleted what was droppable (the lead, 2026-10-15 15:32: on med_108_s7 12 creature banks, 9 shrines, 4 mines and the 4 start
+	// shipyards). Island maps keep their own rule, other islands left alone. VMAPGEN_SEAL_SEA=0 off.
+	const shoreSeeds = [];
+	if (water && opts && opts.seaShores && process.env.VMAPGEN_SEAL_SEA !== '0') {
+		const ships = objects.filter(o => (o.l || 0) === levelIndex && o.template && /^(boat|shipyard)$/.test(o.type));
+		const body = new Int32Array(W * H).fill(-1);
+		let nb = 0;
+		if (ships.length) for (let c0 = 0; c0 < W * H; c0++) {
+			if (!water[c0] || body[c0] >= 0) continue;
+			const q = [c0]; body[c0] = nb;
+			while (q.length) {
+				const c = q.pop(), x = c % W, y = (c / W) | 0;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const u = x + dx, v = y + dy, k = v * W + u;
+					if (u >= 0 && v >= 0 && u < W && v < H && water[k] && body[k] < 0) { body[k] = nb; q.push(k); }
+				}
+			}
+			nb++;
+		}
+		const sail = new Set();
+		for (const o of ships) for (const [bx, by] of blockingCells(o.template, o.x, o.y).concat(visitableCells(o.template, o.x, o.y)))
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const u = bx + dx, v = by + dy;
+				if (u >= 0 && v >= 0 && u < W && v < H && body[v * W + u] >= 0) sail.add(body[v * W + u]);
+			}
+		if (sail.size)
+			for (let c = 0; c < W * H; c++) {
+				if (water[c]) continue;
+				const x = c % W, y = (c / W) | 0;
+				let shore = false;
+				for (let dy = -1; dy <= 1 && !shore; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const u = x + dx, v = y + dy;
+					if (u >= 0 && v >= 0 && u < W && v < H && sail.has(body[v * W + u])) { shore = true; break; }
+				}
+				if (shore) shoreSeeds.push(c);
+			}
+	}
 	const seedSets = perStart
 		? objects.filter(o => (o.l || 0) === levelIndex && o.options && o.options.owner)
 			.map(gate).filter(s => s.length)
 		: [seeds];
+	if (shoreSeeds.length) for (const ss of seedSets) ss.push(...shoreSeeds);
 	let removed = 0;
 	for (const setSeeds of seedSets) {
 		seeds = setSeeds;
@@ -2298,7 +2338,8 @@ function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = 
 	// VMAPGEN_ZONE_BALANCE_EXP the balancing's.
 	const shareOf = e => weights.map(s => s ** e / weights.reduce((a, v) => a + v ** e, 0));
 	const want = shareOf(Number(process.env.VMAPGEN_ZONE_SHARE_EXP || 2));
-	const wantBal = shareOf(Number(process.env.VMAPGEN_ZONE_BALANCE_EXP || 0.8));
+	// p.zoneBalanceExp: the generator's own for island and Mediterranean water (1.2; generate.js), the environment still wins
+	const wantBal = shareOf(Number(process.env.VMAPGEN_ZONE_BALANCE_EXP || (p && p.zoneBalanceExp) || 0.8));
 	const wantedLinks = new Set(tplConns.filter(isLandLink).map(c => Math.min(c.a, c.b) * 100000 + Math.max(c.a, c.b)));
 	const layoutConns = tplConns.filter(c => c.type !== 'repulsive' && c.type !== 'forcePortal');
 	const repulse = tplConns.filter(c => c.type === 'repulsive').map(c => [c.a, c.b]);
@@ -2378,7 +2419,9 @@ function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = 
 		const wts = weights.slice();
 		let z = null;
 		// a layout made only to be compared with another (the water judge, the start arrangements) is not balanced
-		const rounds = balance && !(p && p.layoutOnly) && process.env.VMAPGEN_ZONE_BALANCE !== '0' ? Number(process.env.VMAPGEN_ZONE_BALANCE_ROUNDS || 6) : 1;
+		// except one the map's water is cut from (p.layoutForWater, generate.js): cut for the unbalanced layout, the water met a different one in
+		// the map, its zones moved across the straits (a dragon zone left the one large island, zones under 40% land after the redraw)
+		const rounds = balance && !(p && p.layoutOnly && !(p.layoutForWater && process.env.VMAPGEN_WATER_LAYOUT_BALANCED !== '0')) && process.env.VMAPGEN_ZONE_BALANCE !== '0' ? Number(process.env.VMAPGEN_ZONE_BALANCE_ROUNDS || 6) : 1;
 		const lrngCopy = xorshift(((seed * 2654435761) + levelIndex * 97 + k * 7919 + 13 + 104729) >>> 0);
 		const warpSeed = (lrngCopy() * 1e9) | 0;
 		for (let round = 0; round < rounds; round++) {
@@ -2538,7 +2581,7 @@ function townFitsZone(zone, b, x, y, W, H, levelIndex, blocked, barriers, band =
 }
 
 /** Zone b's cells (off the water) in order of their town gate's distance from the zone's centre of mass. */
-function cellsByCentre(zone, b, W, H, water) {
+function cellsByCentre(zone, b, W, H, water, aim = null) {
 	const cells = [];
 	let sx = 0, sy = 0;
 	for (let c = 0; c < W * H; c++) {
@@ -2548,7 +2591,14 @@ function cellsByCentre(zone, b, W, H, water) {
 		sy += (c / W) | 0;
 	}
 	if (!cells.length) return cells;
-	const cx = sx / cells.length, cy = sy / cells.length;
+	let cx = sx / cells.length, cy = sy / cells.length;
+	// aim (a start on the even ring, generate.js startRing): the point on the start's own direction from the map's centre, as far out as
+	// the zone's centre of mass; at the centre of mass the towns drifted along the ring (i_archipelago_108_s7: 63 to 109 degrees apart
+	// against 90, the starts' middle 0.07 of the width off the centre)
+	if (aim) {
+		const mx = W / 2, my = H / 2, r = Math.hypot(cx - mx, cy - my), a = Math.atan2(aim.y - my, aim.x - mx);
+		cx = mx + r * Math.cos(a); cy = my + r * Math.sin(a);
+	}
 	const [gx, gy] = visitableCells(OBJECT_TEMPLATES.randomTown, 0, 0)[0] || [0, 0];
 	const d = c => (c % W + gx - cx) ** 2 + (((c / W) | 0) + gy - cy) ** 2;
 	return cells.sort((p, q) => d(p) - d(q) || p - q);
@@ -2641,7 +2691,7 @@ function startForSpacing(zone, b, W, H, levelIndex, blocked, water, barriers, at
 	return null;
 }
 
-function townNearCentre(zone, b, W, H, levelIndex, blocked, water, barriers) {
+function townNearCentre(zone, b, W, H, levelIndex, blocked, water, barriers, aim = null) {
 	// A town that plugs a neck of its zone cuts the zone in two: in a carved cave the centre of mass can fall in a
 	// tunnel the town fills from wall to wall, and everything past it was later dropped as unreachable (Coldshadow's
 	// Fantasy 144 for eight, seed 1001: purple's whole zone but 326 tiles, 2026-10-02). The town goes on the first fit
@@ -2671,7 +2721,7 @@ function townNearCentre(zone, b, W, H, levelIndex, blocked, water, barriers) {
 		return n + body.size >= 0.9 * total;
 	};
 	let first = null, tries = 0;
-	for (const c of cellsByCentre(zone, b, W, H, water)) {
+	for (const c of cellsByCentre(zone, b, W, H, water, aim)) {
 		const x = c % W, y = (c / W) | 0;
 		if (!townFitsZone(zone, b, x, y, W, H, levelIndex, blocked, barriers)) continue;
 		if (!first) first = { x, y };
@@ -2847,8 +2897,9 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	const forcedPortals = tplConns.filter(c => c.type === 'forcePortal');
 	phase('sculpt');
 	if (tplZones && tplZones.length) {
+		// p.layoutSeed: the layout drawn again on an island map whose final layout failed its check (generate.js layoutCheck)
 		const best = chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water,
-			seed: params.seed || 1, levelIndex, p,
+			seed: p.layoutSeed || params.seed || 1, levelIndex, p,
 			preset: p.zonePlan.presetSeeds && p.zonePlan.presetSeeds[levelIndex],
 			anchors: p.layoutAnchors || (!water && p.zonePlan.perLevel.length === 1 ? surfaceCluster(tplZones, tplConns, W, H, levelIndex, new Set((p.zonePlan.zones || []).filter(z => z.forcedLevel === 'underground').map(z => z.id))) : null),
 			// held dragon islands are whole zones of their own; a crossroads island's zone keeps a shore piece too (settleZonesOnLand)
@@ -3569,7 +3620,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		tplZones.forEach((z, b) => {
 			const s = (z.type === 'playerStart' || z.type === 'cpuStart') && z.owner && startOfOwner(playerStarts, z.owner);
 			if (!s) return;
-			let at = townNearCentre(zone, b, W, H, levelIndex, blocked, water, barriers);
+			let at = townNearCentre(zone, b, W, H, levelIndex, blocked, water, barriers, p.startRingAim ? s : null);
 			// a start zone that holds a second town: the start leaves room for it TOWN_WALK walking tiles off (K's town spacing)
 			const extra = zoneMeta && zoneMeta[b] && zoneMeta[b].towns ? zoneMeta[b].towns.length : 0;
 			if (at && extra && process.env.VMAPGEN_TOWN_WALK !== '0') {
@@ -5780,7 +5831,8 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		playerStarts, towns, pocketLinks, water, levelIndex > 0, zone,
 		// this early call knows no portal or gate yet: a start that a portal or a gate will join is no shut start, so the border dig starts here only on a
 		// one-level map with Portal share 0 (the free layouts of MapGen Dev's wide matrix dug starts out that portals joined: a stub road, a roadless town)
-		!p.zonePlan && Number(p.interconnectPortal) === 0 && (p.levelsTotal || 1) === 1);
+		!p.zonePlan && Number(p.interconnectPortal) === 0 && (p.levelsTotal || 1) === 1,
+		{ seaShores: Math.round(Number(p.waterShape)) === 3 });   // Mediterranean water (water.js WATER_SHAPES 3)
 	if (reopened)
 		console.error(`[gen] level ${levelIndex}: removed ${reopened} scenery `
 			+ 'object(s) that sealed part of the level off');
@@ -7651,7 +7703,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	if (process.env.VMAPGEN_RING_TRACE) console.error('[ringpass] before openSealedByObjects ' + plans.map(pl => pl.objects.filter(o => o.__ring).length).join('/'));
 		const opened = openSealedByObjects(plans[l].objects, W, H, l, blocked,
 			l > 0 ? (plans[l].entrances || []) : startsOn(l), null, plans[l].links,
-			plans[l].p.water, l > 0, plans[l].zone, !plans[l].p.zonePlan);
+			plans[l].p.water, l > 0, plans[l].zone, !plans[l].p.zonePlan, { seaShores: Math.round(Number(plans[l].p.waterShape)) === 3 });
 		if (opened)
 			console.error(`[gen] level ${l}: removed ${opened} scenery `
 				+ 'object(s) that sealed part of the level off');
@@ -7973,7 +8025,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	for (let l = 0; l < levels; l++) {
 		const opened = openSealedByObjects(plans[l].objects, W, H, l, blocked,
 			l > 0 ? (plans[l].entrances || []) : startsOn(l), null, plans[l].links,
-			plans[l].p.water, l > 0, plans[l].zone, !plans[l].p.zonePlan);
+			plans[l].p.water, l > 0, plans[l].zone, !plans[l].p.zonePlan, { seaShores: Math.round(Number(plans[l].p.waterShape)) === 3 });
 		if (opened) console.error(`[gen] level ${l}: removed ${opened} scenery object(s) that the late passes sealed part of the level off with`);
 		guardDugBorders(plans[l].objects, l, W, H, blocked, plans[l].zone, plans[l].p, params.seed);
 	}
@@ -8166,7 +8218,9 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	// The engine's mines stand on a road 19 to 35% of the time (tier-1 subset: road_mine_at engine 0.19, ours 0.02; its roads run to the
 	// mines of a zone with fewer than two road nodes); a mine here joins the road net within 30 tiles with that chance, over free floor
 	// Build Road Network Off on a template: the mines get no road of their own (the passages' roads, the gates' and monoliths', and the towns' doors stay)
-	const roadsOff = Number(params.roadNetwork) === 0 && !!(params.zonePlan && params.zonePlan.connections && params.zonePlan.connections.length);
+	// and on a free layout the same (the lead, 2026-10-14, from MapGen Dev's lever test: Off left the portal and gate roads, the mines' and the
+	// bare towns' joins, and kept 93% of the road; 72x72 seeds 1-3 had 328/292/321 road tiles with Off against 279/441/400 with On)
+	const roadsOff = Number(params.roadNetwork) === 0;
 	if (process.env.VMAPGEN_ROAD_SPLINES !== '0' && !roadsOff)
 		for (let l = 0; l < levels; l++) {
 			const r = require('./gateroad').teleportRoads(plans[l], W, H, l, blocked, OCCUPIED, visitableCells, blockingCells,
@@ -8281,11 +8335,59 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = guardZoneJoins(plans[l], l, W, H, blocked, pz, params.seed, Number(pz.guardBottlenecks) === 0);
 			if (r.crossings) console.error(`[gen] level ${l}: zone joins with no fight the links do not make: ${r.crossings} step(s), ${r.posted} guard(s) posted, ${r.closed || 0} closed with scenery, ${r.left} step(s) left`);
 		}
+	// a start walks to the gate's floor of ground with no fight: the guards whose rings cover a compact piece of its ground move off it (startGroundCells). VMAPGEN_START_WALK=0 skips it.
+	if (process.env.VMAPGEN_START_WALK !== '0')
+		for (let l = 0; l < levels; l++) {
+			const sg = startGroundCells(plans[l], l, W, H, blocked);
+			if (sg.cells.size) {
+				const r = guardsOffDoorsteps(plans[l], l, W, H, blocked, sg.cells, { keep: true });
+				// a stack with no tile to go to that guards only small pickups (resources, chests, campfires) goes, the pickups stay free: the engine
+				// leaves a start's near piles unguarded (1.2% within 4 tiles on its 108 maps), and in a narrow underground pocket there is no tile
+				// clear of the start's ground (r1_16_72p8uf, start (2,4) on level 1: 46 tiles, floor 50; MapGen Dev's c_ug72_p4_s3). A stack beside
+				// an artifact, a Pandora's box, a dwelling, a mine or nothing at all (a way's guard) stays. VMAPGEN_START_WALK_DROP=0 keeps them all.
+				let dropped = 0;
+				if (process.env.VMAPGEN_START_WALK_DROP !== '0')
+					for (const { g, near } of r.stuck || []) {
+						// scenery beside it guards nothing; a corpse and a scholar are one-visit rewards of a pile's size (r1_16_72p8uf's (2,9) and (7,2))
+						const what = near.filter(o => !DECOR_TYPES_SET.has(o.type));
+						// a stack on a zone line holds the link and stays (the Opus Reviewer, pass 79)
+						const zg = plans[l].zone, onLink = zg && [-1, 0, 1].some(dy => [-1, 0, 1].some(dx => { const x = g.x + dx, y = g.y + dy; return x >= 0 && y >= 0 && x < W && y < H && zg[y * W + x] >= 0 && zg[y * W + x] !== zg[g.y * W + g.x]; }));
+						if (!onLink && what.length && what.every(o => /^(resource|randomResource|treasureChest|campfire|corpse|scholar)$/.test(o.type)) && plans[l].objects.includes(g)) {
+							clearScenery(plans[l], l, W, H, blocked, { gone: new Set([g]) });
+							dropped++;
+						}
+					}
+				console.error(`[gen] level ${l}: ${sg.starts} start(s) with too little ground to walk without a fight: ${r.moved} guard(s) moved off it, ${r.left} could not move${dropped ? ` (${dropped} of them, guarding small pickups only, taken away)` : ''}`);
+			}
+		}
+	// a start's own wood and ore behind no stack of level 5 or more (startPrimaryGuards; K, 2026-10-14). VMAPGEN_START_PRIMARY=0 skips it.
+	if (process.env.VMAPGEN_START_PRIMARY !== '0')
+		for (let l = 0; l < levels; l++) {
+			const r = startPrimaryGuards(plans[l], l, W, H, blocked, xorshift(((params.seed || 1) ^ 0x51a7) + l * 613 >>> 0));
+			if (r.found || r.capped) console.error(`[gen] level ${l}: a start's own wood and ore behind a stack of level 5 or more: ${r.found} found, ${r.moved} pile(s) moved onto its free ground, ${r.mines} mine(s) moved, ${r.weakened} stack(s) made weak, ${r.left} left; within 14 tiles above the engine's caps ${r.capped}: ${r.capMoved} guard(s) moved off, ${r.capObject} object(s) moved, ${r.capRemoved} mine guard(s) taken away${r.farFreed ? `; ${r.farFreed} pile(s) 9 to 14 tiles out with every stack moved off their way in` : ''}`);
+			// a moved mine leaves the road to its old door running on to nothing or to a pile (check89 p2_108L2_s3 (8,23)): the stub goes back
+			// to its junction, and a piece left serving one place goes whole, as the road passes before judge every end
+			if ((r.mines || r.capObject) && process.env.VMAPGEN_ROAD_TRIM !== '0' && process.env.VMAPGEN_ROAD_SPLINES !== '0') {
+				const tr = require('./gateroad').trimRoadStubs(plans[l], W, H, l, visitableCells, blockingCells, allowedDirs);
+				const lp = process.env.VMAPGEN_ROAD_LONE !== '0' ? require('./gateroad').lonePieces(plans[l], W, H, l, visitableCells) : { cut: 0 };
+				if (tr.cut || lp.cut) console.error(`[gen] level ${l}: road to a moved mine's old door taken back: ${tr.cut + lp.cut} tile(s)`);
+			}
+		}
 	// no pickup drawn into a monolith's or a gate's picture, whatever pass laid or moved it (clearEntranceShadow). VMAPGEN_SHADOW_LATE=0 skips it.
 	if (process.env.VMAPGEN_SHADOW_LATE !== '0' && process.env.VMAPGEN_SHADOW_FREE !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = clearEntranceShadow(plans[l], l, W, H, blocked);
 			if (r.moved || r.dropped || r.left) console.error(`[gen] level ${l}: pickups drawn into an entrance's picture or standing on water: ${r.moved} moved a step or two (${r.pairs || 0} with their guard), ${r.dropped} taken off (${r.guards || 0} guard(s) with them), ${r.left} left`);
+		}
+	// the approach closing and the guard moves came after the last seal sweep, and a blocker they laid can shut a building in a pocket of a few
+	// tiles with its guard (MapGen Dev's i_archipelago_144_s4, 2026-10-15: a level 3 dwelling and its guard closed in by a pig at (130,35);
+	// i_islands_108_s3, an alchemist's lab, mapsight "sealed"): one scenery piece opens each such pocket (openShutBuildings). The whole
+	// sweep run again here took 51 of the approach closing's own blockers off a 36x36 map's level 1 and 268 scenery pieces off a
+	// Mediterranean 108 map, round ground only a boat reaches. VMAPGEN_LAST_SEAL_SWEEP=0 skips it.
+	if (process.env.VMAPGEN_LAST_SEAL_SWEEP !== '0')
+		for (let l = 0; l < levels; l++) {
+			const r = openShutBuildings(plans[l], l, W, H, blocked);
+			if (r.opened || r.left) console.error(`[gen] level ${l}: buildings shut in a pocket by the late passes: ${r.opened} opened (one scenery piece each), ${r.left} left`);
 		}
 	// what each start takes with no fight, evened out last, once every guard stands (evenStartTakes). VMAPGEN_EVEN_TAKES=0 skips it.
 	if (process.env.VMAPGEN_EVEN_TAKES !== '0' && playerStarts.length > 1) {
@@ -8809,7 +8911,8 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
  * Returns a line for the log, or null.
  */
 function gatherDragons(plans, W, H, blocked, p, rng) {
-	if (process.env.VMAPGEN_GATHER_DRAGONS === '0' || plans.length !== 1) return null;
+	// with several small dragon islands each keeps its own dwellings (K, 2026-10-15: 4 or more smaller islands containing the dragon dwellings)
+	if (process.env.VMAPGEN_GATHER_DRAGONS === '0' || plans.length !== 1 || p.dragonIslesApart) return null;
 	const pl = plans[0], l = 0, base = 0, zone = pl.zone, water = pl.p && pl.p.water;
 	if (!zone || !water || !p.zonePlan) return null;
 	const DRAGON = /^(frozenCliffs|crystalCavern|magicForest|sulfurousLair)$/i;
@@ -9610,6 +9713,353 @@ function walkKeeper(pl, l, W, H, blocked, t) {
 }
 
 /**
+ * A start's own wood and ore behind no stack of level 5 or more (K, 2026-10-14, his 144x144 six-player Coldshadow map seed 2042393645, red:
+ * "my wood (being a primary resource) blocked behind high-tier creatures is not how the game should be (least of all in a starting biome)";
+ * the sawmill (32,139) in red's own zone, 17 tiles from the town, beside an Ammut and 33 Earth Elementals, both level 5). The engine's maps
+ * almost never do it (MapGen Dev's start-resource-guard check: 1 of 706 start-area mines on 108 engine maps guarded above level 1). The
+ * whole start zone counts, not a distance: K's sawmill lay past both checks' radii (12 and 14). In each player start's zone, a sawmill, an
+ * ore pit, a wood pile or an ore pile that the town's walk inside the zone reaches only by stepping into the ring of a stack of level 5+
+ * (his sawmill's stacks stood beside it, one ring across the only walk to its door): a pile moves onto ground the start walks to with no
+ * fight; a mine moves onto the zone's scenery the start walks to with no fight; failing that, each such stack on the walk that guards
+ * nothing else becomes a weak one, level 2 or lower at no more than CAP (the lead's ruling, 2026-10-14: a same-strength stack of a lower
+ * level is the same fight). Returns { found, moved, mines, weakened, left }. VMAPGEN_START_PRIMARY=0 skips it (VMAPGEN_START_PRIMARY_TRACE=1 lists what it finds).
+ */
+function startPrimaryGuards(pl, l, W, H, blocked, rng) {
+	const N = W * H, base = l * N, out = { found: 0, moved: 0, mines: 0, weakened: 0, left: 0, capped: 0, capMoved: 0, capObject: 0, capRemoved: 0 };
+	const zone = pl.zone, road = pl.roadCells || new Set();
+	if (!zone) return out;
+	// level 5 or more on the walk to any of a start zone's wood and ore (K's "high-tier"); level 2 or more on the walk to the start's own
+	// nearest sawmill and ore pit, which the engine leaves to level 1 or nothing (MapGen Dev, 2026-10-14: 4 of 610 on its maps above level
+	// 1, ours 349 of 3,010; VMAPGEN_START_PRIMARY_OWN=0 skips that round)
+	const HIGH = 5, OWN = 2, MON = /^(monster|randomMonster)/;
+	// what a hero walks over: every pickup, a Pandora's box and a prison too (visited, they vanish; K's sawmill's way in runs over the
+	// Pandora's box (30,140) its Earth Elementals guard)
+	const PASS = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|seaChest|flotsam|pandoraBox|prison)/;
+	const CHEAP = /^(resource|randomResource|treasureChest|campfire)$/;
+	const WEAK_HIGH = 2;
+	// the most a stack on a start's walk to its own wood and ore keeps: the engine posts no guard at a start zone's sawmill at Normal
+	// strength (its value is under the first threshold), and MapGen Dev's start-resource-guard gauge fails one above 6000; 2000 is a fight a
+	// day-one hero takes. The Stack size lever scales it. VMAPGEN_START_PRIMARY_CAP sets it.
+	const CAP = (Number(process.env.VMAPGEN_START_PRIMARY_CAP) || 2000) * (pl.p && Number.isFinite(pl.p.stackScale) ? pl.p.stackScale : 1);
+	const pool = pl.objectPools && pl.objectPools.guards;
+	const byId = new Map((pool || []).map(c => [c.id, c]));
+	const strengths = require('./guardCreatures').levelStrengths();
+	const tierOf = m => {
+		const c = m.guardCreature && byId.get(m.guardCreature);
+		if (c && c.level) return c.level;
+		const t = /^randomMonsterLevel(\d)/.exec(m.type);
+		return t ? +t[1] : 0;
+	};
+	const prim = o => (o.type === 'mine' && /^(sawmill|orePit)$/.test(o.subtype || '')) || (o.type === 'resource' && /^(wood|ore)$/.test(o.subtype || ''));
+	const wet = l === 0 && pl.p && pl.p.water ? pl.p.water : null;
+	// the stack as a weak one: a creature of level `top` or lower at the cap's strength or its own, whichever is less, from the zone's pool where
+	// the map writes concrete guards (the engine's rule for which creature a strength may be), else a placeholder sized by the core
+	// creatures' mean value per level (guardCreatures.js levelStrengths)
+	const weaken = (m, top) => {
+		const lv = tierOf(m), c0 = m.guardCreature && byId.get(m.guardCreature), amt = m.options && m.options.amount;
+		const ls = strengths.get(lv);
+		const s0 = c0 && amt ? amt * c0.aiValue : amt && ls ? amt * ls.perCreature : ls ? ls.perStack : CAP;
+		const s = Math.min(s0, CAP);
+		if (c0) {
+			const meta = pl.zoneMeta && pl.zoneMeta[zone[m.y * W + m.x]];
+			const low = zoneGuardPool(pool, meta && meta.spec).filter(c => c.level >= 1 && c.level <= top && c.aiValue > 0);
+			if (!low.length) return false;
+			const ok = low.filter(c => Math.floor(c.aiValue * ((c.advMin || 0) + (c.advMax || 0)) / 2) < s && s < c.aiValue * 100);
+			const c = ok.length ? ok[(rng() * ok.length) | 0] : low.reduce((a, b) => (b.aiValue > a.aiValue && b.aiValue <= s ? b : a));
+			m.type = `randomMonsterLevel${c.level}`;
+			m.guardCreature = c.id;
+			m.options = { ...(m.options || {}), character: (m.options && m.options.character) || 'hostile', amount: Math.max(1, Math.round(s / c.aiValue)) };
+		} else {
+			const L = Math.min(Math.max(1, lv), top);
+			if (!/^randomMonsterLevel/.test(m.type) || !strengths.get(L)) return false;
+			m.type = `randomMonsterLevel${L}`;
+			m.options = { ...(m.options || {}), character: (m.options && m.options.character) || 'hostile', amount: Math.max(1, Math.round(s / strengths.get(L).perCreature)) };
+		}
+		m.instanceName = `${m.type}_${m.x}_${m.y}_${l}`;
+		return true;
+	};
+	const near1 = (g, q) => blockingCells(q.template, q.x, q.y).concat(visitableCells(q.template, q.x, q.y)).some(([fx, fy]) => Math.max(Math.abs(fx - g.x), Math.abs(fy - g.y)) <= 1);
+	const plain = q => DECOR_TYPES_SET.has(q.type) && !q.template.mask.some(r2 => /[AT]/.test(r2));
+	// a stack on a zone line guards the link; one beside anything but a cheap pile, scenery or a start's wood and ore guards that
+	const onLine = g => {
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+			const x = g.x + dx, y = g.y + dy;
+			if (x >= 0 && y >= 0 && x < W && y < H && zone[y * W + x] >= 0 && zone[y * W + x] !== zone[g.y * W + g.x]) return true;
+		}
+		return false;
+	};
+	const guardsOther = (g, skip) => pl.objects.some(q => q !== g && !skip.has(q) && (q.l || 0) === l && q.template && q.template.mask && !MON.test(q.type)
+		&& !CHEAP.test(q.type) && !plain(q) && near1(g, q));
+	// a stack left beside nothing once what it watched has moved goes too (clearEntranceShadow's rule: a stack beside nothing is a defect)
+	const dropLonely = g => {
+		if (!pl.objects.includes(g) || onLine(g)) return;
+		if (pl.objects.some(q => q !== g && (q.l || 0) === l && q.template && q.template.mask && !MON.test(q.type) && !plain(q) && near1(g, q))) return;
+		clearScenery(pl, l, W, H, blocked, { gone: new Set([g]) });
+	};
+	const towns = pl.objects.filter(o => (o.l || 0) === l && o.template && /^(town|randomTown)$/.test(o.type) && o.options && o.options.owner);
+	for (const t of towns) {
+		const from = approachCells(t.template, t.x, t.y, l, W, H, blocked);
+		if (!from.length) continue;
+		const home = zone[from[0]];
+		// the town's walk inside its zone over open ground and pickups, and onto a stack's own tile at the cost of the fight (the usual
+		// guard stands in the way itself: with its tile a wall K's sawmill counted as not reached at all, the Opus Reviewer, pass 56); each
+		// step into a level 5+ stack's ring costs one, a lower stack's ring is walked (that fight is the player's choice). cost: that walk;
+		// calm: the walk with no fight at all (no ring, no stack). A pile or mine whose cheapest way in costs more than nothing lies behind
+		// those stacks (K's sawmill (32,139): the Earth Elementals (29,140) beside it, their ring across the only walk to its door)
+		let ring, highAt, pass, monAt, cost, prev, calm, th = HIGH;
+		const walk = () => {
+			ring = new Uint8Array(N); highAt = new Map(); pass = new Set(); monAt = new Set();
+			for (const o of pl.objects) {
+				if ((o.l || 0) !== l || !o.template) continue;
+				if (MON.test(o.type)) {
+					const hi = tierOf(o) >= th;
+					monAt.add(o.y * W + o.x);
+					for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+						const x = o.x + dx, y = o.y + dy;
+						if (x < 0 || y < 0 || x >= W || y >= H) continue;
+						const c = y * W + x;
+						ring[c] |= 1;
+						if (hi) { ring[c] |= 2; (highAt.get(c) || highAt.set(c, []).get(c)).push(o); }
+					}
+				} else if (PASS.test(o.type)) for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) pass.add(fy * W + fx);
+			}
+			const free = c => zone[c] === home && !(wet && wet[c]) && (!(blocked[base + c] & OCCUPIED) || pass.has(c) || monAt.has(c));
+			cost = new Int32Array(N).fill(-1); prev = new Int32Array(N).fill(-1);
+			const front = [], dq = [];
+			let head = 0;
+			for (const c of from) if (free(c) && cost[c] < 0) { cost[c] = ring[c] >> 1; (cost[c] ? dq : front).push(c); }
+			while (front.length || head < dq.length) {
+				const c = front.length ? front.pop() : dq[head++];
+				const x = c % W, y = (c / W) | 0;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const u = x + dx, v = y + dy;
+					if ((!dx && !dy) || u < 0 || v < 0 || u >= W || v >= H) continue;
+					const n = v * W + u;
+					if (!free(n)) continue;
+					const w = ring[n] >> 1, nc = cost[c] + w;
+					if (cost[n] >= 0 && cost[n] <= nc) continue;
+					cost[n] = nc; prev[n] = c;
+					(w ? dq : front).push(n);
+				}
+			}
+			calm = new Int32Array(N).fill(-1);
+			const q = [];
+			for (const c of from) if (!ring[c] && calm[c] < 0 && cost[c] >= 0) { calm[c] = 0; q.push(c); }
+			for (let i = 0; i < q.length; i++) {
+				const c = q[i], x = c % W, y = (c / W) | 0;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const u = x + dx, v = y + dy;
+					if ((!dx && !dy) || u < 0 || v < 0 || u >= W || v >= H) continue;
+					const n = v * W + u;
+					if (calm[n] >= 0 || ring[n] || cost[n] < 0) continue;
+					calm[n] = calm[c] + 1; q.push(n);
+				}
+			}
+		};
+		walk();
+		// its ways in as a hero meets them, a pile's tile walked onto (an ore pit's only way in lay under the ore pile in front of it, seed
+		// 14); the stacks of level th or more the cheapest walk to it crosses, or null when it is reached with none (or not at all: not this rule's)
+		const behind = o => {
+			const ways = [];
+			for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) for (const [dx, dy] of allowedDirs(o.template)) { const x = vx + dx, y = vy + dy; if (x >= 0 && y >= 0 && x < W && y < H && cost[y * W + x] >= 0) ways.push(y * W + x); }
+			if (!ways.length) return null;
+			const best = ways.reduce((a, b) => (cost[b] < cost[a] ? b : a));
+			if (!cost[best]) return null;
+			const crossed = new Set();
+			for (let c = best; c >= 0; c = prev[c]) for (const m of highAt.get(c) || []) crossed.add(m);
+			return crossed.size ? [...crossed] : null;
+		};
+		const cheb = o => Math.max(Math.abs(o.x - t.x), Math.abs(o.y - t.y));
+		// a pile moves onto ground the start walks to with no fight at all, as evenStartTakes lays a start's piles; true when it moved
+		const movePile = o => {
+			const own = blockingCells(o.template, o.x, o.y).map(([a, b]) => b * W + a);
+			for (const c of own) blocked[base + c] &= ~OCCUPIED;
+			const seed = from.find(c => !ring[c] && !(blocked[base + c] & OCCUPIED));
+			const conn = seed === undefined ? null : makeConnectivityGuard(blocked, l, W, H, 2, seed);
+			const fits = (x, y) => {
+				const walls = blockingCells(o.template, x, y);
+				if (walls.some(([fx, fy]) => fx < 1 || fy < 1 || fx >= W - 1 || fy >= H - 1)) return false;
+				const cells = walls.map(([fx, fy]) => fy * W + fx);
+				if (cells.some(c => ring[c] || road.has(c) || zone[c] !== home || (wet && wet[c]) || (blocked[base + c] & (OCCUPIED | RESERVED | APPROACH)))) return false;
+				if (!footprintFits(o.template, x, y, l, W, H, blocked, true) || pictureOnShadow(o.template, x, y, l, W, H, blocked)) return false;
+				const ownAt = new Set(cells);
+				if (!approachCells(o.template, x, y, l, W, H, blocked).some(c => !ownAt.has(c) && calm[c] >= 0)) return false;
+				if (!entranceOpen(o.template, x, y, l, W, H, blocked, conn.reachable)) return false;
+				if (!conn.accepts(cells) || weldsMasses(cells, blocked, l, W, H, 1)) return false;
+				return townWayOut4(l, W, H, blocked, t, ownAt);
+			};
+			// the nearest such ground to where it lay, then to the town, 2 to 24 steps out
+			const cand = [];
+			if (conn) for (let c = 0; c < N; c++) if (calm[c] >= 2 && calm[c] <= 24) cand.push(c);
+			const d0 = c => Math.max(Math.abs(c % W - o.x), Math.abs(((c / W) | 0) - o.y));
+			cand.sort((a, b) => d0(a) - d0(b) || calm[a] - calm[b]);
+			for (const c of cand) if (fits(c % W, (c / W) | 0)) {
+				o.x = c % W; o.y = (c / W) | 0; o.instanceName = `${o.type}_${o.x}_${o.y}_${l}`;
+				footprintBlock(o.template, o.x, o.y, l, W, H, blocked);
+				markApproach(o.template, o.x, o.y, l, W, H, blocked);
+				return true;
+			}
+			for (const c of own) blocked[base + c] |= OCCUPIED;
+			return false;
+		};
+		// never over another object's way in (APPROACH): a moved ore pit covered a sawmill's three ways in (grid 108 three players two levels seed 1)
+		// a mine moves to the zone's own scenery the start walks to with no fight, as ensureStartMines lays a starter mine (over interior
+		// scenery wholly under it, the start's walk and its way out kept); with none there (K's seed: none in red's zone), to open ground the
+		// start walks to, every way kept open as evenStartTakes keeps them (the connectivity guard, no welded masses, the town's way out)
+		const moveMine = o => {
+			const keeps = walkKeeper(pl, l, W, H, blocked, t);
+			const score = (x, y) => Math.abs(Math.max(Math.abs(x - t.x), Math.abs(y - t.y)) - 6);
+			let spot = sceneryRoom(pl, l, W, H, blocked, o.template, z => z === home, score,
+				ways => ways.some(c => calm[c] >= 0), own => keeps(own) && [...own].every(c => !(blocked[base + c] & (RESERVED | APPROACH))) && townWayOut4(l, W, H, blocked, t, own));
+			if (!spot) {
+				const seed = from.find(c => !ring[c] && !(blocked[base + c] & OCCUPIED));
+				const conn = seed === undefined ? null : makeConnectivityGuard(blocked, l, W, H, 2, seed);
+				if (conn) spot = sceneryRoom(pl, l, W, H, blocked, o.template, z => z === home, score, ways => ways.some(c => calm[c] >= 0),
+					own => [...own].every(c => !(blocked[base + c] & (RESERVED | APPROACH)) && !ring[c]) && conn.accepts([...own]) && !weldsMasses([...own], blocked, l, W, H, 1)
+						&& townWayOut4(l, W, H, blocked, t, own));
+			}
+			if (!spot) return false;
+			clearScenery(pl, l, W, H, blocked, spot);
+			clearScenery(pl, l, W, H, blocked, { gone: new Set([o]) });
+			const m = objectEntry('mine', spot.x, spot.y, l, o.template, o.subtype);
+			if (o.options) m.options = { ...o.options };
+			pl.objects.push(m);
+			footprintBlock(o.template, spot.x, spot.y, l, W, H, blocked);
+			markApproach(o.template, spot.x, spot.y, l, W, H, blocked);
+			return true;
+		};
+		const ownOf = () => new Set(pl.objects.filter(o => (o.l || 0) === l && o.template && o.template.mask && prim(o)
+			&& visitableCells(o.template, o.x, o.y).some(([vx, vy]) => zone[vy * W + vx] === home)));
+		for (const [lvl, top] of [[HIGH, WEAK_HIGH], [OWN, 1]]) {
+			if (lvl === OWN && process.env.VMAPGEN_START_PRIMARY_OWN === '0') continue;
+			th = lvl; walk();
+			const startOwn = ownOf();
+			// the second round: the start's own nearest sawmill and nearest ore pit only
+			const nearest = kind => [...startOwn].filter(o => o.type === 'mine' && o.subtype === kind).sort((a, b) => cheb(a) - cheb(b))[0];
+			const mine1 = lvl === OWN ? new Set([nearest('sawmill'), nearest('orePit')].filter(Boolean)) : null;
+			const targets = [...startOwn].filter(o => (!mine1 || mine1.has(o)) && behind(o));
+			out.found += targets.length;
+			if (process.env.VMAPGEN_START_PRIMARY_TRACE) for (const o of targets) console.error(`[startprim] ${t.options.owner} (${t.x},${t.y}) level ${lvl}+ ${o.type}:${o.subtype} (${o.x},${o.y}): ${behind(o).map(m => `${m.guardCreature || m.type} L${tierOf(m)} x${(m.options && m.options.amount) || '?'} (${m.x},${m.y})`).join(', ')}`);
+			// piles first: one moved off a mine's way in may leave the mine free as well
+			targets.sort((a, b) => (a.type === 'resource' ? 0 : 1) - (b.type === 'resource' ? 0 : 1));
+			for (const o of targets) {
+				const crossed = behind(o);
+				if (!crossed) continue;   // a stack weakened or a pile moved for an earlier one cleared its walk too
+				// the stacks beside it: one of these left beside nothing once it moves goes too; a stack further along the walk may hold a corridor
+				// to something beyond it, and stays
+				const beside = crossed.filter(g => near1(g, o));
+				if (o.type === 'resource' ? movePile(o) : moveMine(o)) {
+					out[o.type === 'resource' ? 'moved' : 'mines']++;
+					for (const g of beside) dropLonely(g);
+					walk();
+					continue;
+				}
+				// no ground for it: each stack on the walk that guards nothing else becomes a weak one (the lead's ruling, 2026-10-14: a start
+				// zone's own wood and ore get a weak guard or move out, never a same-strength stack of a lower level)
+				let all = true;
+				for (const g of crossed) if (!onLine(g) && !guardsOther(g, startOwn) && weaken(g, top)) out.weakened++; else all = false;
+				if (!all) out.left++;
+				walk();
+			}
+		}
+		// the third round, the engine's own rates (MapGen Dev's start-resource rule, approved by the lead 2026-10-14): every sawmill, ore pit,
+		// wood pile and ore pile within 14 tiles of the town, whatever its zone, and the stacks whose ring covers a tile it is entered from.
+		// The cap by kind and distance from the town: a mine none; a pile within 4 none, at 5 to 8 level 1 at most, at 9 to 14 level 4 at
+		// most (the engine's 108 maps: start mines guarded 0 to 1%, start piles about one in ten and nearly always level 1). A stack above the
+		// cap is moved off the object's ways (guardsOffDoorsteps, keeping what else it guards covered where a tile does); one that cannot
+		// move and also guards something else leaves the object to move instead; the rest: a mine's guard goes, a pile's becomes level 1 at
+		// no more than CAP. A stack that guards anything else is never taken away. VMAPGEN_START_CAPS=0 skips the round, for measuring.
+		if (process.env.VMAPGEN_START_CAPS !== '0') {
+			th = HIGH; walk();
+			const tv = visitableCells(t.template, t.x, t.y)[0] || [t.x, t.y];
+			const dOf = o => { const v = visitableCells(o.template, o.x, o.y)[0] || [o.x, o.y]; return Math.max(Math.abs(v[0] - tv[0]), Math.abs(v[1] - tv[1])); };
+			// 9 to 14 tiles: level 2 at most (the lead, 2026-10-15 08:36: the engine's piles there carry level 2 to 4 in 2.2%; with level 4 allowed ours had 20%)
+			const capOf = o => (o.type === 'mine' ? 0 : dOf(o) <= 4 ? 0 : dOf(o) <= 8 ? 1 : 2);
+			const waysAll = o => {
+				const w = [];
+				for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) for (const [dx, dy] of allowedDirs(o.template)) { const x = vx + dx, y = vy + dy; if (x >= 0 && y >= 0 && x < W && y < H) w.push(y * W + x); }
+				return w;
+			};
+			const over = o => { const w = waysAll(o), cap = capOf(o); return pl.objects.filter(m => (m.l || 0) === l && m.template && MON.test(m.type) && tierOf(m) > cap && w.some(c => Math.max(Math.abs(c % W - m.x), Math.abs(((c / W) | 0) - m.y)) <= 1)); };
+			const near14 = pl.objects.filter(o => (o.l || 0) === l && o.template && o.template.mask && prim(o) && dOf(o) <= 14)
+				.sort((a, b) => (a.type === 'resource' ? 0 : 1) - (b.type === 'resource' ? 0 : 1) || dOf(a) - dOf(b));
+			const skip = new Set(near14);
+			for (const o of near14) {
+				if (!pl.objects.includes(o)) continue;
+				// a pile of the start's own zone 9 to 14 tiles out: any stack on its way in that guards nothing else (no zone line, nothing dear) moves off
+				// it where a tile allows, whatever its level (the lead, 2026-10-15 08:47: "the guard must be off the pile's access, not just weaker";
+				// the engine's piles there are guarded in 13.5%, ours 36% on the 80-map grid, 267 of the 279 in the start's own zone)
+				if (o.type === 'resource' && dOf(o) > 8 && process.env.VMAPGEN_START_FAR_FREE !== '0') {
+					const v = visitableCells(o.template, o.x, o.y)[0] || [o.x, o.y];
+					const w = waysAll(o), on = () => { const w2 = waysAll(o); return pl.objects.filter(m => (m.l || 0) === l && m.template && MON.test(m.type) && w2.some(c => Math.max(Math.abs(c % W - m.x), Math.abs(((c / W) | 0) - m.y)) <= 1)); };
+					const g1 = zone[v[1] * W + v[0]] === home ? on() : [];
+					if (g1.length && g1.every(g => !onLine(g) && !guardsOther(g, skip))) {
+						const calm0 = [];
+						for (let c = 0; c < N; c++) if (calm[c] >= 0) calm0.push(c);
+						calm0.sort((u, q) => calm[u] - calm[q]);
+						const avoid0 = new Map();
+						for (const p of near14) if (p !== o && pl.objects.includes(p)) for (const c of waysAll(p)) avoid0.set(c, Math.min(capOf(p), avoid0.has(c) ? avoid0.get(c) : Infinity));
+						guardsOffDoorsteps(pl, l, W, H, blocked, [...w, ...startWayCells(pl, l, W, H, blocked), ...calm0.slice(0, 200)], { keep: true, spread: true, avoid: avoid0, tier: tierOf });
+						if (!on().length) { out.farFreed = (out.farFreed || 0) + 1; walk(); continue; }
+						walk();
+					}
+					// where a stack stays (it guards something else, or has no tile), the pile moves instead onto ground the start walks with no
+					// fight, as round 3 does nearer in (the lead, 2026-10-15 10:20)
+					if (g1.length && on().length && zone[v[1] * W + v[0]] === home && movePile(o) && !on().length) { out.farMoved = (out.farMoved || 0) + 1; walk(); continue; }
+				}
+				let g0 = over(o);
+				if (!g0.length) continue;
+				out.capped++;
+				if (process.env.VMAPGEN_START_PRIMARY_TRACE) console.error(`[startcap] ${t.options.owner} ${o.type}:${o.subtype} (${o.x},${o.y}) ${dOf(o)} tiles, cap level ${capOf(o)}: ${g0.map(m => `L${tierOf(m)} (${m.x},${m.y})`).join(', ')}`);
+				// and never onto the start's own ground: the nearest 200 tiles it walks with no fight stay out of every moved guard's ring (with the
+				// spacing alone a guard went into r1_16_72p8uf's start ground, 44 tiles walked without a fight on 39afa34, 29 after)
+				// nor across the start's ways to its own zone's other towns (startWayCells; mapsight "own town behind a guard"). Where no tile does, once
+				// more with only the gate's floor of that ground kept (crater_case_grid_p2_144_s2: a border stack over a sawmill 8 tiles out had none)
+				const calmNear = [];
+				for (let c = 0; c < N; c++) if (calm[c] >= 0) calmNear.push(c);
+				calmNear.sort((u, v) => calm[u] - calm[v]);
+				const townWays = [...startWayCells(pl, l, W, H, blocked)];
+				// and no moved guard's ring over the ways of another of these objects above that object's cap
+				const avoid = new Map();
+				for (const p of near14) if (p !== o && pl.objects.includes(p)) for (const c of waysAll(p)) avoid.set(c, Math.min(capOf(p), avoid.has(c) ? avoid.get(c) : Infinity));
+				for (const keepN of [200, W <= 48 ? 8 : 50]) {
+					guardsOffDoorsteps(pl, l, W, H, blocked, [...waysAll(o), ...townWays, ...calmNear.slice(0, keepN)], { keep: true, spread: true, avoid, tier: tierOf });
+					if (!over(o).length) break;
+				}
+				g0 = over(o);
+				if (!g0.length) { out.capMoved++; walk(); continue; }
+				if (g0.some(g => onLine(g) || guardsOther(g, skip))) {
+					walk();
+					if (o.type === 'resource' ? movePile(o) : moveMine(o)) {
+						out.capObject++;
+						walk();
+						// moved beside the same stack (p2_72L1_s1: the ore moved and still lay under the Minotaurs' ring): on to the weak stack
+						g0 = over(o);
+						if (!g0.length) continue;
+					}
+				}
+				let all = true;
+				for (const g of g0) {
+					// what keeps a stack strong beside a start's wood and ore: a relic, a major artifact, a Pandora's box, a dwelling, a bank or a mine; a minor
+					// artifact, a scroll or a chest does not (p2_72L1_s1: the neighbour zone's Minotaurs over a minor artifact and a scroll beside two ore pits)
+					const DEAR = /^(randomArtifactRelic|randomArtifactMajor|artifact$|pandoraBox|creatureGenerator|randomDwelling|creatureBank|mine|abandonedMine|dragonUtopia|pyramid)/;
+					if (pl.objects.some(q => q !== g && !skip.has(q) && (q.l || 0) === l && q.template && q.template.mask && DEAR.test(q.type) && near1(g, q))) { all = false; continue; }
+					// the stack on the zone's way out, where neither it nor the object found other ground, stays and becomes weak: never a high-level
+					// stack on a start's mine or pile (the lead, 2026-10-15 08:36; p2_72L1_s1: two Minotaurs on the way out beside both ore pits)
+					if (onLine(g)) { if (weaken(g, Math.max(1, capOf(o)))) out.weakened++; else all = false; continue; }
+					if (o.type === 'mine') { clearScenery(pl, l, W, H, blocked, { gone: new Set([g]) }); out.capRemoved++; }
+					else if (weaken(g, 1)) out.weakened++;
+					else all = false;
+				}
+				if (!all) out.left++;
+				walk();
+			}
+		}
+	}
+	return out;
+}
+
+/**
  * What each start takes with no fight, evened out across the starts once every guard stands. The take is the walk from a start town's
  * door over open ground and pickups that never steps into a guard's ring, and what it reaches: mines, piles, chests, artifacts,
  * scrolls. balanceStarts measures 18 steps out and walks through guards, so a start whose zone is smaller or whose ground is fenced
@@ -9983,6 +10433,151 @@ function townDoorCells(objects, l, W, H, blocked, only = null) {
 }
 
 /**
+ * A building (a dwelling, mine, bank or any visitable object that is not a pickup, a monster or scenery) whose way in leads only into a pocket
+ * of under 40 tiles, with no shore, walking through guards and pickups as a hero does, is shut in: the scenery piece beside the pocket whose
+ * removal lets the walk from its way in reach 40 tiles goes, the smallest first, never one on a zone line. One piece a building at most, so a
+ * pocket the walls are meant to hold (behind its guard) is never opened round the guard: a guard's tile is ground here. Returns { opened, left }.
+ */
+function openShutBuildings(pl, l, W, H, blocked) {
+	const out = { opened: 0, left: 0 }, N = W * H, base = l * N, zone = pl.zone, water = pl.p && pl.p.water, need = 40;
+	if (!zone) return out;
+	const PASS = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|pandoraBox|spellScroll|prison|seaChest|flotsam|monster|randomMonster|scholar|corpse)/;
+	const wallMap = () => {
+		const w = new Uint8Array(N);
+		for (let c = 0; c < N; c++) if (blocked[base + c] & OCCUPIED) w[c] = 1;
+		for (const o of pl.objects) if ((o.l || 0) === l && o.template && PASS.test(o.type))
+			for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) w[fy * W + fx] = 0;
+		return w;
+	};
+	const walk = (w, from, free) => {
+		const seen = new Uint8Array(N), q = [];
+		let shore = false;
+		for (const c of from) if (!seen[c] && (!w[c] || (free && free.has(c))) && !(water && water[c])) { seen[c] = 1; q.push(c); }
+		for (let h = 0; h < q.length && q.length < need && !shore; h++) {
+			const x = q[h] % W, y = (q[h] / W) | 0;
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const u = x + dx, v = y + dy;
+				if ((!dx && !dy) || u < 0 || v < 0 || u >= W || v >= H) continue;
+				const m = v * W + u;
+				if (water && water[m]) { shore = true; continue; }
+				if (!seen[m] && (!w[m] || (free && free.has(m)))) { seen[m] = 1; q.push(m); }
+			}
+		}
+		return { ok: shore || q.length >= need, q };
+	};
+	const buildings = pl.objects.filter(o => (o.l || 0) === l && o.template && o.template.mask && !DECOR_TYPES_SET.has(o.type) && !PASS.test(o.type)
+		&& !/^(boat|grail|borderGuard|borderGate|questGuard|hero|randomHero)$/.test(o.type) && visitableCells(o.template, o.x, o.y).length);
+	let w = wallMap();
+	for (const o of buildings) {
+		if (!pl.objects.includes(o)) continue;
+		const own = new Set(blockingCells(o.template, o.x, o.y).map(([a, b]) => b * W + a));
+		const from = [];
+		for (const [vx, vy] of visitableCells(o.template, o.x, o.y))
+			for (const [dx, dy] of allowedDirs(o.template)) { const u = vx + dx, v = vy + dy; if (u >= 0 && v >= 0 && u < W && v < H && !own.has(v * W + u)) from.push(v * W + u); }
+		// one visited from the sea, or with a way in on the shore, a boat reaches (derelict ships, jetsam, buoys)
+		if (!from.length || (water && (from.some(c => water[c]) || visitableCells(o.template, o.x, o.y).some(([vx, vy]) => water[vy * W + vx])))) continue;
+		const now = walk(w, from, null);
+		if (now.ok) continue;
+		// scenery touching the pocket (or the way-in tiles when the pocket is empty), off every zone line, smallest first
+		const rim = new Set(now.q.length ? now.q : from), z0 = zone[from[0]], cand = [];
+		for (const p of pl.objects) {
+			if ((p.l || 0) !== l || !p.template || !DECOR_TYPES_SET.has(p.type)) continue;
+			const cells = blockingCells(p.template, p.x, p.y).filter(([a, b]) => a >= 0 && b >= 0 && a < W && b < H).map(([a, b]) => b * W + a);
+			let touch = false, line = false;
+			for (const c of cells) {
+				if (zone[c] !== z0) line = true;
+				const x = c % W, y = (c / W) | 0;
+				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const u = x + dx, v = y + dy;
+					if (u < 0 || v < 0 || u >= W || v >= H) continue;
+					if (rim.has(v * W + u)) touch = true;
+					if (zone[v * W + u] >= 0 && zone[v * W + u] !== z0) line = true;
+				}
+			}
+			if (touch && !line) cand.push({ p, cells });
+		}
+		cand.sort((a, b) => a.cells.length - b.cells.length || a.p.y - b.p.y || a.p.x - b.p.x);
+		const hit = cand.find(k => { const free = new Set(k.cells.filter(c => { const objs = pl.objects.filter(q => q !== k.p && (q.l || 0) === l && q.template && blockingCells(q.template, q.x, q.y).some(([a, b]) => b * W + a === c) && !PASS.test(q.type)); return !objs.length; })); return free.size && walk(w, from, free).ok; });
+		if (hit) { clearScenery(pl, l, W, H, blocked, { gone: new Set([hit.p]) }); out.opened++; w = wallMap(); } else out.left++;
+	}
+	return out;
+}
+
+/**
+ * A start walks to at least the gate's floor of ground without entering a stack's ring (8 tiles on a map up to 48 wide, 50 above; the engine's
+ * own starts walk 57 or more on 72x72). For every owned start town whose walk, over open ground and pickups, ring by ring, is under that floor,
+ * the cells of a compact piece of its ground (a breadth-first piece from the door, off the entrance tiles of mines and dear piles where it can,
+ * the floor in size) are returned: no ring may cover them, so the guards whose rings do are moved by guardsOffDoorsteps (keeping what they guard
+ * where a tile does), never removed. MapGen Dev, 2026-10-14: w_mediterranean_108_s7001 (start (100,74), 22 tiles) and r1_16_72p8uf (start (2,4),
+ * 30 tiles); the 23 edge starts of the 350 gate. VMAPGEN_START_WALK=0 skips it. Returns { cells: Set, starts }.
+ */
+function startGroundCells(pl, l, W, H, blocked, opts = null) {
+	const out = { cells: new Set(), starts: 0 }, zone = pl.zone, N = W * H, base = l * N, water = pl.p && pl.p.water;
+	if (!zone) return out;
+	const limit = W <= 48 ? 8 : 50;
+	const isTown = o => (o.l || 0) === l && o.template && /^(town|randomTown)$/.test(o.type);
+	const PASS = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|pandoraBox|spellScroll|prison|seaChest|flotsam|monster|randomMonster)/;
+	const owned = pl.objects.filter(o => isTown(o) && o.options && o.options.owner);
+	if (!owned.length) return out;
+	const wall = new Uint8Array(N), held = new Set(), avoid = new Uint8Array(N), ring = new Uint8Array(N);
+	for (const o of pl.objects) {
+		if ((o.l || 0) !== l || !o.template) continue;
+		const pass = PASS.test(o.type);
+		for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) { if (pass) held.add(fy * W + fx); else wall[fy * W + fx] = 1; }
+		if (o.template.mask && /^(mine|abandonedMine|randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact|creatureGenerator)/.test(o.type))
+			for (const c of approachCells(o.template, o.x, o.y, l, W, H, blocked)) avoid[c] = 1;
+		if (/^(monster|randomMonster)/.test(o.type))
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const u = o.x + dx, v = o.y + dy; if (u >= 0 && v >= 0 && u < W && v < H) ring[v * W + u] = 1; }
+	}
+	for (let c = 0; c < N; c++) if ((blocked[base + c] & OCCUPIED) && !wall[c] && !held.has(c)) wall[c] = 1;
+	const passable = c => zone[c] >= 0 && !(water && water[c]) && !wall[c];
+	const grow = (from, ok, cap) => {
+		const seen = new Set(), q = [];
+		for (const c of from) if (ok(c) && !seen.has(c)) { seen.add(c); q.push(c); }
+		for (let h = 0; h < q.length && q.length < cap; h++) {
+			const x = q[h] % W, y = (q[h] / W) | 0;
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const u = x + dx, v = y + dy;
+				if ((!dx && !dy) || u < 0 || v < 0 || u >= W || v >= H) continue;
+				const m = v * W + u;
+				if (!seen.has(m) && ok(m)) { seen.add(m); q.push(m); if (q.length >= cap) break; }
+			}
+		}
+		return q;
+	};
+	for (const t of owned) {
+		const from = [...townDoorCells(pl.objects, l, W, H, blocked, t)].filter(passable);
+		if (!from.length) continue;
+		// from the first guard pass on (opts.always, startWayCells) only a start that does not yet walk 200 tiles with no ring is held: the
+		// hold on every start changed maps with no short start at all (K's seed 2042393645: 374 guards against 0.3.10's 378; the Opus Reviewer,
+		// pass 56, and the lead's ruling, 2026-10-14: a start with 200 or more ring-free must be untouched)
+		const need = opts && opts.always ? Math.max(limit, 200) : limit;
+		if (grow(from, c => passable(c) && !ring[c], need).length >= need) continue;
+		// the piece of ground that costs the fewest rings: a cell in a ring costs 6, one at the entrance of a mine or dear pile 3, any other 1 (Dijkstra over eight neighbours)
+		const dist = new Map(), done = new Set(), blob = [];
+		for (const c of from) dist.set(c, ring[c] ? 6 : avoid[c] ? 3 : 1);
+		while (blob.length < limit) {
+			let bc = -1, bd = Infinity;
+			for (const [c, d] of dist) if (!done.has(c) && d < bd) { bd = d; bc = c; }
+			if (bc < 0) break;
+			done.add(bc); blob.push(bc);
+			const x = bc % W, y = (bc / W) | 0;
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const u = x + dx, v = y + dy;
+				if ((!dx && !dy) || u < 0 || v < 0 || u >= W || v >= H) continue;
+				const m = v * W + u;
+				if (done.has(m) || !passable(m)) continue;
+				const nd = bd + (ring[m] ? 6 : avoid[m] ? 3 : 1);
+				if (!dist.has(m) || nd < dist.get(m)) dist.set(m, nd);
+			}
+		}
+		out.starts++;
+		for (const c of blob) out.cells.add(c);
+	}
+	return out;
+}
+
+/**
  * No guard's ring (the eight tiles around it, where a hero passing is attacked) covers a town's doorstep, the tiles a
  * hero leaves the town onto. The engine keeps a town's gate clear (TownPlacer places a town before anything else and
  * its entrance joins the free paths); ours had a treasure guard one tile below a start zone's second town, so leaving
@@ -9991,7 +10586,7 @@ function townDoorCells(objects, l, W, H, blocked, only = null) {
  * ring touches no town's doorstep. `extra`: more cells no ring may cover (ownTownWays). VMAPGEN_DOORSTEP_GUARDS=0 off.
  * Returns { moved, left }.
  */
-function guardsOffDoorsteps(pl, l, W, H, blocked, extra = null) {
+function guardsOffDoorsteps(pl, l, W, H, blocked, extra = null, opts = null) {
 	const N = W * H, base = l * N, out = { moved: 0, left: 0 };
 	const door = new Set(extra || []);
 	for (const c of townDoorCells(pl.objects, l, W, H, blocked)) door.add(c);
@@ -10007,6 +10602,17 @@ function guardsOffDoorsteps(pl, l, W, H, blocked, extra = null) {
 	for (const o of pl.objects) if ((o.l || 0) === l && o.template)
 		for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) cover.set(fy * W + fx, o);
 	const guards = pl.objects.filter(o => (o.l || 0) === l && o.template && /^(monster|randomMonster)/.test(o.type) && ringHits(o.x, o.y));
+	const spread = !!(opts && opts.spread), mons = spread ? pl.objects.filter(o => (o.l || 0) === l && o.template && /^(monster|randomMonster)/.test(o.type)) : [];
+	const avoid = opts && opts.avoid && opts.avoid.size && opts.tier ? opts.avoid : null;
+	const avoidHit = (x, y, t) => {
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+			const u = x + dx, v = y + dy;
+			if (u < 0 || v < 0 || u >= W || v >= H) continue;
+			const top = avoid.get(v * W + u);
+			if (top !== undefined && t > top) return true;
+		}
+		return false;
+	};
 	for (const g of guards) {
 		const near = new Set();
 		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
@@ -10037,6 +10643,12 @@ function guardsOffDoorsteps(pl, l, W, H, blocked, extra = null) {
 				// never onto a road: the guard moved off a town's way stood on that town's only road (K's XL underground seed 1594927107, (29,98))
 				if (pl.roadCells && pl.roadCells.has(c)) continue;
 				if (ringHits(x, y)) continue;
+				// opts.spread: never within two tiles of another stack (the engine's Coldshadow maps: 0.1% of stacks with another that near; the start caps round
+				// crowded 7 of 431 on approach-tiles.test.js's map)
+				if (spread && mons.some(m => m !== g && Math.max(Math.abs(m.x - x), Math.abs(m.y - y)) <= 2)) continue;
+				// opts.avoid (cell -> the highest level a ring may cover there, -1 none) with opts.tier: where a moved guard may not land, without moving
+				// any more guards (the start caps round moved a sawmill's level 2 guard onto a wood pile 4 tiles from the town, p4_72L1_s2 (65,6))
+				if (avoid && avoidHit(x, y, opts.tier(g))) continue;
 				if (mode === 'ring' && !keepRing.every(k => Math.max(Math.abs(k % W - x), Math.abs(((k / W) | 0) - y)) <= 1)) continue;
 				let keeps = loose || !near.size;
 				for (let ddy = -1; ddy <= 1 && !keeps; ddy++) for (let ddx = -1; ddx <= 1; ddx++) if (near.has(cover.get((y + ddy) * W + x + ddx))) { keeps = true; break; }
@@ -10048,6 +10660,7 @@ function guardsOffDoorsteps(pl, l, W, H, blocked, extra = null) {
 		}
 		// nowhere clear of the way within six tiles: the guard goes, as the engine never posts one there
 		if (!best && process.env.VMAPGEN_WATCH) { const [wx, wy] = process.env.VMAPGEN_WATCH.split(',').map(Number); if (Math.abs(g.x - wx) <= 4 && Math.abs(g.y - wy) <= 4) console.error(`[watch] guard ${g.type} (${g.x},${g.y}) REMOVED`); }
+		if (!best && opts && opts.keep) { out.left++; (out.stuck = out.stuck || []).push({ g, near: [...near] }); continue; }
 		if (!best) { pl.objects.splice(pl.objects.indexOf(g), 1); cover.delete(g.y * W + g.x); blocked[base + g.y * W + g.x] &= ~OCCUPIED; out.removed = (out.removed || 0) + 1; continue; }
 		if (process.env.VMAPGEN_WATCH) { const [wx, wy] = process.env.VMAPGEN_WATCH.split(',').map(Number); if (Math.abs(g.x - wx) <= 4 && Math.abs(g.y - wy) <= 4) console.error(`[watch] guard ${g.type} (${g.x},${g.y}) moved to ${best} keepRing ${keepRing.map(c => (c % W) + ',' + ((c / W) | 0)).join(' ')}`); }
 		const old = g.y * W + g.x;
@@ -10115,6 +10728,8 @@ function startWayCells(pl, l, W, H, blocked) {
 			for (let k = hit; k >= 0; k = prev[k]) out.add(k);
 		}
 	}
+	// the ground a start walks on with no fight (the gate's floor): kept ring-free from the first guard pass on (MapGen Dev, 2026-10-14)
+	if (process.env.VMAPGEN_START_WALK !== '0') for (const c of startGroundCells(pl, l, W, H, blocked, { always: true }).cells) out.add(c);
 	return out;
 }
 
@@ -10912,4 +11527,4 @@ function sweepStranded(plan, W, H, levelIndex, playerStarts, droppedPairs, cross
 module.exports = { planLevel, fillLevel, planMap, chooseTemplateLayout, OBJECT_DEFS,
 	CLASS_TERRAIN_HINT, mainComponent, sweepStranded, openSealedPockets,
 	openSealedByObjects, carveUnderground, templateBottleneck, crossLevelAnchors, pinnedStartSeed,
-	holdFreePaths, templateZoneArray, scaledMines, ensureSignatureDwelling, clearEntranceShadow, fillBareWindows };
+	holdFreePaths, templateZoneArray, scaledMines, ensureSignatureDwelling, clearEntranceShadow, fillBareWindows, startPrimaryGuards };

@@ -52,6 +52,9 @@ const straitWidth = (W, H, K) => Math.max(3, Math.min(6, Math.round(Math.sqrt(W 
 // the reserved ground before its gate and room for the starter mines.
 const START_CLEAR = 7;
 
+/** Whether a Water layout value (an index into WATER_SHAPES) is one of the island layouts. */
+const isleShape = v => v !== null && v !== undefined && !!(WATER_SHAPES[Math.round(Number(v) || 0)] || {}).islands;
+
 function shapeOf(p) {
 	let i = Math.round(Number(p && p.waterShape) || 0);
 	if (i >= WATER_SHAPES.length) i = 0;      // Random and Template (7, 8) are settled before the plan (stockChoices applyWaterContent)
@@ -475,7 +478,9 @@ function settle(m, W, H, forced, startCells, opts = {}) {
 			if (main < 0) main = lc.sizes.indexOf(Math.max(...lc.sizes));
 			const withStart = new Set(startCells.map(c => lc.id[c]).filter(k => k >= 0));
 			const held = new Set(apart.map(c => lc.id[c]).filter(k => k >= 0));
-			const islet = Math.max(30, Math.round(0.01 * N));
+			// on an island plan a zone's own island stays down to 30 tiles: at 1% of the map (207 tiles on 144x144) the whole island of a zone of 272
+			// to 364 cells went under, an empty zone (Voronoi zones at 144, Archipelago). VMAPGEN_ISLET_ZONE=0: 1% as before
+			const islet = !connect && process.env.VMAPGEN_ISLET_ZONE !== '0' ? 30 : Math.max(30, Math.round(0.01 * N));
 			for (let k = 0; k < lc.sizes.length; k++) {
 				if (k === main) continue;
 				// a held island stays whatever its size: a dragon junction's under 1% of the map was drowned here (K's 1583610596, 2026-10-14)
@@ -904,9 +909,13 @@ const ADOPT = {
 	islands: { border: 1, inlets: 0.5 },
 	normal: { border: 0, inlets: 0.5 },
 };
-function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = null, wetScale = 1, maxWetGiven = null, islandZones = null) {
+function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = null, wetScale = 1, maxWetGiven = null, islandZones = null, isleRag = 1) {
 	const N = W * H;
-	const cfg = ADOPT[content] || ADOPT.normal;
+	// an island layout (Archipelago; Islands is content Islands already, stockChoices) makes island water whatever the content: on a template
+	// map the Archipelago button with K's default content Normal made one land mass on 18 of 18 maps (MapGen Dev's gap table, the lead's
+	// ruling 2026-10-14: the layout button makes its layout, the content and the amount only change how much). VMAPGEN_ADOPT_ISLE_SHAPE=0 off.
+	const isl = content === 'islands' || (process.env.VMAPGEN_ADOPT_ISLE_SHAPE !== '0' && isleShape(shape));
+	const cfg = isl ? ADOPT.islands : ADOPT[content] || ADOPT.normal;
 	// The Water layout on a template map's Normal water (it was ignored: the water is each zone's outer part). The shape sets how wet
 	// each zone is, by where its centre lies, around the same overall amount: Coastal wets the zones toward one side of the map
 	// (picked from the seed), Continental those toward the edge, Mediterranean those toward the middle; Lakes and Highland leave
@@ -1080,19 +1089,96 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 		}
 		for (const c of cells) if (!depth.has(c)) depth.set(c, 1);
 		// the radius rule: the cells farthest from the centre, so that `keep` of the zone stays land
-		const dist = c => Math.hypot(c % W - cx, ((c / W) | 0) - cy);
+		let dist = c => Math.hypot(c % W - cx, ((c / W) | 0) - cy);
+		// island shapes (K, 2026-10-14, on the Archipelago picture: "islands should be way less strictly circular", then "too round, and its okay
+		// to have one or two, but most of them look round. we need a great variety and variability"): on island water the land a zone keeps is cut
+		// by a distance stretched, turned, bent and lobed, with noise on the coast, each zone drawing its own amounts from the seed; about one
+		// island in six stays near round. The Island shape lever scales all of it (islandShape: 0 round, as before; 1 ragged, the default).
+		const rag = isl ? Math.max(0, Math.min(1.5, Number(isleRag) || 0)) : 0;
+		if (rag > 0) {
+			const R0 = Math.max(2, Math.sqrt(cells.length / Math.PI));
+			// a start's island stays compact (at the full amount a pinched start island put its second town past a neck and a guard, K's XL options
+			// seed 1583610596): its zone holds the start's ring of kept land
+			const startIsle = cells.some(c => forced[c]);
+			const amt = rag * (rng() < 1 / 6 ? 0.12 : 0.45 + 0.75 * rng()) * (startIsle ? 0.45 : 1);
+			const th = rng() * Math.PI, ct = Math.cos(th), st = Math.sin(th);
+			const se = Math.sqrt(1 + amt * (0.2 + 1.8 * Math.pow(rng(), 1.3)));      // stretch, 1 to about 3 along the long axis
+			const bend = amt * (rng() - 0.5) * 1.8;                                   // a banana or a crescent
+			const harm = [2, 3, 4, 5, 7].map(k => [k, amt * rng() * 0.42 / Math.sqrt(k - 1), rng() * Math.PI * 2]);
+			// two layers of coast noise: headlands and bays from the coarse one, points and coves from the fine one
+			const nz = valueNoise((rng() * 1e9) | 0, Math.max(3, Math.round(R0 / 1.6))), nf = valueNoise((rng() * 1e9) | 0, Math.max(2, Math.round(R0 / 4)));
+			dist = c => {
+				const x = c % W - cx, y = ((c / W) | 0) - cy;
+				const u = (x * ct + y * st) / se, v = (-x * st + y * ct) * se - bend * (x * ct + y * st) ** 2 / (se * se * R0);
+				const an = Math.atan2(v, u);
+				let f = 1;
+				for (const [k, a, ph] of harm) f += a * Math.sin(k * an + ph);
+				return Math.hypot(u, v) / Math.max(0.35, f) + amt * R0 * (0.8 * (nz(c % W, (c / W) | 0) - 0.5) + 0.45 * (nf(c % W, (c / W) | 0) - 0.5));
+			};
+		}
 		const ranked = cells.map(c => [dist(c), c]).sort((a, b) => a[0] - b[0]);
 		// the most of a zone the radius rule may wet on Normal water (buildAdoptedPlan tries 0.7 down to 0.55 until every zone keeps ground): Mediterranean
 		// on a 180x180 Coldshadow's Fantasy with 45% water wet the middle zones to 70% and drowned two of them (K, 2026-10-10: "huge mediterranean
 		// coldshadow ... extremely strange"). Islands keep their own rule.
+		// an island layout on Normal content keeps the cap (the Opus Reviewer, pass 59: Archipelago left a zone 6% land, seed 22)
 		const maxWet = content === 'islands' ? 0.95 : maxWetGiven !== null ? maxWetGiven : 0.95;
-		const keepZone = shapeId || wetScale !== 1 ? 1 - Math.max(0, Math.min(maxWet, (1 - keepFor(content, W)) * (shapeId ? zoneFactor.get(z) : 1) * wetScale)) : keepFor(content, W);
-		const R = ranked[Math.min(ranked.length - 1, Math.floor(ranked.length * keepZone))][0];
+		const keepRule = shapeId || wetScale !== 1 ? 1 - Math.max(0, Math.min(maxWet, (1 - keepFor(content, W)) * (shapeId ? zoneFactor.get(z) : 1) * wetScale)) : keepFor(content, W);
+		// a template's dragon junction on island water keeps an island of 150 tiles or more and no inlets, as the Mediterranean's do: on
+		// Archipelago one was left a 12-tile islet holding a monolith and its sea loot, no dragon dwelling (K's XL options, seed 22, 2026-10-14)
+		const held = isl && islandZones && islandZones.has(z) && process.env.VMAPGEN_ISLE_HOLD !== '0';
+		const keepZone = held ? Math.max(keepRule, Math.min(0.85, 150 / Math.max(1, cells.length))) : keepRule;
+		// ragged islands get a strait two tiles deep on each side: with one, two ragged coasts met across it and the shore repair joined two
+		// start islands (K's XL options, Archipelago, seed 24)
+		const border = cfg.border && rag >= 0.5 ? cfg.border + 1 : cfg.border;
 		const wet = new Set();
-		for (const [d, c] of ranked) if (d > R) wet.add(c);
-		if (cfg.border) for (const c of cells) if (depth.get(c) <= cfg.border) wet.add(c);
+		// a ragged island, and a held junction's, is grown in one piece inside the strait from the zone's middle (and its start), the lowest of the
+		// distance first, until it holds `keepZone` of the zone: cut by the distance alone, the strait, the inlets and the pieces the lobes left
+		// apart (drowned later as islets) took the zone's land under its share, and a stretched or bent island left only a strip along one edge
+		// (the Opus Reviewer, passes 69 and 71: K's 144 six-player options, Archipelago, seed 2042393646, 6 zones under 40% land with ragged
+		// islands, 0 round; junctions of 70 and 133 tiles against the 150 held). VMAPGEN_ISLE_GROW=0 cuts by the distance as before.
+		const grow = isl && (rag > 0 || held) && process.env.VMAPGEN_ISLE_GROW !== '0';
+		if (grow) {
+			const inZone = new Set(cells.filter(c => !(border && depth.get(c) <= border)));
+			const target = Math.min(inZone.size, Math.round(cells.length * keepZone));
+			// a start's zone grows round the start as well as round its middle: from the middle alone the start's ground came last and its town
+			// stood on a point with its door on two tiles of shore (K's XL options, Archipelago, seed 25, start (48,109))
+			const own = cells.filter(c => forced[c]);
+			let sx = 0, sy = 0;
+			for (const c of own) { sx += c % W; sy += (c / W) | 0; }
+			if (own.length) { sx /= own.length; sy /= own.length; }
+			// (within 10 tiles of it only: further out the start's island keeps its ragged coast; with no limit K's seed 1583610596 came out with
+			// 52% of its islands round)
+			const dS = c => Math.hypot(c % W - sx, ((c / W) | 0) - sy);
+			const dv = new Map(ranked.map(([d, c]) => [c, own.length && dS(c) <= 10 ? Math.min(d, dS(c)) : d]));
+			// a binary heap on the distance
+			const hp = [];
+			const push = c => { hp.push(c); let i = hp.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (dv.get(hp[p]) <= dv.get(hp[i])) break; [hp[p], hp[i]] = [hp[i], hp[p]]; i = p; } };
+			const pop = () => { const top = hp[0], last = hp.pop(); if (hp.length) { hp[0] = last; let i = 0; for (;;) { const a = 2 * i + 1, b = a + 1; let m = i; if (a < hp.length && dv.get(hp[a]) < dv.get(hp[m])) m = a; if (b < hp.length && dv.get(hp[b]) < dv.get(hp[m])) m = b; if (m === i) break; [hp[m], hp[i]] = [hp[i], hp[m]]; i = m; } } return top; };
+			const seeds = [...inZone].filter(c => forced[c]);
+			let mid = -1, md = Infinity;
+			for (const c of inZone) { const d = Math.hypot(c % W - cx, ((c / W) | 0) - cy); if (d < md) { md = d; mid = c; } }
+			if (mid >= 0) seeds.push(mid);
+			const land = new Set(), queued = new Set(seeds);
+			for (const c of seeds) push(c);
+			while (hp.length && land.size < target) {
+				const c = pop();
+				land.add(c);
+				const x = c % W, y = (c / W) | 0;
+				for (const [dx, dy] of dirs4) {
+					const nx = x + dx, ny = y + dy;
+					if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+					const n = ny * W + nx;
+					if (inZone.has(n) && !queued.has(n)) { queued.add(n); push(n); }
+				}
+			}
+			for (const c of cells) if (!land.has(c)) wet.add(c);
+		} else {
+			const R = ranked[Math.min(ranked.length - 1, Math.floor(ranked.length * keepZone))][0];
+			for (const [d, c] of ranked) if (d > R) wet.add(c);
+			if (border) for (const c of cells) if (depth.get(c) <= border) wet.add(c);
+		}
 		// NORMAL: a slice of at least a quarter of the coast stays dry
-		if (content !== 'islands') {
+		if (!isl) {
 			const angle = c => Math.atan2(((c / W) | 0) - cy, c % W - cx);
 			// the engine keeps one slice dry; several narrower ones (the same share in all) cut a zone's water into more
 			// lakes, which is what its maps show (about 11 pieces on the 36 to 108 size, 20 on 144)
@@ -1112,19 +1198,19 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 		const passed = new Set();
 		// an inlet is a short, wandering channel: no deeper than 6 tiles from the coast, and each cell of it passes on to one neighbour, not to all that are
 		// one step nearer the coast (all of them cut a straight slot 2 to 3 wide and up to 14 long into the land, K's islands; slots.js counted 6 on his map)
-		for (let d = Math.min(maxD, Math.round(Math.sqrt(cells.length) / 2), 6); d >= 1; d--) {
+		for (let d = held || grow ? 0 : Math.min(maxD, Math.round(Math.sqrt(cells.length) / 2), 6); d >= 1; d--) {
 			const ring = byDepth.get(d) || [];
 			const n = Math.floor(ring.length / (d + 3) * cfg.inlets);
 			for (let k = 0; k < n; k++) {
 				const c = ring[(rng() * ring.length) | 0];
 				if (checked.has(c) || forced[c]) continue;
-				if (content !== 'islands' && d > 1 && !wet.has(c)) continue; // a lake grows only from water that is there
+				if (!isl && d > 1 && !wet.has(c)) continue; // a lake grows only from water that is there
 				queue.push(c); checked.add(c);
 			}
 		}
 		while (queue.length) {
 			const c = queue.shift();
-			if (wet.has(c) && content !== 'islands') { /* already water, keep pulling */ }
+			if (wet.has(c) && !isl) { /* already water, keep pulling */ }
 			wet.add(c);
 			const x = c % W, y = (c / W) | 0;
 			for (const [dx, dy] of dirs4) {
@@ -1141,8 +1227,9 @@ function adoptWater(W, H, zoneOf, content, rng, forced, centres = null, shape = 
 }
 
 /** The water plan of a template map made the engine's way (adoptWater), cleaned as buildWaterPlan's is. */
-function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, groups = null, shape = null, coverage = null, islandZones = null) {
+function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, groups = null, shape = null, coverage = null, islandZones = null, isleRag = 1) {
 	// zones that make one island (a centralized island of several zones): their cells count as one zone to the water
+	const zoneOrig = zoneOf;
 	if (groups && groups.length) {
 		const to = new Map();
 		for (const g of groups) for (const z of g) to.set(z, g[0]);
@@ -1158,6 +1245,8 @@ function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, gro
 	// Zones left ground (K, 2026-10-10): the sea of a high amount took 70% of the middle zones of a 180x180 map and drowned two. The amount is
 	// tried with the most any zone may lose falling from 0.7 to 0.55 of its radius, and the first that leaves every zone of 60 cells or more
 	// 40% land is kept (the amount falls short when none reaches it, and says so in the log). VMAPGEN_ADOPT_MAX_WET fixes one cap.
+	const isl = content === 'islands' || (process.env.VMAPGEN_ADOPT_ISLE_SHAPE !== '0' && isleShape(shape));
+	// the caps hold for an island layout on Normal content too: only content Islands keeps its own rule (the Opus Reviewer, pass 59)
 	const caps = !want || content === 'islands' ? [null] : process.env.VMAPGEN_ADOPT_MAX_WET ? [Number(process.env.VMAPGEN_ADOPT_MAX_WET)] : [0.7, 0.65, 0.6, 0.55];
 	const area = new Map();
 	for (let c = 0; c < W * H; c++) if (zoneOf[c] >= 0) area.set(zoneOf[c], (area.get(zoneOf[c]) || 0) + 1);
@@ -1175,9 +1264,9 @@ function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, gro
 		for (let t = 0; t < (want ? 12 : 1); t++) {
 			const rng = xorshift(((seed || 1) ^ 0x5b3e17) >>> 0);
 			rng(); rng();
-			mask = adoptWater(W, H, zoneOf, content, rng, forced, null, shape, scale, cap, islandZones);
+			mask = adoptWater(W, H, zoneOf, content, rng, forced, null, shape, scale, cap, islandZones, isleRag);
 			const isle = mask.isle || [], isleAt = mask.isleAt || [], moat = mask.moat || null;
-			settle(mask, W, H, forced, startCells, { connect: content !== 'islands', apart: isle, ...(isle.length ? { wet: moat } : {}) });
+			settle(mask, W, H, forced, startCells, { connect: !isl, apart: isle, ...(isle.length ? { wet: moat } : {}) });
 			mask.isle = isle;
 			mask.isleAt = isleAt;
 			unfit = check ? repairShore(mask, W, H, forced, check, null, false) : 0;
@@ -1193,10 +1282,29 @@ function buildAdoptedPlan(W, H, zoneOf, content, starts, seed, check = null, gro
 		}
 		if (cap === null || minLand(mask) >= 0.4) break;
 	}
-	if (want && content !== 'islands' && Math.abs(got / (W * H) - (aimed || want)) > 0.02)
+	// each member of such an island keeps 30% of its own cells as land, grown from the island into the member's sea (the lead, 2026-10-15 10:58:
+	// a dragon junction of the one large island kept 11%, seed 2042393646). VMAPGEN_GROUP_FLOOR=0 off.
+	if (groups && groups.length && isl && process.env.VMAPGEN_GROUP_FLOOR !== '0')
+		for (const g of groups) for (const z of g) {
+			const cells = [];
+			for (let c = 0; c < W * H; c++) if (zoneOrig[c] === z) cells.push(c);
+			let land = cells.filter(c => !mask[c]).length;
+			const need = Math.ceil(0.3 * cells.length);
+			if (land >= need) continue;
+			const inG = new Set(g), seen = new Set(), q = [];
+			const touchesIsle = c => { const x = c % W, y = (c / W) | 0; return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => { const u = x + dx, v = y + dy; return u >= 0 && v >= 0 && u < W && v < H && !mask[v * W + u] && inG.has(zoneOrig[v * W + u]); }); };
+			for (const c of cells) if (mask[c] && touchesIsle(c)) { q.push(c); seen.add(c); }
+			for (let h = 0; h < q.length && land < need; h++) {
+				const c = q[h];
+				if (mask[c]) { mask[c] = 0; land++; got--; }
+				const x = c % W, y = (c / W) | 0;
+				for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const u = x + dx, v = y + dy, n = v * W + u; if (u >= 0 && v >= 0 && u < W && v < H && !seen.has(n) && zoneOrig[n] === z && mask[n]) { seen.add(n); q.push(n); } }
+			}
+		}
+	if (want && !isl && Math.abs(got / (W * H) - (aimed || want)) > 0.02)
 		console.error(`[gen] water: ${(100 * got / (W * H)).toFixed(1)}% reached of the ${(100 * want).toFixed(0)}% asked, the lowest zone keeps ${(100 * minLand(mask)).toFixed(0)}% land`);
-	return { mask, starts: starts.map(q => ({ ...q, moved: false })), shape: content === 'islands' ? 'islands' : 'lakes',
-		coverage: got / (W * H), unfit, islands: content === 'islands', hubCells: (mask.isle || []).filter(c => !mask[c]), isleAt: mask.isleAt || [], adopted: content };
+	return { mask, starts: starts.map(q => ({ ...q, moved: false })), shape: isl ? 'islands' : 'lakes',
+		coverage: got / (W * H), unfit, islands: isl, hubCells: (mask.isle || []).filter(c => !mask[c]), isleAt: mask.isleAt || [], adopted: content };
 }
 
 module.exports = { WATER_SHAPES, MAX_COVERAGE, START_CLEAR, buildWaterPlan,

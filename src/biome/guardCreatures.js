@@ -181,27 +181,83 @@ function becomeCreature(o, name, look, amount) {
 const anchorFits = (o, shift, W, H) => o.x + shift.dx < W && o.y + shift.dy < H;
 
 /**
+ * Whether a creature's wider picture would lie under a crater drawn after it. A HotA-styled creature (mask ["VVV","VAV"]) moves its anchor
+ * one right of the placeholder's, so its picture reaches a column the planner never checked; a crater blocking a tile there and drawn
+ * after the stack (a lower row, or the same row further right) covers it. Craters only: any object drawn after it over that column is
+ * 455 of 906 three-wide stacks on four maps of K's settings (mountains 69, dirt hills 36, banks 30, craters 28: .tmpopus-seeingi4\
+ * covertally.js), a stack beside a mountain or a tree is what every map with HotA's creatures shows, and K named the crater; MapGen Dev's
+ * guard-blocked check counts craters for the same reason (0.1 a thousand stacks on the engine's maps, 0.2 to 0.4 on ours). K, 2026-10-14, his 144x144 Coldshadow map seed 2042393645:
+ * "enchanter got placed behind a crater (decorative blocker) again", the Enchanter (20,46) under the crater (21,46), which blocks (20,46).
+ * Built once from the objects; test(o, look) for a placeholder o and a look {tpl, shift}. VMAPGEN_GUARD_CRATER=0 never refuses a look.
+ */
+const COVERS = /^crater$/;
+function coverTest(objects) {
+	const MON = /^(monster|randomMonster)/;
+	const at = new Map();
+	for (const q of objects) {
+		if (!q.template || !Array.isArray(q.template.mask) || MON.test(q.type) || !COVERS.test(q.type)) continue;
+		for (const [x, y] of blockingCells(q.template, q.x, q.y)) at.set(`${q.l || 0}:${x}:${y}`, q);
+	}
+	const picture = (tpl, ax, ay) => {
+		const out = [], m = tpl.mask;
+		for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++)
+			if (/[VBA]/.test(m[i][j])) out.push([ax - (m[i].length - 1 - j), ay - (m.length - 1 - i)]);
+		return out;
+	};
+	return (o, look) => {
+		if (process.env.VMAPGEN_GUARD_CRATER === '0' || !look || (!look.shift.dx && !look.shift.dy)) return false;
+		const l = o.l || 0, ax = o.x + look.shift.dx, ay = o.y + look.shift.dy;
+		const was = new Set(picture(PLACEHOLDER_TPL, o.x, o.y).map(c => c.join()));
+		for (const [x, y] of picture(look.tpl, ax, ay)) {
+			if (was.has(`${x},${y}`)) continue;
+			const q = at.get(`${l}:${x}:${y}`);
+			if (q && (q.y > ay || (q.y === ay && q.x > ax))) return true;
+		}
+		return false;
+	};
+}
+
+/**
  * Write each guard in `picked` (object -> creature id from engineGuard) as
  * that creature, in place, on a W x H map. A guard whose creature has no
  * writable template stays a placeholder of its level, as before. Returns
  * {placed, kept, mods}.
  */
-function concretizeGuards(objects, picked, { registry, h3, useMods, W = Infinity, H = Infinity }) {
+function concretizeGuards(objects, picked, { registry, h3, useMods, W = Infinity, H = Infinity, poolAt = null }) {
 	const holders = nameHolders(registry);
 	const looks = new Map();
+	const lookOf = id => {
+		if (!looks.has(id)) looks.set(id, creatureLook(registry.get(id), { h3, useMods, holders }));
+		return looks.get(id);
+	};
+	const covered = coverTest(objects);
 	const mods = new Set();
-	let placed = 0, kept = 0;
+	let placed = 0, kept = 0, swapped = 0, coveredLeft = 0;
 	for (const o of objects) {
 		const id = picked.get(o);
 		if (!id || !PLACEHOLDER.test(o.type)) continue;
-		if (!looks.has(id)) looks.set(id, creatureLook(registry.get(id), { h3, useMods, holders }));
-		const look = looks.get(id);
+		lookOf(id);
+		let look = looks.get(id), rec = registry.get(id), amount = o.options && o.options.amount;
 		if (!look || !anchorFits(o, look.shift, W, H)) { kept++; continue; }
-		becomeCreature(o, registry.get(id).name, look, o.options && o.options.amount);
+		// a picture a crater drawn after it would cover: another creature of its level whose picture is clear, of its faction where one is (HotA
+		// restyles a whole faction three wide, so mostly another's), nearest in value, at the same strength
+		if (covered(o, look)) {
+			// from the creatures the guard's zone allows when the caller says (poolAt: the zone's guard pool), else every creature
+			const allowed = poolAt ? new Set(poolAt(o).map(c => c.id)) : null;
+			const alt = [...registry.values()].filter(c => c !== rec && !c.special && !c.noRandom && c.level === rec.level && c.aiValue > 0 && (!allowed || allowed.has(c.id)))
+				.map(c => ({ c, look: lookOf(c.id) })).filter(a => a.look && anchorFits(o, a.look.shift, W, H) && !covered(o, a.look));
+			const own = alt.filter(a => a.c.faction === rec.faction);
+			if (alt.length) {
+				const a = (own.length ? own : alt).reduce((x, y) => (Math.abs(y.c.aiValue - rec.aiValue) < Math.abs(x.c.aiValue - rec.aiValue) ? y : x));
+				if (amount && rec.aiValue > 0) amount = Math.max(1, Math.round(amount * rec.aiValue / a.c.aiValue));
+				rec = a.c; look = a.look; swapped++;
+			} else coveredLeft++;
+		}
+		becomeCreature(o, rec.name, look, amount);
 		for (const m of look.mods) mods.add(m);
 		placed++;
 	}
-	return { placed, kept, mods };
+	return { placed, kept, mods, swapped, coveredLeft };
 }
 
 /**
@@ -221,6 +277,7 @@ function rollPlaceholders(objects, picked, { registry, h3, useMods, W = Infinity
 		if (!looks.has(id)) looks.set(id, creatureLook(registry.get(id), { h3, useMods, holders }));
 		return looks.get(id);
 	};
+	const covered = coverTest(objects);
 	// per level, the creatures the roll can land on whose art the map can use
 	const byLevel = new Map();
 	for (const c of registry.values()) {
@@ -233,7 +290,10 @@ function rollPlaceholders(objects, picked, { registry, h3, useMods, W = Infinity
 	for (const o of objects) {
 		const m = PLACEHOLDER.exec(o.type);
 		if (!m || (picked && picked.has(o))) continue;
-		const ids = (byLevel.get(Number(m[1])) || []).filter(id => anchorFits(o, lookOf(id).shift, W, H));
+		const fit = (byLevel.get(Number(m[1])) || []).filter(id => anchorFits(o, lookOf(id).shift, W, H));
+		// a look an object drawn after the stack would cover only when every look of the level is covered (coverTest)
+		const clear = fit.filter(id => !covered(o, lookOf(id)));
+		const ids = clear.length ? clear : fit;
 		if (!ids.length) { kept++; continue; }
 		const id = ids[(rng() * ids.length) | 0];
 		const look = lookOf(id);
