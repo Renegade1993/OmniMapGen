@@ -59,7 +59,9 @@ test('every start of a 48x48 eight-player map walks 8 tiles or more without a fi
 // is the one with both passes off
 test('VMAPGEN_START_WALK=0 and VMAPGEN_START_CAPS=0 give the old walk: the same seeds box a start in without the passes (the passes open it)', () => {
 	for (const seed of SEEDS) {
-		const { r, out } = generate(args(seed), 'off' + seed, { VMAPGEN_START_WALK: '0', VMAPGEN_START_CAPS: '0' });
+		// and the start warp guard off (biomes.js, 2026-10-16): it keeps some of these starts out of the box before the passes run (seed 12's
+		// smallest walk 15 tiles with it), so the old walk needs it off too
+		const { r, out } = generate(args(seed), 'off' + seed, { VMAPGEN_START_WALK: '0', VMAPGEN_START_CAPS: '0', VMAPGEN_START_WARP_GUARD: '0' });
 		assert.strictEqual(r.status, 0, r.stderr.slice(-400));
 		const { out: starts } = walks(out);
 		assert.ok(starts.some(s => s.tiles < 8), `seed ${seed}: ${JSON.stringify(starts)}`);

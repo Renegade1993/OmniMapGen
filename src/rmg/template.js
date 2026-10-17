@@ -371,7 +371,7 @@ function assignLevels(zones, req) {
 	const later = [];
 	for (const z of order) {
 		if (z.forcedLevel === 'underground') { put(z, 1); continue; }
-		if (z.forcedLevel === 'surface') { put(z, 0); continue; }
+		if (z.forcedLevel === 'surface' || z.wasUnderground) { put(z, 0); continue; }
 		if (isStart(z) && mode === 2) { put(z, 1); continue; }
 		const native = isStart(z) && z.owner ? (req.starts || [])[Number(z.owner) - 1] : null;
 		if (native === 'underground') { put(z, 1); continue; }
@@ -396,18 +396,23 @@ function buildZonePlan(raw, zones, req, accommodations) {
 	const acc = accommodations || new Set();
 	const perLevel = [[]];
 	for (let l = 1; l < req.levels; l++) perLevel.push([]);
-	const levelOf = assignLevels(zones, req);
+	// Dragon islands chosen on a two-level island map (req.dragonsUp, generate.js; 2026-10-16, the Template Factory's pairwise grid pw_001):
+	// the zones the template forces underground come up to the surface, as on a one-level map, so Several small or One large has islands to
+	// make; Auto keeps them underground, the template's own. The plan's zone list keeps their forced level; the level lists hold the copies.
+	const up = req.dragonsUp ? new Set(zones.filter(z => z.forcedLevel === 'underground' && z.type !== 'playerStart' && z.type !== 'cpuStart').map(z => z.id)) : null;
+	const lift = z => (up && up.has(z.id) ? { ...z, forcedLevel: undefined, wasUnderground: true } : z);
+	const levelOf = assignLevels(zones.map(lift), req);
 	if (levelOf) {
-		for (const z of zones) perLevel[levelOf.get(z.id)].push(z);
-		return finishZonePlan(raw, zones, req, perLevel);
+		for (const z of zones) perLevel[levelOf.get(z.id)].push(lift(z));
+		return { ...finishZonePlan(raw, zones, req, perLevel), dragonsUp: !!(up && up.size) };
 	}
 
-	const forced = zones.filter(z => z.forcedLevel === 'underground');
+	const forced = zones.filter(z => z.forcedLevel === 'underground' && !(up && up.has(z.id)));
 	if (req.levels > 1) {
 		for (const z of forced) perLevel[1].push(z);
 	}
 	const starts = zones.filter(z => z.type === 'playerStart' || z.type === 'cpuStart');
-	const rest = zones.filter(z => !forced.includes(z) && !starts.includes(z));
+	const rest = zones.filter(z => !forced.includes(z) && !starts.includes(z) && !(up && up.has(z.id)));
 	perLevel[0].push(...starts);
 	if (req.levels > 1) {
 		// The engine's level assignment (CZonePlacer::prepareZones): the zones in
@@ -436,8 +441,9 @@ function buildZonePlan(raw, zones, req, accommodations) {
 		// one level: the engine ignores forcedLevel, so these go up too
 		for (const z of forced) if (!starts.includes(z)) perLevel[0].push({ ...z, forcedLevel: undefined, wasUnderground: true });
 	}
+	if (up) for (const z of zones) if (up.has(z.id)) perLevel[0].push(lift(z));
 
-	return finishZonePlan(raw, zones, req, perLevel);
+	return { ...finishZonePlan(raw, zones, req, perLevel), dragonsUp: !!(up && up.size) };
 }
 
 function finishZonePlan(raw, zones, req, perLevel) {

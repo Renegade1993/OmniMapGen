@@ -120,13 +120,13 @@ function makeHeader({ width, height, players, levels, modIds = [], difficulty = 
 		triggeredEvents: {
 			standardDefeat: {
 				condition: ['daysWithoutTown', { type: '', value: 7 }],
-				effect: { messageToSend: emptyText, type: 'defeat' },
+				effect: { messageToSend: { exactStrings: null, localStrings: null, message: [2], numbers: null, stringsTextID: ['core.genrltxt.8'] }, type: 'defeat' },      // stock (lib/mapping/CMapHeader.cpp setupEvents: standardDefeat.effect.toOtherMessage = core.genrltxt.8); an empty text showed the other players a blank line when someone was eliminated
 				message: { exactStrings: null, localStrings: null, message: [2], numbers: null, stringsTextID: ['core.genrltxt.7'] },
 			},
 			standardVictory: {
 				condition: ['standardWin', { type: '', value: -1 }],
-				effect: { messageToSend: emptyText, type: 'victory' },
-				message: { exactStrings: null, localStrings: null, message: [2], numbers: null, stringsTextID: ['core.genrltxt.6'] },
+				effect: { messageToSend: { exactStrings: null, localStrings: null, message: [2], numbers: null, stringsTextID: ['core.genrltxt.5'] }, type: 'victory' },      // stock: standardVictory.effect.toOtherMessage = core.genrltxt.5
+				message: { exactStrings: null, localStrings: null, message: [2], numbers: null, stringsTextID: ['core.genrltxt.659'] },      // stock: standardVictory.onFulfill = core.genrltxt.659 (the module wrote .6)
 			},
 		},
 		events: [],

@@ -60,6 +60,9 @@ const BIOME_DEFAULTS = {
 	// 0.26 targets ~4.2%.
 	openPathRoad: 0.26,
 	chokeGuardRatio: 0.7,
+	// Guard gradient (2026-10-16): 0 leaves the guards between biomes as they are; up to 1 they run weaker near the starts and stronger
+	// far from them (boundaries.js placeChokeGuards)
+	guardGradient: 0,
 	artifactDensity: 0.006,
 	artifactRichness: 0.5,
 	// 0.15 while the starts were small; once they took half the land (start
@@ -124,6 +127,11 @@ const BIOME_DEFAULTS = {
 	// the smallest a twelfth of the largest: K found one "about 3 times bigger
 	// than the castle" holding nothing but its town and a guard at the exit.
 	startZoneShare: 0.5,
+	// Biome size variety: 0 every zone that is not a start the same size weight; up to 1 they draw unequal ones (partitionBiomes, and on a
+	// template plan.js chooseTemplateLayout)
+	zoneSizeVariety: 0,
+	// Rich zones: 0 Far (the farthest from the starts; a template's own), 1 Centre, 2 Between the starts, 3 Random (plan.js richKeys)
+	richPlacement: 0,
 	// Border solidity, one scale for how zones are walled off from each other:
 	//   1      solid rim band plus rim lobes (the engine's look, the default)
 	//   0.5-1  rim band, lobes scaled down toward none at 0.5
@@ -256,6 +264,21 @@ function wobbleWaves(W, H, zones, land = W * H) {
  * to nothing at a seed. That matters: a player's own cell has to stay inside
  * the player's own region, and an additive warp could hand it to a neighbour.
  */
+/**
+ * The Border wobble's scale on one seed's distance at one tile: 1 + amp (coarse - 0.5) + 0.35 amp (fine - 0.5). Its lowest value is
+ * 1 - 0.675 amp, zero at wobble 1.48 and below zero at the slider's top (1.5): a seed whose noise dips there measured a distance of
+ * nothing or less to every tile, took ground at any range, and no weight could win it back (2026-10-16). The floor keeps a distance
+ * a distance; above it the wobble is unchanged, so the slider still bends borders up to its top. VMAPGEN_WOBBLE_FLOOR=0 is the old rule.
+ */
+const WOBBLE_FLOOR = 0.15;
+// floor is WOBBLE_FLOOR, or -Infinity with the old rule; the caller reads the switch once per partition: read on every tile it made the
+// template layouts about four times slower (the Opus Reviewer, pass 105: Coldshadow 108 Mediterranean seed 9, 35 s to 127 to 175 s)
+const wobbleFloor = () => (process.env.VMAPGEN_WOBBLE_FLOOR === '0' ? -Infinity : WOBBLE_FLOOR);
+function wobbleFactor(amp, coarse, fine, floor = WOBBLE_FLOOR) {
+	const k = 1 + amp * (coarse - 0.5) + amp * 0.35 * (fine - 0.5);
+	return k < floor ? floor : k;
+}
+
 function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = null, startCells = 0) {
 	const p = { ...BIOME_DEFAULTS, ...params };
 	const seeds = playerStarts.map(pl => ({ x: pl.x, y: pl.y, player: true }));
@@ -360,21 +383,41 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 			wy[y * W + x] = y + A * (n[1](x, y) - 0.5) * 2 + a2 * (n[3](x, y) - 0.5) * 2;
 		}
 	}
-	// each seed's squared distance field, noise and all, once
-	const field = seeds.map((s, i) => {
+	// A start keeps its own middle under any wobble (cause 4 of the playable gate, 2026-10-16): at Border wobble 1.5 the warp moves a
+	// tile up to about a zone's spacing, so the tiles round a corner start were measured from far off and went to its neighbours (72x72,
+	// 4 players, seed 1: the start's zone 20 tiles, a treasure zone 1546, the start walking 20 tiles). For a start's own distance the
+	// warp fades out towards it: none within 0.2 of the reach its owed area gives it, all of it from 0.6 on, so its borders bend as
+	// much as any other. Only for a start whose own tile the layout drawn the old way gave to a neighbour (below), so a layout where every
+	// start keeps its tile is drawn as before (applied to every layout, it re-drew maps that were fine, and one redrawn 36x36 eight-player
+	// seed 2 boxed a start in through a fill defect). VMAPGEN_START_WARP_GUARD=0 is the old rule.
+	const startGuard = process.env.VMAPGEN_START_WARP_GUARD !== '0';
+	const wfl = wobbleFloor();
+	const spacing0 = Math.sqrt(land / Math.max(1, seeds.length));
+	// each seed's squared distance field, noise and all, once (again with the guard when a start needs it)
+	const fieldsOf = guarded => seeds.map((s, i) => {
 		const f = new Float32Array(W * H);
+		const R = s.player && guarded && guarded.has(i) && wx ? (reach[i] > 0 ? reach[i] / 0.8 : 0.5 * spacing0) : 0;
 		for (let y = 0; y < H; y++)
 			for (let x = 0; x < W; x++) {
-				const dx = (wx ? wx[y * W + x] : x) - s.x, dy = (wy ? wy[y * W + x] : y) - s.y;
+				let px = wx ? wx[y * W + x] : x, py = wy ? wy[y * W + x] : y;
+				if (R > 0) {
+					const t = Math.min(1, Math.max(0, (Math.hypot(x - s.x, y - s.y) / R - 0.2) / 0.4));
+					px = x + t * (px - x); py = y + t * (py - y);
+				}
+				const dx = px - s.x, dy = py - s.y;
 				let d = dx * dx + dy * dy; // squared euclid, rounder blobs than Chebyshev
-				if (noise) d *= 1 + amp * (noise[i].coarse(x, y) - 0.5)
-					+ (noise[i].fine
-						? amp * 0.35 * (noise[i].fine(x, y) - 0.5) : 0);
+				if (noise) d *= wobbleFactor(amp, noise[i].coarse(x, y), noise[i].fine ? noise[i].fine(x, y) : 0.5, wfl);
 				f[y * W + x] = d;
 			}
 		return f;
 	});
-	const weight = seeds.map(() => 1);
+	let field = fieldsOf(null);
+	// Biome size variety (zoneSizeVariety, 0 to 1; 2026-10-16, the Template Factory's coverage table: 99 of the engine's 181 templates have
+	// zones of unequal size, the largest at least twice the smallest): each zone that is not a start draws a size weight exp(1.5 v u), u from -1
+	// to 1. Measured on 96x96, 4 starts, 14 zones, 12 seeds: the tenth-largest zone against the tenth-smallest 4.2 to 1 at 0, 7.2 at 0.5, 16.3 at 1. Starts keep theirs (the balancing below sizes them). Drawn only when it is
+	// above 0, so a map at 0 is as before. VMAPGEN_ZONE_VARIETY=0 off.
+	const variety = process.env.VMAPGEN_ZONE_VARIETY === '0' ? 0 : Math.min(1, Math.max(0, Number(p.zoneSizeVariety) || 0));
+	const weight = seeds.map(s => (variety > 0 && !s.player ? Math.exp(1.5 * variety * (2 * rng() - 1)) : 1));
 	const assign = () => {
 		for (let c = 0; c < W * H; c++) {
 			let best = -1, bd = Infinity;
@@ -390,6 +433,7 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 		// players off from their boats (islands.test.js, 108x108 seed 1 and 72x72 seed 7)
 		if (process.env.VMAPGEN_ZONE_WHOLE !== '0' && !water) zonesWhole(zone, W, H, seeds);
 	};
+	const grow = () => {
 	assign();
 	// Start zones grown to their area: a heavier seed wins ground farther
 	// out (partitionSeeded), so each start's weight is nudged toward the
@@ -414,6 +458,20 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 			assign();
 		}
 		if (bestZone) zone.set(bestZone);
+	}
+	};
+	grow();
+	if (startGuard && wx && playerStarts.length) {
+		// the starts whose own tile went to a neighbour: the town's ground handed back later (plan.js VMAPGEN_START_GROUND) is then cut off
+		// from the zone's body, and the pass that keeps each zone in one piece keeps the town's patch and gives the body away (72x72 four
+		// players wobble 1.5 seed 1: the start held 412 of the 649 tiles round it, then 20)
+		const lostSet = new Set(playerStarts.map((s0, i) => i).filter(i => zone[seeds[i].y * W + seeds[i].x] !== i));
+		const lost = lostSet.size > 0;
+		if (lost) {
+			field = fieldsOf(lostSet);
+			for (let i = 0; i < playerStarts.length; i++) weight[i] = 1;
+			grow();
+		}
 	}
 	return { zone, seeds, count: seeds.length };
 }
@@ -546,6 +604,7 @@ function partitionSeeded(W, H, seeds, weights, rng, params) {
 		}))
 		: null;
 	const zone = new Int16Array(W * H).fill(-1);
+	const wfl = wobbleFloor();
 	// Domain warp: each tile's position is pushed by a two-scale noise field before the distances are compared, so the
 	// borders wander and zones take uneven outlines. Without it every zone was a straight-sided polygon (K, 2026-10-01:
 	// "every single overworld biome is a fucking pentagon"; mapsight shape: zone ragged 1.00 against the engine's
@@ -572,9 +631,7 @@ function partitionSeeded(W, H, seeds, weights, rng, params) {
 			for (let i = 0; i < seeds.length; i++) {
 				const dx = wx - seeds[i].x, dy = wy - seeds[i].y;
 				let d = dx * dx + dy * dy;
-				if (noise) d *= 1 + amp * (noise[i].coarse(x, y) - 0.5)
-					+ (noise[i].fine
-						? amp * 0.35 * (noise[i].fine(x, y) - 0.5) : 0);
+				if (noise) d *= wobbleFactor(amp, noise[i].coarse(x, y), noise[i].fine ? noise[i].fine(x, y) : 0.5, wfl);
 				d /= weights[i] || 1;
 				if (d < bd) { bd = d; best = i; }
 			}
@@ -950,7 +1007,7 @@ function physZoneDistances(zone, W, H, playerStarts, water = null, sail = false)
  * time. Town zones stay random - real maps put neutral towns in start
  * zones and treasure zones alike.
  */
-function assignClasses(seeds, params, rng, dist = null) {
+function assignClasses(seeds, params, rng, dist = null, richKey = null) {
 	const p = { ...BIOME_DEFAULTS, ...params };
 	const classes = seeds.map(s => s.player ? BIOME_CLASS.PLAYER : null);
 	const free = [];
@@ -974,6 +1031,17 @@ function assignClasses(seeds, params, rng, dist = null) {
 		towns.add(free[(rng() * free.length) | 0]);
 	const sorted = free.filter(i => !towns.has(i))
 		.sort((a, b) => dist[a] - dist[b] || a - b);
+	if (richKey) {
+		// Rich zones set to Centre or Between the starts (plan.js richKeys): the treasure zones are the best placed by that key, the
+		// low-loot ones the nearest the starts of the rest
+		const rich = sorted.slice().sort((a, b) => richKey.get(a) - richKey.get(b) || a - b).slice(0, nH);
+		rich.forEach(i => { classes[i] = BIOME_CLASS.HIGH_LOOT; });
+		const rest = sorted.filter(i => !classes[i]);
+		for (let i = 0; i < nL && i < rest.length; i++) classes[rest[i]] = BIOME_CLASS.LOW_LOOT;
+		for (const i of sorted) if (!classes[i]) classes[i] = BIOME_CLASS.STANDARD;
+		for (const i of towns) classes[i] = BIOME_CLASS.TOWN;
+		return classes;
+	}
 	for (let i = 0; i < nL && i < sorted.length; i++)
 		classes[sorted[i]] = BIOME_CLASS.LOW_LOOT;
 	for (let i = 0; i < nH && i < sorted.length; i++)

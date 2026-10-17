@@ -124,6 +124,14 @@ function placeHarbours(ctx) {
 	// and 72x72 (lens t65, and this afternoon's code with the same water)
 	const keep = ctx.keepClear || new Set();
 	const free = c => !(blocked[base + c] & (OCCUPIED | RESERVED)) && !keep.has(c);
+	// A shipyard's walls keep 3 tiles from every doorway (its hole, ctx.doorCells, and its guard): the hole and the guard's cell were kept, the
+	// ground beside them was not, and a start's harbour, placed as near the start as it fits, stood in the doorway out of the start's zone
+	// (Mediterranean 108 seed 9, 0.3.12: green's shipyard at (90-92,22) beside the guard at (93,22), green walking 262 tiles and 2 of 21
+	// zones; 21 of 21 before the start harbour). The start harbour only (placed toward a start): applied to every shipyard it moved the
+	// towns' shipyards on maps that were fine (Jebus Cross with a Mediterranean, seed 8, the crossroads island test).
+	// VMAPGEN_HARBOUR_DOOR_CLEAR=0 is the old rule.
+	const doorXY = process.env.VMAPGEN_HARBOUR_DOOR_CLEAR === '0' ? [] : [...new Set([...keep, ...(ctx.doorCells || [])])].map(c => [c % W, (c / W) | 0]);
+	const doorClose = cells => cells.some(c => doorXY.some(([gx, gy]) => Math.max(Math.abs(gx - c % W), Math.abs(gy - ((c / W) | 0))) <= 3));
 	const near = (c, list, r) => list.some(s => Math.max(Math.abs(s.x - c % W), Math.abs(s.y - ((c / W) | 0))) <= r);
 	const shipyards = templatesOf('shipyard'), boats = templatesOf('boat');
 	const harbours = [];
@@ -174,6 +182,7 @@ function placeHarbours(ctx) {
 			if (!inMask(tpl, ax, ay, W, H) || !footprintFits(tpl, ax, ay, l, W, H, blocked)) continue;
 			const own = blockingCells(tpl, ax, ay).map(([u, v]) => v * W + u);
 			if (own.some(c => water[c] || zone[c] !== z || keep.has(c) || !ashore(c))) continue;
+			if (toward && doorClose(own)) continue;
 			if (near(a, playerStarts, 4)) continue;
 			// a hero walks up to it from the row below
 			const [vx, vy] = visitableCells(tpl, ax, ay)[0];

@@ -346,6 +346,28 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 	const shift = Math.round(p.monsterStrength || 0);
 	const scaled = s => scaledLinkGuard(s, p);   // a map smaller than the template's smallest (plan.js linkGuardScale)
 	const guards = [];
+	// Guard gradient (guardGradient, 0 to 1; the Template Factory's coverage table, 2026-10-16: 99 of the engine's 181 templates guard
+	// the starts' links more weakly than the rest). Each link's depth is its links-away from the nearest start zone over this level's
+	// deepest, 0 to 1 (a level with no start: 1); at g the free layout's guards shift by round(g (4 depth - 2)) creature levels and a
+	// template's strengths scale by 3^(g (2 depth - 1)). At 0 nothing changes and nothing is drawn. VMAPGEN_GUARD_GRADIENT=0 off.
+	const grad = process.env.VMAPGEN_GUARD_GRADIENT === '0' ? 0 : Math.min(1, Math.max(0, Number(p.guardGradient) || 0));
+	let depthOf = () => 0;
+	if (grad > 0) {
+		const adj = new Map(), zd = new Map(), q = [];
+		for (const o of openings) for (const [u, v] of [[o.a, o.b], [o.b, o.a]]) (adj.get(u) || adj.set(u, []).get(u)).push(v);
+		zoneClasses.forEach((c, i) => { if (c === BIOME_CLASS.PLAYER) { zd.set(i, 0); q.push(i); } });
+		for (let h = 0; h < q.length; h++) for (const v of adj.get(q[h]) || []) if (!zd.has(v)) { zd.set(v, zd.get(q[h]) + 1); q.push(v); }
+		const linkDepth = o => Math.min(zd.has(o.a) ? zd.get(o.a) : Infinity, zd.has(o.b) ? zd.get(o.b) : Infinity);
+		let deepest = 0;
+		for (const o of openings) { const d = linkDepth(o); if (Number.isFinite(d)) deepest = Math.max(deepest, d); }
+		depthOf = o => { const d = linkDepth(o); return !Number.isFinite(d) || !q.length ? 1 : deepest > 0 ? d / deepest : 0; };
+	}
+	const gradLevels = o => grad > 0 ? Math.round(grad * (4 * depthOf(o) - 2)) : 0;
+	const gradStrength = (o, s) => grad > 0 && s > 0 ? Math.max(1, Math.round(s * Math.pow(3, grad * (2 * depthOf(o) - 1)))) : s;
+	// a link the gradient weakens keeps a guard: where the weakened strength sizes no stack (engineGuard leaves a link that weak open) and the
+	// template's own does, the strength climbs back a quarter at a time until one stands (the Opus Reviewer, pass 106: at 1 Coldshadow's
+	// start links lost their guards, doorway guards 16 to 11)
+	const gradGuard = (o, s0, extra) => { let s = gradStrength(o, s0); let g = engineGuard(scaled(s), 1 + shift, rng, true, extra); if (g || !(grad > 0) || s >= s0) return g; for (let k = 0; k < 12 && !g && s < s0; k++) { s = Math.min(s0, Math.round(s * 1.25) + 1); g = engineGuard(scaled(s), 1 + shift, rng, true, extra); } return g; };
 	for (const o of openings) {
 		if (o.kind === 'portal') continue;
 		const info = edgeInfo && edgeInfo.get(o.a * 100000 + o.b);
@@ -386,7 +408,7 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 				}
 			}
 			if (!strength) continue;
-			const g = engineGuard(scaled(strength), 1 + shift, rng, true, poolFor ? poolFor(o.a) : undefined);
+			const g = gradGuard(o, strength, poolFor ? poolFor(o.a) : undefined);
 			if (!g) continue;
 			const mid = o.hole[(o.hole.length / 2) | 0];
 			guards.push({ cell: mid, level: g.level, amount: g.amount, edge: [o.a, o.b],
@@ -397,7 +419,7 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 		// strongest link its zones have (planLevel), sized the same way
 		if (forcedStrength) {
 			const strength = forcedStrength(o.a, o.b);
-			const g = strength > 0 ? engineGuard(scaled(strength), 1 + shift, rng, true, poolFor ? poolFor(o.a) : undefined) : null;
+			const g = strength > 0 ? gradGuard(o, strength, poolFor ? poolFor(o.a) : undefined) : null;
 			if (!g) continue;
 			const mid = o.hole[(o.hole.length / 2) | 0];
 			guards.push({ cell: mid, level: g.level, amount: g.amount, edge: [o.a, o.b],
@@ -416,7 +438,7 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 		// mix stays the corpus's. The old bands (high-loot 5-7, town 4-5, the
 		// rest 1-4) put the free layout's levels 3 and 4 at 1.23x the corpus
 		// once the doorway guards stopped being lost.
-		const level = creepTier(zoneClasses[o.b], rng, shift);
+		const level = creepTier(zoneClasses[o.b], rng, shift + gradLevels(o));
 		guards.push({ cell: mid, level, edge: [o.a, o.b] });
 	}
 	return guards;

@@ -22,6 +22,15 @@ test('road types: the best one left on, as RoadPlacer falls back from cobbleston
 	assert.strictEqual(stock.roadFromToggles({ roadCobblestone: 0 }), 'pg', 'a toggle never set counts as on, stock\'s default');
 });
 
+test('Road type picks among the types the toggles allow (the window sends all three toggles with every map, 2026-10-16)', () => {
+	const r = (t, d, g, c) => stock.roadFromToggles({ roadType: t, roadDirt: d, roadGravel: g, roadCobblestone: c });
+	assert.strictEqual(r(0, 1, 1, 1), 'pd', 'Dirt chosen and allowed: dirt');
+	assert.strictEqual(r(1, 1, 1, 1), 'pg', 'Gravel chosen and allowed: gravel');
+	assert.strictEqual(r(2, 1, 1, 1), 'pc', 'the default, as the toggles alone gave');
+	assert.strictEqual(r(1, 1, 0, 1), 'pc', 'Gravel chosen but off: the best allowed');
+	assert.strictEqual(r(0, 0, 0, 0), 'none', 'all off: no roads, whatever is chosen');
+});
+
 test('the player split: human or computer players plus computer only players', () => {
 	const roll = stock.roller(1);
 	assert.deepStrictEqual(stock.playerCounts({ players: 4, humans: 2, compOnly: 4 }, roll), { nPlayers: 6, humans: 2 },

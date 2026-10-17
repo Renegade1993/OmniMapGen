@@ -836,6 +836,14 @@ async function generateMap(params) {
 	if (undergroundChoice.note) console.error('[gen] ' + undergroundChoice.note);
 	const levelReq = { levels: levels.length, seed: params.seed || 1, starts: startNative,
 		undergroundStarts: undergroundChoice.mode };
+	// Dragon islands set to Several small or One large on a two-level island map (2026-10-16, the Template Factory's pairwise grid pw_001: the lever
+	// had nothing to act on, the dragon zones being underground): the template's underground zones come up to the surface islands
+	// (template.js buildZonePlan); Auto keeps them below. Island water: the Islands content, or Normal water in the Islands or Archipelago
+	// layout. VMAPGEN_DRAGONS_UP=0 off.
+	const dragonsUp = process.env.VMAPGEN_DRAGONS_UP !== '0' && levels.length > 1
+		&& [1, 2].includes(Math.round(Number((params.biomes || {}).dragonIslandLayout) || 0))
+		&& (Math.round(Number((params.biomes || {}).waterContentMode)) === 2
+			|| (Math.round(Number((params.biomes || {}).waterContentMode)) === 1 && !!(WATER_SHAPES[Math.round(Number((params.biomes || {}).waterShape))] || {}).islands));
 	// without a template the starts are the only zones decided up front: the
 	// same rule over them alone, a random town to the level with fewer starts
 	const freeStarts = !tplZonesEarly && observerIndex < 0
@@ -882,7 +890,7 @@ async function generateMap(params) {
 			try {
 				plan0 = buildZonePlan(tplRawEarly, tplZonesEarly, { w: params.mapW, h: params.mapH,
 					levels: levels.length, players: n, humans: params.humans, seed: params.seed || 1,
-					starts: startNative, undergroundStarts: levelReq.undergroundStarts }, new Set(params.accommodate || []));
+					starts: startNative, undergroundStarts: levelReq.undergroundStarts, dragonsUp }, new Set(params.accommodate || []));
 			} catch { plan0 = null; }
 			if (plan0) {
 				const W = params.mapW, H = params.mapH;
@@ -1457,7 +1465,7 @@ async function generateMap(params) {
 		const zones = resolveZones(tpl.raw);
 		const req = { w: params.mapW, h: params.mapH, levels: levels.length,
 			players: players.length, humans: params.humans, seed: params.seed || 1,
-			starts: startNative, undergroundStarts: levelReq.undergroundStarts };
+			starts: startNative, undergroundStarts: levelReq.undergroundStarts, dragonsUp };
 		const acc = templateAcc;
 		const { violations, accommodated } = checkConstraints(tpl.raw, zones, req, acc);
 		for (const a of accommodated)
@@ -1501,7 +1509,7 @@ async function generateMap(params) {
 	const isleShape = WATER_SHAPES[Math.round(Number(biomeParams.waterShape))];
 	let dragonIslesApart = false, dragonRing = null, startRing = false, ringOf = () => null;   // several small dragon islands: each keeps its own dwellings (plan.js gatherDragons stands aside)
 	const isleLayout = adoptMode === 'islands' || !!(adoptMode && isleShape && isleShape.islands);
-	if (isleLayout && zonePlan.perLevel.length === 1 && process.env.VMAPGEN_ISLAND_CLUSTER !== '0') {
+	if (isleLayout && (zonePlan.perLevel.length === 1 || zonePlan.dragonsUp) && process.env.VMAPGEN_ISLAND_CLUSTER !== '0') {
 		const forced = new Set((zonePlan.zones || []).filter(z => z.forcedLevel === 'underground').map(z => z.id));
 		const coin = (Math.imul((params.seed || 1) >>> 0, 2654435761) >>> 9) & 1;
 		const lever = Math.round(Number(biomeParams.dragonIslandLayout) || 0), room = Math.min(params.mapW, params.mapH) >= 108;
@@ -1562,7 +1570,7 @@ async function generateMap(params) {
 		const dryLayout = anchors => planMap({
 			W: params.mapW, H: params.mapH,
 			levels: zonePlan.perLevel.length, playerStarts: starts.map((s, k) => ({ ...s, x: origin[k].x, y: origin[k].y })),
-			params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: null, layoutOnly: true, layoutForWater: isleLayout, waterIslands: false,
+			params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: null, layoutOnly: true, layoutSurfaceOnly: true, layoutForWater: isleLayout, waterIslands: false,
 				...(anchors ? { layoutAnchors: anchors } : {}) },
 			terrainShortIds, tileIdsByShort, numTiles: tiles.length,
 			objectPools: { banks, dwellings, coreBanks, chests, terrainNames }, terrainInfo: assetIndex.terrains,
@@ -1570,7 +1578,7 @@ async function generateMap(params) {
 		const wetLayout = (plan, anchors) => planMap({
 			W: params.mapW, H: params.mapH,
 			levels: zonePlan.perLevel.length, playerStarts: starts.map((s, k) => ({ ...s, x: plan.starts[k] ? plan.starts[k].x : origin[k].x, y: plan.starts[k] ? plan.starts[k].y : origin[k].y })),
-			params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: plan.mask, layoutOnly: true, layoutForWater: isleLayout, waterIslands: !!plan.islands,
+			params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: plan.mask, layoutOnly: true, layoutSurfaceOnly: true, layoutForWater: isleLayout, waterIslands: !!plan.islands,
 				...(anchors ? { layoutAnchors: anchors } : {}) },
 			terrainShortIds, tileIdsByShort, numTiles: tiles.length,
 			objectPools: { banks, dwellings, coreBanks, chests, terrainNames }, terrainInfo: assetIndex.terrains,
@@ -1591,7 +1599,7 @@ async function generateMap(params) {
 			const Wd = params.mapW, Hd = params.mapH, N = Wd * Hd, m = waterPlan.mask, cx = Wd / 2, cy = Hd / 2, side = Math.min(Wd, Hd);
 			const fin = planMap({
 				W: Wd, H: Hd, levels: zonePlan.perLevel.length, playerStarts: starts,
-				params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: m, layoutOnly: true, layoutForWater: true,
+				params: { ...biomeParams, seed: params.seed || 1, zonePlan, waterMask: m, layoutOnly: true, layoutSurfaceOnly: true, layoutForWater: true,
 					...(clusterAnchors ? { layoutAnchors: clusterAnchors } : isleAnchors ? { layoutAnchors: isleAnchors, islesHeld: true } : {}),
 					...(dragonIslesApart ? { dragonIslesApart: true } : {}),
 					waterIslands: !!(waterPlan.islands || (waterPlan.hubCells && waterPlan.hubCells.length)),
@@ -1616,6 +1624,12 @@ async function generateMap(params) {
 				land[q]++; sx[q] += c % Wd; sy[q] += (c / Wd) | 0; onComp[q].set(comp[c], (onComp[q].get(comp[c]) || 0) + 1);
 			}
 			const bad = [];
+			// A zone's land share is judged against the land the player left: under 40%, or under half the map's land share when there is more
+			// water than that allows (2026-10-16, the Template Factory's pairwise grid: at Amount of water 0.6 a zone's cells, its sea included,
+			// average 40% land, and 8 of 10 failing island maps had zones at 27 to 39%; the starved ones were at 4 to 19%). 0.25 water: 37.5%,
+			// 0.6: 20%. VMAPGEN_LAND_FLOOR_FIXED=1 is the old fixed 40%.
+			let dry = 0; for (let c = 0; c < N; c++) if (!m[c]) dry++;
+			const landFloor = process.env.VMAPGEN_LAND_FLOOR_FIXED === '1' ? 0.4 : Math.min(0.4, 0.5 * dry / N);
 			// on the Mediterranean only the start zones' land is judged: its dragon junctions are islands in the sea by design (under 40% land), and
 			// the starts share the land ring. Each start zone 200 land tiles or more and half the middle one's, the largest at most the spread
 			// factor over the smallest (MapGen Dev's w_mediterranean_108_s7001: green's start zone 97 land tiles against 336 to 691, its start
@@ -1631,11 +1645,11 @@ async function generateMap(params) {
 				zs.forEach((zt, i) => {
 					if (!zt || zt.wasUnderground || zt.forcedLevel === 'underground') return;
 					if (land[i] < 40) bad.push(`zone ${i} with ${land[i]} land tiles`);
-					else if (cells[i] >= 60 && land[i] < 0.4 * cells[i]) bad.push(`zone ${i} ${Math.round(100 * land[i] / cells[i])}% land`);
+					else if (cells[i] >= 60 && land[i] < landFloor * cells[i]) bad.push(`zone ${i} ${Math.round(100 * land[i] / cells[i])}% land`);
 				});
 				return bad;
 			}
-			zs.forEach((t, i) => { if (cells[i] >= 60 && land[i] < 0.4 * cells[i]) bad.push(`zone ${i} ${Math.round(100 * land[i] / cells[i])}% land`); });
+			zs.forEach((t, i) => { if (cells[i] >= 60 && land[i] < landFloor * cells[i]) bad.push(`zone ${i} ${Math.round(100 * land[i] / cells[i])}% land`); });
 			const dragons = zs.map((t, i) => (t && (t.wasUnderground || t.forcedLevel === 'underground') ? i : -1)).filter(i => i >= 0);
 			if (clusterAnchors && clusterPlan) {
 				const grp = clusterPlan.ids.map(id => clusterPlan.order.indexOf(id)), per = new Map();
@@ -1729,7 +1743,7 @@ async function generateMap(params) {
 			if (!dry) dry = dryLayout(dragonRing);
 			let cutFrom = dry;   // the layout the water below is cut from
 			// a one-level map's dragon junctions (the zones the template keeps below ground) are islands in a Mediterranean (water.js adoptWater)
-			const isleZones = zonePlan.perLevel.length === 1 ? new Set((zonePlan.perLevel[0] || []).map((z, i) => (z && (z.wasUnderground || z.forcedLevel === 'underground') ? i : -1)).filter(i => i >= 0)) : null;
+			const isleZones = zonePlan.perLevel.length === 1 || zonePlan.dragonsUp ? new Set((zonePlan.perLevel[0] || []).map((z, i) => (z && (z.wasUnderground || z.forcedLevel === 'underground') ? i : -1)).filter(i => i >= 0)) : null;
 			waterPlan = clusterMask || buildAdoptedPlan(params.mapW, params.mapH, dry.zone, adoptMode, origin, params.seed || 1, shoreCheck, null, biomeParams.waterShape, biomeParams.waterCoverage, isleZones && isleZones.size ? isleZones : null, biomeParams.islandShape);
 			if (waterPlan && waterPlan.hubCells && waterPlan.hubCells.length) console.error(`[gen] water: the dragon junctions in the sea are islands, ${waterPlan.hubCells.length} tiles`);
 			// each junction's seed held on its own island in the map's layout (water.js adoptWater isleAt). Held only in the last layout,
@@ -1796,7 +1810,7 @@ async function generateMap(params) {
 		const layout = (mask, startList, plan, seed, islands = false) => planMap({
 			W: params.mapW, H: params.mapH,
 			levels: plan.perLevel.length, playerStarts: startList,
-			params: { ...biomeParams, seed, zonePlan: plan, waterMask: mask, layoutOnly: true,
+			params: { ...biomeParams, seed, zonePlan: plan, waterMask: mask, layoutOnly: true, layoutSurfaceOnly: true,
 				waterIslands: islands },
 			terrainShortIds, tileIdsByShort, numTiles: tiles.length,
 			objectPools: { banks, dwellings, coreBanks, chests, terrainNames }, terrainInfo: assetIndex.terrains,
@@ -2448,8 +2462,27 @@ async function generateMap(params) {
 					const Wl = lv.width, Hl = lv.height, bl = new Uint8Array((li + 1) * Wl * Hl);
 					for (const o of plans[li].objects || []) if ((o.l || 0) === li && o.template && o.template.mask && !REMOVABLE_TYPES.has(o.type))
 						for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < Wl && fy < Hl) bl[li * Wl * Hl + fy * Wl + fx] = 1;
-					const dg = require('../biome/gateroad').closeDiagonalSteps(plans[li], Wl, Hl, li, bl, 1, blockingCells);
-					if (dg.closed) console.error(`[gen] level ${li}: road steps that met at a corner only after the last thinning: ${dg.closed} joined by a tile beside them, ${dg.left} left`);
+					// scenery beside a step may go for the road here as in the road pass (plan.js): the pairwise grid's pw_004, Coldshadow 108, an oak group
+					// beside the step (25,93)-(26,94) on a shore; VMAPGEN_ROAD_DIAG_LAST_SCENERY=0 leaves it
+					const pl = require('../biome/plan');
+					const dOpts = { allowBlock: true, visitOf: visitableCells, dirsOf: allowedDirs, ...(process.env.VMAPGEN_ROAD_DIAG_LAST_SCENERY !== '0' ? { clearScenery: pl.clearScenery, isDecor: pl.diagIsDecor } : {}) };
+					const dg = require('../biome/gateroad').closeDiagonalSteps(plans[li], Wl, Hl, li, bl, 1, blockingCells, dOpts);
+					if (dg.closed || dg.endsOff || dg.armsCut || dg.doorsOff) console.error(`[gen] level ${li}: road steps that met at a corner only after the last thinning: ${dg.closed} joined by a tile beside them${dg.blocks ? ` (${dg.blocks} of them making a patch two tiles wide)` : ''}${dg.cleared ? ` (${dg.cleared} scenery piece(s) cleared)` : ''}${dg.carved ? ` (${dg.carved} rock tile(s) dug out)` : ''}${dg.filled ? ` (${dg.filled} shore tile(s) made land)` : ''}${dg.linked ? ` (${dg.linked} linked round over free ground)` : ''}${dg.doorsOff ? ` (${dg.doorsOff} gate or monolith door(s) left to the road before them)` : ''}${dg.endsOff ? `, ${dg.endsOff} road end(s) taken off an object's own tile` : ''}${dg.armsCut ? `, ${dg.armsCut} short arm(s) past an unjoinable step taken up` : ''}, ${dg.left} left`);
+					// then the one-tile stubs the joins leave beside a road (gateroad.js roadNubs), and an arm that no longer leads anywhere (trimRoadStubs),
+					// and the corners once more (K, 2026-10-16, his seed 2042393645: "roads still ending randomly")
+					const gr = require('../biome/gateroad');
+					let nubs = 0, trimmed = 0, sideDoors = 0;
+					for (let round = 0; round < 2; round++) {
+						const nb = gr.roadNubs(plans[li], Wl, Hl, li, visitableCells, allowedDirs);
+						// and a one-tile end on a destination's side door beside a road that passes its other door (gateroad.js sideDoorStubs)
+						const sd = gr.sideDoorStubs(plans[li], Wl, Hl, li, visitableCells, allowedDirs);
+						sideDoors += sd.cut; nb.cut += sd.cut;
+						const tr = (nb.cut || dg.armsCut || dg.doorsOff) && process.env.VMAPGEN_ROAD_TRIM !== '0' ? gr.trimRoadStubs(plans[li], Wl, Hl, li, visitableCells, blockingCells, allowedDirs) : { cut: 0 };
+						nubs += nb.cut; trimmed += tr.cut;
+						if (!nb.cut && !tr.cut) break;
+						gr.closeDiagonalSteps(plans[li], Wl, Hl, li, bl, 1, blockingCells, dOpts);
+					}
+					if (nubs || trimmed) console.error(`[gen] level ${li}: one-tile road stubs taken up at the end: ${nubs}, arm tiles trimmed after them: ${trimmed}${sideDoors ? ` (${sideDoors} of the stubs on a side door)` : ''}`);
 				}
 			}
 			const roadArt = solveRoadTiles(roadCells, lv.width, lv.height, roadRng);

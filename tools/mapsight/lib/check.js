@@ -41,6 +41,9 @@ function checkMap(file) {
 	if (sealed.length) fails.push(`sealed ${sealed.length} (${sealed.slice(0, 4).map(o => `${o.cls} ${o.type}${o.subtype ? ':' + o.subtype : ''} (${o.at.join(',')}${o.l ? ',L' + o.l : ''})`).join(' ')}${sealed.length > 4 ? ' ...' : ''})`);
 	const empty = emptyZones(A.M);
 	if (empty.length) fails.push(`empty zones ${empty.length} (${empty.slice(0, 6).map(e => `${e.zone}${e.l ? ',L' + e.l : ''}: ${e.n}/${e.tiles}`).join(' ')})`);
+	// the count before (every ground tile, scenery too), printed so the free-ground rule never hides a case (the lead, 2026-10-15 18:19)
+	const emptyAll = emptyZones(A.M, { allGround: true }).filter(e => !empty.some(f => f.zone === e.zone && f.l === e.l));
+	if (emptyAll.length) notes.push(`zones empty by all their ground, scenery counted, ${emptyAll.length} (${emptyAll.slice(0, 6).map(e => `${e.zone}${e.l ? ',L' + e.l : ''}: ${e.n}/${e.tiles}`).join(' ')}), a note only`);
 	const splitAll = splitZones(A.M), split = splitAll.filter(e => e.cut.length), reachedSplit = splitAll.filter(e => !e.cut.length);
 	if (split.length) fails.push(`split zones ${split.length} (${split.slice(0, 5).map(e => `${e.zone}${e.l ? ',L' + e.l : ''}: ${e.main}/${e.open}, cut off ${e.cut.join('+')}`).join(' ')})`);
 	if (reachedSplit.length) notes.push(`zones in pieces every one of which a start reaches ${reachedSplit.length} (${reachedSplit.slice(0, 5).map(e => `${e.zone}${e.l ? ',L' + e.l : ''}: ${e.pieces.join('+')}`).join(' ')}), a note only`);
@@ -202,13 +205,15 @@ function teleportsOffRoad(M) {
 	return out;
 }
 
-function emptyZones(M) {
+function emptyZones(M, opts = null) {
 	if (!M.zoneAt) return [];
 	const tiles = new Map(), n = new Map();
 	const key = (l, z) => l * 1000 + z;
 	for (let l = 0; l < M.NL; l++) for (let y = 0; y < M.H; y++) for (let x = 0; x < M.W; x++) {
 		const z = M.zoneAt(l, x, y);
-		if (z === undefined || z === null || z < 0 || !M.ground(M.idx(l, x, y))) continue;
+		// ground a hero can stand on: a zone that is wall but for a few tiles (c_ug72_p4_s12 zone 8: 68 tiles, 11 free; c_ug108_p4_s2 zone 16: 115 tiles, 3 free) has no room
+		// for an object, and test/zone-floor.test.js leaves such slivers a layout matter. opts.allGround: every ground tile, the count before
+		if (z === undefined || z === null || z < 0 || !M.ground(M.idx(l, x, y)) || (!(opts && opts.allGround) && M.blocked[M.idx(l, x, y)])) continue;
 		tiles.set(key(l, z), (tiles.get(key(l, z)) || 0) + 1);
 	}
 	for (const o of M.objs) {
