@@ -541,7 +541,12 @@ function terrainLegality(M) {
 			if (violates(o.type, o.subtype, o.template.animation, short)) {
 				const e = ART[art] || ART[art.replace(/^.*\//, '')];
 				bad.push({ o, terrain: CORE[short], allowed: e ? Object.keys(e.terrains) : ['?'], by: 'corpus' });
+				continue;
 			}
+			// where the corpus has too few sightings to say, the game's own table (OBJECTS.TXT) does: the oasis on dirt (K, 2026-10-22), sand only
+			const core = coreArts(), own = core && core.get(art.replace(/^.*\//, ''));
+			const e = ART[art] || ART[art.replace(/^.*\//, '')];
+			if (own && !o.pickup && o.visitable && (!e || e.n < 20) && !own.has(CORE[short])) bad.push({ o, terrain: CORE[short], allowed: [...own], by: 'Objects.txt' });
 			continue;
 		}
 		const name = (I && I.terrName.get(short)) || short;

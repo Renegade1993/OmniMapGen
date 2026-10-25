@@ -190,3 +190,31 @@ test('a shore tile beside a step between a town\'s corner and the sea becomes la
 	const out2 = closeDiagonalSteps({ roadCells: b.R, objects: [], zone: b.zone, p: { water: b.water } }, W, H, 0, b.blocked, 1, blockingCells, { allowBlock: true });
 	assert.ok(!out2.filled && b.water[idx(4, 4)], 'another zone\'s ground beside it: the water stays');
 });
+
+test('the shore fill leaves a coastal town\'s own boat tiles (the Reviewer\'s pass 127)', () => {
+	// the shore setup above; a town whose door is (5,2), so (4,4) is its boat tile (CGTownInstance::getOutOffsets: door plus (-1,+2), (+1,+2))
+	const R = new Set(); for (let x = 0; x <= 4; x++) R.add(idx(x, 3)); for (let x = 5; x <= 11; x++) R.add(idx(x, 4));
+	const water = new Uint8Array(W * H); for (let x = 0; x < W; x++) for (let y = 5; y < H; y++) water[idx(x, y)] = 1;
+	for (let x = 0; x <= 4; x++) water[idx(x, 4)] = 1;
+	const blocked = new Uint8Array(W * H); blocked[idx(5, 3)] = 1; blocked[idx(5, 2)] = 1; blocked[idx(6, 3)] = 1; blocked[idx(6, 2)] = 1;
+	const town = { type: 'town', x: 5, y: 2, l: 0, template: { mask: ['BA'], visitableFrom: ['---', '+-+', '+++'] } };
+	const out = closeDiagonalSteps({ roadCells: R, objects: [town], zone: new Int16Array(W * H), p: { water } }, W, H, 0, blocked, 1, blockingCells, { allowBlock: true, visitOf: visitableCells, dirsOf: allowedDirs });
+	assert.ok(!out.filled, 'nothing filled');
+	assert.ok(water[idx(4, 4)], 'the town\'s boat tile stays water');
+});
+
+test('a road on the map\'s outermost row moves a tile in (the Reviewer\'s pass 129, the lead\'s rim order)', () => {
+	// a road along row 0 from x 2 to 8, met by roads coming up at x 2 and x 8 from row 3; row 1 is free floor
+	const R = new Set(); for (let x = 2; x <= 8; x++) R.add(idx(x, 0)); for (let y = 1; y <= 3; y++) { R.add(idx(2, y)); R.add(idx(8, y)); }
+	const blocked = new Uint8Array(W * H);
+	const out = closeDiagonalSteps({ roadCells: R, objects: [], zone: null }, W, H, 0, blocked, 1, blockingCells, { allowBlock: true, rimIn: true });
+	assert.ok(out.rimIn >= 5, 'tiles moved in (' + out.rimIn + ')');
+	assert.ok([...R].every(c => ((c / W) | 0) > 0), 'no road on row 0');
+	const seen = new Set([idx(2, 3)]), q = [idx(2, 3)];
+	for (let h = 0; h < q.length; h++) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const x = q[h] % W + dx, y = ((q[h] / W) | 0) + dy, u = idx(x, y); if (x >= 0 && y >= 0 && x < W && y < H && R.has(u) && !seen.has(u)) { seen.add(u); q.push(u); } }
+	assert.ok(seen.has(idx(8, 3)), 'the road is one piece by side steps');
+	// without rimIn nothing moves
+	const R2 = new Set(); for (let x = 2; x <= 8; x++) R2.add(idx(x, 0)); for (let y = 1; y <= 3; y++) { R2.add(idx(2, y)); R2.add(idx(8, y)); }
+	closeDiagonalSteps({ roadCells: R2, objects: [], zone: null }, W, H, 0, new Uint8Array(W * H), 1, blockingCells, { allowBlock: true });
+	assert.ok(R2.has(idx(5, 0)), 'the old rule keeps it');
+});

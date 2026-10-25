@@ -14,6 +14,7 @@
 const OCCUPIED = 1, RESERVED = 2;
 const MON = /^(monster|randomMonster)/;
 const PICKUP = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|seaChest)/;
+const CHEAP = /^(resource|randomResource|treasureChest|campfire)/;
 const SHADOW = [[0, 0], [-1, 0], [0, -1], [-1, -1]];
 // where a pickup may go: within two tiles of the monster, ahead of its sprite (right and below), nearest first
 const CLEAR = [];
@@ -33,9 +34,17 @@ function declipMonsters(plan, W, H, l, blocked, blockingCells, footprintCells) {
 	for (const o of objs) for (const c of cellsOf(o, o.x, o.y)) solid.add(c);
 	const roads = plan.roadCells || new Set();
 	const one = o => { const b = blockingCells(o.template, o.x, o.y); return b.length === 1 && b[0][0] === o.x && b[0][1] === o.y; };
+	// only where a hero reaches by fighting (lootswap.js fightMap): a tile beside the monster can be a hole walled in on every side, and a
+	// mercury moved into one (pw_040, 180x180 two levels seed 1040, (160,141))
+	const fought = require('./lootswap').fightMap(plan.objects, W, H, l, blocked, OCCUPIED, o => MON.test(o.type) || PICKUP.test(o.type), blockingCells);
 	for (const p of objs) {
 		if (!PICKUP.test(p.type) || p.__walled || !one(p) || !cellsOf(p, p.x, p.y).some(c => shadow.has(c))) continue;
 		let done = false;
+		// every stack whose ring holds it now still does where it goes, as declipPictures keeps it: a relic moved two tiles below its only
+		// guard stood in no ring, open to a flyer (K's map seed 1479105351, (75,68) under the overseer (75,66), 2026-10-23). VMAPGEN_DECLIP_RING=0 off.
+		const ring = (x, y) => monsters.filter(m => Math.max(Math.abs(m.x - x), Math.abs(m.y - y)) <= 1);
+		// (artifacts, Pandora's boxes, scrolls and prisons; a resource, a chest or a campfire may still go two tiles off, as before)
+		const watched = process.env.VMAPGEN_DECLIP_RING !== '0' && /^(randomArtifact|artifact|pandoraBox|spellScroll|prison)/.test(p.type) ? ring(p.x, p.y) : [];
 		for (const m of monsters) {
 			if (done) break;
 			const own = cellsOf(p, p.x, p.y);
@@ -43,7 +52,8 @@ function declipMonsters(plan, W, H, l, blocked, blockingCells, footprintCells) {
 			for (const [dx, dy] of CLEAR) {
 				const x = m.x + dx, y = m.y + dy, c = y * W + x;
 				if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
-				if (blocked[base + c] & (OCCUPIED | RESERVED) || roads.has(c)) continue;
+				if (watched.length && !watched.every(g => Math.max(Math.abs(g.x - x), Math.abs(g.y - y)) <= 1)) continue;
+				if (blocked[base + c] & (OCCUPIED | RESERVED) || roads.has(c) || !fought(c)) continue;
 				if (plan.openMask && !plan.openMask[c]) continue;
 				if (plan.p && plan.p.water && plan.p.water[c]) continue;
 				if (plan.zone && plan.zone[c] !== plan.zone[p.y * W + p.x]) continue;
@@ -59,9 +69,131 @@ function declipMonsters(plan, W, H, l, blocked, blockingCells, footprintCells) {
 				break;
 			}
 		}
+		// no free tile for a dear one: it trades places with a cheap pickup in sight that every stack watching it also watches, so the same tiles
+		// stay taken and the guards keep the same ground; the cheap one goes under the picture (K, 2026-10-22: "Hellsteed standing on a tome
+		// of water"; the dear piles under a monster were 80 a map on his options). VMAPGEN_DECLIP_SWAP=0 off.
+		if (!done && watched.length && process.env.VMAPGEN_DECLIP_SWAP !== '0') {
+			const own = cellsOf(p, p.x, p.y);
+			for (const q of objs) {
+				if (q === p || !CHEAP.test(q.type) || q.__walled || !one(q)) continue;
+				if (!watched.every(g => Math.max(Math.abs(g.x - q.x), Math.abs(g.y - q.y)) <= 1)) continue;
+				if (plan.zone && plan.zone[q.y * W + q.x] !== plan.zone[p.y * W + p.x]) continue;
+				if (cellsOf(q, q.x, q.y).some(c => shadow.has(c))) continue;
+				// visited from the same sides, so neither lands where its own way in is shut (a lost wagon, visited from below only, swapped onto a
+				// relic's tile whose lower side was taken sealed a Goblin Tower behind it: K's October 18th seed 1244039256)
+				const vf = o => JSON.stringify(o.template.visitableFrom || ['+++', '+-+', '+++']);
+				if (vf(q) !== vf(p)) continue;
+				const qo = cellsOf(q, q.x, q.y);
+				const [px, py] = [p.x, p.y];
+				for (const f of own.concat(qo)) solid.delete(f);
+				p.x = q.x; p.y = q.y; q.x = px; q.y = py;
+				for (const f of cellsOf(p, p.x, p.y).concat(cellsOf(q, q.x, q.y))) solid.add(f);
+				out.swapped = (out.swapped || 0) + 1; done = true;
+				break;
+			}
+		}
 		if (!done) out.left++;
 	}
 	return out;
 }
 
-module.exports = { declipMonsters };
+/**
+ * No pickup half hidden under another object's picture (K, 2026-10-18 via the lead: "crawling grids around instances of the shield and finding
+ * cases where the art could be overlapped"). The placers leave a template's 'V' cells (drawn, walkable) free for walking (content.js
+ * blockingCells), so a pickup could stand where a building, a bank, a mine, a tree or a monster drawn after it covers it: on K's map seed
+ * 1244039256 a crystal (23,36) wholly under the crystal cavern (24,37), a major artifact (106,45) half under a building, 41 pickups half hidden
+ * or more (tools/harness/overlap_scan.js). Judged by the pixels the game draws (pictures.js: each sprite decoded and placed as the game places
+ * it, in its draw order; an object the engine draws under everything, a lake or a crater, covers nothing), not by mask cells: a 'V' cell is
+ * often bare sky above a roof. This runs last. A one-tile pickup half hidden or more moves to the nearest free tile within two (two off through
+ * a free tile between) where less than a quarter of it is hidden, in the same zone, inside the ring of every monster that watched it, so a
+ * hero reaches it past the same guards as before; with no such tile it stays. A sprite that cannot be read moves nothing.
+ * VMAPGEN_DECLIP_ART=0 skips it. Returns { moved, left }.
+ */
+function declipPictures(plan, W, H, l, blocked, blockingCells, footprintCells, roots = [], prio = () => 0) {
+	const out = { moved: 0, left: 0 };
+	const pics = require('./pictures');
+	const base = l * W * H;
+	const objs = plan.objects.filter(o => (o.l || 0) === l && o.template && o.template.mask);
+	const order = new Map(plan.objects.map((o, k) => [o, k]));
+	const monsters = objs.filter(o => MON.test(o.type));
+	const inMap = ([x, y]) => x >= 0 && y >= 0 && x < W && y < H;
+	const zOf = o => o.template.zIndex || prio(o.template.animation) || 0;
+	// every object but the pickups, with its pixels by tile and what the draw order needs
+	const byTile = new Map();
+	for (const o of objs) {
+		if (PICKUP.test(o.type) || zOf(o)) continue;
+		const s = pics.spriteOf(o.template.animation, roots);
+		if (!s) continue;
+		const d = { o, cov: pics.coverage(o.x, o.y, s), x: o.x, y: o.y, z: 0, k: order.get(o), hero: o.type === 'hero',
+			cells: new Set(blockingCells(o.template, o.x, o.y).map(([a, b]) => a + ',' + b)) };
+		for (const t of d.cov.keys()) { if (!byTile.has(t)) byTile.set(t, []); byTile.get(t).push(d); }
+	}
+	// the share of pickup p's picture that objects drawn after it cover when it stands at (x, y)
+	const hidden = (p, s, x, y) => {
+		const me = { x, y, z: 0, k: order.get(p), hero: false, cells: new Set([x + ',' + y]) };
+		let own = 0, under = 0;
+		for (const [t, rows] of pics.coverage(x, y, s)) {
+			const u = new Uint32Array(32);
+			for (const d of byTile.get(t) || []) if (pics.drawnBefore(me, d)) { const r = d.cov.get(t); for (let i = 0; i < 32; i++) u[i] |= r[i]; }
+			for (let i = 0; i < 32; i++) { own += pics.pop(rows[i]); under += pics.pop((rows[i] & u[i]) >>> 0); }
+		}
+		return own ? under / own : 0;
+	};
+	const solid = new Set();
+	for (const o of objs) for (const [a, b] of blockingCells(o.template, o.x, o.y)) if (inMap([a, b])) solid.add(b * W + a);
+	// the ways in to every building, mine, bank and other non-pickup object: no pickup moves onto one (the APPROACH marks can not tell this,
+	// a pickup's own placement marks its eight neighbours too, which left 37 of 43 half-hidden pickups unmoved on K's map seed 1244039256)
+	const doors = new Set();
+	for (const o of objs) {
+		if (PICKUP.test(o.type) || MON.test(o.type)) continue;
+		const vf = o.template.visitableFrom || [], m = o.template.mask;
+		for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) {
+			if (m[i][j] !== 'A' && m[i][j] !== 'T') continue;
+			const vx = o.x - (m[i].length - 1 - j), vy = o.y - (m.length - 1 - i);
+			for (let r = 0; r < 3; r++) for (let k = 0; k < 3; k++) if (vf[r] && vf[r][k] === '+' && inMap([vx + k - 1, vy + r - 1])) doors.add((vy + r - 1) * W + vx + k - 1);
+		}
+	}
+	const roads = plan.roadCells || new Set();
+	const one = o => { const b = blockingCells(o.template, o.x, o.y); return b.length === 1 && b[0][0] === o.x && b[0][1] === o.y; };
+	const ringOf = c => monsters.filter(m => Math.max(Math.abs(m.x - (c % W)), Math.abs(m.y - ((c / W) | 0))) <= 1);
+	const walk = c => !(blocked[base + c] & OCCUPIED) && (!plan.openMask || plan.openMask[c]) && !(plan.p && plan.p.water && plan.p.water[c]);
+	const NEAR = [];
+	for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (dx || dy) NEAR.push([dx, dy]);
+	NEAR.sort((a, b) => Math.max(Math.abs(a[0]), Math.abs(a[1])) - Math.max(Math.abs(b[0]), Math.abs(b[1])) || (a[0] * a[0] + a[1] * a[1]) - (b[0] * b[0] + b[1] * b[1]));
+	const fought = require('./lootswap').fightMap(plan.objects, W, H, l, blocked, OCCUPIED, o => MON.test(o.type) || PICKUP.test(o.type), blockingCells);
+	for (const p of objs) {
+		if (!PICKUP.test(p.type) || p.__walled || !one(p)) continue;
+		const s = pics.spriteOf(p.template.animation, roots);
+		if (!s || hidden(p, s, p.x, p.y) < 0.5) continue;
+		const c0 = p.y * W + p.x, guards = ringOf(c0);
+		let done = false;
+		for (const [dx, dy] of NEAR) {
+			const x = p.x + dx, y = p.y + dy, c = y * W + x;
+			if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
+			if (blocked[base + c] & (OCCUPIED | RESERVED) || doors.has(c) || roads.has(c) || !walk(c) || solid.has(c) || !fought(c)) continue;
+			if (plan.zone && plan.zone[c] !== plan.zone[c0]) continue;
+			const ring = ringOf(c);
+			if (!guards.every(g => ring.includes(g))) continue;
+			// two tiles off: a free tile beside both, which the hero crosses
+			if (Math.max(Math.abs(dx), Math.abs(dy)) === 2) {
+				let via = false;
+				for (let vy = -1; vy <= 1; vy++) for (let vx = -1; vx <= 1; vx++) {
+					const nx = p.x + vx, ny = p.y + vy;
+					if ((vx || vy) && Math.abs(nx - x) <= 1 && Math.abs(ny - y) <= 1 && inMap([nx, ny]) && walk(ny * W + nx)) via = true;
+				}
+				if (!via) continue;
+			}
+			if (hidden(p, s, x, y) >= 0.25) continue;
+			blocked[base + c0] &= ~OCCUPIED;
+			blocked[base + c] |= OCCUPIED;
+			solid.delete(c0); solid.add(c);
+			p.x = x; p.y = y;
+			out.moved++; done = true;
+			break;
+		}
+		if (!done) out.left++;
+	}
+	return out;
+}
+
+module.exports = { declipMonsters, declipPictures };

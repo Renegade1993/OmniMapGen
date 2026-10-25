@@ -169,6 +169,12 @@ function fillRimRows(plan, W, H, l, blocked, rng, objectEntry, isScenery) {
 
 	// the roads: laid before the fill (roadplan.js), never covered by the rows
 	for (const c of plan.roadCells || []) keep[c] = 1;
+	// and the tile straight below a town's, a gate's or a monolith's door: with it covered the door was entered at a corner only and its road
+	// met it at a corner, two dead ends in the game (the pairwise grid's pw_035, 144x144 two levels: the gate at (64,37) on level 1, rock under
+	// its door but the tile below right). VMAPGEN_RIM_KEEP_FRONT=0 lets the rows take it
+	if (process.env.VMAPGEN_RIM_KEEP_FRONT !== '0')
+		for (const o of plan.objects) if ((o.l || 0) === l && o.template && o.template.mask && /^(randomTown|town)$|^(subterraneanGate|monolith)/.test(o.type))
+			for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) if (vy + 1 < H && allowedDirs(o.template).some(([dx, dy]) => !dx && dy === 1)) keep[(vy + 1) * W + vx] = 1;
 
 	// Every object's ways in. RESERVED and APPROACH did their job during the
 	// fill; the engine's pass blocks such ground too and only a hero's way in

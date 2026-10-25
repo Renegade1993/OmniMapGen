@@ -31,16 +31,17 @@ const PHASES = [
 	['valleys', 'Carving the Valleys'],              // the packs of scenery inside the zones
 	['ridges', 'Raising the Ridges'],                // the interior masses, grown as the engine grows them
 	// the lower level's own run through the long stages (a stage is announced once, and level 1 meets them after
-	// level 0 has passed, so each has a twin that only level 1 announces: phase() below)
+	// level 0 has passed, so each has a twin that only level 1 announces: phase() below). One line of them names the underground, the
+	// rest do not (K, 2026-10-24: "too many mentions of the depths in the load screens"); a one-level map announces none of them.
 	['sculptBelow', 'Sculpting the Underworld'],
-	['landsBelow', 'Painting the Depths'],
-	['bordersBelow', 'Raising the Deep Borders'],
-	['mountainsBelow', 'Heaving Up the Roots of the Mountains'],
-	['valleysBelow', 'Carving the Caverns'],
-	['ridgesBelow', 'Buttressing the Caverns'],
-	['underworld', 'Opening the Ways Below'],        // the gates between levels
+	['landsBelow', 'Staining the Stone'],
+	['bordersBelow', 'Setting the Boundary Stones'],
+	['mountainsBelow', 'Raising the Crags'],
+	['valleysBelow', 'Hollowing the Halls'],
+	['ridgesBelow', 'Shoring Up the Pillars'],
+	['underworld', 'Opening the Gates'],        // the gates between levels
 	['resources', 'Discovering Resources'],          // mines, treasure, dwellings, banks, guards
-	['resourcesBelow', 'Hiding Treasure in the Depths'],   // the same on the lower level
+	['resourcesBelow', 'Filling the Hoards'],   // the same on the lower level
 	['edges', 'Sealing the Edge of the World'],      // the map's rim
 	['paths', 'Walking Every Path'],                 // every start, town and pile reachable
 	['forests', 'Planting the Forests'],             // the scenery's art chosen

@@ -304,6 +304,7 @@ const LIMITS = { slotTol: 0, slotW: 3, slotLen: 10, crowdShare: 0.05, twoGuards:
 const CHECKS = { 'towns-per-start': townsPerStart, 'town-road': townRoad, 'dwelling-reach': dwellingReach, 'guard-clusters': guardClusters, 'dragons-middle': dragonsMiddle, 'coast-slots': coastSlots, 'biome-density': biomeDensity, 'approach-open': approachOpen, 'flyer-open': flyerOpen };
 
 Object.assign(CHECKS, require('./grid_extra').CHECKS);               // start-road, town-spacing, road-breaks, road-ends, prison-tiers, edge-objects, free-standing, river-ends
+Object.assign(CHECKS, require('./k1018_checks').CHECKS);                // portal-pairs (K, 2026-10-18)
 
 function runChecks(file, only) {
 	const M = sight.load(file), out = {};

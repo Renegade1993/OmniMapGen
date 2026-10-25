@@ -57,13 +57,21 @@ test('every start of a 48x48 eight-player map walks 8 tiles or more without a fi
 
 // the start caps round (startPrimaryGuards' third round) moves guards off a start's near wood and ore and opens seed 20 by itself, so the old walk
 // is the one with both passes off
-test('VMAPGEN_START_WALK=0 and VMAPGEN_START_CAPS=0 give the old walk: the same seeds box a start in without the passes (the passes open it)', () => {
-	for (const seed of SEEDS) {
+// A count over seeds 1 to 16 since 2026-10-18 (the lead: never re-pin a lucky seed): the test shows the passes are needed, so without them some
+// seeds must box a start in. Seed 30 stopped doing so with the building-pinch rule (its smallest walk 11 tiles) though the passes are as needed as
+// before. Base: seeds 5, 6, 8, 12, 14 and 16 of the 16 box a start in without the passes, on 305b6a6 and with the rule alike (8 of 40 when the
+// seeds were found). Bar: at least 2 of the 16.
+const OFF_SEEDS = Array.from({ length: 16 }, (_, i) => i + 1);
+test('VMAPGEN_START_WALK=0 and VMAPGEN_START_CAPS=0 give the old walk: without the passes at least 2 of seeds 1 to 16 box a start in', { timeout: 900000 }, t => {
+	const boxed = [];
+	for (const seed of OFF_SEEDS) {
 		// and the start warp guard off (biomes.js, 2026-10-16): it keeps some of these starts out of the box before the passes run (seed 12's
 		// smallest walk 15 tiles with it), so the old walk needs it off too
 		const { r, out } = generate(args(seed), 'off' + seed, { VMAPGEN_START_WALK: '0', VMAPGEN_START_CAPS: '0', VMAPGEN_START_WARP_GUARD: '0' });
 		assert.strictEqual(r.status, 0, r.stderr.slice(-400));
 		const { out: starts } = walks(out);
-		assert.ok(starts.some(s => s.tiles < 8), `seed ${seed}: ${JSON.stringify(starts)}`);
+		if (starts.some(s => s.tiles < 8)) boxed.push(seed);
 	}
+	t.diagnostic(`seeds that box a start in without the passes: ${boxed.join(', ')}`);
+	assert.ok(boxed.length >= 2, `seeds that box a start in without the passes: ${boxed.join(', ') || 'none'}, bar 2 of ${OFF_SEEDS.length}`);
 });

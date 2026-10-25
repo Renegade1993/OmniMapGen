@@ -38,7 +38,7 @@
 			"monsterStrength": 0,
 			"stackScale": 1,
 			"guardDensity": 1,
-			"objectGuardShare": 0.75,
+			"guardShare": 1,
 			"guardTreasure": 1,
 			"guardMines": 1,
 			"guardDwellings": 1,

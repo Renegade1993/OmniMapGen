@@ -32,7 +32,7 @@
  "bio.mineDensity": "1",
  "bio.mineGuardWeight": "1",
  "bio.monsterStrength": "0",
- "bio.objectGuardShare": "0.75",
+ "bio.guardShare": "1",
  "bio.openPathNoRoad": "0.55",
  "bio.openPathRoad": "0.26",
  "bio.pickupDensity": "1",

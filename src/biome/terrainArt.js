@@ -45,9 +45,9 @@ function artFor(type, subtype, tpl, short, rng) {
 	const terrain = CORE[short];
 	const arts = byType.get(`${type}|${subtype || 'object'}`) || byType.get(`${type}|${type}`);
 	if (!terrain) return modGroundArt(type, tpl, arts, rng);
-	if (!arts) return tpl;
+	if (!arts) return gameTable(type, tpl, terrain);
 	const seen = arts.reduce((a, x) => a + x.n, 0);
-	if (seen < MIN_SEEN) return tpl;
+	if (seen < MIN_SEEN) return gameTable(type, tpl, terrain);
 	const ok = arts.map(a => ({ a, w: allowed(a, terrain) })).filter(x => x.w > 0);
 	// a ground the type never stood on counts against it only when real maps gave it the chance: a type
 	// seen 40 times has no say about a ground that carries 1 object in 100
@@ -61,6 +61,21 @@ function artFor(type, subtype, tpl, short, rng) {
 	return { animation: x.a.anim, mask: x.a.mask, visitableFrom: x.a.visitableFrom };
 }
 
+
+// Where the corpus has no say (a type seen fewer than MIN_SEEN times, or never), the game's own table does: an art OBJECTS.TXT lists keeps
+// to the grounds its rows name, as the engine's canBePlacedAt does; an art it does not list (a mod's) stays as asked. K, 2026-10-22: "Oasis
+// in dirt, where it shouldnt be" (the oasis AVXosis0 is sand only there; the corpus had six sightings). VMAPGEN_ART_GAME_TABLE=0 off.
+let ART_TERRAINS;
+// the pickups' rows name dirt only, and the game places them on every ground (the corpus: gold, ore, scrolls, random artifacts everywhere)
+const PICKUP_TYPES = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|seaChest|prison|monster|randomMonster|hero|randomHero)/;
+function gameTable(type, tpl, terrain) {
+	if (process.env.VMAPGEN_ART_GAME_TABLE === '0' || !tpl || !tpl.animation || PICKUP_TYPES.test(String(type || ''))) return tpl;
+	if (ART_TERRAINS === undefined) {
+		try { ART_TERRAINS = require('../parser/h3data').h3ArtTerrains(require('./pictures').spriteRoots()); } catch (e) { ART_TERRAINS = new Map(); }
+	}
+	const set = ART_TERRAINS.get(String(tpl.animation).toLowerCase().replace(/\.def$/, ''));
+	return !set || set.has(terrain) ? tpl : null;
+}
 
 // Ground a mod adds (highlands, deadland, dunes, wasteland, stardust...) has no corpus data, and an art kept as asked stood a snow
 // well in a highlands biome (K, 2026-10-03/04: "still seeing the frozen well in a highlands biome"; the 72x72 map s28307801 had

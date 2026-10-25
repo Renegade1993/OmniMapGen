@@ -47,9 +47,12 @@ function rangeTakes(range, n) {
  * Any of the three may be RANDOM; a roll keeps to 2-8 players and to the
  * template's range, as the engine's CMapGenOptions picks counts the template
  * takes. Counts that fit no map are kept, and the template check says why.
+ * A roll keeps to the counts allowed(nPlayers, humans) accepts when any does (generate-cli: the seats must fall in two teams or more under
+ * the lobby's teams, else the map has no opponent and the game declares victory on day 1: K's lobby, 2026-10-24, seed 594231613, red and
+ * pink together, computer players random, rolled 0). Counts asked for exactly are kept.
  * Returns { nPlayers, humans }.
  */
-function playerCounts({ players, humans, compOnly, templatePlayers }, roll) {
+function playerCounts({ players, humans, compOnly, templatePlayers, allowed }, roll) {
 	const total = n => n >= 2 && n <= 8 && rangeTakes(templatePlayers, n);
 	const num = v => (v === undefined || v === null || v === '' ? undefined : Math.round(Number(v)));
 	let h = num(humans);
@@ -60,6 +63,9 @@ function playerCounts({ players, humans, compOnly, templatePlayers }, roll) {
 			for (let c = 0; c <= 7; c++)
 				if ((h === undefined || h < 0 || hh === h) && (comp < 0 || c === comp) && total(hh + c))
 					pairs.push([hh, c]);
+		const rolled = (h === undefined || h < 0 || comp < 0) && typeof allowed === 'function';
+		const fair = rolled ? pairs.filter(([hh, c]) => allowed(hh + c, hh)) : pairs;
+		if (fair.length && fair.length < pairs.length) pairs.splice(0, pairs.length, ...fair);
 		if (!pairs.length) {
 			const hh = h > 0 ? h : 1, c = comp >= 0 ? comp : 1;
 			return { nPlayers: Math.min(8, hh + c), humans: hh };
@@ -72,6 +78,7 @@ function playerCounts({ players, humans, compOnly, templatePlayers }, roll) {
 	if (n < 0) {
 		const ok = [];
 		for (let k = Math.max(2, h > 0 ? h : 1); k <= 8; k++) if (total(k)) ok.push(k);
+		if (typeof allowed === 'function') { const fair = ok.filter(k => allowed(k, h > 0 ? h : undefined)); if (fair.length) ok.splice(0, ok.length, ...fair); }
 		n = ok.length ? roll.pick(ok) : 2;
 		roll.rolled.push(`players ${n}`);
 	}
@@ -213,5 +220,27 @@ function randomSize(players, roll) {
 	return size;
 }
 
-module.exports = { isRandomSize, randomSize, resolveUndergroundStarts, roller, rangeTakes, playerCounts, applyWaterContent, applyMonsterStrength, roadFromToggles,
+/**
+ * A lever left to chance (K, 2026-10-03: "each setting should have a random setting (sliders: a checkbox?)"): --bio.<key> random rolls a value in
+ * the lever's own range, a whole step at a time for a lever that steps (a choice lever picks one of its stops), else any value rounded to its
+ * step. Each lever rolls from its own stream (the map's seed mixed with the lever's name), so leaving one lever to chance moves no other roll of
+ * the map. Returns the value.
+ */
+function isRandomLever(v) {
+	return typeof v === 'string' && v.trim().toLowerCase() === 'random';
+}
+function randomLever(knob, seed) {
+	let h = 2166136261;
+	for (const ch of String(knob.key)) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+	const r = roller(((Number(seed || 1) >>> 0) ^ h) >>> 0 || 1);
+	const lo = Number(knob.min), hi = Number(knob.max), step = Number(knob.step) || 0;
+	if (step > 0) {
+		const n = Math.round((hi - lo) / step);
+		const v = lo + Math.floor(r.next() * (n + 1)) * step;
+		return Math.min(hi, Math.round(v * 1e6) / 1e6);
+	}
+	return Math.round((lo + r.next() * (hi - lo)) * 1e6) / 1e6;
+}
+
+module.exports = { isRandomLever, randomLever, isRandomSize, randomSize, resolveUndergroundStarts, roller, rangeTakes, playerCounts, applyWaterContent, applyMonsterStrength, roadFromToggles,
 	isRandomTemplate, randomTemplate, ROAD_CODES, RANDOM, RANDOM_STRENGTH };

@@ -47,7 +47,7 @@ const OPTS = {
 	'bio.mineDensity': '1',
 	'bio.mineGuardWeight': '1',
 	'bio.monsterStrength': '0',
-	'bio.objectGuardShare': '0.75',
+	'bio.guardShare': '1',
 	'bio.openPathNoRoad': '0.5',
 	'bio.openPathRoad': '0.5',
 	'bio.pickupDensity': '1',

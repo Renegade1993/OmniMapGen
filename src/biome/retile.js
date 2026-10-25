@@ -88,7 +88,7 @@ function shuffle(arr, rng) {
  * `uncovered` are cells no piece could reach without leaving the allowed set;
  * the caller decides what to do with them (the engine leaves them bare).
  */
-function retile({ W, H, allowed, region, groupsFor, rng }) {
+function retile({ W, H, allowed, region, groupsFor, rng, refuse = null }) {
 	const N = W * H;
 	// 0 = not ours, 1 = waiting for art, 2 = covered
 	const state = new Uint8Array(N);
@@ -135,7 +135,7 @@ function retile({ W, H, allowed, region, groupsFor, rng }) {
 						if (!allowed[c] || region[c] !== reg) { ok = false; break; }
 						if (state[c] === 1) cb++; else ov++;
 					}
-					if (!ok) continue;
+					if (!ok || (refuse && refuse(e, ax, ay))) continue;
 					const weight = size + cb - ov * size - (REP ? REP * size * twins(e.animation, ax, ay) : 0);
 					if (weight > maxWeight) {
 						maxWeight = weight;
@@ -296,7 +296,44 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 		}
 		return cache.get(z);
 	};
-	const r = retile({ W, H, allowed, region, groupsFor, rng });
+	// No piece drawn over a building's body: a piece whose picture would cover a quarter or more of the opaque pixels on the own tiles of a
+	// building drawn before it (a bottom row above the piece's) is refused, as footprintFits refuses a building (content.js artStacks): on K's
+	// map seed 1479105351, 8 of the buildings a quarter or more under another picture were under a mountain, a tree or a palm after the
+	// building rule (the Opus Reviewer, 2026-10-23). VMAPGEN_ART_STACK=0 off.
+	let refuse = null;
+	if (process.env.VMAPGEN_ART_STACK !== '0') {
+		const { isBuilding, artPix } = require('./content');
+		const bodyPix = new Map(), bodyPx = new Map();
+		for (const o of rest) {
+			if ((o.l || 0) !== l || !isBuilding(o.template)) continue;
+			const body = new Set(blockingCells(o.template, o.x, o.y).map(([x, y]) => y * W + x));
+			let px = 0;
+			for (const [dx, dy, rows] of artPix(o.template)) {
+				const x = o.x + dx, y = o.y + dy, c = y * W + x;
+				if (x < 0 || y < 0 || x >= W || y >= H || !body.has(c)) continue;
+				for (let i = 0; i < 32; i++) { let v = rows[i] >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); px += (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; }
+				if (!bodyPix.has(c)) bodyPix.set(c, []);
+				bodyPix.get(c).push({ o, rows });
+			}
+			bodyPx.set(o, px);
+		}
+		refuse = (e, ax, ay) => {
+			const over = new Map();
+			for (const [dx, dy, rows] of artPix({ animation: e.animation, mask: e.mask })) {
+				const x = ax + dx, y = ay + dy;
+				if (x < 0 || y < 0 || x >= W || y >= H) continue;
+				for (const b of bodyPix.get(y * W + x) || []) {
+					if (b.o.y >= ay) continue;
+					let n = 0;
+					for (let i = 0; i < 32; i++) { let v = (rows[i] & b.rows[i]) >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); n += (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; }
+					over.set(b.o, (over.get(b.o) || 0) + n);
+				}
+			}
+			for (const [o, n] of over) if (n >= (bodyPx.get(o) || Infinity) / 4) return true;
+			return false;
+		};
+	}
+	const r = retile({ W, H, allowed, region, groupsFor, rng, refuse });
 
 	const unc = new Set(r.uncovered);
 	const kept = unc.size ? scenery.filter(o => blockingCells(o.template, o.x, o.y)

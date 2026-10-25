@@ -27,10 +27,11 @@ function clearPortalEnds(plan, W, H, l, blocked, d) {
 	const keep = [];
 	for (const o of plan.objects) {
 		if ((o.l || 0) === l && MON.test(o.type) && o.template && o.template.mask) {
-			const cells = blockingCells(o.template, o.x, o.y).map(([a, b]) => b * W + a);
-			cells.push(o.y * W + o.x);
-			if (cells.some(c => zone.has(c))) {
-				for (const c of cells) if (c !== o.y * W + o.x || cells.length === 1) blocked[l * W * H + c] &= ~OCCUPIED;
+			// the tiles it blocks go free with it; its own tile is in the test either way, and is freed alone only when it blocks nothing
+			const own = new Set(blockingCells(o.template, o.x, o.y).map(([a, b]) => b * W + a));
+			const anchor = o.y * W + o.x;
+			if (zone.has(anchor) || [...own].some(c => zone.has(c))) {
+				for (const c of own.size ? own : [anchor]) blocked[l * W * H + c] &= ~OCCUPIED;
 				out.removed++;
 				continue;
 			}

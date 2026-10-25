@@ -19,7 +19,7 @@ const LEVERS = { zoneCells: 1000, zoneCap: 28, highLootRatio: 0, townRatio: 0.05
 	openPathNoRoad: 0.05, openPathRoad: 0, roadNetwork: 0, artifactDensity: 0.001,
 	artifactRichness: 0.75, pickupDensity: 2.6, resourceDensity: 2.6, mineDensity: 1.8,
 	starterMines: 1, dwellingDensity: 2, bonusDensity: 0, monsterStrength: -1, stackScale: 1.25,
-	guardDensity: 0.2, objectGuardShare: 0.55, guardTreasure: 0, guardMines: 0, guardDwellings: 0,
+	guardDensity: 0.2, guardShare: 0.7333, guardTreasure: 0, guardMines: 0, guardDwellings: 0,
 	guardBottlenecks: 0, chokeGuardRatio: 0.4, guardPortals: 1, lootGuardWeight: 0,
 	mineGuardWeight: 3.6, subterraneanGateRatio: 0, subterraneanNarrow: 0.45, subterraneanOpen: 0.5,
 	decorDensity: 2, waterCoverage: 0.25, waterShape: 6, waterAccess: 2, waterTreasure: 0.5 };

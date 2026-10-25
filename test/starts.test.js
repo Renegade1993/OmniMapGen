@@ -100,6 +100,12 @@ test('36x36, 8 players, seed 2: every start walks out of its zone and is topped 
 	for (const [color, n] of Object.entries(reach))
 		assert.ok(n >= 100, `${color} walks ${n} cells`);
 	toppedUp(r.stderr);
+	// With openSealedPockets passing over a pocket no barrier opens (0024) the median start take rises 70% on this map and the target with it (85258):
+	// no start may end more than 15% under the largest target printed (red ended 33800 and green 37750 when the balancer counted an artifact as
+	// placed on every try, a refused footprint using up the three it may take).
+	const rows = r.stderr.split('\n').map(l => l.match(/^\[parity\] (\w+): value=(\d+) target=(\d+)/)).filter(Boolean).map(m => ({ color: m[1], value: +m[2], target: +m[3] }));
+	const top = Math.max(...rows.map(x => x.target));
+	for (const x of rows) assert.ok(x.value >= 0.85 * top, `${x.color} ends at ${x.value}, the largest target is ${top}`);
 	fs.rmSync(out, { force: true });
 });
 

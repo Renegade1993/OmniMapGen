@@ -156,6 +156,32 @@ function approvedFile() {
 	return fs.existsSync(f) && fs.existsSync(path.join(root, 'mod.json')) ? f : null;
 }
 let approvedSet; // undefined: not read yet; null: no filter
+/**
+ * The open layout as a named entry of the template list (K, 2026-10-18: "we need to add the open template to the templates list"). template-info.json, beside
+ * approved-templates.json in a module (mod/ in the repository), carries one entry flagged "openLayout": true; its key is the name the picker shows. isOpenLayoutName(name)
+ * is true for that name (case and punctuation ignored), and then the generator treats the choice as no template: the open layout. Renaming the entry is editing its key in the
+ * two json files; no code reads the name.
+ */
+let openNames; // normalized name -> the name as written
+function openLayoutIndex() {
+	if (openNames === undefined) {
+		openNames = new Map();
+		const a = approvedFile();
+		const f = a ? path.join(path.dirname(a), 'template-info.json') : path.resolve(__dirname, '..', '..', 'mod', 'template-info.json');
+		try {
+			const j = JSON.parse(fs.readFileSync(f, 'utf8')).templates || {};
+			for (const [k, v] of Object.entries(j)) if (v && v.openLayout === true) openNames.set(k.toLowerCase().replace(/[^a-z0-9]+/g, ''), k);
+		} catch { /* no info file: no open entry */ }
+	}
+	return openNames;
+}
+function isOpenLayoutName(name) {
+	return !!name && openLayoutIndex().has(String(name).toLowerCase().replace(/[^a-z0-9]+/g, ''));
+}
+/** The open layout's entry name(s) as written, for the template listing (the picker shows them first). */
+function openLayoutNames() {
+	return [...openLayoutIndex().values()];
+}
 function approvedTemplates() {
 	if (approvedSet !== undefined) return approvedSet;
 	approvedSet = null;
@@ -169,6 +195,40 @@ function approvedTemplates() {
 	const names = Array.isArray(a) ? a.map(x => (x && x.name) || x) : Object.keys(a || {});
 	approvedSet = new Set(names.map(n => String(n).toLowerCase()));
 	return approvedSet;
+}
+
+/**
+ * Per-template generator settings: `template-settings.json` beside the module's mod.json (mod/template-settings.json in
+ * the repository, which a repository run reads directly), outside generator/ so editing it does not change the code
+ * pin. It reads {"templates": {"Template name": {key: value, ...}}}, keyed by the template's name as approved-templates
+ * is; a template it does not list takes every default. VMAPGEN_TEMPLATE_SETTINGS=<file> names one explicitly, =off
+ * reads none. Keys: fillPinch (default true; false keeps the template's buildings off the building-pinch rule, content.js FILL_PINCH);
+ * pileLanding ("room", the default, or "band"), how a template zone's treasure piles are landed (content.js TPL_PILE_LANDING).
+ */
+function templateSettingsFile() {
+	const env = process.env.VMAPGEN_TEMPLATE_SETTINGS;
+	if (env) return env === 'off' ? null : env;
+	const root = path.resolve(__dirname, '..', '..', '..');
+	const f = path.join(root, 'template-settings.json');
+	if (fs.existsSync(f) && fs.existsSync(path.join(root, 'mod.json'))) return f;
+	const repo = path.resolve(__dirname, '..', '..', 'mod', 'template-settings.json');
+	return fs.existsSync(repo) ? repo : null;
+}
+let templateSettingsAll; // undefined: not read yet
+function templateSettings(name) {
+	if (templateSettingsAll === undefined) {
+		templateSettingsAll = new Map();
+		const f = templateSettingsFile();
+		if (f) {
+			try {
+				const j = JSON.parse(dropTrailingCommas(stripJsonComments(fs.readFileSync(f, 'utf8'))));
+				for (const [k, v] of Object.entries((j && j.templates) || {})) templateSettingsAll.set(k.toLowerCase(), v || {});
+			} catch (e) {
+				console.error(`[template] ${f} unreadable (${e.message}): every template takes the default settings`);
+			}
+		}
+	}
+	return templateSettingsAll.get(String(name || '').toLowerCase()) || {};
 }
 
 let templateIndex = null;
@@ -408,10 +468,11 @@ function buildZonePlan(raw, zones, req, accommodations) {
 	}
 
 	const forced = zones.filter(z => z.forcedLevel === 'underground' && !(up && up.has(z.id)));
-	if (req.levels > 1) {
-		for (const z of forced) perLevel[1].push(z);
-	}
 	const starts = zones.filter(z => z.type === 'playerStart' || z.type === 'cpuStart');
+	// every start stays on the surface on this path (assignLevels: no starts below), a forced-underground one too, as on one level
+	if (req.levels > 1) {
+		for (const z of forced) if (!starts.includes(z)) perLevel[1].push(z);
+	}
 	const rest = zones.filter(z => !forced.includes(z) && !starts.includes(z) && !(up && up.has(z.id)));
 	perLevel[0].push(...starts);
 	if (req.levels > 1) {
@@ -532,7 +593,8 @@ function resolveRoadOptions(zones, connections, seed) {
  * Guard strength -> monster level. RMG guard values are creature-stack
  * fighting values; our creeps are randomMonsterLevelN placeholders (1..7).
  * Bands calibrated so the common template values land sensibly: 3000 reads
- * as tier 3-4, 8000 as 4-5, 45000 as max tier. Approximation on purpose:
+ * as tier 2, 8000 as tier 3, 45000 as max tier (rmg-template.test.js holds
+ * these). Approximation on purpose:
  * our maps cannot express a stack strength directly.
  */
 function guardToLevel(guard) {
@@ -730,7 +792,7 @@ function addStartZones(raw, req) {
 }
 
 module.exports = {
-	loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan, assignLevels, addStartZones,
+	isOpenLayoutName, openLayoutNames, loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan, assignLevels, addStartZones,
 	guardToLevel, zoneTreasureMass, lootScale, pileRate, pileLoot, ZONE_CLASS, MONSTER_BAND,
-	MINE_SUBTYPE, parseSizeCode, parseRange, fitZonesToMap,
+	MINE_SUBTYPE, parseSizeCode, parseRange, fitZonesToMap, templateSettings,
 };

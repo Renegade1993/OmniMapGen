@@ -101,7 +101,7 @@ function roadRepair(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, 
 	let throughScenery = false;
 	const joinGaps = () => {
 		for (let round = 0; round < 6; round++) {
-			const comp = label();
+			let comp = label();
 			let changed = false;
 			for (const c of [...road]) {
 				if (!road.has(c) || !isEnd(c)) continue;
@@ -147,6 +147,9 @@ function roadRepair(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, 
 						if (!road.has(k)) { road.add(k); joined++; }
 					}
 					changed = true;
+					// labelled again: the two pieces are one now, and the tiles just laid belong to it (a stale label sent
+					// the other piece's end back over the new bridge, and an end met its own piece's new tiles as another's)
+					comp = label();
 				}
 			}
 			if (!changed) break;

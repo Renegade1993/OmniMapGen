@@ -13,7 +13,9 @@
  *
  * Fields: key, page, label, help, min, max, step, and optionally `stops`
  * (named positions on the scale, for a notched control), `unit` ('x' for a
- * multiplier, shown as 1.0x) and `cli`. A label fits the page at about 21
+ * multiplier, shown as 1.0x), `cli`, and `ignoredOnTemplate` (a lever a template
+ * map does not read: the lobby shows it greyed with this one-line reason, never
+ * as a control that silently does nothing; the lead, 2026-10-20). A label fits the page at about 21
  * characters; a longer one runs under its control.
  */
 'use strict';
@@ -36,8 +38,8 @@ const PAGES = [
 const KNOBS = [
 	// ---- zones
 	{ key: 'zoneCells', page: 'zones', label: 'Biome size',
-		help: 'Map cells per biome (a 20 by 20 patch is 400). Bigger biomes mean fewer of them. Player starts are sized apart: together they take about half the land. A template keeps its zones; at 400 they are its own sizes, bigger biomes give its neutral zones more of the land and the starts less, smaller biomes the other way.',
-		min: 150, max: 1500, step: 50 },
+		help: 'Map cells per biome (a 20 by 20 patch is 400). Bigger biomes mean fewer of them. Player starts are sized on their own: together they take about half the land. A template keeps its zones; at 400 they are its own sizes, bigger biomes give its neutral zones more of the land and the starts less, smaller biomes the other way.',
+		min: 150, max: 3000, step: 50 },   // 1500 until 2026-10-20: the engine's Nostalgia (24 zones on 144x144, two levels) sat at the top of the slider with no margin
 	// K, 2026-09-25, on the old flat 12-zone default binding on every map
 	// bigger than about 72x72 at the default zone size: "bigger means
 	// density parameters stay the same, you just get more of them." The
@@ -82,14 +84,18 @@ const KNOBS = [
 	{ key: 'interconnectivity', page: 'borders', label: 'Biome connections',
 		help: 'Share of neighbouring biomes joined by a passage. Lower gives fewer ways through; every biome can still be reached. On a template the default is its own links: above it zones that touch gain passages, guarded like the strongest link either has; below it some of its links close, each only if every zone can still be reached. A start\'s links are always the template\'s.',
 		min: 0, max: 1, step: 0.05 },
+	{ key: 'layoutFamily', page: 'borders', label: 'Layout family',
+		help: 'How the biomes join. Mixed joins neighbours as the map\'s cut makes them. Tree: one way between any two biomes. Sparse mesh: a tree with a few loops. Hub: every start joins one central biome, by a portal pair where the two do not touch. Pairs: the starts joined two by two, nearest first, and the pairs joined through the other biomes. Ring: the biomes round the map\'s edge joined in a circle. Chain: the same circle opened into a line, away from the starts where there is room. Random picks one of these from the seed. Past Mixed, Biome connections opens more borders on top (none at 0; never one between two starts from Hub on) and Portal share is the share of the links that are portal pairs. Templates keep their own links.',
+		min: 0, max: 7, step: 1, stops: [[0, 'Mixed'], [1, 'Tree'], [2, 'Sparse mesh'], [3, 'Hub'], [4, 'Pairs'], [5, 'Ring'], [6, 'Chain'], [7, 'Random']], default: 0,
+		ignoredOnTemplate: 'A template joins its biomes by its own links.' },
 	{ key: 'interconnectPortal', page: 'borders', label: 'Portal share',
 		help: 'Share of the passages that are a pair of portals instead of a gap in the wall. The game has eight portal colours, so past eight pairs the rest open as gaps. On a template the default is the template\'s own portals; above it a share of its other passages, a start\'s never, become portal pairs with their guard and road kept.',
 		min: 0, max: 1, step: 0.02 },
 	{ key: 'openPathNoRoad', page: 'borders', label: 'Passages without road',
-		help: 'How often a passage has no road through it, set against Passages with road: equal settings give half of each. On a template the default is the template\'s own roads; with more road weight passages without one gain a road, with less some lose theirs, a start\'s excepted.',
+		help: 'How often a passage has no road through it, set against Passages with road: equal settings give half of each. On a template the default is the template\'s own roads; with more road weight, passages without one gain a road, with less some lose theirs, a start\'s excepted.',
 		min: 0, max: 1, step: 0.05 },
 	{ key: 'openPathRoad', page: 'borders', label: 'Passages with road',
-		help: 'How often a passage has a road through it, set against Passages without road: equal settings give half of each. On a template the default is the template\'s own roads; with more road weight passages without one gain a road, with less some lose theirs, a start\'s excepted.',
+		help: 'How often a passage has a road through it, set against Passages without road: equal settings give half of each. On a template the default is the template\'s own roads; with more road weight, passages without one gain a road, with less some lose theirs, a start\'s excepted.',
 		min: 0, max: 1, step: 0.05 },
 	{ key: 'roadNetwork', page: 'borders', label: 'Build Road Network',
 		help: 'Roads linking every town. Off leaves only the roads through the passages. On a template Off takes away the roads to its mines and to its neutral towns (about a sixth of the road); its passages, gates, portals and the players\' towns keep theirs.',
@@ -135,8 +141,8 @@ const KNOBS = [
 	{ key: 'guardDensity', page: 'monsters', label: 'Monster count',
 		help: 'How many monsters guard treasure or stand in the open: 1x is the usual number, 0 none. Guards between biomes follow Guards at bottlenecks.',
 		min: 0, max: 3, step: 0.1, unit: 'x' },
-	{ key: 'objectGuardShare', page: 'monsters', label: 'Guarding vs roaming',
-		help: 'Share of the monsters that guard something worth taking; the rest stand in the open. A template\'s monsters all guard, which is the default 0.75; below it each guard brings roaming monsters (about 1.6 times the monsters at 0.375) and the guards stay.',
+	{ key: 'guardShare', page: 'monsters', label: 'Guarding vs roaming',
+		help: 'Share of the monsters that guard something worth taking; the rest stand in the open. 100% (the default) puts every monster on a guard post, on the open layout as on a template, and none in the open; 0% leaves every monster roaming on the open layout. On a template each guard brings some roaming monsters below 100%, on average 2 x (1 - the setting), and the guards stay: up to about a third more monsters on large maps, less on small ones (a 72x72 template gave 1.05 times as many at 50% and 1.15 at 0%). From 0.3.18 the scale runs 0 to 100%; before it the same map was 75%.',
 		min: 0, max: 1, step: 0.05 },
 	{ key: 'guardTreasure', page: 'monsters', label: 'Guards on treasure',
 		help: 'Monsters guard artifacts, chests, Pandora\'s boxes, prisons, banks and other treasure. Off leaves treasure unguarded, and those monsters stand in the open instead.',
@@ -155,6 +161,9 @@ const KNOBS = [
 		min: 0, max: 1, step: 0.05 },
 	{ key: 'guardGradient', page: 'borders', label: 'Guard gradient',
 		help: 'How much weaker the guards between biomes are near the starts than far from them. 0 leaves them as they are. At 1 a start\'s ways out are guarded two creature levels lower and the passages farthest from every start two levels higher; on a template its own link guards run from a third of their strength at the starts to three times at the farthest. A level with no start counts as far.',
+		min: 0, max: 1, step: 0.05 },
+	{ key: 'guardDistance', page: 'borders', label: 'Guards by distance',
+		help: 'How much stronger the guards get the farther they stand from the starts. 0 leaves them as they are. At 1 the stacks nearest the starts are a creature level weaker and the farthest a level stronger, every kind of guard alike, the average level unchanged.',
 		min: 0, max: 1, step: 0.05 },
 	{ key: 'guardPortals', page: 'monsters', label: 'Guards at portals',
 		help: 'Off: no monster in front of any portal end, whatever put it there.\nOn: a monster in front of every portal end.\nTemplate: the template\'s own guards on its portal links and none on the rest; the open layout reads this as On.',
@@ -218,7 +227,7 @@ const KNOBS = [
 	// None by default: the default amount is 0%, and Normal beside it read as
 	// water on a map that had none (DMB Dev, 2026-09-27)
 	{ key: 'waterContent', page: 'map', stock: true, label: 'Water content',
-		help: 'None makes a dry map. Normal lays the water as this page sets it, Islands as islands; either at 20% when the amount below is 0%. Random rolls one of the three.',
+		help: 'None makes a dry map. Normal lays the water as this page sets it, Islands as islands; with Amount of water at 0%, either one uses 20% water. Random rolls one of the three.',
 		min: -1, max: 2, step: 1, stops: [[0, 'None'], [1, 'Normal'], [2, 'Islands'], [-1, 'Random']], default: 0 },
 
 	// ---- water

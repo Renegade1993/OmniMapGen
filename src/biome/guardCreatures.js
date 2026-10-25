@@ -408,10 +408,14 @@ function applyGuardTheme(objects, { pool, share = 1, rng, W = Infinity, H = Infi
 	const strength = levelStrengths();
 	const mods = new Set();
 	let themed = 0, placeholders = 0;
+	// a look a crater drawn after the stack would cover only when every look that fits is covered (coverTest), as rollPlaceholders
+	const covered = coverTest(objects);
 	const nearest = (level, o) => {
 		for (const gap of [0, 1]) {
 			const hits = pool.filter(c => Math.abs(c.level - level) === gap && anchorFits(o, c.shift, W, H));
-			if (hits.length) return hits[(rng() * hits.length) | 0];
+			const clear = hits.filter(c => !covered(o, c));
+			const ids = clear.length ? clear : hits;
+			if (ids.length) return ids[(rng() * ids.length) | 0];
 		}
 		return null;
 	};

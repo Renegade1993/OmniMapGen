@@ -53,6 +53,9 @@ const BIOME_CLASS = {
  */
 const BIOME_DEFAULTS = {
 	interconnectivity: 0.6,
+	// Layout family (familyConnections): 0 Mixed (each border on its own draw, as before), 1 Tree, 2 Sparse mesh, 3 Hub, 4 Pairs, 5 Ring,
+	// 6 Chain, 7 Random (one of 1 to 6 from the seed)
+	layoutFamily: 0,
 	interconnectPortal: 0.20,
 	openPathNoRoad: 0.55,
 	// 0.37 roaded ~40% of non-portal openings and, with the town-linking
@@ -63,6 +66,9 @@ const BIOME_DEFAULTS = {
 	// Guard gradient (2026-10-16): 0 leaves the guards between biomes as they are; up to 1 they run weaker near the starts and stronger
 	// far from them (boundaries.js placeChokeGuards)
 	guardGradient: 0,
+	// Guards by distance (2026-10-21): 0 leaves every stack as it is; up to 1 the stacks nearest the starts run a level weaker and the
+	// farthest a level stronger (guardDistance.js)
+	guardDistance: 0,
 	artifactDensity: 0.006,
 	artifactRichness: 0.5,
 	// 0.15 while the starts were small; once they took half the land (start
@@ -142,7 +148,7 @@ const BIOME_DEFAULTS = {
 	// objects (the rest roams), and how strongly mines and loot draw those
 	// guards relative to the corpus odds (GUARD_CHANCE in content.js).
 	// Chokepoint guards are chokeGuardRatio above.
-	objectGuardShare: 0.75,
+	guardShare: 1,
 	mineGuardWeight: 1,
 	lootGuardWeight: 1,
 	// Monster strength, in creature levels added to every guard and roamer
@@ -458,6 +464,44 @@ function partitionBiomes(W, H, playerStarts, targetCount, rng, params, water = n
 			assign();
 		}
 		if (bestZone) zone.set(bestZone);
+		// The weights move a whole lobe at a time, and a start whose border runs along one swung past its area both ways for all thirty
+		// rounds (36x36 eight players seed 2: zone 4 at 39, 59 and 233 tiles in turn, kept at 59 of 81). What the loop leaves off by more
+		// than a tenth is settled tile by tile against the zones beside it that are not starts: a short start takes their border tiles
+		// nearest its own start, a large one gives them its border tiles farthest from it, then each zone is made whole again.
+		// VMAPGEN_START_TRIM=0 off.
+		if (process.env.VMAPGEN_START_TRIM !== '0') {
+			const nS = playerStarts.length;
+			const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+			const land = c => !(water && water[c]);
+			for (let i = 0; i < nS; i++) {
+				const sx = seeds[i].x, sy = seeds[i].y, d2 = c => (c % W - sx) ** 2 + (((c / W) | 0) - sy) ** 2;
+				let area = 0;
+				for (let c = 0; c < W * H; c++) if (zone[c] === i && land(c)) area++;
+				for (let guard = 0; guard < W * H && (area < 0.9 * startCells || area > 1.1 * startCells); guard++) {
+					const grow = area < 0.9 * startCells;
+					let pick = -1, pz = -1, pd = grow ? Infinity : -1;
+					for (let c = 0; c < W * H; c++) {
+						if (!land(c)) continue;
+						const x = c % W, y = (c / W) | 0;
+						if (grow ? zone[c] < nS || zone[c] < 0 : zone[c] !== i) continue;
+						let touches = -1;
+						for (const [dx, dy] of dirs) {
+							const nx = x + dx, ny = y + dy;
+							if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+							const z2 = zone[ny * W + nx];
+							if (grow ? z2 === i : z2 >= nS) { touches = grow ? zone[c] : z2; break; }
+						}
+						if (touches < 0) continue;
+						const dd = d2(c);
+						if (grow ? dd < pd : dd > pd) { pd = dd; pick = c; pz = touches; }
+					}
+					if (pick < 0) break;
+					zone[pick] = grow ? i : pz;
+					area += grow ? 1 : -1;
+				}
+			}
+			if (process.env.VMAPGEN_ZONE_WHOLE !== '0' && !water) zonesWhole(zone, W, H, seeds);
+		}
 	}
 	};
 	grow();
@@ -982,13 +1026,14 @@ function physZoneDistances(zone, W, H, playerStarts, water = null, sail = false)
 	const sum = new Map(), cnt = new Map();
 	let maxZ = -1;
 	for (let c = 0; c < W * H; c++) {
+		if (zone[c] > maxZ) maxZ = zone[c];
 		if (dist[c] < 0 || (sail && water && water[c])) continue;
 		const z = zone[c];
-		if (z > maxZ) maxZ = z;
 		sum.set(z, (sum.get(z) || 0) + dist[c]);
 		cnt.set(z, (cnt.get(z) || 0) + 1);
 	}
-	const out = new Array(maxZ + 1).fill(0);
+	// a zone no start reaches is as far as a zone gets, as zoneDistances reads one no hop reaches
+	const out = new Array(maxZ + 1).fill(Infinity);
 	for (let i = 0; i <= maxZ; i++)
 		if (cnt.has(i)) out[i] = sum.get(i) / cnt.get(i);
 	return out;
@@ -1121,6 +1166,154 @@ function assignConnections(edges, params, rng, zoneCount) {
 }
 
 /**
+ * The links of a free layout of one family (Layout family, BIOME_DEFAULTS.layoutFamily): a skeleton chosen over the cut's borders, the
+ * other borders closed. The cut stays as it is, so the zones and the starts' share of the land do not move. Mixed (0) never comes here:
+ * assignConnections draws each border on its own, and ensureConnected then opens borders until every biome joins, so the borders that
+ * carry links are whatever the cut gives and a layout ends near a tree plus the cut's loops (the Template Factory's Nostalgia rows: 0.91
+ * and 0.96 open links a zone against the engine's 0.65 and 0.45, roster\BRIEF-MapVision-LayoutFamily.md).
+ *   1 Tree: a spanning tree, widest borders first (each weighted by its length and a draw), one way between any two biomes.
+ *   2 Sparse mesh: the tree and about one loop for every five biomes, each the border whose two biomes the tree keeps farthest apart.
+ *   3 Hub: the biome nearest the map's middle that is not a start is the hub, and every start links to it; the other biomes hang off the
+ *     hub or a start as a tree. No two starts meet directly.
+ *   4 Pairs: the starts paired nearest first, each pair linked; the pairs and the other biomes joined by a tree. No two starts meet
+ *     directly but a pair.
+ *   5 Ring: the biomes on the map's rim linked round it in a circle; the inner biomes hang off it as a tree, so the ring is the one loop.
+ *   6 Chain: the ring without the link farthest round it from every start: a line, its inner biomes hanging off as a tree.
+ *   (7 Random is resolved by plan.js to one of 1 to 6 before this is called.)
+ * From Hub on a link between two biomes that share no border is a portal pair, pushed onto ctx.pairs as [a, b] (plan.js bridges it
+ * as it does a template link with no shared border, and ensureConnected counts it as joined); a start whose links are all such pairs also
+ * takes its widest border to a biome that is not a start, so it leaves its zone on foot. ctx: { seeds (x, y, player), W, H, zone, water,
+ * pairs }. A level with too few starts for Hub or Pairs, or too few rim biomes for Ring or Chain, is laid as Tree.
+ * Biome connections (interconnectivity) opens up to a quarter of the remaining borders on top (none at 0; from Hub on never one between
+ * two starts, and never Chain's left-out link), and Portal share (interconnectPortal) is the share of the links that are portal pairs.
+ * Returns the same map as assignConnections.
+ */
+function familyConnections(family, edges, seedCount, params, rng, ctx = {}) {
+	const p = { ...BIOME_DEFAULTS, ...params };
+	const key = e => e.a * 100000 + e.b;
+	const parent = Array.from({ length: seedCount }, (_, i) => i);
+	const find = a => { while (parent[a] !== a) { parent[a] = parent[parent[a]]; a = parent[a]; } return a; };
+	const chosen = new Set();
+	const adj = Array.from({ length: seedCount }, () => []);
+	const take = e => { chosen.add(key(e)); adj[e.a].push(e.b); adj[e.b].push(e.a); };
+	const order = edges.map(e => ({ e, w: e.borderCells.length * (0.5 + rng()) })).sort((u, v) => v.w - u.w).map(o => o.e);
+	// from Hub on: the shape's own links first, then the tree over what is left
+	const seeds = ctx.seeds || [], pairs = ctx.pairs || [];
+	const isStart = i => !!(seeds[i] && seeds[i].player);
+	const bordered = new Set();
+	for (const e of edges) { bordered.add(e.a); bordered.add(e.b); }
+	const starts = [...bordered].filter(isStart).sort((a, b) => a - b);
+	const others = [...bordered].filter(i => !isStart(i)).sort((a, b) => a - b);
+	// Ring and Chain: the biomes on the map's rim in the order a walk round its edge meets them (a biome met twice counts where it is met
+	// first; water on the edge parts its two neighbours, whose link is then a portal pair)
+	const rim = [];
+	if ((family === 5 || family === 6) && ctx.zone && ctx.W && ctx.H) {
+		const { zone, water, W, H } = ctx, seen = new Set();
+		const at = (x, y) => { const c = y * W + x, z = zone[c]; if (!(water && water[c]) && bordered.has(z) && !seen.has(z)) { seen.add(z); rim.push(z); } };
+		for (let x = 0; x < W; x++) at(x, 0);
+		for (let y = 1; y < H; y++) at(W - 1, y);
+		for (let x = W - 2; x >= 0; x--) at(x, H - 1);
+		for (let y = H - 2; y >= 1; y--) at(0, y);
+	}
+	let dropped = -1;
+	const shaped = (family === 3 && others.length > 0 && starts.length > 0) || (family === 4 && starts.length > 1)
+		|| ((family === 5 || family === 6) && rim.length >= 3);
+	if (shaped) {
+		const unite = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent[rb] = ra; };
+		const link = (a, b) => {
+			const e = edges.find(e => e.a === Math.min(a, b) && e.b === Math.max(a, b));
+			if (e) take(e);
+			else { pairs.push([a, b]); adj[a].push(b); adj[b].push(a); }
+			unite(a, b);
+		};
+		const d2 = (i, x, y) => (seeds[i].x - x) ** 2 + (seeds[i].y - y) ** 2;
+		if (family === 3) {
+			const mx = (ctx.W || 0) / 2, my = (ctx.H || 0) / 2;
+			const hub = others.reduce((best, i) => (d2(i, mx, my) < d2(best, mx, my) ? i : best), others[0]);
+			for (const s of starts) link(s, hub);
+		} else if (family === 5 || family === 6) {
+			// Chain leaves out the ring link farthest round the ring from every start on it (ties from a draw), so no start ends the line where
+			// the ring has room (eight starts on a rim of eleven biomes leave every link beside a start)
+			const n = rim.length, at = new Map(rim.map((z, i) => [z, i]));
+			let cut = -1;
+			if (family === 6) {
+				const off = (rng() * n) | 0, onRim = starts.filter(s => at.has(s)).map(s => at.get(s));
+				const round = (i, j) => Math.min(Math.abs(i - j), n - Math.abs(i - j));
+				let best = -1;
+				for (let j = 0; j < n; j++) {
+					const k = (off + j) % n;
+					const d = onRim.length ? Math.min(...onRim.map(s => Math.min(round(s, k), round(s, (k + 1) % n)))) : 0;
+					if (d > best) { best = d; cut = k; }
+				}
+				const a = rim[cut], b = rim[(cut + 1) % n];
+				dropped = Math.min(a, b) * 100000 + Math.max(a, b);
+			}
+			for (let k = 0; k < n; k++) if (k !== cut) link(rim[k], rim[(k + 1) % n]);
+		} else {
+			const cand = [];
+			for (let i = 0; i < starts.length; i++) for (let j = i + 1; j < starts.length; j++)
+				cand.push([starts[i], starts[j], d2(starts[i], seeds[starts[j]].x, seeds[starts[j]].y)]);
+			cand.sort((u, v) => u[2] - v[2] || u[0] - v[0] || u[1] - v[1]);
+			const paired = new Set();
+			for (const [a, b] of cand) if (!paired.has(a) && !paired.has(b)) { paired.add(a); paired.add(b); link(a, b); }
+		}
+		// a start whose links are all portal pairs walks out too: its widest border to a biome that is not a start, one not joined yet first
+		for (const s of starts) {
+			if (adj[s].some(n => chosen.has(Math.min(s, n) * 100000 + Math.max(s, n)))) continue;
+			const out = e => (e.a === s || e.b === s) && !isStart(e.a === s ? e.b : e.a);
+			const e = order.find(e => out(e) && find(e.a) !== find(e.b)) || order.find(out);
+			if (e) { take(e); unite(e.a, e.b); }
+		}
+	}
+	for (const e of order) {
+		if (shaped && isStart(e.a) && isStart(e.b)) continue;
+		const ra = find(e.a), rb = find(e.b);
+		if (ra === rb) continue;
+		parent[rb] = ra;
+		take(e);
+	}
+	const hops = (a, b) => {
+		const d = new Array(seedCount).fill(-1), q = [a];
+		d[a] = 0;
+		for (let h = 0; h < q.length; h++) for (const n of adj[q[h]]) if (d[n] < 0) { d[n] = d[q[h]] + 1; q.push(n); }
+		return d[b] < 0 ? Infinity : d[b];
+	};
+	if (family === 2) {
+		const loops = Math.max(1, Math.round(seedCount / 5));
+		for (let k = 0; k < loops; k++) {
+			let best = null, bd = 2;
+			for (const e of edges) {
+				if (chosen.has(key(e))) continue;
+				const d = hops(e.a, e.b);
+				if (d !== Infinity && d > bd) { bd = d; best = e; }
+			}
+			if (!best) break;
+			take(best);
+		}
+	}
+	const rest = edges.filter(e => !chosen.has(key(e)) && !(shaped && isStart(e.a) && isStart(e.b)) && key(e) !== dropped);
+	for (let i = rest.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [rest[i], rest[j]] = [rest[j], rest[i]]; }
+	const extra = Math.round(Math.max(0, Math.min(1, Number(p.interconnectivity) || 0)) * 0.25 * rest.length);
+	for (let i = 0; i < extra; i++) take(rest[i]);
+	const noRoad = p.openPathNoRoad / ((p.openPathNoRoad + p.openPathRoad) || 1);
+	const out = new Map();
+	// Hub and Pairs: a start keeps one land link whatever Portal share draws
+	const land = new Map();
+	const keepWay = family >= 3;
+	if (keepWay) for (const e of edges) if (chosen.has(key(e))) for (const z of [e.a, e.b]) if (isStart(z)) land.set(z, (land.get(z) || 0) + 1);
+	const lastWay = e => keepWay && [e.a, e.b].some(z => isStart(z) && land.get(z) === 1);
+	for (const e of edges) {
+		if (!chosen.has(key(e))) { out.set(key(e), 'blocked'); continue; }
+		if (rng() < p.interconnectPortal && !lastWay(e)) {
+			for (const z of [e.a, e.b]) if (isStart(z)) land.set(z, land.get(z) - 1);
+			out.set(key(e), 'portal'); continue;
+		}
+		out.set(key(e), rng() < noRoad ? 'openNoRoad' : 'openRoad');
+	}
+	return out;
+}
+
+/**
  * Force enough blocked borders open that every biome is reachable.
  *
  * assignConnections decides each border on its own coin flip, which says
@@ -1187,6 +1380,6 @@ function ensureConnected(edges, connections, seedCount, params, rng, joined = []
 
 module.exports = { BIOME_CLASS, BIOME_DEFAULTS, partitionBiomes, partitionSeeded, wobbleWaves,
 	layoutZoneSeeds, symmetricEigen, spectralCoords, fitSimilarity, assignClasses, zoneDistances, physZoneDistances,
-	biomeEdges, assignConnections, ensureConnected, valueNoise, zonesWhole,
+	biomeEdges, assignConnections, familyConnections, ensureConnected, valueNoise, zonesWhole,
 	rimModeOf, rimLobeScale, bordersOff, nearestLand,
 	REF_ZONES, portalGateScale, portalScale, MAX_START_SHARE, startOfOwner };

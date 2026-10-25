@@ -27,9 +27,9 @@ function artifacts(quality, seed = 2) {
 }
 
 test('Coldshadow 108x108 two levels: the major and relic share rises with Artifact quality, the number stays (0.50, 0.69, 0.90 over 3 seeds)', { timeout: 1500000 }, () => {
-	// four seeds summed: one seed's count moves 10 to 15% between settings with the pile draw alone (seed 2 at 6a8e76f: 226 and 239 at 0.5 and
+	// eight seeds summed (2026-10-20: four seeds gave a 10.3% spread, eight give 3.6% with openSealedPockets in and 3.9% without): one seed's count moves 10 to 15% between settings with the pile draw alone (seed 2 at 6a8e76f: 226 and 239 at 0.5 and
 	// 1; on the guard unit 2026-10-08, seeds 2 and 3: 529, 475, 498; seeds 2 to 5: 1011, 938, 948)
-	const sum = q => { const r = [2, 3, 4, 5].map(seed => artifacts(q, seed)); const all = r.reduce((t, x) => t + x.all, 0); return { all, share: r.reduce((t, x) => t + x.high, 0) / all }; };
+	const sum = q => { const r = [2, 3, 4, 5, 6, 7, 8, 9].map(seed => artifacts(q, seed)); const all = r.reduce((t, x) => t + x.all, 0); return { all, share: r.reduce((t, x) => t + x.high, 0) / all }; };
 	const lo = sum(0), mid = sum(0.5), hi = sum(1);
 	assert.ok(lo.share + 0.1 < mid.share && mid.share + 0.1 < hi.share, `shares ${lo.share.toFixed(2)}, ${mid.share.toFixed(2)}, ${hi.share.toFixed(2)} at 0, 0.5, 1`);
 	assert.ok(Math.abs(lo.all - mid.all) <= 0.1 * mid.all && Math.abs(hi.all - mid.all) <= 0.1 * mid.all, `artifacts ${lo.all}, ${mid.all}, ${hi.all}`);

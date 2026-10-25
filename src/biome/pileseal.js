@@ -12,7 +12,8 @@
  * that neighbour (the guard's tile) free, in the same zone, on the zone's open ground, off roads and doors, and not the only way
  * between the open tiles round it. The pile never lands under the guard's sprite (the tiles left of, above and up-left of it).
  * The pile's own guard (the nearest monster within two tiles whose ring holds no other object's way in and lies in the pile's
- * zone) moves with it; with none, a new one is posted at the pile's tier. The nearest dead end to the pile wins.
+ * zone) moves with it; with none, a new one is posted at the pile's tier. The nearest dead end to the pile wins, among those
+ * still closed once the pile and its guard have left their tiles.
  * Returns { open, moved, left }.
  */
 const PILE = /^(randomArtifactRelic|randomArtifactMajor|randomArtifactMinor|pandoraBox|artifact)$/;
@@ -23,7 +24,7 @@ const D8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]
 function sealPiles(plan, W, H, l, blocked, d) {
 	const out = { open: 0, moved: 0, left: 0 };
 	const { OCCUPIED, RESERVED, APPROACH, blockingCells, visitableCells, footprintFits, footprintBlock, markApproach,
-		objectEntry, monsterTpl, monsterOptions, rng } = d;
+		objectEntry, monsterTpl, monsterOptions, rng, calm } = d;
 	const base = l * W * H, zone = plan.zone, om = plan.openMask, water = plan.p && plan.p.water, road = plan.roadCells;
 	if (!zone) return out;
 	const floor = c => !(water && water[c]) && (!om || om[c]);
@@ -113,10 +114,20 @@ function sealPiles(plan, W, H, l, blocked, d) {
 				return !plan.objects.some(o => o !== p && (o.l || 0) === l && o.template && o.template.mask && !MON.test(o.type)
 					&& visitableCells(o.template, o.x, o.y).some(([vx, vy]) => Math.max(Math.abs(vx - m.x), Math.abs(vy - m.y)) <= 1));
 			});
+		// the tiles the move frees: the pile's own and its guard's. The dead ends were found with them blocked, and one beside the
+		// chosen dead end is a second way into it once they are free; so is a tile an earlier pile left
+		const freed = new Set([pc]);
+		if (own) for (const [a, b] of blockingCells(own.template || monsterTpl, own.x, own.y)) freed.add(b * W + a);
+		const closed = (c, g) => nb(c).every(u => u === g || !(free(u) || (freed.has(u) && floor(u))));
 		let spot = null;
 		for (const [c, g] of list) {
+			if (!closed(c, g)) continue;
 			if (cuts(g, c)) continue;
 			if (!footprintFits(monsterTpl, g % W, (g / W) | 0, l, W, H, blocked, true)) continue;
+			// the guard's ring takes no more of an owned town's fight-free ground than where it stood: the mouth's own tile can leave the
+			// open ground whole while the ring shuts the corridor to the start's second town (pw_006 180x180 seed 1006: a satyr stack at
+			// (17,12,L1) shut red's way to (10,9,L1), the town's 30 tiles off red's 1,264)
+			if (calm) { const now = calm(own || null, g % W, (g / W) | 0); if (now > 11 && (!own || now > calm(own, own.x, own.y))) continue; }
 			spot = [c, g];
 			break;
 		}

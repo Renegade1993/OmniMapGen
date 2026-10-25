@@ -145,6 +145,7 @@ test('--atbegin: the game makes the map at Begin, so no Generate button, and the
 			assert.strictEqual(map.find(i => i.name === 'buttonCustomSize').callback, 'chooseMapGenCustomSize', 'C, the custom size');
 			assert.strictEqual(map.find(i => i.name === 'labelTemplate').valueTexts.random, 'vcmi.mapGen.template.random');
 			assert.strictEqual(texts['vcmi.mapGen.template.random'], '(Random)');
+			assert.strictEqual(texts['vcmi.mapGen.template.noneShort'], JSON.parse(fs.readFileSync(path.join(ROOT, 'mod', 'open-template-name.json'), 'utf8')).name, 'the empty template value is the open layout, named in mod/open-template-name.json');
 		}
 	}
 	// the manifest a build carries: level 3, atBegin, K's name; the pages build level 2, the released one untouched

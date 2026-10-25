@@ -24,7 +24,52 @@ const HIGH = ['randomArtifactRelic', 'randomArtifactMajor', 'pandoraBox', 'artif
 // cheapest first
 const LOW = ['resource', 'randomResource', 'campfire', 'treasureChest', 'randomArtifactTreasure', 'randomArtifactMinor', 'randomArtifact'];
 const isMonster = o => o.type === 'monster' || /^randomMonster/.test(o.type);
+// 0: a level this cannot read (a fixed creature, a plain randomMonster)
 const tierOf = o => { const m = /^randomMonsterLevel(\d)/.exec(o.type); return m ? +m[1] : 0; };
+// the weaker guard of a trade: both levels read, and gl's the lower
+const weaker = (gl, gh) => tierOf(gl) > 0 && tierOf(gl) < tierOf(gh);
+
+/**
+ * Ground a hero reaches by fighting, as a test per tile of level l: the walkable pieces, eight way, with every cell blocked only by objects
+ * soft(o) says a hero gets past (monsters, pickups) walked, and a tile passes when its piece is more than `pocket` tiles. A pass that moves a
+ * pile beside a guard asks it of the place it moves to: a guard or a free tile in a hole walled in on every side passed every other test,
+ * and relics went where no hero, fighting or not, could take them (pw_040, 180x180 two levels seed 1040). VMAPGEN_LOOT_SEALED=1 passes all.
+ */
+function fightMap(objects, W, H, l, blocked, OCCUPIED, soft, blockingCells, pocket = POCKET) {
+	if (process.env.VMAPGEN_LOOT_SEALED === '1') return () => true;
+	const base = l * W * H, N = W * H, hard = new Uint8Array(N), softAt = new Uint8Array(N);
+	for (const o of objects) {
+		if ((o.l || 0) !== l || !o.template || !o.template.mask) continue;
+		// a pickup of more than one tile is a wall but for its entrance, as the checks' walk reads it (11cd4dd): a prison shut a pocket of four
+		// pickups moved in behind it (pw_040 (73,98))
+		const cells = blockingCells(o.template, o.x, o.y);
+		const sft = soft(o) && (/^(monster|randomMonster)/.test(o.type) || cells.length <= 1);
+		for (const [x, y] of cells) {
+			if (x < 0 || y < 0 || x >= W || y >= H) continue;
+			if (sft) softAt[y * W + x] |= 1; else softAt[y * W + x] |= 2;
+		}
+	}
+	for (let c = 0; c < N; c++) if ((blocked[base + c] & OCCUPIED) && softAt[c] !== 1) hard[c] = 1;
+	const piece = new Int32Array(N).fill(-1), size = [];
+	for (let s0 = 0; s0 < N; s0++) {
+		if (hard[s0] || piece[s0] >= 0) continue;
+		const id = size.length, st = [s0];
+		piece[s0] = id;
+		let n = 0;
+		while (st.length) {
+			const c = st.pop(), x = c % W, y = (c / W) | 0;
+			n++;
+			for (const [dx, dy] of N8) {
+				const nx = x + dx, ny = y + dy;
+				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+				const m = ny * W + nx;
+				if (!hard[m] && piece[m] < 0) { piece[m] = id; st.push(m); }
+			}
+		}
+		size.push(n);
+	}
+	return c => c >= 0 && c < N && piece[c] >= 0 && size[piece[c]] > pocket;
+}
 
 function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, visitableCells, opts = {}) {
 	const objs = plan.objects.filter(o => (o.l || 0) === l && o.template && o.template.mask);
@@ -68,6 +113,10 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 		}
 		size.push(n);
 	}
+	// ground a hero reaches by fighting (fightMap above). "Not open" is also true of a pickup walled in on every side, which no fight reaches
+	// either, and the trades and the pocket move put relics, majors and Pandora's boxes there (pw_040, 180x180 two levels seed 1040: a relic
+	// traded into a three-tile hole at (48,20), 72 pickups out of every hero's reach).
+	const fought = fightMap(plan.objects, W, H, l, blocked, OCCUPIED, o => REMOVABLE.has(o.type), blockingCells);
 	const oneTile = o => { const b = blockingCells(o.template, o.x, o.y); const v = visitableCells(o.template, o.x, o.y); return b.length <= 1 && v.length === 1; };
 	const approach = o => { const out = []; for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) for (const [dx, dy] of N8) if (inb(vx + dx, vy + dy)) out.push((vy + dy) * W + vx + dx); return out; };
 	// a piece holding a town's doorstep is open whatever its size: a hero leaves the town into it (the Opus Reviewer's R28: a Pandora's box in a
@@ -111,7 +160,7 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 	// pass 51: a relic beside the monolith (81,98) on 14101422). With VMAPGEN_FILL_SHADOW=1, as the fill's rule.
 	const { pictureOnShadow } = require('./content');
 	const underPic = o => process.env.VMAPGEN_FILL_SHADOW === '1' && o.template && pictureOnShadow(o.template, o.x, o.y, l, W, H, blocked);
-	const lows = objs.filter(o => LOW.includes(o.type) && oneTile(o) && !open(o) && (!opts.anyZone || shut(o)) && !underPic(o));
+	const lows = objs.filter(o => LOW.includes(o.type) && oneTile(o) && !open(o) && approach(o).some(fought) && (!opts.anyZone || shut(o)) && !underPic(o));
 	// the engine leaves some of its dear loot open too (Coldshadow's Fantasy: 10 to 19% of it): swap only down to that
 	// share (VMAPGEN_LOOT_OPEN, default 0.14), dearest first
 	const all = objs.filter(o => HIGH.includes(o.type)).length;
@@ -126,7 +175,10 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 	for (const h of highs) {
 		if (stillOpen <= keepOpen && !DEAREST.has(h.type)) break;
 		const z = zone(h);
-		const cand = lows.filter(o => !used.has(o) && zone(o) === z)
+		// visited from the same sides as the dear pile: a lost wagon, visited from below only, traded onto a relic's tile whose lower side was
+		// taken, and it and the Goblin Tower it stood below were sealed (K's October 18th seed 1244039256, (107,77)). VMAPGEN_SWAP_SAME_SIDES=0 off.
+		const sides = o => JSON.stringify((o.template && o.template.visitableFrom) || ['+++', '+-+', '+++']);
+		const cand = lows.filter(o => !used.has(o) && zone(o) === z && (process.env.VMAPGEN_SWAP_SAME_SIDES === '0' || sides(o) === sides(h)))
 			.sort((a, b) => LOW.indexOf(a.type) - LOW.indexOf(b.type) || (Math.abs(a.x - h.x) + Math.abs(a.y - h.y)) - (Math.abs(b.x - h.x) + Math.abs(b.y - h.y)));
 		const lo = cand[0];
 		if (!lo) continue;
@@ -134,7 +186,7 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 		const gl = guardOf(lo), gh = nearGuard(h);
 		[h.x, h.y, lo.x, lo.y] = [lo.x, lo.y, h.x, h.y];
 		swapped++; stillOpen--;
-		if (gl && gh && gl !== gh && tierOf(gl) < tierOf(gh) && pickupsOnly(gl)) {
+		if (gl && gh && gl !== gh && weaker(gl, gh) && pickupsOnly(gl)) {
 			for (const k of ['type', 'options', 'guardCreature', 'subtype', 'template'])
 				[gl[k], gh[k]] = [gh[k], gl[k]];
 			guards++;
@@ -157,7 +209,7 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 				const x = h.x + dx, y = h.y + dy;
 				if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
 				const c = y * W + x, d = Math.max(Math.abs(dx), Math.abs(dy));
-				if (d >= bd || zoneOf[c] !== z || taken.has(c) || blocked[base + c] || !inPocket(c)) continue;
+				if (d >= bd || zoneOf[c] !== z || taken.has(c) || blocked[base + c] || !inPocket(c) || !fought(c)) continue;
 				if (opts.anyZone && !besideMonster(x, y)) continue;
 				let ok = true;
 				for (const [ex, ey] of N8) {
@@ -191,7 +243,7 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 			const cls = plan.classes, hc = cls ? cls[zone(h)] : undefined;
 			const tierAt = o => { const g = guardOf(o); return g ? tierOf(g) : 0; };
 			// a player zone's dear loot stays in that zone: no start gets another's (the lead, 15:20: never into a player start zone)
-			const pool = lows.concat(objs.filter(o => (o.type === 'spellScroll' || o.type === 'artifact') && oneTile(o) && shut(o) && !open(o) && !underPic(o)))
+			const pool = lows.concat(objs.filter(o => (o.type === 'spellScroll' || o.type === 'artifact') && oneTile(o) && shut(o) && !open(o) && approach(o).some(fought) && !underPic(o)))
 				.filter(o => !cls || (cls[zone(o)] === hc && (hc !== 'player' || zone(o) === zone(h))));
 			const lo = pool.filter(o => !used.has(o)).sort((a, b) => ((tierAt(a) >= 4 ? 0 : 1) - (tierAt(b) >= 4 ? 0 : 1))
 				|| (Math.abs(a.x - h.x) + Math.abs(a.y - h.y)) - (Math.abs(b.x - h.x) + Math.abs(b.y - h.y)))[0];
@@ -201,7 +253,7 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 			[h.x, h.y, lo.x, lo.y] = [lo.x, lo.y, h.x, h.y];
 			swapped++;
 			// the stronger guard stays with the dear object, as in the same-zone trade above
-			if (gl && gh && gl !== gh && tierOf(gl) < tierOf(gh) && pickupsOnly(gl)) {
+			if (gl && gh && gl !== gh && weaker(gl, gh) && pickupsOnly(gl)) {
 				for (const k of ['type', 'options', 'guardCreature', 'subtype', 'template'])
 					[gl[k], gh[k]] = [gh[k], gl[k]];
 				guards++;
@@ -210,4 +262,4 @@ function swapLoot(plan, W, H, l, blocked, OCCUPIED, REMOVABLE, blockingCells, vi
 	return { swapped, guards, moved };
 }
 
-module.exports = { swapLoot };
+module.exports = { swapLoot, fightMap };

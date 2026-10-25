@@ -131,18 +131,34 @@ function zoneTree(opts) {
 	const pick = () => xy(inner[Math.floor(rng() * inner.length)]);
 	let T;
 	const chosen = new Set();
+	// the open tiles a road from `from` can reach (routeEdge's four steps over open ground): T is chosen among them, so the
+	// stub and the ends meet at a tile joined to the town (a tile nearest the aim but walled in left the town off the tree)
+	const reach = from => {
+		const seen = new Set([from]), q = [from];
+		for (let i = 0; i < q.length; i++) {
+			const c = q[i], x = c % W, y = (c / W) | 0;
+			for (const [dx, dy] of DIRS) {
+				const nx = x + dx, ny = y + dy, m = ny * W + nx;
+				if (nx < 0 || ny < 0 || nx >= W || ny >= opts.H || seen.has(m) || !open(m)) continue;
+				seen.add(m); q.push(m);
+			}
+		}
+		return seen;
+	};
 	if (opts.town >= 0) {
 		// T: about `stub` tiles from the gate, toward the mean of the link ends, on open ground of the zone
 		const [gx, gy] = xy(opts.town), L = Math.hypot(mean[0] - gx, mean[1] - gy) || 1, stub = opts.stub ?? 7;
 		const want = [gx + (mean[0] - gx) * Math.min(1, stub / L), gy + (mean[1] - gy) * Math.min(1, stub / L)];
-		T = zoneCells.filter(open).reduce((b, c) => { const [x, y] = xy(c), e = (x - want[0]) ** 2 + (y - want[1]) ** 2; return !b || e < b.e ? { c, e } : b; }, null);
+		const fromTown = reach(opts.town);
+		T = zoneCells.filter(c => open(c) && fromTown.has(c)).reduce((b, c) => { const [x, y] = xy(c), e = (x - want[0]) ** 2 + (y - want[1]) ** 2; return !b || e < b.e ? { c, e } : b; }, null);
 		T = T ? T.c : opts.town;
 		const s = routeEdge(opts.town, [T], { ...opts, ctrl: null });
 		if (s) s.forEach(c => roads.add(c));
 	} else {
 		let sx = 0, sy = 0; for (const c of zoneCells) { sx += c % W; sy += (c / W) | 0; }
 		const ctr = [sx / zoneCells.length, sy / zoneCells.length];
-		const best = zoneCells.filter(open).reduce((b, c) => { const [x, y] = xy(c), e = (x - ctr[0]) ** 2 + (y - ctr[1]) ** 2; return !b || e < b.e ? { c, e } : b; }, null);
+		const fromEnd = reach(Array.isArray(ends[0]) ? ends[0][0] : ends[0]);
+		const best = zoneCells.filter(c => open(c) && fromEnd.has(c)).reduce((b, c) => { const [x, y] = xy(c), e = (x - ctr[0]) ** 2 + (y - ctr[1]) ** 2; return !b || e < b.e ? { c, e } : b; }, null);
 		T = best ? best.c : (Array.isArray(ends[0]) ? ends[0][0] : ends[0]);
 	}
 	for (const e of ends) {

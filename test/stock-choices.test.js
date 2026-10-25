@@ -114,3 +114,17 @@ test('the Random template is one the map fits, or free layout when none does', (
 	assert.match(roll.rolled[roll.rolled.length - 1], /free layout/);
 	assert.strictEqual(stock.randomTemplate(['Broken'], () => { throw new Error('bad file'); }, roll), undefined, 'a template that fails to load is skipped');
 });
+
+test('a rolled player count keeps an opponent: two humans allied, computer seats random, never a map of allies only', () => {
+	// K's lobby, 2026-10-24: red and pink on one team, counts random; the roll gave 2 seats and the game declared victory on day 1
+	const allied = (n) => n > 2;   // generate-cli's filter for red and pink allied: the seats beyond the two humans are opponents
+	for (let seed = 1; seed <= 200; seed++) {
+		const c = stock.playerCounts({ humans: -1, compOnly: -1, allowed: (n) => allied(n) }, stock.roller(seed));
+		assert.ok(c.nPlayers > 2, `seed ${seed}: ${c.nPlayers} players`);
+	}
+	// counts set exactly are kept as asked
+	assert.deepStrictEqual(stock.playerCounts({ humans: 2, compOnly: 0, allowed: (n) => allied(n) }, stock.roller(1)), { nPlayers: 2, humans: 2 });
+	// with no filter, the old choice
+	const a = stock.playerCounts({ humans: -1, compOnly: -1 }, stock.roller(5));
+	assert.ok(a.nPlayers >= 2 && a.nPlayers <= 8);
+});

@@ -15,9 +15,79 @@
  * ground (zoneLineSafe), except through the doorway. The result does not depend on the template: a free layout's
  * biomes get the same network, joined across the borders the layout opens.
  *
- * Levers (p): caveSpacing, tiles between waypoints (default 9); caveWidth, the tunnel's mean width (default 4.6);
- * caveLoops, the share of nodes given an extra link (default 0.2).
+ * Levers (p): caveSpacing, tiles between waypoints (default 12); caveWidth, the tunnel's mean width (default 6);
+ * caveLoops, the share of nodes given an extra link (default 0.35). plan.js reads the same 12 and 6 where it scales
+ * them for a zone (narrowD, openK).
  */
+
+// Every passage two tiles wide at least, no floor that meets the rest of the floor only at a corner, no rock speck with floor on two
+// opposite sides: the terrain table (config/terrainViewPatterns.json) has no picture for a floor tile with rock on two opposite sides,
+// nor for floor touching floor at a corner only, nor for such a speck, so those tiles drew as flat squares however the smoothing went
+// (it may not turn floor into rock, which could seal a cave). K, 2026-10-18, on his large open maps: "single-with underground branches",
+// "two lava tiles with absolutely no border", "STILL HAVE MORE MISSING ROCK TILES"; level 1 of seed 440782210 had 82 such tiles in
+// one-tile corridors, a diagonal staircase and a diagonal lava strip. With doorways (a template) a tile opens only inside its own zone,
+// never beside another zone's floor (zoneLineSafe, the carve's own rule), and only where every floor tile round it is its zone's; on a free
+// layout, whose tunnels cross zone lines, only where every floor tile round it lies in one connected piece already, so nothing new joins.
+// A tile off the map's outermost ring only. VMAPGEN_CAVE_WIDEN=0 off.
+function widenPassages(W, H, open, zone, canOpen, byZone) {
+	let opened = 0;
+	// connected floor pieces (8-way), kept up to date as tiles open: an opened tile joins the one piece round it
+	const piece = new Int32Array(W * H).fill(-1);
+	for (let c0 = 0, id = 0; c0 < W * H; c0++) {
+		if (!open[c0] || piece[c0] >= 0) continue;
+		const q = [c0]; piece[c0] = id;
+		while (q.length) {
+			const c = q.pop(), x = c % W, y = (c / W) | 0;
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const nx = x + dx, ny = y + dy, n = ny * W + nx;
+				if (nx < 0 || ny < 0 || nx >= W || ny >= H || !open[n] || piece[n] >= 0) continue;
+				piece[n] = id; q.push(n);
+			}
+		}
+		id++;
+	}
+	const ok = (c, z) => {
+		if (open[c]) return false;
+		const x = c % W, y = (c / W) | 0;
+		if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) return false;
+		if (byZone && zone[c] !== z) return false;
+		let one = -1;
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+			const n = c + dy * W + dx;
+			if (!open[n]) continue;
+			if (byZone && zone[n] !== z) return false;
+			if (one < 0) one = piece[n]; else if (piece[n] !== one) return false;
+		}
+		return canOpen(c);
+	};
+	const take = c => {
+		open[c] = 1; opened++;
+		const x = c % W, y = (c / W) | 0;
+		for (let dy = -1; dy <= 1 && piece[c] < 0; dy++) for (let dx = -1; dx <= 1; dx++) { const n = (y + dy) * W + x + dx; if (open[n] && piece[n] >= 0) { piece[c] = piece[n]; break; } }
+	};
+	for (let round = 0; round < 12; round++) {
+		const before = opened;
+		for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+			const c = y * W + x;
+			if (open[c]) {
+				const z = zone[c];
+				// floor with rock left and right, or above and below: open the side that may open
+				if (!open[c - 1] && !open[c + 1]) { if (ok(c + 1, z)) take(c + 1); else if (ok(c - 1, z)) take(c - 1); }
+				if (!open[c - W] && !open[c + W]) { if (ok(c + W, z)) take(c + W); else if (ok(c - W, z)) take(c - W); }
+				// floor meeting floor at a corner only: open one of the two tiles between
+				for (const [dx, dy] of [[1, 1], [-1, 1]]) {
+					const d = c + dy * W + dx, a = c + dx, b = c + dy * W;
+					if (open[d] && !open[a] && !open[b]) { if (ok(a, z)) take(a); else if (ok(b, z)) take(b); }
+				}
+			} else if ((open[c - 1] && open[c + 1]) || (open[c - W] && open[c + W])) {
+				// a rock speck or a one-tile wall between floor of one zone
+				if (ok(c, zone[c])) take(c);
+			}
+		}
+		if (opened === before) break;
+	}
+	return opened;
+}
 
 function carveSplines(W, H, zone, seeds, edges, connections, p, rng, doors, helpers) {
 	const { doorCells, zoneLineSafe } = helpers;
@@ -212,6 +282,35 @@ function carveSplines(W, H, zone, seeds, edges, connections, p, rng, doors, help
 		}
 		for (const n of nodes) if (n.door) cut(n.x, n.y, 1, z);
 	}
+	// Start zones even: each zone's floor comes from its waypoints, a spacing apart and two tiles in from its edge, so a start zone drawn
+	// narrow got a few and its town stood in a closet: pw_049 (72x72, eight players, two levels, Coldshadow's Fantasy, seed 2049) carved its
+	// start zones 82 to 405 floor tiles of about 650 each, and green's town at (61,13) had 47 tiles to walk without a fight (the playable
+	// gate's limit is 50). A start zone under the median start's floor (at most 0.6 of its tiles) grows clearings out of its own floor, a
+	// short tunnel and a pocket at a time, until it has it. VMAPGEN_CAVE_START_EVEN=0 off.
+	if (process.env.VMAPGEN_CAVE_START_EVEN !== '0') {
+		const startZ = [];
+		for (let z = 0; z < Z; z++) if (seeds[z] && seeds[z].player && cellsOf[z].length) startZ.push(z);
+		const floorOf = z => { let n = 0; for (const c of cellsOf[z]) n += open[c]; return n; };
+		if (startZ.length > 1) {
+			const fl = startZ.map(floorOf), sorted = fl.slice().sort((u, v) => u - v), med = sorted[sorted.length >> 1];
+			startZ.forEach((z, k) => {
+				const want = Math.min(med, 0.6 * cellsOf[z].length);
+				let have = fl[k];
+				for (let tries = 0; have < want && tries < 600; tries++) {
+					const floor = cellsOf[z].filter(c => open[c]);
+					if (!floor.length) break;
+					const from = floor[(rng() * floor.length) | 0], ang = rng() * 6.283, d = 2 + rng() * 3;
+					const A = { x: from % W, y: (from / W) | 0 }, B = { x: Math.round(A.x + Math.cos(ang) * d), y: Math.round(A.y + Math.sin(ang) * d) };
+					const bc = B.y * W + B.x;
+					if (B.x < 2 || B.y < 2 || B.x >= W - 2 || B.y >= H - 2 || zone[bc] !== z || !inside(bc, 1)) continue;
+					const steps = Math.ceil(d * 2.5) + 2;
+					for (let s2 = 0; s2 <= steps; s2++) { const t = s2 / steps; cut(A.x + (B.x - A.x) * t, A.y + (B.y - A.y) * t, 1.1, z); }
+					cut(B.x, B.y, 1.8 + rng() * 1.2, z);
+					have = floorOf(z);
+				}
+			});
+		}
+	}
 	// Inlets: short fingers of floor pushed into the walls, a tile or two wide, as the engine's cave walls have them
 	// (its narrowest passages are 1 tile, ours were 3 without these). Each wall cell beside the floor may start one.
 	if (INLET > 0) {
@@ -247,6 +346,10 @@ function carveSplines(W, H, zone, seeds, edges, connections, p, rng, doors, help
 			for (const a of A) for (const b of B) { const d = (a.x - b.x) ** 2 + (a.y - b.y) ** 2; if (d < bd) { bd = d; best = [a, b]; } }
 			curve(best[0], best[1], -1);
 		}
+	if (process.env.VMAPGEN_CAVE_WIDEN !== '0') {
+		const widened = widenPassages(W, H, open, zone, c => !doors || zoneLineSafe(open, zone, W, H, c, doorCell), !!doors);
+		if (widened && process.env.VMAPGEN_CAVE_TRACE) console.error(`[cave] ${widened} tile(s) opened so no passage is one tile wide`);
+	}
 	open.tunnelsFailed = 0;
 	for (let c = 0; c < W * H; c++) if (!open[c]) spine[c] = 0;
 	open.spine = spine;
@@ -254,4 +357,4 @@ function carveSplines(W, H, zone, seeds, edges, connections, p, rng, doors, help
 	return open;
 }
 
-module.exports = { carveSplines };
+module.exports = { carveSplines, widenPassages };

@@ -44,7 +44,7 @@ function parseArgs(args) {
 function fail(msg) {
 	console.error(`generate-cli: ${msg}`);
 	console.error('usage: node src/main/generate-cli.js --w 36 --h 36 --players 2 '
-		+ '--out map.vmap --seed 42 [--underground 1] [--bio.<knob> <float>]');
+		+ '--out map.vmap --seed 42 [--underground 1] [--bio.<knob> <float|random>]');
 	console.error('       --template <rmg preset name|file|random>: runs at any size, level and player count; '
 		+ '--strict 1 refuses outside its ranges, --accommodate size,players,humans,underground relaxing them');
 	console.error('       --listtemplates 1 prints the presets the install offers');
@@ -67,6 +67,8 @@ const opt = parseArgs(process.argv.slice(2));
 // asked for, and a test can check every widget against the flag it sent.
 // Not for the two listings, whose output is read whole as JSON or lines.
 if (!opt.listknobs && !opt.listtemplates) console.log('options:', JSON.stringify(opt));
+// the open layout is a named entry of the template list (template-info.json, "openLayout": true): choosing it is choosing no template
+if (opt.template && require('../rmg/template').isOpenLayoutName(opt.template)) delete opt.template;
 
 // Where VCMI lives, named by the caller: the MapGen tab passes its own
 // client's folder and user folder. These win over VCMI_ROOT and
@@ -84,6 +86,16 @@ if (!PRESETS[presetName] || presetName.startsWith('_'))
 	fail(`unknown preset "${opt.preset}"; presets: `
 		+ Object.keys(PRESETS).filter(k => !k.startsWith('_')).join(', '));
 const biomes = { ...PRESETS[presetName].values };
+// --bio.<key> random: the lever rolled in its own range from the map's seed (stockChoices.randomLever), before anything reads it; the rolls join
+// the map's "random:" line and its settings line shows the value rolled
+const leverRolls = [];
+for (const [k, v] of Object.entries(opt)) {
+	if (!k.startsWith('bio.') || !require('./stockChoices').isRandomLever(v)) continue;
+	const knob = require('../biome/knobs').KNOBS.find(q => q.key === k.slice(4) && !q.cli);
+	if (!knob) fail(`--${k} random: no lever of that name in src/biome/knobs.js`);
+	opt[k] = String(require('./stockChoices').randomLever(knob, opt.seed));
+	leverRolls.push(`${knob.key} ${opt[k]}`);
+}
 // the line written beside the map (its .zones.json "settings", shown on the mapsight card): the template, the base set (the preset) and the
 // levers that differ from the base with their values, e.g. "Coldshadow's Fantasy; base: nostalgia; changed: waterContent 2, waterCoverage 0.45"
 const settingsLine = (() => {
@@ -128,6 +140,7 @@ const COLORS = ['red', 'blue', 'tan', 'green', 'orange', 'purple', 'teal', 'pink
 // from the map's seed and reported
 const stock = require('./stockChoices');
 const roll = stock.roller(opt.seed);
+for (const r of leverRolls) roll.rolled.push('lever ' + r);
 const RANDOM_TEMPLATE = stock.isRandomTemplate(opt.template);
 stock.applyWaterContent(biomes, roll, {
 	islandsShape: require('../biome/water').WATER_SHAPES.findIndex(s => s.id === 'islands'),
@@ -149,7 +162,7 @@ function teamsFromCount(count, colors) {
 
 async function main() {
 	if (opt.listtemplates) {
-		console.log(listTemplates().join('\n'));
+		console.log([...require('../rmg/template').openLayoutNames(), ...listTemplates()].join('\n'));
 		return;
 	}
 	// --listknobs 1: the lever list as JSON (pages, knobs with defaults and
@@ -165,8 +178,19 @@ async function main() {
 	let H = parseInt(opt.h || '64', 10);
 	const RANDOM_SIZE = stock.isRandomSize(opt.w) || stock.isRandomSize(opt.h);
 	const tplMod = require('../rmg/template');
+	// the seats a rolled count gives, and whether they fall in two teams or more under the lobby's teams (--teams; a colour in no group is its own
+	// team): a map whose players are all allies has no opponent, and the game declares victory on day 1 (K's lobby, 2026-10-24: red and pink
+	// together, computer players random, rolled 0, the generated map 'won' at once). VMAPGEN_OPPONENT=0 off.
+	const seatHumans = opt.humancolors ? [...new Set(String(opt.humancolors).split(',').map(s => s.trim().toLowerCase()).filter(Boolean))] : null;
+	const teamOf = new Map();
+	if (opt.teams) opt.teams.split(';').forEach((g, i) => g.split(',').map(s => s.trim().toLowerCase()).filter(Boolean).forEach(c => teamOf.set(c, i)));
+	const opponents = (n, hh) => {
+		const seats = seatHumans ? COLORS.filter(c => seatHumans.includes(c) || COLORS.filter(k => !seatHumans.includes(k)).indexOf(c) < Math.max(n, seatHumans.length) - seatHumans.length) : COLORS.slice(0, n);
+		return new Set(seats.map(c => (teamOf.has(c) ? 'g' + teamOf.get(c) : c))).size >= 2;
+	};
 	const counts = stock.playerCounts({ players: opt.players, humans: opt.humans, compOnly: biomes.compOnly,
-		templatePlayers: opt.template && !RANDOM_TEMPLATE ? tplMod.loadTemplate(opt.template).raw.players : null }, roll);
+		templatePlayers: opt.template && !RANDOM_TEMPLATE ? tplMod.loadTemplate(opt.template).raw.players : null,
+		allowed: opt.teams && process.env.VMAPGEN_OPPONENT !== '0' ? opponents : undefined }, roll);
 	// --humanColors red,green (DMB at Begin): the colours the seated humans
 	// took in the lobby. They are the map's human-or-computer seats and the
 	// rest of its players take the first colours left, as computer-only seats
@@ -193,11 +217,14 @@ async function main() {
 			|| COLORS.filter(k => !humanColors.includes(k)).indexOf(c) < nPlayers - humanColors.length)
 		: COLORS.slice(0, nPlayers);
 	const underground = opt.underground === '1' || opt.underground === 'true';
-	const template = !RANDOM_TEMPLATE ? opt.template : stock.randomTemplate(tplMod.listTemplates(), name => {
+	// Random (K, 2026-10-18: "literally runs one of the templates in the list, at random"): every approved template, and Throwback, the open layout, which takes any map
+	const picked = !RANDOM_TEMPLATE ? opt.template : stock.randomTemplate([...tplMod.openLayoutNames(), ...tplMod.listTemplates()], name => {
+		if (tplMod.isOpenLayoutName(name)) return true;
 		const tpl = tplMod.loadTemplate(name);
 		const req = { w: W, h: H, levels: underground ? 2 : 1, players: nPlayers, humans, seed: 1 };
 		return !tplMod.checkConstraints(tpl.raw, tplMod.resolveZones(tpl.raw), req, new Set()).violations.length;
 	}, roll);
+	const template = picked && tplMod.isOpenLayoutName(picked) ? undefined : picked;
 	if (roll.rolled.length) console.log('random:', roll.rolled.join(', '));
 	// Player towns pinned to quadrant corners for now.
 	const corners = [[4,4],[W-5,H-5],[4,H-5],[W-5,4],[4,(H/2)|0],[W-5,(H/2)|0],[(W/2)|0,4],[(W/2)|0,H-5]];
@@ -213,11 +240,20 @@ async function main() {
 		fail(`--observer ${opt.observer}: this map's colours are `
 			+ mapColors.join(', '));
 	let corner = 0;
+	// Which colour starts where (K, 2026-10-18: "We should always randomize per-color start positions"): the colours are shuffled over the starts from the map's seed,
+	// on every map, no switch. Teams keep the starts they shared, the observer keeps its place (src/rmg/colorStarts.js).
+	const teamGroups = opt.teams
+		? opt.teams.split(';').map(g => g.split(',').map(s => s.trim()))
+		: biomes.teams !== undefined ? teamsFromCount(biomes.teams, mapColors) : undefined;
+	const startColors = require('../rmg/colorStarts').colorsToStarts(mapColors, observerColor, teamGroups, opt.seed || '1');
+	console.log('start colours (start 1 first):', startColors.join(', '));
+	roll.rolled.push('start colours ' + startColors.join(', '));
 	// --factions castle,random,tower,...: each player's own pick in colour order
 	// (the lobby's, when the map is made at Begin), a name to pin or random to
 	// roll; a player with no entry keeps every faction open in the map
 	const picks = opt.factions ? String(opt.factions).split(',').map(s => s.trim()) : [];
-	const players = mapColors.map((c, i) => {
+	const players = startColors.map(c => {
+		const i = mapColors.indexOf(c);
 		const faction = 'core:' + ['castle','rampart','tower','inferno',
 			'necropolis','dungeon','stronghold','fortress'][COLORS.indexOf(c)];
 		const seat = humanColors ? { canPlay: humanColors.includes(c) ? 'PlayerOrAI' : 'AIOnly' } : {};
@@ -285,9 +321,7 @@ async function main() {
 		// switches its own spectator interface on.
 		aiOnly: opt.aionly === '1' || opt.aionly === 'true',
 		// --teams "red,tan;blue,green" -> [["red","tan"],["blue","green"]]
-		teams: opt.teams
-			? opt.teams.split(';').map(g => g.split(',').map(s => s.trim()))
-			: biomes.teams !== undefined ? teamsFromCount(biomes.teams, mapColors) : undefined,
+		teams: teamGroups,
 		guardTheme,
 		guardThemeShare,
 		dwellingThemeShare,

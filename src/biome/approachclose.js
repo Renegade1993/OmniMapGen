@@ -64,6 +64,9 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		&& (PICKUP.test(q.type) || visitableCells(q.template, q.x, q.y).length)
 		&& blockingCells(q.template, q.x, q.y).some(([a, b]) => Math.max(Math.abs(a - m.x), Math.abs(b - m.y)) <= 1));
 	const isFree = c => land(c) && !(blocked[base + c] & OCCUPIED);
+	// whether a pile moved beside a guard, its blockers laid, is still where a hero reaches by fighting (lootswap.js fightMap): a guard in a hole
+	// walled in on every side passed every test here, and relics moved into its ring where nobody could take them (pw_040 seed 1040)
+	const fought = q => { const ok = require('./lootswap').fightMap(pl.objects, W, H, l, blocked, OCCUPIED, o => MON.test(o.type) || PICKUP.test(o.type), blockingCells); return appOf.get(q).some(ok); };
 	const wayIn = c => isFree(c) || (process.env.VMAPGEN_WAY_PAST_GUARD !== '0' && monsterAt.has(c));
 	// guard spacing (content.js, the guard register): a tile within 2 of another stack takes a guard only where nothing else will do
 	const GAP = require('./content').GUARD_GAP;
@@ -78,12 +81,32 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 	const leansOn = (q, m) => DEAR.test(q.type, q) && visitableCells(q.template, q.x, q.y).some(([a, b]) => Math.max(Math.abs(a - m.x), Math.abs(b - m.y)) <= 1);
 	// a monster on or beside a tile of the object (MapGen Dev's flyer-open: a dear pile with none is open to a flyer that lands on it)
 	const monsterBeside = q => visitableCells(q.template, q.x, q.y).some(([fx, fy]) => { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const c = at(fx + dx, fy + dy); if (c >= 0 && monsterAt.has(c)) return true; } return false; });
-	// a hero walks onto a pickup (and fights a monster), so both stand on ground that is walked
+	// a hero walks onto a pickup (and fights a monster), so both stand on ground that is walked; a pickup's blocking cells that are not visited
+	// are not (a prison's second tile): counting them joined a pocket to the floor beside the prison through a tile no hero steps on, and the
+	// last ways into the pocket were closed (K's October 18th seeds on 40ccf74, s440782210 the prison (11,21) with a gold and a resource behind
+	// the rock (10,22); on 7e443c4 s1930488414 level 1 the prison (77,51) and three Pandora's boxes behind (75,50) and (76,50); the Opus
+	// Reviewer, 2026-10-23). VMAPGEN_PICK_VISIT_ONLY=0 counts every cell.
 	const pickAt = new Set();
+	const pickCells = process.env.VMAPGEN_PICK_VISIT_ONLY !== '0' ? visitableCells : blockingCells;
 	for (const o of pl.objects)
 		if ((o.l || 0) === l && o.template && o.template.mask && PICKUP.test(o.type))
-			for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) { const c = at(fx, fy); if (c >= 0) pickAt.add(c); }
+			for (const [fx, fy] of pickCells(o.template, o.x, o.y)) { const c = at(fx, fy); if (c >= 0) pickAt.add(c); }
 	const walk = c => c >= 0 && land(c) && (!(blocked[base + c] & OCCUPIED) || monsterAt.has(c) || pickAt.has(c));
+	// a pickup's visiting tile is stepped onto only from a side it is visited from (a prison from its sides and below): the floods below took
+	// the prison (11,21) of K's s440782210 on 40ccf74 from the tile above it, so the pile behind looked joined and its last way was closed.
+	// The step off it is held to the same sides, which counts a little less as joined than the game allows. VMAPGEN_PICK_VISIT_ONLY=0 off.
+	const pickFrom = new Map();
+	if (process.env.VMAPGEN_PICK_VISIT_ONLY !== '0')
+		for (const o of pl.objects)
+			if ((o.l || 0) === l && o.template && o.template.mask && PICKUP.test(o.type) && o.template.visitableFrom)
+				for (const [fx, fy] of visitableCells(o.template, o.x, o.y)) { const c = at(fx, fy); if (c >= 0) pickFrom.set(c, o.template.visitableFrom); }
+	const stepOk = (a, b) => {
+		for (const [p, q] of [[b, a], [a, b]]) {
+			const vf = pickFrom.get(p);
+			if (vf && (vf[(q / W | 0) - (p / W | 0) + 1] || '')[q % W - p % W + 1] !== '+') return false;
+		}
+		return true;
+	};
 
 	// the eight neighbours of c that a hero can stand on are one piece (so taking c away cuts nothing)
 	const simple = c => {
@@ -103,7 +126,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
 				if (!dx && !dy) continue;
 				const n = at(ix + dx, iy + dy);
-				if (n < 0 || n === c || seen.has(n) || Math.abs(n % W - x) > R || Math.abs(((n / W) | 0) - y) > R || !walk(n)) continue;
+				if (n < 0 || n === c || seen.has(n) || Math.abs(n % W - x) > R || Math.abs(((n / W) | 0) - y) > R || !walk(n) || !stepOk(i, n)) continue;
 				seen.add(n); stack.push(n);
 			}
 		}
@@ -122,7 +145,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
 				if (!dx && !dy) continue;
 				const n = at(ix + dx, iy + dy);
-				if (n < 0 || seen[n] || !walk(n)) continue;
+				if (n < 0 || seen[n] || !walk(n) || !stepOk(i, n)) continue;
 				seen[n] = 1; want.delete(n); stack.push(n);
 			}
 		}
@@ -491,6 +514,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 				const old = relocate(q, tx, ty);
 				let fine = appOf.get(q).some(c => ring.has(c) && (isFree(c) || monsterAt.has(c))) && (!DEAR.test(q.type, q) || monsterBeside(q));
 				if (fine) for (const c of appOf.get(q).filter(c => isFree(c) && !ring.has(c))) if (!block(c, q)) { fine = false; break; }
+				if (fine && !fought(q)) fine = false;
 				if (fine) { done = true; out.intoRing++; break; }
 				undoTrial();
 				unrelocate(q, old);
@@ -517,6 +541,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 				const old = relocate(q, tx, ty);
 				let fine = true;
 				for (const c of appOf.get(q).filter(c => isFree(c) && !ring.has(c))) if (!block(c, q)) { fine = false; break; }
+				if (fine && !fought(q)) fine = false;
 				if (fine) { done = true; out.cheapIntoRing++; break; }
 				undoTrial();
 				unrelocate(q, old);
@@ -573,6 +598,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 					const old = relocate(q, tx, ty);
 					let fine = appOf.get(q).some(c => ring.has(c) && (isFree(c) || monsterAt.has(c))) && (!DEAR.test(q.type, q) || monsterBeside(q));
 					if (fine) for (const c of appOf.get(q).filter(c => isFree(c) && !ring.has(c))) if (!block(c, q)) { fine = false; break; }
+					if (fine && !fought(q)) fine = false;
 					if (fine) { moves.push({ q, old }); placed = true; break; }
 					// not here: the move and the blockers laid for it come back
 					for (const { e, c } of trial.splice(mark).reverse()) { pl.objects.splice(pl.objects.indexOf(e), 1); blocked[base + c] &= ~OCCUPIED; out.closed--; }
@@ -740,6 +766,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 						const old = relocate(q, tx, ty);
 						let fine = appOf.get(q).some(c => ring.has(c) && (isFree(c) || monsterAt.has(c))) && (!DEAR.test(q.type, q) || monsterBeside(q));
 						if (fine) for (const c of appOf.get(q).filter(c => isFree(c) && !ring.has(c))) if (!block(c, q)) { fine = false; break; }
+						if (fine && !fought(q)) fine = false;
 						if (fine) { moves.push({ q, old }); placed = true; break; }
 						for (const { e, c } of trial.splice(mark).reverse()) { pl.objects.splice(pl.objects.indexOf(e), 1); blocked[base + c] &= ~OCCUPIED; out.closed--; }
 						unrelocate(q, old);

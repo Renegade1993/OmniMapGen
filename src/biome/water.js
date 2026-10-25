@@ -836,10 +836,12 @@ function settleZonesOnLand(zone, seeds, W, H, water, apart = null) {
 		}
 		if (big) grow(big.cell);
 	}
-	// stray land joins a neighbouring zone's core, growing inward
+	// stray land joins a neighbouring zone's core, growing inward a layer a sweep: each sweep votes on the cores as the
+	// sweep before left them and then applies its picks, so a piece goes to the zone it shares the most border with
+	// (decided in place, a sweep carried one zone's label right across a piece from its top or left side)
 	let moved = 0;
 	for (let it = 0; it < N; it++) {
-		let n = 0;
+		const picks = [];
 		for (let c = 0; c < N; c++) {
 			if (water[c] || core[c]) continue;
 			const x = c % W, y = (c / W) | 0;
@@ -853,10 +855,10 @@ function settleZonesOnLand(zone, seeds, W, H, water, apart = null) {
 			if (!votes.size) continue;
 			let best = -1, bv = 0;
 			for (const [z, v] of votes) if (v > bv || (v === bv && z < best)) { best = z; bv = v; }
-			zone[c] = best;
-			core[c] = 1;
-			n++;
+			picks.push(c, best);
 		}
+		for (let k = 0; k < picks.length; k += 2) { zone[picks[k]] = picks[k + 1]; core[picks[k]] = 1; }
+		const n = picks.length / 2;
 		moved += n;
 		if (!n) break;
 	}

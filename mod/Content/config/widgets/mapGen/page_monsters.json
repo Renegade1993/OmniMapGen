@@ -216,7 +216,7 @@
 			}
 		},
 		{
-			"name": "help_objectGuardShare",
+			"name": "help_guardShare",
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
@@ -225,24 +225,24 @@
 				"h": 22
 			},
 			"help": {
-				"hover": "vcmi.mapGen.objectGuardShare.hover",
-				"help": "vcmi.mapGen.objectGuardShare.help"
+				"hover": "vcmi.mapGen.guardShare.hover",
+				"help": "vcmi.mapGen.guardShare.help"
 			}
 		},
 		{
-			"name": "label_objectGuardShare",
+			"name": "label_guardShare",
 			"type": "label",
 			"font": "small",
 			"alignment": "left",
 			"color": "yellow",
-			"text": "vcmi.mapGen.objectGuardShare.hover",
+			"text": "vcmi.mapGen.guardShare.hover",
 			"position": {
 				"x": 58,
 				"y": 257
 			}
 		},
 		{
-			"name": "slider_objectGuardShare",
+			"name": "slider_guardShare",
 			"type": "slider",
 			"orientation": "horizontal",
 			"style": "brown",
@@ -259,17 +259,17 @@
 				"w": 112,
 				"h": 26
 			},
-			"setting": "persistent:mapGen/params/objectGuardShare",
+			"setting": "persistent:mapGen/params/guardShare",
 			"valueMin": 0,
 			"valueStep": 0.05,
-			"valueDefault": 0.75,
-			"valueLabel": "value_objectGuardShare",
+			"valueDefault": 1,
+			"valueLabel": "value_guardShare",
 			"valueDisplayScale": 100,
 			"valueDecimals": 0,
 			"valueSuffix": "%"
 		},
 		{
-			"name": "value_objectGuardShare",
+			"name": "value_guardShare",
 			"type": "label",
 			"font": "small",
 			"alignment": "left",

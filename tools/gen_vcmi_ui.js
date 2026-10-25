@@ -65,7 +65,13 @@ const PAGE_WIDGET = PAGER && !CLASSIC && !AT_BEGIN;
 // as the game carves its own ("style": "engraved"; K: "we missed the mark on
 // the black on gold font"), and Water layout as a chooser, a list to pick from
 // (K's C10: "a category, like size and template")
-const API4 = process.argv.includes('--api4');
+// --api6 (DMB's addon API level 6, DMB Dev, October 23rd): the background is DMB's DmbMapGenBk, VCMI Extras'
+// RanMapBk_new with each box's bottom edge 4 rows lower, and every band's control row sits 3 rows under its
+// divider, so a row of 32-high buttons has 2 clear rows above and below (K, October 22nd: the size and player
+// buttons "ride too low on their bounding ui boxes and should be given a tad more breathing room...all the
+// buttons should have a unified margin with their containing bounding box"). Implies --api4.
+const API6 = process.argv.includes('--api6');
+const API4 = API6 || process.argv.includes('--api4');
 const CHOOSERS = new Set(API4 ? ['waterShape', 'undergroundStarts', 'guardPortals'] : []);
 const GOLD_WORD = API4 ? { style: 'engraved' } : { color: [0, 0, 0, 255] };
 const outArg = process.argv.indexOf('--out');
@@ -121,7 +127,9 @@ const LINE_BOTTOM = 540, BUTTON_Y = 548;
 // arrows, so a page cannot bring one), so a lever page lays its rows into the
 // bands, two a band: one in the header strip, one in the control strip.
 const BAND_HEAD = [133, 199, 265, 331, 398, 465];
-const BAND_CTRL = [153, 219, 285, 351, 419, 485];
+// --api6: 3 rows under each divider (151/217/283/350/417/483) on DmbMapGenBk's taller boxes; the rows below
+// (lever pages' second rows at BAND_CTRL + 5, the Setup button at + 7) move with them and stay centred
+const BAND_CTRL = API6 ? [154, 220, 286, 353, 420, 486] : [153, 219, 285, 351, 419, 485];
 const classicRowTop = i => (i % 2 ? BAND_CTRL[i >> 1] + 5 : BAND_HEAD[i >> 1] - 5);
 // levers stock's own choices replace in the classic tab (its three road
 // toggles, on the Borders page, pave as Road type did)
@@ -134,7 +142,7 @@ const CLASSIC_ON_MAP = new Set(['roadType']);
 // checkbox): the look K plays with. DMB is asked (2026-09-27) to supply these
 // or say how a layout names them when that mod is off; they change here only.
 const EXTRAS_ART = {
-	background: 'RanMapBk_new', templateBox: 'RmgTTBk', templateField: 'DrDoCoBk',
+	background: API6 ? 'DmbMapGenBk' : 'RanMapBk_new', templateBox: 'RmgTTBk', templateField: 'DrDoCoBk',
 	sizes: ['RandSizS', 'RandSizM', 'RandSizL', 'RandSizXL', 'RandSizH', 'RandSizXH', 'RandSizG'], customSize: 'RandSizC',
 	twoLevels: 'RANDUND', setupButton: 'HWBUT2', checkbox: 'ChkBlue',
 };
@@ -383,7 +391,8 @@ function classicMapPageJson() {
 	];
 	let band = 1;
 	if (AT_BEGIN && API4) {
-		const y = BAND_CTRL[band++];
+		// --api6: the 22-high fields centred on the band's 32-high row, beside the size row's Random button
+		const y = BAND_CTRL[band++] + (API6 ? 5 : 0);
 		// height is built first so width, read first left to right, is built
 		// last and so holds the keyboard focus CTextInput grabs on creation
 		// (DMB Dev, September 28th); position is independent of build order
@@ -663,7 +672,7 @@ function stringsJson() {
 	};
 	if (CLASSIC) {
 		// the classic Map page names its bands as the game's Random Map Setup does
-		s['vcmi.mapGen.template.noneShort'] = 'No template: free layout';
+		s['vcmi.mapGen.template.noneShort'] = JSON.parse(fs.readFileSync(path.join(ROOT, 'mod/open-template-name.json'), 'utf8')).name;   // the empty template value is the open layout, named in mod/open-template-name.json, the one place (DMB Dev, 2026-10-20: the label read "No template: free layout")
 		s['vcmi.mapGen.map.humans.hover'] = 'Human or computer players';
 		s['vcmi.mapGen.map.humans.help'] = '{Human or computer players}\n\nSeats a human can take, or the computer when no human does. Random rolls a count the template takes.';
 		s['vcmi.mapGen.map.teams.hover'] = 'Team alignments';

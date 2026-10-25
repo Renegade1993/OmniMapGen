@@ -1,0 +1,4 @@
+{
+	"_about": "The one place the open layout's list name is written (K named it Classic, 2026-10-21; to rename it, change \"name\" here). Then run `node tools/apply_open_template_name.js`: it rewrites the entry's key in approved-templates.json and template-info.json (and every mention of the old name in the entries' texts), and tools/gen_vcmi_ui.js reads the lobby label from here. test/open-template-name.test.js fails when they disagree. Outside generator/, so it needs no re-pinning.",
+	"name": "Classic"
+}

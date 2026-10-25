@@ -199,9 +199,10 @@ function* walkFiles(dir) {
 }
 
 /**
- * Footprint of one object template: the mask grid where 'V' marks visitable
- * tiles and 'B'/'A'/'O' mark blocked or decorative coverage. Width/height are
- * the mask row extent; visitable gives the access cells a hero can stand on.
+ * Footprint of one object template, read with VCMI's mask alphabet
+ * (ObjectTemplate::readJson): 'B' and 'H' block, 'A' and 'T' block and are
+ * the tiles a hero visits, 'V' is picture only, ' ' and '0' are nothing.
+ * Width/height are the mask row extent.
  */
 function templateFootprint(tpl) {
 	const mask = tpl.mask || [];
@@ -212,8 +213,8 @@ function templateFootprint(tpl) {
 		const row = String(mask[y]);
 		for (let x = 0; x < row.length; x++) {
 			const c = row[x];
-			if (c === 'V' || c === 'B') blocked.push([x, mask.length - 1 - y]);
-			if (c === 'V' || c === 'A') visitable.push([x, mask.length - 1 - y]);
+			if (c === 'B' || c === 'H' || c === 'A' || c === 'T') blocked.push([x, mask.length - 1 - y]);
+			if (c === 'A' || c === 'T') visitable.push([x, mask.length - 1 - y]);
 		}
 	}
 	return { width: w, height: mask.length, blocked, visitable, animation: tpl.animation || '' };
@@ -357,7 +358,8 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 								? { allowedTerrains: tpl.allowedTerrains.map(String) } : {}),
 							// raw fields needed to EMIT this template into objects.json
 							raw: { animation: tpl.animation, mask: tpl.mask,
-								visitableFrom: tpl.visitableFrom } });
+								visitableFrom: tpl.visitableFrom,
+								...(tpl.zIndex ? { zIndex: Number(tpl.zIndex) } : {}) } });
 					}
 					// dwelling entries (config/objects/dwellings.json) carry a
 					// "creatures" tier list (one array of creature ids per tier,

@@ -102,6 +102,9 @@ function parseTileCode(code) {
 		extras.push(kind);
 		i = j + 1;
 	}
+	// the road comes first and the river after, and either may be missing: a lone one is the river when its code is one of
+	// config/rivers.json's (rw, ri, rm, rl; a river's code starts with r), the road otherwise
+	if (extras.length === 1) return extras[0][0] === 'r' ? { terr, road: null, river: extras[0] } : { terr, road: extras[0], river: null };
 	return { terr, road: extras[0] || null, river: extras[1] || null };
 }
 

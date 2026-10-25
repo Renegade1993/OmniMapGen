@@ -66,6 +66,8 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 		// four ways first, eight only where no straight run reaches a road (an eight-way run drew staircases of corner-only steps, which the game
 		// shows as dead ends: a gold mine's road on K's 180x180 seed 669067840, (14,46), the Opus Reviewer's R27)
 		for (const dirs of [D8.slice(0, 4), D8]) {
+		// off the map's outermost row first: a run along it is the only floor once the rim fill closes round it (pw_010, 36x36: a monolith's
+		// road along the bottom row, ten tiles; the lead, 2026-10-17 15:30). VMAPGEN_ROAD_RIM=1 takes the old order
 		for (const ok of [free, c => free(c) || under(c)]) {
 			prev = new Map([[v, -1]]);
 			const q = [v];
@@ -446,7 +448,15 @@ function joinBareTowns(plan, W, H, l, blocked, OCCUPIED, visitableCells, ownedOn
 		// a way to the net refused for its corner steps: the clearing and the second call come first, the road to an object in the zone after them (a
 		// start's 7-tile stub to an object on 108x108 eight players free seed 3, MapGen Dev 15:01)
 		if (refused && (!path || path.length > maxJoin)) { out.left++; continue; }
+		let joinCap = 0;   // the object route's own limit, when it gave the way (below)
 		if ((!path || path.length > (bl === blocked ? maxJoin : maxJoin * 2)) && !here.size) {
+			// how far the road may run to the object: as far as the zone is wide (1.5 times the root of its area), 60 tiles at least. The 60 alone
+			// fit an island zone; pw_034's town (73,43) on level 1 stood in a zone of 3,700 walkable tiles with no road (its only other road end,
+			// a monolith, in a part of the zone its ground does not reach), and its zone's mine was 61 tiles off (grid pg-c152, 2026-10-18).
+			// VMAPGEN_TOWN_OBJECT_CAP=0 keeps 60.
+			let zoneArea = 0;
+			if (process.env.VMAPGEN_TOWN_OBJECT_CAP !== '0') for (let c = 0; c < W * H; c++) if (plan.zone[c] === z) zoneArea++;
+			const objCap = Math.max(60, Math.round(1.5 * Math.sqrt(zoneArea)));
 			const goal = new Set();
 			for (const q of plan.objects) {
 				if (q === o || (q.l || 0) !== l || !q.template || !VISIT_GOAL.test(q.type)) continue;
@@ -471,7 +481,7 @@ function joinBareTowns(plan, W, H, l, blocked, OCCUPIED, visitableCells, ownedOn
 			let p2 = goal.size ? route(from, goal, W, H, blocked, l, R, DIRS4, n => plan.zone[n] === z) : null;
 			// no object it can reach: the zone's shore, where a hero's boat lands (a neutral island town in a pocket with the coast, i108 seed 2)
 			const wat = plan.p && plan.p.water;
-			if (false && (!p2 || p2.length > 60) && wat) {
+			if (false && (!p2 || p2.length > objCap) && wat) {
 				const shore = new Set();
 				for (let c = 0; c < W * H; c++) {
 					if (plan.zone[c] !== z || wat[c] || (blocked[l * W * H + c] & OCCUPIED)) continue;
@@ -480,22 +490,22 @@ function joinBareTowns(plan, W, H, l, blocked, OCCUPIED, visitableCells, ownedOn
 					for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < W && ny < H && wat[ny * W + nx]) { shore.add(c); break; } }
 				}
 				const p3 = shore.size ? route(from, shore, W, H, blocked, l, R, DIRS4, n => plan.zone[n] === z) : null;
-				if (p3 && p3.length <= 60) p2 = p3;
+				if (p3 && p3.length <= objCap) p2 = p3;
 			}
 			// over loot and monsters too, as the zone-road join does (a way the clearing pass found with nothing to clear crossed them, i108 seed 2)
 			let blp = blocked;
-			if ((!p2 || p2.length > 60) && softBlocked()) { const sb = softBlocked(), sOpen = c => !(sb[l * W * H + c] & OCCUPIED), fs = front.some(sOpen) ? front.filter(sOpen) : [...door].filter(sOpen); const p4 = fs.length ? route(fs, goal, W, H, sb, l, R, DIRS4, n => plan.zone[n] === z) : null; if (p4 && p4.length <= 60) { p2 = p4; blp = sb; } }
+			if ((!p2 || p2.length > objCap) && softBlocked()) { const sb = softBlocked(), sOpen = c => !(sb[l * W * H + c] & OCCUPIED), fs = front.some(sOpen) ? front.filter(sOpen) : [...door].filter(sOpen); const p4 = fs.length ? route(fs, goal, W, H, sb, l, R, DIRS4, n => plan.zone[n] === z) : null; if (p4 && p4.length <= objCap) { p2 = p4; blp = sb; } }
 			// none of those reached: the nearer goals, 4 tiles off (a cave start whose zone's other objects stood far beyond rock)
-			if (!p2 || p2.length > 60) {
+			if (!p2 || p2.length > objCap) {
 				const g4 = roadlessGoals(plan, W, H, l, blocked, OCCUPIED, visitableCells, o, vis, z, 4);
 				let p5 = g4.size ? route(from, g4, W, H, blocked, l, R, DIRS4, n => plan.zone[n] === z) : null;
-				if ((!p5 || p5.length > 60) && g4.size && softBlocked()) { const sb = softBlocked(), sOpen = c => !(sb[l * W * H + c] & OCCUPIED), fs2 = front.some(sOpen) ? front.filter(sOpen) : [...door].filter(sOpen); p5 = fs2.length ? route(fs2, g4, W, H, sb, l, R, DIRS4, n => plan.zone[n] === z) : null; if (p5 && p5.length <= 60) blp = sb; }
-				if (p5 && p5.length <= 60) p2 = p5;
+				if ((!p5 || p5.length > objCap) && g4.size && softBlocked()) { const sb = softBlocked(), sOpen = c => !(sb[l * W * H + c] & OCCUPIED), fs2 = front.some(sOpen) ? front.filter(sOpen) : [...door].filter(sOpen); p5 = fs2.length ? route(fs2, g4, W, H, sb, l, R, DIRS4, n => plan.zone[n] === z) : null; if (p5 && p5.length <= objCap) blp = sb; }
+				if (p5 && p5.length <= objCap) p2 = p5;
 			}
-			if (p2 && p2.length <= 60) { path = p2; bl = blp; out.toObject = (out.toObject || 0) + 1; (plan.roadEndsKept || (plan.roadEndsKept = new Set())).add(p2[p2.length - 1]); }
+			if (p2 && p2.length <= objCap) { path = p2; bl = blp; joinCap = objCap; out.toObject = (out.toObject || 0) + 1; (plan.roadEndsKept || (plan.roadEndsKept = new Set())).add(p2[p2.length - 1]); }
 			if (process.env.VMAPGEN_TOWNROAD_TRACE) console.error(`[townroad] (${o.x},${o.y}) zone ${z}: to an object, goal tiles ${goal.size}, path ${p2 ? p2.length + " ending " + (p2[p2.length - 1] % W) + "," + ((p2[p2.length - 1] / W) | 0) : "none"}`);
 		}
-		if (!path || path.length > (bl === blocked ? maxJoin : maxJoin * 2)) { if (process.env.VMAPGEN_TOWNROAD_TRACE) { const sb = softBlocked() || blocked, seen = new Set(), q = [...(front.filter(c => !(sb[l * W * H + c] & OCCUPIED)))]; for (const c of q) seen.add(c); let touched = 0; for (let h = 0; h < q.length; h++) { const c = q[h], x = c % W, y = (c / W) | 0; if (R.has(c) && !stub.has(c)) touched++; for (const [dx, dy] of DIRS4) { const u = x + dx, v = y + dy; if (u < 0 || v < 0 || u >= W || v >= H) continue; const n = v * W + u; if (seen.has(n) || (sb[l * W * H + n] & OCCUPIED)) continue; seen.add(n); q.push(n); } } console.error(`[jbt] (${o.x},${o.y}) zone ${z} left: path ${path ? path.length : 'none'}, soft ${bl !== blocked}, from ${from.length}, here ${here.size}, stub ${stub.size}; free-ground flood from the front reaches ${seen.size} tiles, ${touched} of them road`); } out.left++; continue; }
+		if (!path || path.length > Math.max(joinCap, bl === blocked ? maxJoin : maxJoin * 2)) { if (process.env.VMAPGEN_TOWNROAD_TRACE) { const sb = softBlocked() || blocked, seen = new Set(), q = [...(front.filter(c => !(sb[l * W * H + c] & OCCUPIED)))]; for (const c of q) seen.add(c); let touched = 0; for (let h = 0; h < q.length; h++) { const c = q[h], x = c % W, y = (c / W) | 0; if (R.has(c) && !stub.has(c)) touched++; for (const [dx, dy] of DIRS4) { const u = x + dx, v = y + dy; if (u < 0 || v < 0 || u >= W || v >= H) continue; const n = v * W + u; if (seen.has(n) || (sb[l * W * H + n] & OCCUPIED)) continue; seen.add(n); q.push(n); } } console.error(`[jbt] (${o.x},${o.y}) zone ${z} left: path ${path ? path.length : 'none'}, soft ${bl !== blocked}, from ${from.length}, here ${here.size}, stub ${stub.size}; free-ground flood from the front reaches ${seen.size} tiles, ${touched} of them road`); } out.left++; continue; }
 		for (const c of addElbows(path, W, H, bl, l)) R.add(c);
 		for (const c of vis) R.add(c);
 		for (const c of front) if (!(bl[l * W * H + c] & OCCUPIED)) R.add(c);
@@ -693,6 +703,10 @@ function thinRoadBlocks(plan, W, H, l, d) {
  * and takes the road (d.clearScenery, d.isDecor). When neither takes one, the step stays and is counted. VMAPGEN_ROAD_DIAG=0 skips it.
  * Returns { closed, cleared, left }.
  */
+const DETOUR_FROM = Number(process.env.VMAPGEN_DIAG_DETOUR_FROM || 8), DETOUR_LEN = Number(process.env.VMAPGEN_DIAG_DETOUR_LEN || 12);
+// the way round over scenery (linkRoundDecor) reaches further: round a town five tiles wide takes about ten (tb72 s7104, a road between a dragon utopia and a town)
+const DECOR_LEN = Number(process.env.VMAPGEN_DIAG_DECOR_LEN || 20);
+const DIAG_LAST_DEPTH = Number(process.env.VMAPGEN_DIAG_LAST_DEPTH || 9), DIAG_LAST_Q = Number(process.env.VMAPGEN_DIAG_LAST_Q || 400);
 function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d = {}) {
 	const out = { closed: 0, cleared: 0, left: 0 };
 	const R = plan.roadCells;
@@ -714,18 +728,24 @@ function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d =
 		if (!d.clearScenery || !d.isDecor || c < 0 || (water && water[c]) || (om && !om[c]) || !(blocked[base + c] & OCCUPIED)) return null;
 		const on = plan.objects.filter(q => (q.l || 0) === l && q.template && q.template.mask && blockingCells(q.template, q.x, q.y).some(([a, b]) => at(a, b) === c));
 		if (!on.length || !on.every(d.isDecor)) return null;
+		if (d.finalClear) return on;
+		return opensZones(on) ? null : on;
+	};
+	// clearing these pieces opens a walk from one zone into another: a piece over two zones, or one of its tiles on a zone line beside a tile of the other
+	// zone a hero stands on
+	const opensZones = on => {
 		for (const q of on) {
 			const cells = blockingCells(q.template, q.x, q.y).map(([a, b]) => at(a, b)).filter(t => t >= 0);
-			if (zone && new Set(cells.map(t => zone[t])).size > 1) return null;
+			if (zone && new Set(cells.map(t => zone[t])).size > 1) return true;
 			for (const t of cells) {
 				if (!onLine(t)) continue;
 				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
 					const n = at((t % W) + dx, ((t / W) | 0) + dy);
-					if (n >= 0 && zone[n] !== zone[t] && walk(n)) return null;
+					if (n >= 0 && zone[n] !== zone[t] && walk(n)) return true;
 				}
 			}
 		}
-		return on;
+		return false;
 	};
 	// the tiles a road keeps: a town's, a gate's or a monolith's own tiles and the tiles it is entered from (d.visitOf, d.dirsOf), and every
 	// object's own blocked tile. The whole ring round them was kept first, and a road tile behind a gate that met its door at a corner could
@@ -779,12 +799,14 @@ function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d =
 			// the step's two sides are two pieces: the shortest side-to-side way over free ground from c's piece (near the step) to n's
 			const prev = new Map(), q = [];
 			const cx = c % W, cy = (c / W) | 0;
-			for (const t of side) if (Math.max(Math.abs(t % W - cx), Math.abs(((t / W) | 0) - cy)) <= 4) { prev.set(t, -1); q.push(t); }
+			// from the road within DETOUR_FROM of the step, over at most DETOUR_LEN free tiles (4 and 5 before: a step between two objects a short
+			// way could not pass stayed, pw_004 with 0024 on opus-fg1020, (51,14)-(52,13) between an ore pit and a cyclops stockpile)
+			for (const t of side) if (Math.max(Math.abs(t % W - cx), Math.abs(((t / W) | 0) - cy)) <= DETOUR_FROM) { prev.set(t, -1); q.push(t); }
 			let hit = -1;
 			const depth = t => { let k = 0; for (let u = t; prev.get(u) >= 0; u = prev.get(u)) k++; return k; };
 			for (let h = 0; h < q.length && hit < 0; h++) {
 				const cur = q[h];
-				if (depth(cur) >= 5) continue;
+				if (depth(cur) >= DETOUR_LEN) continue;
 				for (const [ex, ey] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
 					const t = at((cur % W) + ex, ((cur / W) | 0) + ey);
 					if (t < 0 || prev.has(t)) continue;
@@ -801,6 +823,96 @@ function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d =
 		// now one piece either way: the step's tile that is spare goes (n first: c is the loop's own tile)
 		if (spare(n)) { R.delete(n); return 'n'; }
 		if (spare(c)) { R.delete(c); return 'c'; }
+		return null;
+	};
+	// the last call (d.finalClear), where the way round over free ground failed: the same way round may cross scenery (decor with no visiting
+	// cell, d.isDecor), cleared only when clearing it opens no walk from one zone into another and only once the step's own tile is known to come
+	// off. The road moves round the buildings; no building goes. The steps the final pass of 1549876 left on the 114 panel cases were all between
+	// two buildings (a gate's body, mines, creature banks, towns) with trees, hills or a mountain on the only way round (mn108 s8201: a magic well
+	// and a black market, the way below them over a mountain). VMAPGEN_ROAD_DIAG_LINK_DECOR=0 skips it
+	const linkRoundDecor = (c, n) => {
+		const side = pieceWithout(c, c, n);
+		if (side.has(n)) return null;
+		const prev = new Map(), q = [];
+		const cx = c % W, cy = (c / W) | 0;
+		for (const t of side) if (Math.max(Math.abs(t % W - cx), Math.abs(((t / W) | 0) - cy)) <= DETOUR_FROM) { prev.set(t, -1); q.push(t); }
+		const decorOn = new Map();
+		const crossable = t => {
+			if (walk(t)) return true;
+			if (!decorOn.has(t)) { const on = sceneryOn(t); decorOn.set(t, on && !opensZones(on) ? on : null); }
+			return !!decorOn.get(t);
+		};
+		let hit = -1;
+		const depth = t => { let k = 0; for (let u = t; prev.get(u) >= 0; u = prev.get(u)) k++; return k; };
+		for (let h = 0; h < q.length && hit < 0; h++) {
+			const cur = q[h];
+			if (depth(cur) >= DECOR_LEN) continue;
+			for (const [ex, ey] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+				const t = at((cur % W) + ex, ((cur / W) | 0) + ey);
+				if (t < 0 || prev.has(t)) continue;
+				if (R.has(t)) { if (!side.has(t) && !side.has(cur)) { prev.set(t, cur); hit = t; break; } continue; }
+				if (!crossable(t)) continue;
+				prev.set(t, cur); q.push(t);
+			}
+		}
+		const tr = process.env.VMAPGEN_DIAG_TRACE ? s => console.error(`[diag] L${l} (${c % W},${(c / W) | 0})-(${n % W},${(n / W) | 0}) decor round: ${s}`) : () => {};
+		if (hit < 0) { tr(`no way within ${DECOR_LEN} tiles (searched ${q.length})`); return null; }
+		const added = [];
+		for (let t = prev.get(hit); t >= 0 && !R.has(t); t = prev.get(t)) { R.add(t); added.push(t); }
+		const undo = why => { for (const t of added) R.delete(t); tr(why); return null; };
+		if (!pieceWithout(c, c, n).has(n)) return undo('the way round leaves two pieces');
+		let off = spare(n) ? n : spare(c) ? c : -1;
+		// a tile that would leave a corner step behind it comes off with the road moved a tile (moveTile), as in moveOver: a road from the north that
+		// meets a gate's door at a corner, the door entered from below (tb144x2 s7402 on c9f5964, (75,127) to the door (76,128))
+		let moved = false;
+		if (off < 0 && process.env.VMAPGEN_ROAD_DIAG_MOVE !== '0') { off = moveTile(n) ? n : moveTile(c) ? c : -1; moved = off >= 0; }
+		if (off < 0) return undo(`neither tile comes off (keeper n ${keepSet().has(n)} c ${keepSet().has(c)}, opens a step n ${opensStep(n)} c ${opensStep(c)})`);
+		const gone = new Set();
+		for (const t of added) if (!walk(t)) for (const o of decorOn.get(t) || []) gone.add(o);
+		if (gone.size) out.cleared += d.clearScenery(plan, l, W, H, blocked, { gone });
+		if (!moved) R.delete(off);
+		out.decorRound = (out.decorRound || 0) + 1;
+		return off === c ? 'c' : 'n';
+	};
+	// t comes off the road and the free tile (or scenery that opens no walk between zones) at the other corner of each pair of its neighbours that
+	// would then touch at a corner only takes the road; refused for a building's tile, a town's, gate's or monolith's own or entry tile, a 2x2 patch,
+	// or where the road would part. Returns whether it moved
+	const moveTile = t => {
+		if ((blocked[base + t] & OCCUPIED) || keepSet().has(t)) return false;
+		const x = t % W, y = (t / W) | 0, fill = [];
+		for (const [ax, ay, bx, by, ox, oy] of [[-1, 0, 0, -1, -1, -1], [1, 0, 0, -1, 1, -1], [-1, 0, 0, 1, -1, 1], [1, 0, 0, 1, 1, 1]]) {
+			const a = at(x + ax, y + ay), b = at(x + bx, y + by), o = at(x + ox, y + oy);
+			if (!(a >= 0 && b >= 0 && R.has(a) && R.has(b)) || (o >= 0 && R.has(o))) continue;
+			if (o < 0) return false;
+			if (walk(o)) { fill.push([o, null]); continue; }
+			const on = sceneryOn(o);
+			if (!on || opensZones(on)) return false;
+			fill.push([o, on]);
+		}
+		if (!fill.length) return false;
+		for (const [o] of fill) R.add(o);
+		R.delete(t);
+		const ring = D8.map(([ex, ey]) => at(x + ex, y + ey)).filter(u => u >= 0 && R.has(u));
+		const reach = ring.length ? pieceWithout(ring[0], -1, -1, t) : new Set();
+		if (!ring.length || !ring.every(u => reach.has(u)) || fill.some(([o]) => !noBlock(o))) { R.add(t); for (const [o] of fill) R.delete(o); return false; }
+		const gone = new Set();
+		for (const [, on] of fill) for (const q of on || []) gone.add(q);
+		if (gone.size) out.cleared += d.clearScenery(plan, l, W, H, blocked, { gone });
+		out.moved = (out.moved || 0) + 1;
+		return true;
+	};
+	// the last call, the step's two tiles already in one piece and neither able to come off because taking it would leave two of its neighbours
+	// touching at a corner: the road moves a tile. The step's tile comes off and the free tile at the other corner of each such pair takes the road
+	// (free ground or scenery that opens no walk between zones), so the road runs side to side round it. Never a building's tile, nor a town's, gate's
+	// or monolith's own or entry tile (tb108 s7202 on the 114 panel cases: (21,66) beside a mine's door, the road moved to (20,65)).
+	// VMAPGEN_ROAD_DIAG_MOVE=0 skips it
+	const moveOver = (c, n) => {
+		const tr = process.env.VMAPGEN_DIAG_TRACE ? s => console.error(`[diag] L${l} (${c % W},${(c / W) | 0})-(${n % W},${(n / W) | 0}) move: ${s}`) : () => {};
+		if (!pieceWithout(c, c, n).has(n)) { tr('two pieces'); return null; }
+		for (const t of [n, c]) {
+			if ((blocked[base + t] & OCCUPIED) || keepSet().has(t)) { tr(`(${t % W},${(t / W) | 0}) occupied or kept`); continue; }
+			if (moveTile(t)) return t === c ? 'c' : 'n';
+		}
 		return null;
 	};
 	// a gate's or a monolith's door (its visiting tile) and the free tiles it is entered from (d.visitOf, d.dirsOf)
@@ -867,7 +979,38 @@ function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d =
 		}
 		return true;
 	};
-	let townGate = null, wetObj = null;
+	// a road on the map's outermost row or column moves a tile in (d.rimIn, the last call): the tile straight inward from each rim road tile
+	// joins the road where it is free floor or only scenery off a zone line stands on it (cleared), and then each rim tile the road stays one
+	// piece without comes off; the corner steps this leaves are joined below. Rim road showed on 18 of the 98 pairwise maps (the Opus Reviewer,
+	// pass 129: Coldshadow 108's corner steps on the last row; the lead, 2026-10-17: block the edge row, keep the passage a tile in). Only maps
+	// with rim road change. VMAPGEN_ROAD_RIM_IN=0 leaves it
+	if (d.rimIn && process.env.VMAPGEN_ROAD_RIM_IN !== '0') {
+		const edge = c => c % W === 0 || c % W === W - 1 || ((c / W) | 0) === 0 || ((c / W) | 0) === H - 1;
+		const inward = c => { const x = c % W, y = (c / W) | 0; return at(x === 0 ? 1 : x === W - 1 ? W - 2 : x, y === 0 ? 1 : y === H - 1 ? H - 2 : y); };
+		const rimTiles = [...R].filter(edge);
+		for (const t of rimTiles) {
+			const u = inward(t);
+			if (u < 0 || edge(u) || R.has(u)) continue;
+			if (!walk(u)) {
+				const on = sceneryOn(u);
+				if (!on) continue;
+				out.cleared += d.clearScenery(plan, l, W, H, blocked, { gone: new Set(on) });
+				if (!walk(u)) continue;
+			}
+			R.add(u); out.rimIn = (out.rimIn || 0) + 1;
+		}
+		for (let pass = 0; pass < 4 && rimTiles.length; pass++) {
+			let any = false;
+			for (const t of [...R].filter(edge)) {
+				const ring = D8.map(([ex, ey]) => at((t % W) + ex, ((t / W) | 0) + ey)).filter(u => u >= 0 && R.has(u));
+				if (!ring.length) continue;
+				const reach = pieceWithout(ring[0], -1, -1, t);
+				if (ring.every(u => reach.has(u))) { R.delete(t); out.rimOff = (out.rimOff || 0) + 1; any = true; }
+			}
+			if (!any) break;
+		}
+	}
+	let townGate = null, wetObj = null, wetTown = false;
 	for (let pass = 0; pass < 3; pass++) {
 		let any = false;
 		for (const c of [...R]) {
@@ -888,9 +1031,9 @@ function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d =
 				// beside the step taken, the arms past it too long to take up (the pairwise grid's pw_004, Coldshadow 108: 5 steps left)
 				if (pick === undefined && d.allowBlock && process.env.VMAPGEN_ROAD_DIAG_BLOCK !== '0') {
 					const prev = new Map([[c, -1]]), q = [c]; let found = false;
-					for (let h = 0; h < q.length && !found && q.length < 400; h++) {
+					for (let h = 0; h < q.length && !found && q.length < DIAG_LAST_Q; h++) {
 						const cur = q[h]; let depth = 0; for (let t = cur; prev.get(t) >= 0; t = prev.get(t)) depth++;
-						if (depth >= 9) continue;
+						if (depth >= DIAG_LAST_DEPTH) continue;
 						for (const [ex, ey] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
 							const t = at((cur % W) + ex, ((cur / W) | 0) + ey);
 							if (t < 0 || prev.has(t)) continue;
@@ -916,9 +1059,31 @@ function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d =
 				// on level 1). VMAPGEN_ROAD_DIAG_CARVE=0 leaves the rock
 				if (pick === undefined && d.allowBlock && om && zone && process.env.VMAPGEN_ROAD_DIAG_CARVE !== '0') {
 					const zc = zone[c];
-					const carveSafe = t => { const tx = t % W, ty = (t / W) | 0; if (tx < 1 || ty < 1 || tx >= W - 1 || ty >= H - 1 || zone[n] !== zc) return false; for (const [ex, ey] of D8) { const u = at(tx + ex, ty + ey); if (u >= 0 && om[u] && !(water && water[u]) && zone[u] !== zc) return false; } return true; };
+					// and no rock beside it is left outside every 2x2 block of rock: this runs after the late thin-rock pass, and a spike left here showed
+					// as a black square (72x72 four players two levels seed 1, (16,69) on level 1 beside the dug (17,69); test/thin-rock-late)
+					const rockAt = (u, cut) => u >= 0 && u !== cut && !om[u];
+					const inBlock = (u, cut) => { const ux = u % W, uy = (u / W) | 0; for (const [bx, by] of [[0, 0], [-1, 0], [0, -1], [-1, -1]]) { const cs = [at(ux + bx, uy + by), at(ux + bx + 1, uy + by), at(ux + bx, uy + by + 1), at(ux + bx + 1, uy + by + 1)]; if (cs.every(v => rockAt(v, cut))) return true; } return false; };
+					const leavesSpike = t => D8.some(([ex, ey]) => { const u = at((t % W) + ex, ((t / W) | 0) + ey); return u >= 0 && rockAt(u, t) && !(water && water[u]) && inBlock(u, -1) && !inBlock(u, t); });
+					const carveSafe = t => { const tx = t % W, ty = (t / W) | 0; if (tx < 1 || ty < 1 || tx >= W - 1 || ty >= H - 1 || zone[n] !== zc) return false; for (const [ex, ey] of D8) { const u = at(tx + ex, ty + ey); if (u >= 0 && om[u] && !(water && water[u]) && zone[u] !== zc) return false; } return process.env.VMAPGEN_ROAD_DIAG_CARVE_SPIKE === '0' || !leavesSpike(t); };
 					const t = [s1, s2].find(t => t >= 0 && !om[t] && !(water && water[t]) && !(blocked[base + t] & OCCUPIED) && carveSafe(t));
 					if (t !== undefined) { om[t] = 1; pick = t; out.carved = (out.carved || 0) + 1; }
+					// the last call: where digging the tile would leave a spike of rock, the spike is dug with it, when every open tile round each spike is of
+					// the step's own zone and the two together leave no other spike (tb144x2 seeds 7408, 7409 and 7412 on the 114 panel cases: a road beside
+					// a town's or a creature bank's body and the cave wall). VMAPGEN_ROAD_DIAG_CARVE_WITH_SPIKE=0 skips it
+					if (pick === undefined && d.finalClear && process.env.VMAPGEN_ROAD_DIAG_CARVE_WITH_SPIKE !== '0') {
+						const zoneOk = u => { const ux = u % W, uy = (u / W) | 0; if (ux < 1 || uy < 1 || ux >= W - 1 || uy >= H - 1 || zone[n] !== zc || (water && water[u]) || (blocked[base + u] & OCCUPIED)) return false; for (const [ex, ey] of D8) { const v = at(ux + ex, uy + ey); if (v >= 0 && om[v] && !(water && water[v]) && zone[v] !== zc) return false; } return true; };
+						const rockOut = (v, S) => v >= 0 && !S.has(v) && !om[v];
+						const blockOut = (v, S) => { const vx = v % W, vy = (v / W) | 0; for (const [bx, by] of [[0, 0], [-1, 0], [0, -1], [-1, -1]]) { const cs = [at(vx + bx, vy + by), at(vx + bx + 1, vy + by), at(vx + bx, vy + by + 1), at(vx + bx + 1, vy + by + 1)]; if (cs.every(w => rockOut(w, S))) return true; } return false; };
+						const spikesOf = S => { const sp = new Set(); for (const s of S) for (const [ex, ey] of D8) { const v = at((s % W) + ex, ((s / W) | 0) + ey); if (rockOut(v, S) && !(water && water[v]) && blockOut(v, new Set()) && !blockOut(v, S)) sp.add(v); } return sp; };
+						for (const t0 of [s1, s2]) {
+							if (t0 < 0 || om[t0] || !zoneOk(t0)) continue;
+							const S = new Set([t0, ...spikesOf(new Set([t0]))]);
+							if (S.size > 3 || [...S].some(u => !zoneOk(u)) || spikesOf(S).size) continue;
+							for (const u of S) om[u] = 1;
+							pick = t0; out.carved = (out.carved || 0) + S.size; out.spikesDug = (out.spikesDug || 0) + S.size - 1;
+							break;
+						}
+					}
 				}
 				// on the surface, a shore tile beside the step becomes land for the road when every land tile round it is of the step's own zone, no
 				// object stands on it or within two of it on the water (a boat's or a shipyard's water), and the sea round it stays one piece: the road
@@ -927,6 +1092,9 @@ function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d =
 				if (pick === undefined && d.allowBlock && water && zone && process.env.VMAPGEN_ROAD_DIAG_FILL !== '0') {
 					const zc = zone[c];
 					if (!wetObj) { wetObj = new Set(); for (const o of plan.objects) if ((o.l || 0) === l && o.template && o.template.mask) for (const [fx, fy] of blockingCells(o.template, o.x, o.y).concat([[o.x, o.y]])) for (let ey = -2; ey <= 2; ey++) for (let ex = -2; ex <= 2; ex++) { const t = at(fx + ex, fy + ey); if (t >= 0 && water[t] && (!ex && !ey || /^(boat|shipyard|buoy|whirlpool|flotsam|seaChest|shipwreckSurvivor)/.test(o.type))) wetObj.add(t); } }
+					// and a coastal town's own boat tiles (CGTownInstance::getOutOffsets: its visiting tile plus (-1,+2) and (+1,+2); the Opus Reviewer's
+					// pass 127: a step beside a town's door could take one)
+					if (!wetTown) { wetTown = true; if (d.visitOf) for (const o of plan.objects) if ((o.l || 0) === l && o.template && o.template.mask && /^(randomTown|town)$/.test(o.type)) for (const [vx, vy] of d.visitOf(o.template, o.x, o.y)) for (const [ex, ey] of [[-1, 2], [1, 2]]) { const t = at(vx + ex, vy + ey); if (t >= 0 && water[t]) wetObj.add(t); } }
 					const seaKeeps = t => {
 						const x = t % W, y = (t / W) | 0, nb = [];
 						for (const [ex, ey] of D8) { const u = at(x + ex, y + ey); if (u >= 0 && water[u]) nb.push(u); }
@@ -961,9 +1129,34 @@ function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d =
 							const r = linkRound(c, n);
 							if (r) { out.linked = (out.linked || 0) + 1; out.closed++; any = true; if (r === 'c') break; continue; }
 						}
+						if (d.allowBlock && d.finalClear && process.env.VMAPGEN_ROAD_DIAG_LINK_DECOR !== '0') {
+							const r = linkRoundDecor(c, n);
+							if (r) { out.linked = (out.linked || 0) + 1; out.closed++; any = true; if (r === 'c') break; continue; }
+						}
+						if (d.allowBlock && d.finalClear && process.env.VMAPGEN_ROAD_DIAG_MOVE !== '0') {
+							const r = moveOver(c, n);
+							if (r) { out.closed++; any = true; if (r === 'c') break; continue; }
+						}
 						if (d.allowBlock && d.visitOf && d.dirsOf && process.env.VMAPGEN_ROAD_DIAG_DOOR !== '0') {
 							const g = doorRound(c, n);
-							if (g >= 0) { out.doorsOff = (out.doorsOff || 0) + 1; out.closed++; any = true; if (g === c) break; }
+							if (g >= 0) { out.doorsOff = (out.doorsOff || 0) + 1; out.closed++; any = true; if (g === c) break; continue; }
+						}
+						// last: the dead-end arm past the step goes when it is up to 12 tiles and serves no town, gate or monolith, where nothing beside
+						// the step can carry road and no way round exists: a pocket entered only on that diagonal (the pairwise grid's pw_004 with 0024,
+						// (31,86) to (32,85): a town's body and surface rock beside the step, 8 tiles of road on to a mine in a treasure pocket). The
+						// pocket stays a step away on foot; the road ends before it instead of showing two dead ends. VMAPGEN_ROAD_DIAG_ARM12=0 keeps it
+						if (d.allowBlock && process.env.VMAPGEN_ROAD_DIAG_BLOCK !== '0' && process.env.VMAPGEN_ROAD_DIAG_ARM12 !== '0') {
+							const arm12 = (from, other) => { const a2 = [from], seen = new Set([from, other]); for (let h = 0; h < a2.length; h++) { const cur = a2[h]; for (const [ex, ey] of D8) { const t = at((cur % W) + ex, ((cur / W) | 0) + ey); if (t >= 0 && R.has(t) && !seen.has(t)) { seen.add(t); a2.push(t); if (a2.length > 12) return null; } } } return a2; };
+							// (a town's, a gate's or a monolith's own tiles, its door and the tiles it is entered from: the step's tile beside a town's body
+							// is not its door)
+							const keepers12 = new Set();
+							for (const o of plan.objects) if ((o.l || 0) === l && o.template && o.template.mask && /^(randomTown|town|subterraneanGate|monolith)/.test(o.type)) {
+								for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) { const t = at(fx, fy); if (t >= 0) keepers12.add(t); }
+								if (d.visitOf && d.dirsOf) for (const [vx, vy] of d.visitOf(o.template, o.x, o.y)) { const g0 = at(vx, vy); if (g0 >= 0) keepers12.add(g0); for (const [ex, ey] of d.dirsOf(o.template)) { const t = at(vx + ex, vy + ey); if (t >= 0) keepers12.add(t); } }
+								else for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) for (let ey = -1; ey <= 1; ey++) for (let ex = -1; ex <= 1; ex++) { const t = at(fx + ex, fy + ey); if (t >= 0) keepers12.add(t); }
+							}
+							const cuts12 = [arm12(c, n), arm12(n, c)].filter(a2 => a2 && !a2.some(t => keepers12.has(t))).sort((p2, q2) => p2.length - q2.length);
+							if (cuts12.length) { for (const t of cuts12[0]) R.delete(t); out.armsCut = (out.armsCut || 0) + 1; any = true; break; }
 						}
 						continue;
 					}

@@ -139,6 +139,27 @@ function h3ObjectTemplates(roots, classId, fromTop = null) {
 	return out;
 }
 
+/**
+ * The draw priority OBJECTS.TXT gives each animation (ObjectTemplate::readTxt: column 8, times 100), the ones above 0 only: lowercase
+ * animation name -> zIndex. The engine draws an object with one under every object without (CMap::compareObjectBlitOrder), which is how a
+ * lake or a crater lies under the objects beside it. Empty when the data is not found.
+ */
+function h3PrintPriority(roots) {
+	const out = new Map();
+	const text = findResource(roots, 'Data', DATA_LODS, 'OBJECTS.TXT');
+	if (!text) return out;
+	const lines = text.toString('latin1').split(/\r?\n/);
+	const total = parseInt(lines[0], 10) || 0;
+	for (let i = 1; i <= total && i < lines.length; i++) {
+		const s = lines[i].trim().split(' ');
+		if (s.length < 9) continue;
+		const p = parseInt(s[8], 10) * 100;
+		const anim = s[0].replace(/\.def$/i, '').toLowerCase();
+		if (p > 0 && !out.has(anim)) out.set(anim, p);
+	}
+	return out;
+}
+
 // OBJECTS.TXT's terrain order (ObjectTemplate::readTxt: column 5, read right to
 // left), by the identifiers the engine gives them
 const H3_TERRAINS = ['dirt', 'sand', 'grass', 'snow', 'swamp', 'rough', 'subterra', 'lava', 'water'];
@@ -164,6 +185,26 @@ function h3TerrainRows(roots) {
 		const key = `${parseInt(s[5], 10)}.${parseInt(s[6], 10)}`;
 		if (!out.has(key)) out.set(key, []);
 		out.get(key).push({ anyLand, terrains });
+	}
+	return out;
+}
+
+/**
+ * Where each OBJECTS.TXT art may stand: the art's bare name in lower case (avxosis0) -> the set of terrains of all its rows. Empty when the
+ * data is not found. The oasis is sand only there; the art corpus had seen it six times, too few to say so (K, 2026-10-22: "Oasis in dirt").
+ */
+function h3ArtTerrains(roots) {
+	const out = new Map();
+	const text = findResource(roots, 'Data', DATA_LODS, 'OBJECTS.TXT');
+	if (!text) return out;
+	const lines = text.toString('latin1').split(/\r?\n/);
+	const total = parseInt(lines[0], 10) || 0;
+	for (let i = 1; i <= total && i < lines.length; i++) {
+		const s = lines[i].trim().split(' ');
+		if (s.length < 9 || s[4].length !== 9) continue;
+		const art = s[0].toLowerCase().replace(/\.def$/, '');
+		if (!out.has(art)) out.set(art, new Set());
+		H3_TERRAINS.forEach((t, k) => { if (s[4][8 - k] === '1') out.get(art).add(t); });
 	}
 	return out;
 }
@@ -205,5 +246,5 @@ function h3CreatureTraits(roots) {
 	return out;
 }
 
-module.exports = { h3ObjectTemplates, h3MonsterTemplates, h3ArtifactTemplates, h3CreatureTraits, h3TerrainRows,
+module.exports = { h3ObjectTemplates, h3MonsterTemplates, h3ArtifactTemplates, h3CreatureTraits, h3TerrainRows, h3ArtTerrains, h3PrintPriority,
 	lodIndex, lodRead, findResource };

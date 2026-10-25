@@ -56,7 +56,10 @@ function serializeVmap({ header, tilesByLevel, objects }) {
 function makeHeader({ width, height, players, levels, modIds = [], difficulty = 'NORMAL',
 	name = 'OmniGen', allFactions = [], declareMods = false, teams = null, allowed = null }) {
 	const playerBlock = {};
-	for (const p of players) {
+	// the header lists the players in colour order whatever order the generator seats them in (colorStarts.js seats colours in start order)
+	const COLOUR_ORDER = ['red', 'blue', 'tan', 'green', 'orange', 'purple', 'teal', 'pink'];
+	const byColour = c => { const k = COLOUR_ORDER.indexOf(c); return k < 0 ? COLOUR_ORDER.length : k; };
+	for (const p of players.slice().sort((a, b) => byColour(a.color) - byColour(b.color))) {
 		playerBlock[p.color] = {
 			allowedFactions: { anyOf: p.factions && p.factions.length ? p.factions : allFactions },
 			// PlayerOrAI unless the caller says otherwise. The reader maps the

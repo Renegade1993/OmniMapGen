@@ -477,6 +477,70 @@ function smoothForPatterns(W, H, cells, terrainOf, patterns, rounds = 6, frozen 
 			changedTotal += changed;
 			if (!changed) break;
 		}
+
+	// Pass 4: a small patch of one terrain that still has no pattern, repainted whole. The passes above change one tile at a time, and a
+	// patch two tiles long squeezed between other ground and rock stays as it is: either tile alone changed leaves its partner just as
+	// bad, so no single change scores better (K, 2026-10-18: "two lava tiles with absolutely no border/trim/interface tiles", seed
+	// 1930488414 level 1 (98,24) and (98,25), lava between cave floor and rock). The tile's patch (4-way, its terrain, at most PATCH_MAX
+	// tiles, none locked; only tiles that have no pattern themselves, so an arm of a big patch is repainted and not the patch) takes each terrain beside it in turn, scored by the tiles no pattern fits round the patch, and the best is kept
+	// if it is strictly better. VMAPGEN_VIEW_PATCH=0 off.
+	const PATCH_MAX = 6;
+	if (process.env.VMAPGEN_VIEW_PATCH !== '0')
+		for (let round = 0; round < rounds; round++) {
+			const probe = assignTerrainViews(W, H, (x, y) => terrainOf(cells[y * W + x]), patterns, () => 0);
+			if (!probe.unmatched) break;
+			let changed = 0;
+			const done = new Uint8Array(W * H);
+			for (let cell = 0; cell < W * H; cell++) {
+				if (!probe.unmatchedCells[cell] || done[cell] || locked(cell)) continue;
+				const orig = cells[cell], patch = [cell];
+				done[cell] = 1;
+				let tooBig = false;
+				for (let h = 0; h < patch.length && !tooBig; h++) {
+					const c = patch[h], x = c % W, y = (c / W) | 0;
+					for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+						const nx = x + dx, ny = y + dy, n = ny * W + nx;
+						// the unmatched run only: an arm of a big patch (a lava strip off its zone) is repainted, not the zone
+						if (nx < 0 || ny < 0 || nx >= W || ny >= H || done[n] || cells[n] !== orig || !probe.unmatchedCells[n]) continue;
+						if (locked(n) || patch.length >= PATCH_MAX) { tooBig = true; break; }
+						done[n] = 1; patch.push(n);
+					}
+				}
+				if (tooBig) continue;
+				let x0 = W, y0 = H, x1 = 0, y1 = 0;
+				for (const c of patch) { const x = c % W, y = (c / W) | 0; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+				const cx0 = Math.max(0, x0 - 4), cy0 = Math.max(0, y0 - 4), cx1 = Math.min(W - 1, x1 + 4), cy1 = Math.min(H - 1, y1 + 4);
+				const cw = cx1 - cx0 + 1, ch = cy1 - cy0 + 1;
+				const score = () => {
+					const r = assignTerrainViews(cw, ch, (u, v) => terrainOf(cells[(cy0 + v) * W + cx0 + u]), patterns, () => 0);
+					let n = 0;
+					for (let v = Math.max(0, y0 - 2); v <= Math.min(H - 1, y1 + 2); v++)
+						for (let u = Math.max(0, x0 - 2); u <= Math.min(W - 1, x1 + 2); u++)
+							if (r.unmatchedCells[(v - cy0) * cw + u - cx0]) n++;
+					return n;
+				};
+				const cands = new Set(extras || []);
+				for (const c of patch) {
+					const x = c % W, y = (c / W) | 0;
+					for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+						const nx = x + dx, ny = y + dy;
+						if (nx < 0 || ny < 0 || nx >= W || ny >= H || locked(ny * W + nx)) continue;
+						cands.add(cells[ny * W + nx]);
+					}
+				}
+				cands.delete(orig);
+				let best = orig, bestN = score();
+				for (const k of cands) {
+					for (const c of patch) cells[c] = k;
+					const n = score();
+					if (n < bestN) { best = k; bestN = n; }
+				}
+				for (const c of patch) cells[c] = best;
+				if (best !== orig) changed += patch.length;
+			}
+			changedTotal += changed;
+			if (!changed) break;
+		}
 	return changedTotal;
 }
 

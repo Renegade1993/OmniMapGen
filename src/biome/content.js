@@ -1098,6 +1098,89 @@ function entrancesOf(blocked) {
 }
 
 /**
+ * The entrances of the towns, gates and monoliths of each level, with their straight (four-way) fronts the template permits, per blocked
+ * grid: protectFronts records them before the fill, and the fill's connectivity guard keeps one of each entrance's fronts in open ground
+ * a straight walk joins to the rest. The guard's own flood goes eight ways, as heroes move, so a building could leave a portal end in a
+ * pocket joined to the map at a corner only, and the road to it then took a corner step (pw_010, 36x36 seed 1010: a dwelling at (4,1)
+ * beside the level 1 monolith at (2,1), the town's top row under both). VMAPGEN_FRONT_GUARD=0 off.
+ */
+const FRONTS = new WeakMap();
+// The front rules (a town, gate or monolith keeps a straight way out, and the fill refuses what would take the last one) are for maps 72 wide or more: on a 36x36 two-level
+// map they moved what lies in a start's ground (K's seed 1099575901 on Coldshadow's Fantasy: blue's take with no fight fell from 0.96 of red's to 0.30, seed 22 to 0.22; the
+// measure is MapGen Dev's start-take probe, October 21st). VMAPGEN_FRONT_RULE_MIN sets the smallest side they apply to; VMAPGEN_FRONT_GUARD=0 turns them off everywhere.
+const FRONT_RULE_MIN = Number(process.env.VMAPGEN_FRONT_RULE_MIN || 72);
+const frontGuardOff = (W, H) => process.env.VMAPGEN_FRONT_GUARD === '0' || Math.min(W, H) < FRONT_RULE_MIN;
+const FRONT_KINDS = /^(town|randomTown|monolith|subterraneanGate)/;
+// a front counts as open when a straight walk from it reaches this many tiles: a pocket that size has room for a road's turn
+const FRONT_OPEN = 64;
+function protectFronts(blocked, l, W, H, objects) {
+	if (frontGuardOff(W, H)) return 0;
+	let m = FRONTS.get(blocked);
+	if (!m) FRONTS.set(blocked, (m = new Map()));
+	const list = [];
+	for (const o of objects || []) {
+		if (!FRONT_KINDS.test(o.type) || !o.template || !o.template.mask) continue;
+		const dirs = allowedDirs(o.template).filter(([dx, dy]) => !dx !== !dy);
+		for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) {
+			if (vx < 0 || vy < 0 || vx >= W || vy >= H) continue;
+			const fronts = [];
+			for (const [dx, dy] of dirs) {
+				const nx = vx + dx, ny = vy + dy;
+				if (nx >= 0 && ny >= 0 && nx < W && ny < H) fronts.push(ny * W + nx);
+			}
+			if (fronts.length) list.push({ x: vx, y: vy, fronts });
+		}
+	}
+	m.set(l, list);
+	return list.length;
+}
+/** Whether one of a door's straight fronts (permitted, not a corner, not its own tile) is free on level l. */
+function ownFrontFree(tpl, x, y, l, W, H, blocked) {
+	const dirs = allowedDirs(tpl).filter(([dx, dy]) => !dx !== !dy);
+	const own = new Set(blockingCells(tpl, x, y).map(([a, b]) => b * W + a));
+	return visitableCells(tpl, x, y).some(([vx, vy]) => dirs.some(([dx, dy]) => {
+		const nx = vx + dx, ny = vy + dy;
+		return nx >= 0 && ny >= 0 && nx < W && ny < H && !own.has(ny * W + nx) && !(blocked[l * W * H + ny * W + nx] & OCCUPIED);
+	}));
+}
+/** A town, gate or monolith placed after protectFronts ran (by the fill itself) joins its level's list. */
+function addFront(blocked, l, W, H, type, tpl, x, y) {
+	if (frontGuardOff(W, H) || !FRONT_KINDS.test(type) || !tpl || !tpl.mask) return;
+	const m = FRONTS.get(blocked), list = m && m.get(l);
+	if (!list) return;
+	const dirs = allowedDirs(tpl).filter(([dx, dy]) => !dx !== !dy);
+	const own = new Set(blockingCells(tpl, x, y).map(([a, b]) => b * W + a));
+	for (const [vx, vy] of visitableCells(tpl, x, y)) {
+		if (vx < 0 || vy < 0 || vx >= W || vy >= H) continue;
+		const fronts = [];
+		for (const [dx, dy] of dirs) {
+			const nx = vx + dx, ny = vy + dy;
+			if (nx >= 0 && ny >= 0 && nx < W && ny < H && !own.has(ny * W + nx)) fronts.push(ny * W + nx);
+		}
+		if (fronts.length) list.push({ x: vx, y: vy, fronts });
+	}
+}
+/** Whether a straight walk from one of the fronts over tiles not OCCUPIED reaches FRONT_OPEN tiles. */
+function frontOpen(blocked, l, W, H, fronts, seen) {
+	const base = l * W * H, st = [], touched = [];
+	let n = 0;
+	for (const f of fronts) if (!(blocked[base + f] & OCCUPIED) && !seen[f]) { seen[f] = 1; touched.push(f); st.push(f); }
+	while (st.length && n < FRONT_OPEN) {
+		const c = st.pop(); n++;
+		const x = c % W, y = (c / W) | 0;
+		for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+			const nx = x + dx, ny = y + dy;
+			if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+			const i = ny * W + nx;
+			if (seen[i] || (blocked[base + i] & OCCUPIED)) continue;
+			seen[i] = 1; touched.push(i); st.push(i);
+		}
+	}
+	for (const i of touched) seen[i] = 0;
+	return n >= FRONT_OPEN;
+}
+
+/**
  * Whether a monster at (x, y) would stand over ground it must leave free: a
  * road, a corridor, a doorway or a held gate site (RESERVED), or another
  * object's entrance, within the 3x3 it guards, other than the cells in
@@ -1214,6 +1297,7 @@ function makeConnectivityGuard(blocked, l, W, H, tolerance = 2, preferred = -1) 
 	}
 	let count = floodFrom(blocked, l, W, H, seedCell, flags);
 	let pending = -1;
+	let frontSeen = null;
 
 	const pickSeed = () => {
 		if (seedCell >= 0 && !(blocked[base + seedCell] & OCCUPIED)) return seedCell;
@@ -1229,6 +1313,15 @@ function makeConnectivityGuard(blocked, l, W, H, tolerance = 2, preferred = -1) 
 		accepts(cells) {
 			pending = -1;
 			if (count <= 0) return true;          // nothing measured, allow
+			// the town, gate and monolith entrances near the cells whose straight way out is open now (protectFronts)
+			const fl = (FRONTS.get(blocked) || new Map()).get(l);
+			const near = [];
+			if (fl && fl.length) {
+				if (!frontSeen || frontSeen.length !== W * H) frontSeen = new Uint8Array(W * H);
+				for (const e of fl)
+					if (cells.some(c => Math.max(Math.abs(c % W - e.x), Math.abs(((c / W) | 0) - e.y)) <= 9)
+						&& frontOpen(blocked, l, W, H, e.fronts, frontSeen)) near.push(e);
+			}
 			let lost = 0;
 			const newly = [];
 			for (const c of cells) {
@@ -1236,6 +1329,10 @@ function makeConnectivityGuard(blocked, l, W, H, tolerance = 2, preferred = -1) 
 				if (blocked[base + c] & OCCUPIED) continue;
 				blocked[base + c] |= OCCUPIED;
 				newly.push(c);
+			}
+			if (near.some(e => !frontOpen(blocked, l, W, H, e.fronts, frontSeen))) {
+				for (const c of newly) blocked[base + c] &= ~OCCUPIED;
+				return false;
 			}
 			let after = floodFrom(blocked, l, W, H, pickSeed(), scratch);
 			// the seed may stand in a pocket a placement made without accepts() closed (a guard set in a walled pile's mouth): every flood
@@ -1330,7 +1427,126 @@ function footprintFits(tpl, x, y, l, W, H, blocked, soft = false) {
 		if (fx < 0 || fy < 0 || fx >= W || fy >= H) return false;
 		if (blocked[l * W * H + fy * W + fx] & veto) return false;
 	}
+	if (artStacks(tpl, x, y, l, W, H, blocked)) return false;
 	return true;
+}
+
+/**
+ * No building drawn over another's body. The placers keep a template's 'V' cells (drawn, walkable) free for walking, so a building could stand
+ * where its picture covers the body of one already placed, or with its body under the picture of one placed before: K's map seed 1479105351,
+ * the Griffin Conservatory (94,103) 79 percent under the Alchemist's Lab (94,104) drawn after it (K, 2026-10-22: "still got buildings
+ * inappropriately stacked on one another", "aesthetically displeasing"). A building here: a template with a visiting cell that is not a stack's
+ * or a pickup's (banks, mines, dwellings, towns, the visited sites). Judged by the pixels the game draws (pictures.js, first frame):
+ * a placement is refused where a quarter or more of the opaque pixels on one building's own tiles (its blocking and visiting cells) would lie
+ * under the other's, the one with the lower bottom row drawn last. A sprite that cannot be read covers its mask's cells whole.
+ * VMAPGEN_ART_STACK=0 off.
+ */
+const ART_STACK = new WeakMap();      // blocked array -> { pix: Map(cell -> [{ id, y, rows, body }]), bodyPx: Map(id -> pixels on its body) }
+const ART_PIX = new Map();            // animation -> [[dx, dy, rows]] from the anchor
+const FULL_TILE = Uint32Array.from({ length: 32 }, () => 0xffffffff);
+let artStackId = 0;
+function isBuilding(tpl) {
+	// a visited object that is not a stack or a pickup (their arts: the random-monster stand-ins, the resources' and chests' AVT, the artifacts',
+	// scrolls' and Pandora's boxes' AVA, the campfires, the mods' treasure piles, spell stones and lost wagons); one-tile sites (a learning stone, an idol, a corpse) count
+	if (!tpl || !tpl.mask || !tpl.animation || !tpl.mask.some(r => /[AT]/.test(r))) return false;
+	return !/^(avwm(rnd|on)|avt|ava|adcfr|avxcf|treasurepile|spellstones|lostwagon)/i.test(String(tpl.animation).replace(/^.*[\/]/, ''));
+}
+function artPix(tpl) {
+	const key = String(tpl.animation).toLowerCase();
+	if (ART_PIX.has(key)) return ART_PIX.get(key);
+	let out = null;
+	try {
+		const pics = require('./pictures');
+		const s = pics.spriteOf(tpl.animation, pics.spriteRoots());
+		if (s) {
+			out = [];
+			for (const [t, rows] of pics.coverage(16, 16, s)) { const [tx, ty] = t.split(',').map(Number); out.push([tx - 16, ty - 16, rows]); }
+		}
+	} catch (e) { out = null; }
+	if (!out) {
+		out = [];
+		const m = tpl.mask;
+		for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) if (m[i][j] !== '0') out.push([-(m[i].length - 1 - j), -(m.length - 1 - i), FULL_TILE]);
+	}
+	ART_PIX.set(key, out);
+	return out;
+}
+function bodyCells(tpl, x, y) {
+	const out = [], m = tpl.mask;
+	for (let i = 0; i < m.length; i++) for (let j = 0; j < m[i].length; j++) if (/[BAT]/.test(m[i][j])) out.push([x - (m[i].length - 1 - j), y - (m.length - 1 - i)]);
+	return out;
+}
+const popRows = rows => { let n = 0; for (let i = 0; i < 32; i++) { let v = rows[i] >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); n += (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; } return n; };
+const popAnd = (a, b) => { const r = new Uint32Array(32); for (let i = 0; i < 32; i++) r[i] = (a[i] & b[i]) >>> 0; return popRows(r); };
+function artStacks(tpl, x, y, l, W, H, blocked) {
+	if (process.env.VMAPGEN_ART_STACK === '0' || !isBuilding(tpl)) return false;
+	const reg = ART_STACK.get(blocked);
+	if (!reg) return false;
+	const base = l * W * H;
+	const body = new Set(bodyCells(tpl, x, y).map(([fx, fy]) => base + fy * W + fx));
+	let ownBody = 0, ownUnder = 0, ownAll = 0, ownAllUnder = 0;
+	const overOld = new Map(), overOldAll = new Map();
+	// the whole picture's share (VMAPGEN_ART_WHOLE, default 0.15; 0 off)
+	const whole = process.env.VMAPGEN_ART_WHOLE === undefined ? 0.15 : Number(process.env.VMAPGEN_ART_WHOLE) || 0;
+	for (const [dx, dy, rows] of artPix(tpl)) {
+		const fx = x + dx, fy = y + dy;
+		if (fx < 0 || fy < 0 || fx >= W || fy >= H) continue;
+		const c = base + fy * W + fx, onBody = body.has(c);
+		if (onBody) ownBody += popRows(rows);
+		ownAll += popRows(rows);
+		const there = reg.pix.get(c);
+		if (!there) continue;
+		const under = new Uint32Array(32), underAll = new Uint32Array(32);
+		for (const e of there) {
+			if (e.y > y && onBody) for (let i = 0; i < 32; i++) under[i] |= e.rows[i];
+			if (e.y > y) for (let i = 0; i < 32; i++) underAll[i] |= e.rows[i];
+			if (e.y < y && e.body) overOld.set(e.id, (overOld.get(e.id) || 0) + popAnd(rows, e.rows));
+			if (e.y <= y) overOldAll.set(e.id, (overOldAll.get(e.id) || 0) + popAnd(rows, e.rows));
+		}
+		if (onBody) ownUnder += popAnd(rows, under);
+		ownAllUnder += popAnd(rows, underAll);
+	}
+	if (ownBody && ownUnder >= ownBody / 4) return true;
+	for (const [id, n] of overOld) if (n >= (reg.bodyPx.get(id) || Infinity) / 4) return true;
+	// the whole picture: K's mod buildings (a warehouse, a war machine factory, a dwarven treasury) drawn half over each other while their
+	// small body tiles stayed clear (K, October 23rd)
+	if (whole > 0) {
+		if (ownAll && ownAllUnder >= ownAll * whole) return true;
+		for (const [id, n] of overOldAll) if (reg.allPx && n >= (reg.allPx.get(id) || Infinity) * whole) return true;
+	}
+	return false;
+}
+function artStackMark(tpl, x, y, l, W, H, blocked) {
+	if (process.env.VMAPGEN_ART_STACK === '0' || !isBuilding(tpl)) return;
+	let reg = ART_STACK.get(blocked);
+	if (!reg) { reg = { pix: new Map(), bodyPx: new Map(), allPx: new Map() }; ART_STACK.set(blocked, reg); }
+	const base = l * W * H, id = ++artStackId;
+	const body = new Set(bodyCells(tpl, x, y).map(([fx, fy]) => base + fy * W + fx));
+	let px = 0, all = 0;
+	for (const [dx, dy, rows] of artPix(tpl)) {
+		const fx = x + dx, fy = y + dy;
+		if (fx < 0 || fy < 0 || fx >= W || fy >= H) continue;
+		const c = base + fy * W + fx, onBody = body.has(c);
+		if (onBody) px += popRows(rows);
+		all += popRows(rows);
+		if (!reg.pix.has(c)) reg.pix.set(c, []);
+		reg.pix.get(c).push({ id, y, rows, body: onBody });
+	}
+	reg.bodyPx.set(id, px);
+	if (reg.allPx) reg.allPx.set(id, all);
+}
+
+/** The id of the last picture registered by artStackMark, and the undo of one registration: for a trial placement taken back (plan.js placeGate). */
+function artStackLastId() { return artStackId; }
+function artStackDrop(blocked, id) {
+	const reg = ART_STACK.get(blocked);
+	if (!reg) return;
+	for (const [c, list] of reg.pix) {
+		const keep = list.filter(e => e.id !== id);
+		if (keep.length !== list.length) { if (keep.length) reg.pix.set(c, keep); else reg.pix.delete(c); }
+	}
+	reg.bodyPx.delete(id);
+	if (reg.allPx) reg.allPx.delete(id);
 }
 
 /**
@@ -1348,6 +1564,7 @@ function footprintBlock(tpl, x, y, l, W, H, blocked) {
 	for (const [fx, fy] of cells)
 		if (fx < 0 || fy < 0 || fx >= W || fy >= H) return false;
 	for (const [fx, fy] of cells) blocked[l * W * H + fy * W + fx] |= OCCUPIED;
+	artStackMark(tpl, x, y, l, W, H, blocked);
 	return true;
 }
 
@@ -1530,6 +1747,8 @@ function objectEntry(type, x, y, l, tpl, opts, subtype = 'object') {
  * pre-game castle pick through owner/alignmentToPlayer chains).
  * players: [{x,y,color}] for alignmentToPlayer on neutral towns.
  */
+// the roaming monsters asked for and placed over a map's fills, logged by plan.js (the Guarding vs roaming test reads the lever off that line, not off loot proximity)
+const roamStats = { asked: 0, placed: 0 };
 function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], players = [], objectPools = {}, terrain = 'gr', reachable = null, connectivity = null, zoneMeta = null, openMask = null, zoneDist = null, preplaced = [], zoneFaction = null) {
 	const p = { ...BIOME_DEFAULTS, ...params };
 	let userGuardDensity = 1;
@@ -1792,6 +2011,19 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					if (bld.has((b + dy) * W + a + dx)) return true;
 		return false;
 	};
+	// A roaming monster guards nothing, so it never stands within 2 tiles of another stack: the fill's spacing let any monster take a crowded
+	// tile on its last tries, and roamers took most of them (the pairwise grid of HEAD 0086185: 13.9% of 21,017 stacks within 2 tiles of
+	// another, the engine's Coldshadow maps 0.1%; pw_025, 108x108 five players: 135 of its 138 crowded pairs were the fill's puts). One
+	// with no such tile is left out. VMAPGEN_ROAM_SPACING=0 off.
+	let roamStrict = false;
+	// A roamer guards nothing, so it keeps 8 tiles from every town (the registry so far and the players' starts): the 128-try roamers of Guarding vs roaming below 100%
+	// put a centaur on the only road to a zone's second town (pw_006, 180x180 seven players, guardShare 0: 'own town behind a guard'; the Opus Reviewer, 2026-10-22).
+	// VMAPGEN_ROAM_TOWN_KEEPOFF=0 off.
+	const roamNearTown = (x, y) => process.env.VMAPGEN_ROAM_TOWN_KEEPOFF !== '0' && (towns.some(t => (t.l || 0) === l && Math.abs(t.x - x) <= 8 && Math.abs(t.y - y) <= 8)
+		|| players.some(t => (t.l === undefined || t.l === l) && Math.abs(t.x - x) <= 8 && Math.abs(t.y - y) <= 8));
+	// Below 100% of Guarding vs roaming the roamers are the point of the setting: a roamer that finds no tile in 32 tries looks for 96 more, so the count
+	// follows the lever instead of stopping where the first tries run out (the Reviewer, 2026-10-22: 25% and 0% gave byte-identical template maps).
+	const roam = (type, tpl, opts) => { roamStrict = process.env.VMAPGEN_ROAM_SPACING !== '0'; roamStats.asked++; try { const r = put(type, tpl, opts, undefined, guardShare < OBJECT_GUARD_SHARE ? 128 : 32); if (r) roamStats.placed++; return r; } finally { roamStrict = false; } };
 	const put = (type, tpl, opts, subtype, tryBudget = 32, pickFrom = null,
 			noEdge = false, onlyPick = false) => {
 		// the art real maps put on this zone's ground, or none: a frost well or a lean-to never stands
@@ -1873,6 +2105,9 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// scenery. Checking here rather than after the fact keeps the
 			// count honest: the object is simply placed somewhere else.
 			if (!entranceOpen(tpl, x, y, l, W, H, blocked, reachable, type === 'mine' && subtype === 'goldMine')) { rej('entrance'); continue; }
+			// a town, gate or monolith with every straight front taken is met at a corner only, by its road and by a hero (pw_079: the death valley
+			// town at (53,25) went in with its one straight front (53,26) under the castle's top row). VMAPGEN_FRONT_GUARD=0 off.
+			if (!frontGuardOff(W, H) && FRONT_KINDS.test(type) && !ownFrontFree(tpl, x, y, l, W, H, blocked)) { rej('front'); continue; }
 			// in a template zone a monster never stands over a road, a
 			// corridor, a doorway or an entrance (reachOnReserved, the
 			// engine's rule). The free layout keeps its roaming monsters on
@@ -1880,7 +2115,8 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// measured with them there, and on 36x36 for eight the rule left
 			// two starts with no fight between them.
 			if (zoneMeta && MONSTER_TYPE.test(type) && reachOnReserved(tpl, x, y, l, W, H, blocked)) { rej('road'); continue; }
-			if (MONSTER_TYPE.test(type) && ((tries < tryBudget * 0.5 && guardCrowd(x, y)) || (tries < tryBudget * 0.9 && guardTightAt(x, y)))) { rej('crowd'); continue; }
+			if (roamStrict && roamNearTown(x, y)) { rej('town'); continue; }
+			if (MONSTER_TYPE.test(type) && ((tries < tryBudget * 0.5 && guardCrowd(x, y)) || ((roamStrict || tries < tryBudget * 0.9) && guardTightAt(x, y)))) { rej('crowd'); continue; }
 			const walls = blockingCells(tpl, x, y).map(([a, b]) => b * W + a);
 			// The engine lays a guarded pile only where its walls close (TreasurePlacer); ours walls it after, and a wall a road,
 			// a door or another object needs stays open. In a template zone valuable loot takes a nook first (five or more of its
@@ -1929,7 +2165,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			const entry = objectEntry(type, x, y, l, tpl, o, subtype || 'object');
 			out.push(entry);
 			footprintBlock(tpl, x, y, l, W, H, blocked);
-			markApproach(tpl, x, y, l, W, H, blocked);
+			markApproach(tpl, x, y, l, W, H, blocked); addFront(blocked, l, W, H, type, tpl, x, y);
 			registerBuilding(type, tpl, x, y);
 			if (type === 'prison') prisonsHere.push([x, y]);
 			if (MONSTER_TYPE.test(type)) holdGuard(x, y);
@@ -1960,7 +2196,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const entry = objectEntry(type, x, y, l, tpl, o, subtype || 'object');
 		out.push(entry);
 		footprintBlock(tpl, x, y, l, W, H, blocked);
-		markApproach(tpl, x, y, l, W, H, blocked);
+		markApproach(tpl, x, y, l, W, H, blocked); addFront(blocked, l, W, H, type, tpl, x, y);
 		if (connectivity) connectivity.refresh();
 		return entry;
 	};
@@ -1980,7 +2216,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const entry = objectEntry(type, x, y, l, tpl, o, subtype || 'object');
 		out.push(entry);
 		footprintBlock(tpl, x, y, l, W, H, blocked);
-		markApproach(tpl, x, y, l, W, H, blocked);
+		markApproach(tpl, x, y, l, W, H, blocked); addFront(blocked, l, W, H, type, tpl, x, y);
 		if (connectivity) connectivity.refresh();
 		const fi = free.indexOf(y * W + x);
 		if (fi >= 0) free.splice(fi, 1);
@@ -1989,8 +2225,8 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	};
 	// Two same-subtype monoliths: the engine links every instance of one
 	// subtype into a two-way portal network, so a pair is the smallest unit
-	// that does anything. B is validated against the world before A lands;
-	// their footprints may not share a blocked cell.
+	// that does anything. B is validated against the world before A lands and
+	// again after; their footprints may not share a blocked cell.
 	const putPair = (u, tries = 24) => {
 		for (let t = 0; t < tries && free.length; t++) {
 			const iA = free[(rng() * free.length) | 0];
@@ -2007,10 +2243,22 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				if (blockingCells(u.tpl, xB, yB)
 						.some(([a, b]) => aCells.has(b * W + a))) continue;
 				if (!fitsAt(u.tpl, xB, yB, false)) continue;
+				// B asked again with A standing: each passed the connectivity and entrance tests alone, and the two
+				// together can wall off ground neither cuts alone, or B can stand on A's approach. A failed B takes A
+				// back off the world (its blocked bits, its entry, its free tile) and the search goes on.
+				const snap = blocked.slice(), fiA = free.indexOf(iA), outLen = out.length, gLen = guardable.length;
+				const ea = commit(u.type, u.tpl, xA, yA, u.subtype);
+				if (!fitsAt(u.tpl, xB, yB, false)) {
+					blocked.set(snap);
+					if (fiA >= 0) free.splice(fiA, 0, iA);
+					out.length = outLen;
+					guardable.length = gLen;
+					if (connectivity) connectivity.refresh();
+					continue;
+				}
 				// the pairId ties the ends together for the stranded sweep:
 				// if one end lands sealed and is dropped, the other goes too
 				// instead of standing alone as a dead portal
-				const ea = commit(u.type, u.tpl, xA, yA, u.subtype);
 				const eb = commit(u.type, u.tpl, xB, yB, u.subtype);
 				ea.pairId = eb.pairId = `mono_${u.subtype}_${xA}_${yA}`;
 				return true;
@@ -2847,7 +3095,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			const entry = objectEntry(type, x, y, l, tpl, opts, subtype || 'object');
 			out.push(entry);
 			footprintBlock(tpl, x, y, l, W, H, blocked);
-			markApproach(tpl, x, y, l, W, H, blocked);
+			markApproach(tpl, x, y, l, W, H, blocked); addFront(blocked, l, W, H, type, tpl, x, y);
 			if (connectivity) connectivity.refresh();
 			const fi = free.indexOf(c);
 			if (fi >= 0) free.splice(fi, 1);
@@ -2864,8 +3112,17 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const how = new Map();
 		const nook = plainPickup(tpl) ? closable : (x, y) => closableFor(tpl, x, y);
 		const spots = (within || free).filter(c => { const k = nook(c % W, (c / W) | 0); if (k >= 0) how.set(c, closableHow); return k >= 0; });
-		const spaced = spots.filter(c => { const g = how.get(c).g; return !guardCrowd(g % W, (g / W) | 0); });
-		const spaced3 = spaced.length ? spaced : spots.filter(c => { const g = how.get(c).g; return !guardTightAt(g % W, (g / W) | 0); });
+		let spaced = spots.filter(c => { const g = how.get(c).g; return !guardCrowd(g % W, (g / W) | 0); });
+		let spaced3 = spaced.length ? spaced : spots.filter(c => { const g = how.get(c).g; return !guardTightAt(g % W, (g / W) | 0); });
+		// a site whose guard tile leaves the pile in sight first: the guard is drawn over its own tile, the one to its left, above and up and left
+		// (declip.js SHADOW), and a walled pile's guard has that one tile only (K, 2026-10-22: "Hellsteed standing on a tome of water").
+		// VMAPGEN_CLIP_FIRST=0 off.
+		if (process.env.VMAPGEN_CLIP_FIRST !== '0') {
+			const inSight = c => { const g = how.get(c).g, ddx = c % W - g % W, ddy = ((c / W) | 0) - ((g / W) | 0); return !(ddx >= -1 && ddx <= 0 && ddy >= -1 && ddy <= 0); };
+			const s1 = spaced.filter(inSight), s3 = spaced3.filter(inSight);
+			if (s1.length) spaced = s1;
+			if (s3.length) spaced3 = s3;
+		}
 		if (within && !spaced3.length) return null;
 		const e = within ? put(type, tpl, opts, subtype, 40, spaced3, true, true)
 			: put(type, tpl, opts, subtype, 32, spaced3.length ? spaced3 : spots.length ? spots : null);
@@ -3447,9 +3704,14 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// as in the engine.
 	const guardBudget = Math.max(0, Math.round(scale * fill.creeps * p.guardDensity
 		- (zoneMeta ? 0 : p.doorGuards || 0)));
-	// objectGuardShare (default OBJECT_GUARD_SHARE, 0.75): the rest roams
-	const guardShare = Number.isFinite(p.objectGuardShare) ? p.objectGuardShare : OBJECT_GUARD_SHARE;
-	const wantGuards = Math.round(guardBudget * guardShare);
+	// guardShare (default OBJECT_GUARD_SHARE, 0.75). K, 2026-10-18: "i think the default for random monsters out in the open should be 0":
+	// at the default every monster of the budget guards something, as on a template, and below it the part that roams grows to all of it at 0
+	// (share / default guard). VMAPGEN_OPEN_ROAM=1: the share itself guards and the rest roams, as before
+	// The lever reads 0 to 1 with 1 (the default) every monster guarding and 0 every monster roaming; before 0.3.18 its default was 0.75, and
+	// the code below keeps that scale (a lever value times OBJECT_GUARD_SHARE)
+	const guardShare = (Number.isFinite(p.guardShare) ? Math.max(0, Math.min(1, p.guardShare)) : 1) * OBJECT_GUARD_SHARE;
+	const oldRoam = process.env.VMAPGEN_OPEN_ROAM === '1';
+	const wantGuards = Math.round(guardBudget * (oldRoam ? guardShare : Math.min(1, guardShare / OBJECT_GUARD_SHARE)));
 
 	// weighted sample without replacement: smallest -log(u)/w wins.
 	// mineGuardWeight / lootGuardWeight scale the corpus odds per kind (1 =
@@ -3500,7 +3762,14 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// a prison of 90000 experience or more is never left without its guard for want of a spaced tile (K, 2026-10-07: "the highest-yielding
 		// prisons would be in high loot areas behind significant guards"; 19 to 27% of them stood unguarded when the spacing refused every tile)
 		const mustGuard = entry.type === 'prison' && entry.options && entry.options.experience >= 90000;
-		{ const cr = new Map(spots.map(sp => [sp, guardTightAt(sp[0], sp[1]) ? 2 : !wide && guardCrowd(sp[0], sp[1]) ? 1 : 0])); spots.sort((a, b) => cr.get(a) - cr.get(b)); }
+		// one order for both rules: a tile within two of another stack last, then one whose picture hides something (the clip rule), then
+		// one inside another guard's 5x5. Sorted one after the other the spacing undid the clip rule: 49 of 88 dear pickups under a monster's
+		// picture on K's options seed 1 had a pile guard posted here on its hiding side (K, 2026-10-22: "Hellsteed standing on a tome of water").
+		// VMAPGEN_CLIP_FIRST=0 sorts as before.
+		if (process.env.VMAPGEN_CLIP_FIRST !== '0') {
+			const key = new Map(spots.map(sp => [sp, (guardTightAt(sp[0], sp[1]) ? 4 : 0) + (CLIP_RULE && monsterClips(sp[0], sp[1]) ? 2 : 0) + (!wide && guardCrowd(sp[0], sp[1]) ? 1 : 0)]));
+			spots.sort((a, b) => key.get(a) - key.get(b));
+		} else { const cr = new Map(spots.map(sp => [sp, guardTightAt(sp[0], sp[1]) ? 2 : !wide && guardCrowd(sp[0], sp[1]) ? 1 : 0])); spots.sort((a, b) => cr.get(a) - cr.get(b)); }
 		// what the guard is meant to block: its target and its approach
 		const targetApproach = new Set(spots.map(([ax, ay]) => ay * W + ax));
 		for (const [vx, vy] of visitableCells(tpl, entry.x, entry.y)) targetApproach.add(vy * W + vx);
@@ -4069,11 +4338,11 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const crowd = lvl => {
 			const tier = Math.max(1, Math.min(4, lvl - 1));
 			if (userGuardDensity > 1 && rng() < Math.min(1, userGuardDensity - 1))
-				put(`randomMonsterLevel${tier}`, monsterTpl, monsterOptions(tier, p, rng));
+				roam(`randomMonsterLevel${tier}`, monsterTpl, monsterOptions(tier, p, rng));
 			if (guardShare < OBJECT_GUARD_SHARE) {
-				const e = Math.min(2, OBJECT_GUARD_SHARE / Math.max(guardShare, 0.01) - 1);
+				const e = 2 * (1 - guardShare / OBJECT_GUARD_SHARE);
 				for (let n = Math.floor(e) + (rng() < e - Math.floor(e) ? 1 : 0); n > 0; n--)
-					put(`randomMonsterLevel${tier}`, monsterTpl, monsterOptions(tier, p, rng));
+					roam(`randomMonsterLevel${tier}`, monsterTpl, monsterOptions(tier, p, rng));
 			}
 		};
 		// Mine guard weight on a template map: it only ordered the mines, so 4x equalled 1x and the guards stood at every setting.
@@ -4294,13 +4563,13 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			if (guardedHere.has(g)) continue;
 			if (postGuard(g)) posted++;
 		}
-		// whatever the guard pass could not place still roams, so the monster
-		// count stays on the calibrated budget
+		// the part of the budget that roams (none at the default share); a guard the pass could not place is left out, where it used to roam
+		// to keep the count on the budget (VMAPGEN_OPEN_ROAM=1)
 		// K, 2026-09-30: "high tier monsters standing by serving no purpose". A real map's monster of level 5 to 7
 		// stands on the approach to something 97% of the time; ours roamed at 82%. What roams is a low tier.
-		for (let i = guardBudget - posted; i > 0; i--) {
+		for (let i = oldRoam ? guardBudget - posted : guardBudget - wantGuards; i > 0; i--) {
 			const tier = process.env.VMAPGEN_ROAM_CAP === '0' ? creepTier(cls, rng, monsterShift) : Math.min(4, creepTier(cls, rng, monsterShift));
-			put(`randomMonsterLevel${tier}`, monsterTpl, monsterOptions(tier, p, rng));
+			roam(`randomMonsterLevel${tier}`, monsterTpl, monsterOptions(tier, p, rng));
 		}
 	}
 
@@ -4748,9 +5017,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 }
 
 module.exports = {
+	isBuilding, artPix, roamStats, artStackLastId, artStackDrop,
 	GUARD_GAP, fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	footprintCells, blockingCells, footprintFits, footprintBlock, visitableCells,
-	entranceOpen, pictureOnShadow, markShadow, shadowAt, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED,
+	entranceOpen, pictureOnShadow, markShadow, shadowAt, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED, protectFronts,
 	APPROACH, allowedDirs, markApproach, weldsMasses, REMOVABLE_TYPES, MONSTER_OPTIONS,
 	monsterOptions, scaledAmount, STACK_RANGE,
 	sliverCount, engineGuard, lootGuard, scaledLinkGuard, zoneGuardPool, nearestLevelDwelling, creepTier, reachOnReserved };
