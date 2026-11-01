@@ -194,7 +194,7 @@
 	"vcmi.mapGen.subterraneanNarrow.hover": "Narrow tunnels",
 	"vcmi.mapGen.subterraneanNarrow.help": "{Narrow tunnels}\n\nHow the underground is carved: 0 gives wide caverns, 1 narrow tunnels between small chambers.",
 	"vcmi.mapGen.undergroundStarts.hover": "Starting levels",
-	"vcmi.mapGen.undergroundStarts.help": "{Starting levels}\n\nSplit Spawns Between Overworld and Underground: decides which level each player starts on, on a two-level map.\nAll Overworld: every start on the surface.\nMixed: some starts on the surface and some underground, spread as far apart as possible.\nAll Underground: every start underground; needs a two-level map.\nRandom: each seed picks one of the other three.\nTemplate preference: the template's own rule (Coldshadow's is overworld); the open layout reads this as Random.\nOn a one-level map every start is on the surface, whatever is chosen.",
+	"vcmi.mapGen.undergroundStarts.help": "{Starting levels}\n\nSplit Spawns Between Overworld and Underground: decides which level each player starts on, on a two-level map.\nAll Overworld: every start on the surface.\nMixed: some starts on the surface and some underground, spread as far apart as possible.\nAll Underground: every start underground; needs a two-level map.\nRandom: each seed picks one of the other three.\nTemplate preference: {templatePreference}\nOn a one-level map every start is on the surface, whatever is chosen.",
 	"vcmi.mapGen.undergroundStarts.stop0": "All Overworld",
 	"vcmi.mapGen.undergroundStarts.stop1": "Mixed",
 	"vcmi.mapGen.undergroundStarts.stop2": "All Underground",

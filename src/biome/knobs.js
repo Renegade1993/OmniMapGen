@@ -185,7 +185,7 @@ const KNOBS = [
 	// K (2026-09-27): starts underground by default, as in the game, inferred
 	// from the template, and the player's to override
 	{ key: 'undergroundStarts', page: 'underground', label: 'Starting levels',
-		help: 'Split Spawns Between Overworld and Underground: decides which level each player starts on, on a two-level map.\nAll Overworld: every start on the surface.\nMixed: some starts on the surface and some underground, spread as far apart as possible.\nAll Underground: every start underground; needs a two-level map.\nRandom: each seed picks one of the other three.\nTemplate preference: the template\'s own rule (Coldshadow\'s is overworld); the open layout reads this as Random.\nOn a one-level map every start is on the surface, whatever is chosen.',
+		help: 'Split Spawns Between Overworld and Underground: decides which level each player starts on, on a two-level map.\nAll Overworld: every start on the surface.\nMixed: some starts on the surface and some underground, spread as far apart as possible.\nAll Underground: every start underground; needs a two-level map.\nRandom: each seed picks one of the other three.\nTemplate preference: {templatePreference}\nOn a one-level map every start is on the surface, whatever is chosen.',
 		min: 0, max: 4, step: 1, stops: [[0, 'All Overworld'], [1, 'Mixed'], [2, 'All Underground'], [3, 'Random'], [4, 'Template preference']] },
 	{ key: 'subterraneanOpen', page: 'underground', label: 'Open cave floor',
 		help: 'How much of the underground is open floor rather than solid rock. Real two-level maps leave about 57% open.',
