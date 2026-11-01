@@ -1,0 +1,35 @@
+{
+ "schemaVersion": 1,
+ "id": "golems_aplenty",
+ "caption": "Golems Aplenty, 72x72, one level, 4 players",
+ "contentSha256": "6703ebb1c12d8f47ae804347422bebc09c6696aad976c786507f84f44c4c2fa4",
+ "template": "Golems Aplenty",
+ "layout": "template",
+ "width": 72,
+ "height": 72,
+ "levels": 1,
+ "players": 4,
+ "seed": "1",
+ "zones": 7,
+ "links": 8,
+ "starts": 4,
+ "panel": [
+  432,
+  432
+ ],
+ "image": [
+  432,
+  432
+ ],
+ "palette": {
+  "start": "#e0a430",
+  "cpuStart": "#f0cd82",
+  "treasure": "#4a7fc1",
+  "lowLoot": "#96bee4",
+  "junction": "#8e7cc3",
+  "town": "#34a8a0",
+  "standard": "#74ac60",
+  "outside": "#202228"
+ },
+ "note": "drawn from a generated map of these settings by tools/layout_preview.js: zones by role, links, starts; no game art"
+}

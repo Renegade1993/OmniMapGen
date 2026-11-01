@@ -1,0 +1,135 @@
+{
+ "loop": true,
+ "frames": [
+  {
+   "order": 1,
+   "file": "frame_01.png",
+   "seconds": 2.5,
+   "caption": "72x72, 2 players, one level, no water, seed 11",
+   "contentSha256": "0e7db3b7ea9a5383e2849fe4ffdae268c9f97d0422624db96ca1670557cd0fcb",
+   "path": "mapgen/preview/open_examples/frame_01"
+  },
+  {
+   "order": 2,
+   "file": "frame_02.png",
+   "seconds": 2.5,
+   "caption": "72x72, 4 players, one level, no water, seed 12",
+   "contentSha256": "8e33473d7a985d54192f394dd1952c62a6909ae5357942614e05dfb5acda3089",
+   "path": "mapgen/preview/open_examples/frame_02"
+  },
+  {
+   "order": 3,
+   "file": "frame_03.png",
+   "seconds": 2.5,
+   "caption": "72x72, 3 players, two levels, no water, seed 13",
+   "contentSha256": "2bb3272a3514efdedede1a5242552f678d09bdf62426bee70382c46d63caadc7",
+   "path": "mapgen/preview/open_examples/frame_03"
+  },
+  {
+   "order": 4,
+   "file": "frame_04.png",
+   "seconds": 2.5,
+   "caption": "108x108, 4 players, one level, no water, seed 21",
+   "contentSha256": "315af5e83170744f8b71b52334a79752d69594e1c97ad0c6e0120092894ba60d",
+   "path": "mapgen/preview/open_examples/frame_04"
+  },
+  {
+   "order": 5,
+   "file": "frame_05.png",
+   "seconds": 2.5,
+   "caption": "108x108, 6 players, one level, no water, seed 22",
+   "contentSha256": "94f336c73ec8f2d8148626eb839596adf9c46e889eccff6f1b04a537c75fb0a7",
+   "path": "mapgen/preview/open_examples/frame_05"
+  },
+  {
+   "order": 6,
+   "file": "frame_06.png",
+   "seconds": 2.5,
+   "caption": "108x108, 4 players, two levels, no water, seed 23",
+   "contentSha256": "b8c52fb14d374fb53b85f356e8f14cb8556309730dbfefd820c357bed510ef2d",
+   "path": "mapgen/preview/open_examples/frame_06"
+  },
+  {
+   "order": 7,
+   "file": "frame_07.png",
+   "seconds": 2.5,
+   "caption": "108x108, 8 players, two levels, no water, seed 24",
+   "contentSha256": "35d385111bae50a630168f8f948e2a2b1573dcea938295c6861a37a84161b952",
+   "path": "mapgen/preview/open_examples/frame_07"
+  },
+  {
+   "order": 8,
+   "file": "frame_08.png",
+   "seconds": 2.5,
+   "caption": "144x144, 4 players, one level, no water, seed 31",
+   "contentSha256": "269335edcce0117c31013d9ca73faee9ebeb02a9e8893da0794fd932b818a409",
+   "path": "mapgen/preview/open_examples/frame_08"
+  },
+  {
+   "order": 9,
+   "file": "frame_09.png",
+   "seconds": 2.5,
+   "caption": "144x144, 8 players, one level, no water, seed 32",
+   "contentSha256": "5401fec93c1789846b73cf6ebb70c46dca6271926d7bcb6e1402e1455fa8bbc5",
+   "path": "mapgen/preview/open_examples/frame_09"
+  },
+  {
+   "order": 10,
+   "file": "frame_10.png",
+   "seconds": 2.5,
+   "caption": "144x144, 6 players, two levels, no water, seed 33",
+   "contentSha256": "b79f7cca513ef858acd4c27f973941ed865205590feea38cc7916c0f7f56c655",
+   "path": "mapgen/preview/open_examples/frame_10"
+  },
+  {
+   "order": 11,
+   "file": "frame_11.png",
+   "seconds": 2.5,
+   "caption": "108x108, 4 players, one level, water coverage 0.3, seed 41",
+   "contentSha256": "be8980a76190a16b3ad636f6d0f6ca8aa27918a13c002bb13a3d9986e9644d8e",
+   "path": "mapgen/preview/open_examples/frame_11"
+  },
+  {
+   "order": 12,
+   "file": "frame_12.png",
+   "seconds": 2.5,
+   "caption": "108x108, 6 players, one level, water coverage 0.45, seed 42",
+   "contentSha256": "1e5e5f8e28bf3c8abf79639f882e3cd247b82addc9b9e0b1dc8d5e0d1f00b5ed",
+   "path": "mapgen/preview/open_examples/frame_12"
+  },
+  {
+   "order": 13,
+   "file": "frame_13.png",
+   "seconds": 2.5,
+   "caption": "144x144, 4 players, two levels, water coverage 0.3, seed 43",
+   "contentSha256": "7ecd2f744c28864940163db60233646a6f0779f0ed9eaf09c5db5e89797e7489",
+   "path": "mapgen/preview/open_examples/frame_13"
+  },
+  {
+   "order": 14,
+   "file": "frame_14.png",
+   "seconds": 2.5,
+   "caption": "72x72, 4 players, one level, water coverage 0.4, seed 44",
+   "contentSha256": "b23c54adc8f0ff8a969b748371253be0be8959e4bfb5f628757a0b74059cb3de",
+   "path": "mapgen/preview/open_examples/frame_14"
+  },
+  {
+   "order": 15,
+   "file": "frame_15.png",
+   "seconds": 2.5,
+   "caption": "108x108, 3 players, one level, no water, seed 51",
+   "contentSha256": "befc54b9adfdc868a2de0b108a3b47dd68fd2f7620e0463674cd33c6ac661c0e",
+   "path": "mapgen/preview/open_examples/frame_15"
+  },
+  {
+   "order": 16,
+   "file": "frame_16.png",
+   "seconds": 2.5,
+   "caption": "144x144, 5 players, one level, no water, seed 52",
+   "contentSha256": "7278fdc9924587e0c3c28b096ca52f239a2d5a373774a26ea9e03f766ad46491",
+   "path": "mapgen/preview/open_examples/frame_16"
+  }
+ ],
+ "note": "each frame is one real generator run of the open template; settings in captions.json",
+ "schemaVersion": 1
+}
