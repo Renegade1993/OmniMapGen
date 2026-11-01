@@ -14,13 +14,18 @@
  */
 const D8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
 const TYPES = /^(subterraneanGate|monolith)/;
-// a prison goes when its hero is freed, as mapsight's sight.js and approachclose.js count it (2026-10-15: 72x72 underground, the monolith (50,2) and the gate (57,24) shut in by a prison tile)
-const PICKUP = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|prison)/;
+// a prison is no pickup to a road: a road laid under one is a building standing on the road until its hero is freed (K, 2026-10-31, in a live game:
+// "have a prison on the road in nate's biome on our game now....unacceptable"; teleportRoads ran a monolith's road under the prison at (41,39) of his
+// 180x180 seed 1157895410). Walkers still count a prison as gone once visited (sight.js, approachclose.js); a gate or monolith whose only way to a
+// road is under a prison is left without one (the engine has no road on the visiting tile of 28% of its monolith ends; the 2026-10-15 case: 72x72 underground, (50,2), (57,24))
+const PICKUP = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox)/;
 // gone once visited, as a pickup is: a town's road may run under one (K's 72x72 s710452006, 2026-10-08: a scholar in the one way out of a
 // castle's front pocket left the castle with no road, the break he circled)
 const ONE_VISIT = /^(scholar|seaChest|flotsam)$/;
 // anchored: a mod building named "townGate" matched "town" and kept a road ending beside it (grid, 108x108 seed 1, 2026-10-09)
 const SERVED = /^(mine|abandonedMine|monolith|subterraneanGate)|^(town|randomTown)$/;
+// a step under a building's picture counts as this many, as the engine divides a placement's weight by ten where it hides a road
+const HIDE_COST = 10;
 const REACH = 60;       // the longest run laid for one end, in tiles
 // the step costs of an eight-way road run (roadnet.js route): a diagonal with a free side tile a little dearer than a straight step, one between two
 // blocked side tiles (drawn as two dead ends) dear enough that a straight way up to about 25 tiles longer wins
@@ -48,14 +53,33 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 			if ((o.l || 0) === l && o.template && o.template.mask && PICKUP.test(o.type))
 				for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) pick.add(fy * W + fx);
 	const under = c => floor(c) && pick.has(c);
-	const ends = [];
+	// the tiles a building a hero visits (not scenery, which is everywhere and partly from mods) is drawn over (its whole mask, the picture above its feet included): a run under them is a road the building hides,
+	// which the engine penalises tenfold where it places an object (TreasurePlacer, "objects hiding roads"). A run under them costs HIDE_COST a step, so a run off them
+	// wins unless it is ten times longer (K, 2026-10-31, the prison at (41,39) of his 180x180 seed 1157895410: with the road off its tiles it still ran behind its picture;
+	// and "a illegal route of a road under a alchemists lab to reach it's front door": the lab (46,48) whose road left its door under its own roof). The end's own
+	// building counts too: its road leaves by the tiles in front of it.
+	// VMAPGEN_TELEPORT_ROAD_SHOWN=0 as before.
+	const hide = new Set();
+	if (process.env.VMAPGEN_TELEPORT_ROAD_SHOWN !== '0') {
+		const { footprintCells } = require('./content'), decor = new Set(require('./decor').DECOR_TYPES);
+		for (const o of plan.objects)
+			if ((o.l || 0) === l && o.template && o.template.mask && !PICKUP.test(o.type) && !/^(randomMonster|monster)/.test(o.type) && !decor.has(o.type) && visitableCells(o.template, o.x, o.y).length)
+				for (const [fx, fy] of footprintCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) hide.add(fy * W + fx);
+	}
+	const ends = [], endObj = new Map();
 	for (const o of plan.objects)
 		if ((o.l || 0) === l && o.template && types.test(o.type) && (chance >= 1 || rng() < chance))
 			for (const [vx, vy] of visitableCells(o.template, o.x, o.y))
-				if (vx >= 0 && vy >= 0 && vx < W && vy < H) ends.push(vy * W + vx);
+				if (vx >= 0 && vy >= 0 && vx < W && vy < H) { ends.push(vy * W + vx); endObj.set(vy * W + vx, o); }
 	if (!R.size) return out;
 	for (const v of ends) {
 		if (R.has(v)) continue;
+		// a mine's (any building's but a gate's or a monolith's) road reaches its door from in front, never from under its own roof: the engine's 98 maps
+		// have no such door, ours 19 mines on 33 grid maps (K, 2026-10-31: "a illegal route of a road under a alchemists lab to reach it's front door").
+		// Gates and monoliths are entered from under their arch in the engine's maps too (391 doors), and keep the run as it was. VMAPGEN_OWN_ROOF=0 off.
+		const eo = endObj.get(v), roof = new Set();
+		if (eo && !TYPES.test(eo.type) && process.env.VMAPGEN_OWN_ROOF !== '0')
+			for (const [fx, fy, ch] of require('./content').footprintCells(eo.template, eo.x, eo.y)) if (ch !== 'A' && ch !== 'T' && fx >= 0 && fy >= 0 && fx < W && fy < H) roof.add(fy * W + fx);
 		// a road tile beside the visiting tile, even only across a corner (a gate in a wall is entered diagonally): the tile joins it
 		const vx0 = v % W, vy0 = (v / W) | 0;
 		let beside = false;
@@ -69,23 +93,29 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 		// off the map's outermost row first: a run along it is the only floor once the rim fill closes round it (pw_010, 36x36: a monolith's
 		// road along the bottom row, ten tiles; the lead, 2026-10-17 15:30). VMAPGEN_ROAD_RIM=1 takes the old order
 		for (const ok of [free, c => free(c) || under(c)]) {
+			if (ok !== free && !pick.size) break;
+			// cheapest run, a step under a building's picture costing HIDE_COST (1 without the hidden set: the shortest, as before)
 			prev = new Map([[v, -1]]);
-			const q = [v];
-			for (let h = 0; h < q.length && hit < 0; h++) {
-				const c = q[h], x = c % W, y = (c / W) | 0;
-				let d = 0; for (let k = c; prev.get(k) !== -1; k = prev.get(k)) d++;
-				if (d >= reach) continue;
+			const cost = new Map([[v, 0]]), steps = new Map([[v, 0]]), heap = [[0, v]];
+			const push = e => { heap.push(e); for (let i = heap.length - 1; i > 0;) { const p = (i - 1) >> 1; if (heap[p][0] <= heap[i][0]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; i = p; } };
+			const pop = () => { const top = heap[0], last = heap.pop(); if (heap.length) { heap[0] = last; for (let i = 0; ;) { const a = 2 * i + 1, b = a + 1; let s = i; if (a < heap.length && heap[a][0] < heap[s][0]) s = a; if (b < heap.length && heap[b][0] < heap[s][0]) s = b; if (s === i) break; [heap[s], heap[i]] = [heap[i], heap[s]]; i = s; } } return top; };
+			while (heap.length && hit < 0) {
+				const [cc, c] = pop();
+				if (cc > cost.get(c)) continue;
+				if (R.has(c) && c !== v) { hit = c; break; }
+				if (steps.get(c) >= reach) continue;
+				const x = c % W, y = (c / W) | 0;
 				for (const [dx, dy] of dirs) {
 					const nx = x + dx, ny = y + dy;
 					if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
 					const m = ny * W + nx;
-					if (prev.has(m)) continue;
-					if (R.has(m)) { prev.set(m, c); hit = m; break; }
-					if (!ok(m)) continue;
-					prev.set(m, c); q.push(m);
+					if (roof.has(m) || (!R.has(m) && !ok(m))) continue;
+					const nc = cc + (R.has(m) ? 1 : hide.has(m) ? HIDE_COST : 1);
+					if (cost.has(m) && cost.get(m) <= nc) continue;
+					cost.set(m, nc); steps.set(m, steps.get(c) + 1); prev.set(m, c); push([nc, m]);
 				}
 			}
-			if (hit >= 0 || !pick.size) break;
+			if (hit >= 0) break;
 		}
 			if (hit >= 0) break;
 		}
@@ -600,6 +630,10 @@ function roadsPastObjects(plan, W, H, l, blocked, d) {
 		const back = [...near].filter(c => R.has(c) && !app.has(c) && !foot.has(c));
 		if (!back.length) continue;
 		const forbidden = new Set([...foot, ...vis, ...[...near].filter(c => !app.has(c))]);
+		// and off the rest of its picture (its roof), but for a gate or monolith, entered from under its arch in the engine's maps too (K's alchemist's lab,
+		// 2026-10-31; teleportRoads keeps the same rule). VMAPGEN_OWN_ROOF=0 off.
+		if (!/^(subterraneanGate|monolith)/.test(o.type) && process.env.VMAPGEN_OWN_ROOF !== '0')
+			for (const [fx, fy, ch] of require('./content').footprintCells(o.template, o.x, o.y)) { const c = at(fx, fy); if (c >= 0 && ch !== 'A' && ch !== 'T' && !app.has(c)) forbidden.add(c); }
 		const z = plan.zone[vis[0]];
 		const ends = new Set();
 		for (const b of back) for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0], [1, -1], [1, 1], [-1, 1], [-1, -1]]) { const n = at((b % W) + dx, ((b / W) | 0) + dy); if (n >= 0 && R.has(n) && !forbidden.has(n)) ends.add(n); }
@@ -613,8 +647,11 @@ function roadsPastObjects(plan, W, H, l, blocked, d) {
 		if (process.env.VMAPGEN_ROAD_TRACE) console.error(`[past] ${o.type} (${o.x},${o.y}) L${l}: back ${back.map(c => (c % W) + ',' + ((c / W) | 0))} ends ${[...ends].map(c => (c % W) + ',' + ((c / W) | 0))} goal ${[...goal].map(c => (c % W) + ',' + ((c / W) | 0))} path ${path ? path.length : 'none'}`);
 		if (!path || path.length > 30) { for (const c of removed) R.add(c); out.left++; continue; }
 		const laid = addElbows(path, W, H, blocked, l);
-		// every other end of the road that was cut joins the way just laid, or the road it was
-		const reach = new Set([...goal, ...laid]);
+		// every other end of the road that was cut joins the way just laid, or the road it was, or any free tile the object is entered from: an end
+		// beside another way in has reached the object. Joined only to the first, a cut end ran round the guard on the way in it stood beside and
+		// closed a loop (K, 2026-10-31: "weird loops abound in the mapgen version i have installed"; his 180x180 seed 1157895410, the monolith at
+		// (38,172): the end (36,171) went round the guard at (38,173) to (39,172) where (37,172) was a way in; 42 loops on the 0.3.20 grid, stock 0)
+		const reach = new Set([...goal, ...laid, ...[...app].filter(c => !(blocked[l * W * H + c] & OCCUPIED) && ok(c))]);
 		const extra = [];
 		let cut = false;
 		for (const e of from) if (!reach.has(e)) {

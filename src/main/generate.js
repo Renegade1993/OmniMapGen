@@ -2552,6 +2552,21 @@ async function generateMap(params) {
 					}
 				}
 			}
+			// The loop pass, last (K, 2026-10-31: "weird loops abound in the mapgen version i have installed"): the corner joins and the gap close above
+			// can finish a ring the plan's loop passes never saw (his 180x180 seed 1157895410, the ring round the guard of the monolith (174,148): two
+			// tiles laid here closed it). The plan's keep set: the tiles towns, gates and monoliths are visited from and the road below each, guards' tiles;
+			// a straight tile is cut first. VMAPGEN_LAST_LOOPS=0 skips it.
+			if (roadCells && roadCells.size && process.env.VMAPGEN_LAST_LOOPS !== '0') {
+				const Wl = lv.width, Hl = lv.height, zl = plans[li].zone;
+				const keepEnd = new Set((plans[li].objects || []).filter(o => (o.l || 0) === li && /^(randomMonster|monster)/.test(o.type)).map(o => o.y * Wl + o.x));
+				for (const o of plans[li].objects || []) {
+					if ((o.l || 0) !== li || !o.template || !o.template.mask || !/^(town$|randomTown$|subterraneanGate|monolith)/.test(o.type)) continue;
+					for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) { keepEnd.add(vy * Wl + vx); if (vy + 1 < Hl && roadCells.has((vy + 1) * Wl + vx)) keepEnd.add((vy + 1) * Wl + vx); }
+				}
+				for (const op of plans[li].openings || []) if (op.kind === 'openRoad') for (const c of op.hole || []) keepEnd.add(c);
+				const lc = require('../biome/roadsplines').breakLoops(roadCells, Wl, Hl, keepEnd, Number(process.env.VMAPGEN_LATE_LOOP || 40), zl ? c => zl[c] : null, true);
+				if (lc) console.error(`[gen] level ${li}: small road loops the last road joins closed, broken at the end: ${lc} tile(s)`);
+			}
 			// A town's entrance takes the road that runs a tile beside it, last of the road passes: the plan's entrance join (gateStubs) runs in
 			// the road phase, and a later pass can lay the town's road on the tile in front of its entrance only (k0930's 72x72 free layout seed
 			// 2 with portal ends placed far apart: the town (19,52), road on (17,53), none on its entrance (17,52)). The real maps have road on the

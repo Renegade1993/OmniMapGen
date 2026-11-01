@@ -556,6 +556,34 @@ const ART_TIERS = [
 ];
 
 /**
+ * Dear loot on the open layout at the density of the stock templates it is built on (K, 2026-10-31, M-35: "our generator should be placing
+ * the same ish amount of loot as the stock comparison templates our templates are being built on, based on density per map space").
+ * Per 1,000 zone tiles, start zones and the others, pooled by map over VCMI 1.7.5's engine maps of Nostalgia (4), Mini Nostalgia (4) and the
+ * coded-name symmetric set (86), the set the open template replaces (the Opus Reviewer, pass 30) (roster\NOTE-loot-density-1031.md, .tmp\m1023\density_table.js). The earlier rates came from a corpus of
+ * other maps and put 0.99 relics per 1,000 tiles on K's map against stock's 0.006 to 0.046, and start zones 8 to 13 times stock's majors and
+ * Pandora's boxes. The other zones keep their classes' spread (the artifacts column of CLASS_FILL, normalised over a typical mix), so a
+ * high-loot zone stays the richest. Levers: Artifact frequency scales the artifact counts, Artifact quality leans majors and relics as before.
+ * VMAPGEN_STOCK_LOOT=0 is the earlier draw, for A/B runs only.
+ */
+const STOCK_LOOT = process.env.VMAPGEN_STOCK_LOOT !== '0';
+const STOCK_LOOT_DENSITY = {
+	start: { randomArtifactTreasure: 0.509, randomArtifactMinor: 0.428, randomArtifactMajor: 0.12, randomArtifactRelic: 0.004, artifact: 0.232, pandoraBox: 0.11, prison: 0.115 },
+	other: { randomArtifactTreasure: 0.80, randomArtifactMinor: 2.357, randomArtifactMajor: 1.377, randomArtifactRelic: 0.045, artifact: 0.26, pandoraBox: 1.078, prison: 0.381 },
+};
+// the non-start classes against the mean of a typical mix (K's 180x180: 4 town, 6 standard, 3 high-loot, 3 low-loot zones), from CLASS_FILL's
+// artifacts column (town 0.09, standard 0.16, high loot 0.60, low loot 0.07), times 0.77 after 10 seeds measured the other zones at 1.3x the table
+const STOCK_LOOT_CLASS = { town: 0.33, standard: 0.59, highLoot: 2.22, lowLoot: 0.26 };
+// of the prisons asked for in the other zones about 0.4 land (10 seeds of K's settings: 0.20 per 1,000 tiles against the table's 0.60; the put's
+// prison spacing and building gap refuse the rest in crowded zones), so they are asked at 3.2x (2.5x on 10 seeds still landed 0.72 of the pooled table); the start zones land on the table as asked
+// (a try budget of 120 for them hung put in the fill on seed 16 of K's settings; the default 32 is kept, the 2.5x ask is what lands them)
+const STOCK_PRISON_LAND = 3.2;
+// per zone kind, on CLASS_FILL's columns (see fillBiome)
+const STOCK_FILL_FACTOR = {
+	start: { dwellings: 0.29, banks: 0.67, chests: 2.0, piles: 0.77, creeps: 0.20 },
+	other: { dwellings: 1.51, chests: 2.37, piles: 1.03, campfires: 1.36, creeps: 0.70 },
+};
+
+/**
  * Creature-bank / skill / utility fill.
  *
  * The skill and generator entries are CONCRETE objects: the engine keeps our
@@ -1808,6 +1836,16 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			for (const k in MEAN_VALUE) fill[k] *= clamped;
 			fill.dwellings *= clamped;
 		}
+	}
+	// The open layout's classes at the stock comparison templates' density (K, 2026-10-31, M-35; roster\NOTE-loot-density-1031.md): factors on the
+	// class row from 10 seeds of K's settings on 0.3.20 against the mean of Nostalgia, Mini Nostalgia and the coded-name set, per zone kind. A
+	// start zone (both parts of a split one) keeps stock's start profile: few dwellings and banks, twice the chests, fewer resource piles and
+	// roaming stacks; the other zones twice the dwellings and chests. Artifacts, Pandora's boxes and prisons are counted from the table below
+	// (STOCK_LOOT_DENSITY). VMAPGEN_STOCK_LOOT=0 is the earlier fill.
+	if (STOCK_LOOT && !zoneMeta) {
+		const f = STOCK_FILL_FACTOR[cls === BIOME_CLASS.PLAYER || p.startZone ? 'start' : 'other'];
+		fill = { ...fill };
+		for (const k in f) if (Number.isFinite(fill[k])) fill[k] *= f[k];
 	}
 	// Every rate in CLASS_FILL is "per 1000 cells", and the cells that count
 	// are the ones an object could stand on. On the surface that is nearly all
@@ -3484,7 +3522,24 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// zone distance caps at 3: the corpus far-band mix (~26% relics) is the
 	// target, and a graph deeper than three hops does not make it deeper.
 	const zd = Math.min(3, zoneDist == null ? 0 : Math.min(zoneDist, 3));
-	const artifactCount = pileMan ? 0 : Math.round(area * p.artifactDensity * fill.artifacts * 10);
+	// a start zone split in two (plan.js: the part by the town filled as a player zone, the rest as standard) is one start zone to the engine
+	const startHere = cls === BIOME_CLASS.PLAYER || !!p.startZone;
+	const lootKind = startHere ? 'start' : 'other', lootMul = startHere ? 1 : (STOCK_LOOT_CLASS[cls] || 1);
+	const stockLoot = STOCK_LOOT && !pileMan;
+	// the stock table is per zone tile (density_table.js counts every tile of a zone), so its counts take the zone's tiles, not the usable ones
+	const stockRare = rate => { const n = cells.length / 1000 * rate; return Math.floor(n) + (rng() < n - Math.floor(n) ? 1 : 0); };
+	const artifactCount = pileMan || stockLoot ? 0 : Math.round(area * p.artifactDensity * fill.artifacts * 10);
+	if (stockLoot) {
+		const artLever = p.artifactDensity / BIOME_DEFAULTS.artifactDensity;
+		const lean = Number.isFinite(p.artifactRichness) ? 2 ** ((p.artifactRichness - BIOME_DEFAULTS.artifactRichness) * 4) : 1;
+		const T = STOCK_LOOT_DENSITY[lootKind];
+		const base = ART_TIERS.map(t => T[t.type] * lootMul * artLever);
+		const leaned = ART_TIERS.map((t, i) => base[i] * (/Major|Relic/.test(t.type) ? lean : 1));
+		const sb = base.reduce((a, b) => a + b, 0), sl = leaned.reduce((a, b) => a + b, 0);
+		ART_TIERS.forEach((t, i) => { for (let n = stockRare(sl ? leaned[i] * sb / sl : 0); n > 0; n--) putLoot(t.type, t.tpl); });
+		for (let n = stockRare(T.artifact * lootMul * artLever); n > 0; n--)
+			putLoot('artifact', OBJECT_TEMPLATES.randomArtifact, undefined, SEER_ARTIFACTS[(rng() * SEER_ARTIFACTS.length) | 0]);
+	}
 	if (pileMan) {
 		// Artifact quality on a template: the piles' own tiers are 1x (the default slider). Away from it the major and relic counts are
 		// leaned by the factor the free layout uses (4 either way at the slider's ends) and the total stays the piles' own, so the
@@ -3637,10 +3692,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// live. Multiplying the underground rates reproduces that split.
 	const uMul = l > 0 ? { pandora: 3, prison: 3, obelisk: 2.5 } : null;
 	const pandoraTpl = pandoraTemplate();
-	for (let i = pileMan ? manCount('pandoraBox') : rare(fill.pandoras * (uMul ? uMul.pandora : 1)); i > 0; i--)
+	for (let i = pileMan ? manCount('pandoraBox') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].pandoraBox * lootMul) : rare(fill.pandoras * (uMul ? uMul.pandora : 1)); i > 0; i--)
 		putLoot('pandoraBox', pandoraTpl, pandoraOptions(rng));
 	const prisonPile = new Map();
-	if (fill.prisons || (pileMan && pileMan.has('prison'))) {
+	if (fill.prisons || stockLoot || (pileMan && pileMan.has('prison'))) {
 		if (!objectPools.prisonHeroes)
 			objectPools.prisonHeroes = makePrisonHeroPool(players.length, rng, objectPools.pickedHeroes);
 		// Prisons by tier (K, 2026-10-07: "the highest-yielding prisons would be in high loot areas behind significant guards"; the
@@ -3650,7 +3705,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// value) stands at it below. Before this the tier was a corpus roll that ignored the zone: 500000-experience prisons in start
 		// zones 12 of 45, and their guards no stronger than a tier-0 prison's (2026-10-08 assessment). The count stays (K, 2026-10-04).
 		const tiers = pileMan ? (pileMan.get('prison') || []).slice() : [];
-		for (let i = pileMan ? manCount('prison') : rare(fill.prisons * (uMul ? uMul.prison : 1)); i > 0; i--) {
+		for (let i = pileMan ? manCount('prison') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].prison * lootMul * (lootKind === 'other' ? STOCK_PRISON_LAND : 1)) : rare(fill.prisons * (uMul ? uMul.prison : 1)); i > 0; i--) {
 			const hero = objectPools.prisonHeroes.pop();
 			if (!hero) break;
 			const src = tiers.length ? tiers.splice((rng() * tiers.length) | 0, 1)[0] : null;

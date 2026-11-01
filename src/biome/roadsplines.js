@@ -215,7 +215,9 @@ function thinSafe(roads, W, H, keep = null) {
  * ends). The engine's roads are trees between their nodes. Returns tiles removed.
  */
 // zoneOf (optional): a loop that stays inside one zone goes at any length up to 400 steps (a zone's road is a tree)
-function breakLoops(roads, W, H, keep = null, MAXLOOP = 30, zoneOf = null) {
+// straightFirst: tiles whose two road neighbours lie opposite each other are cut first, so the cut leaves no two tiles meeting at a corner only
+// (the last loop pass in generate.js runs after the corner joins; MapGen Dev, 2026-10-31)
+function breakLoops(roads, W, H, keep = null, MAXLOOP = 30, zoneOf = null, straightFirst = false) {
 	let cut = 0;
 	const nb = c => { const x = c % W, y = (c / W) | 0; return DIRS.map(([dx, dy]) => [x + dx, y + dy]).filter(([a, b]) => a >= 0 && b >= 0 && a < W && b < H && roads.has(b * W + a)).map(([a, b]) => b * W + a); };
 	const reach = (from, to, skip, z = null) => {
@@ -228,12 +230,14 @@ function breakLoops(roads, W, H, keep = null, MAXLOOP = 30, zoneOf = null) {
 		}
 		return false;
 	};
+	for (const straightOnly of straightFirst ? [true, false] : [false])
 	for (let changed = true, guard = 0; changed && guard < 50; guard++) {
 		changed = false;
 		for (const c of [...roads]) {
 			if (!roads.has(c) || (keep && keep.has(c))) continue;
 			const n = nb(c);
 			if (n.length !== 2) continue;
+			if (straightOnly && n[0] % W !== n[1] % W && ((n[0] / W) | 0) !== ((n[1] / W) | 0)) continue;
 			if (!reach(n[0], n[1], c) && !(zoneOf && reach(n[0], n[1], c, zoneOf(c)))) continue;
 			roads.delete(c); cut++; changed = true;
 			// cut back what now dangles

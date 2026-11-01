@@ -7938,7 +7938,7 @@ function fillLevel(plan, W, H, blocked) {
 		const ownShare = startHere ? 1 : biomeFaction ? 0.75 : 1;
 		parts.forEach(([cls, cells], i) =>
 			objects.push(...fillBiome(cls, cells, blocked, W, H,
-				levelIndex, rng, { ...p, dwellOwnShare: ownShare, doorGuards: i === parts.length - 1 && plan.doorGuards ? plan.doorGuards.get(b) || 0 : 0 },
+				levelIndex, rng, { ...p, startZone: classes[b] === BIOME_CLASS.PLAYER, dwellOwnShare: ownShare, doorGuards: i === parts.length - 1 && plan.doorGuards ? plan.doorGuards.get(b) || 0 : 0 },
 				towns, alignPlayers || playerStarts, objectPools,
 				biomeTerrain[b], reachable, connectivity,
 				plan.zoneMeta && plan.zoneMeta[b]
@@ -9161,6 +9161,18 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = joinZoneWaysIn(plans[l], l, W, H, blocked, { early: true });
 			if (r.joined) console.error(`[gen] level ${l}: before the fill, pieces of zones joined: ${r.joined} (${r.rock} rock tile(s) carved, ${r.cleared} scenery piece(s) cleared)`);
 		}
+	// Every road tile nothing stands on is held clear again before the fill: the gate pass gave back the ground it held, road tiles
+	// included, and the fill set a Grandmaster's Hall on such a road (0.3.20 grid pw_075, L1 (26,25); Opus Map Vision's scan of 2026-10-31,
+	// buildings on roads, ours 10 to stock 0). Keeping them reserved through the gate pass instead cost 22 gate pairs on 18 grid maps (the
+	// guard tile below a gate is often its road; the Reviewer, pass 27). VMAPGEN_RESERVE_ROADS=0 skips it.
+	if (process.env.VMAPGEN_RESERVE_ROADS !== '0')
+		for (let l = 0; l < levels; l++) {
+			const R = plans[l].roadCells;
+			if (!R) continue;
+			let n = 0;
+			for (const c of R) if (!(blocked[l * W * H + c] & (OCCUPIED | RESERVED))) { blocked[l * W * H + c] |= RESERVED; n++; }
+			if (n && process.env.VMAPGEN_ROAD_TRACE) console.error(`[gen] level ${l}: road tiles held clear again before the fill: ${n}`);
+		}
 	// Content fill runs last, after the gates have claimed their ground.
 	phase('resources');
 	// the fill keeps a straight way out of every town, gate and monolith entrance placed so far (content.js protectFronts)
@@ -9351,6 +9363,12 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 							const sceneryAt = new Map();
 							for (const o of plans[l].objects) if ((o.l || 0) === l && o.template && o.template.mask && DECOR_TYPES_SET.has(o.type) && !o.template.mask.some(r2 => /[AT]/.test(r2)))
 								for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H && zl[fy * W + fx] === z) sceneryAt.set(fy * W + fx, o);
+							// a scenery cell another object also stands on is that object's, and no road crosses it: a scenery piece under a town's
+							// left column let this join lay the road through the town's body (0.3.20 grid pw_044, the death valley town at (7,32) L1;
+							// Opus Map Vision's scan of 2026-10-31: 10 buildings with a road under them on the grid, stock 0). VMAPGEN_ROAD_CLEAR_OWNED=0 as before.
+							if (process.env.VMAPGEN_ROAD_CLEAR_OWNED !== '0')
+								for (const o of plans[l].objects) if ((o.l || 0) === l && o.template && o.template.mask && !DECOR_TYPES_SET.has(o.type))
+									for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) sceneryAt.delete(fy * W + fx);
 							// no piece on a zone line: it goes whole, and its other cells are the wall (VMAPGEN_ROAD_JOIN_WALL=0 off)
 							if (process.env.VMAPGEN_ROAD_JOIN_WALL !== '0') {
 								const line = c => { const x = c % W, y = (c / W) | 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H && zl[v * W + u] >= 0 && zl[v * W + u] !== zl[c]) return true; } return false; };
@@ -10131,6 +10149,23 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = require('./gateroad').teleportRoads(plans[l], W, H, l, blocked, OCCUPIED, visitableCells, blockingCells, { reach: teleReach });
 			if (r.joined || r.none) console.error(`[gen] level ${l}: gates and monoliths whose road was taken up: ${r.joined} run to the road net, ${r.none} not reached`);
 		}
+	}
+	// The loop pass once more, after every road pass that came after it (K, 2026-10-31: "weird loops abound in the mapgen version i have installed"; a
+	// small square ring round a monolith's guard). The late loop pass in the zone join runs before teleportRoads, joinBareTowns, roadsPastObjects
+	// and closeDiagonalSteps, and each of those can close a ring (Opus Map Vision's traces: pw_010 closeDiagonalSteps, pw_054 joinBareTowns with a gate
+	// stub, pw_062 and K's map roadsPastObjects): 37 small closed loops on 25 of the 0.3.20 grid's 98 maps, none on stock's 98. The same keep set as
+	// that pass: the tiles towns, gates and monoliths are visited from and the road tile below each, guards' tiles, doorway holes.
+	// VMAPGEN_LAST_LOOPS=0 skips it.
+	if (process.env.VMAPGEN_LAST_LOOPS !== '0' && plans[l].roadCells && plans[l].roadCells.size) {
+		const R = plans[l].roadCells, zl = plans[l].zone;
+		const keepLast = new Set(plans[l].objects.filter(o => (o.l || 0) === l && /^(randomMonster|monster)/.test(o.type)).map(o => o.y * W + o.x));
+		for (const o of plans[l].objects) {
+			if ((o.l || 0) !== l || !o.template || !/^(town$|randomTown$|subterraneanGate|monolith)/.test(o.type)) continue;
+			for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) { keepLast.add(vy * W + vx); const below = (vy + 1) * W + vx; if (vy + 1 < H && R.has(below)) keepLast.add(below); }
+		}
+		for (const op of plans[l].openings || []) if (op.kind === 'openRoad') for (const c of op.hole || []) keepLast.add(c);
+		const lc = require('./roadsplines').breakLoops(R, W, H, keepLast, Number(process.env.VMAPGEN_LATE_LOOP || 40), zl ? c => zl[c] : null);
+		if (lc) console.error(`[gen] level ${l}: small road loops the last road passes closed, broken: ${lc} tile(s)`);
 	}
 	}
 	// A building no hero can step into: every tile it is entered from is covered by scenery, another building or a monolith's own tile
