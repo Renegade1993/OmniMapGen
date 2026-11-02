@@ -58,30 +58,51 @@ function guardHigh(plan, W, H, l, blocked, d) {
 	const mainOf = new Map();
 	for (let c = 0; c < W * H; c++) if (lab[c] >= 0 && zone) { const z = zone[c]; if (!mainOf.has(z) || size[lab[c]] > size[mainOf.get(z)]) mainOf.set(z, lab[c]); }
 	const isOpen = (p, approach) => approach.some(c => free(c) && lab[c] >= 0 && lab[c] === mainOf.get(zone ? zone[p.y * W + p.x] : 0));
+	// The flyer pass (d.flyer, the last guard pass of plan.js): the occupancy grid keeps the marks of objects later passes took away (scenery
+	// cleared, guards swept as orphans), and a pile in a nook read as walled in on every side though the map shows bare ground beside it
+	// (dd03e56 seed 1: the relic at (35,33), all eight neighbours marked, five of them bare). So that pass judges a tile by the objects
+	// that stand on it now.
+	let objCells = null;
+	if (d.flyer) {
+		objCells = new Set();
+		for (const o of plan.objects) {
+			if ((o.l || 0) !== l || !o.template || !o.template.mask) continue;
+			for (const [a, b] of blockingCells(o.template, o.x, o.y)) objCells.add(b * W + a);
+			for (const [a, b] of visitableCells(o.template, o.x, o.y)) objCells.add(b * W + a);
+		}
+	}
+	const freeHere = c => (objCells ? floor(c) && !objCells.has(c) : free(c));
 	const piles = plan.objects.filter(o => (o.l || 0) === l && o.template && o.template.mask && (HIGH.test(o.type) || (extraChance > 0 && EXTRA.test(o.type))));
 	for (const p of piles) {
-		if (near(p.x, p.y, 2)) continue;
+		if (near(p.x, p.y, d.flyer ? 1 : 2)) continue;   // the flyer pass: a monster two tiles off still leaves the pile to a flyer
 		if (pull < 1 && rng() >= pull) continue;
 		if (!HIGH.test(p.type) && rng() >= extraChance) continue;
 		const approach = [];
 		for (const [vx, vy] of visitableCells(p.template, p.x, p.y))
-			for (const [dx, dy] of allowedDirs(p.template)) {
+			for (const [dx, dy] of (d.flyer ? [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]] : allowedDirs(p.template))) {   // a flyer lands on any side
 				const x = vx + dx, y = vy + dy;
 				if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
 				const c = y * W + x;
 				if (!approach.includes(c)) approach.push(c);
 			}
-		if (!approach.some(free) || (zone && !isOpen(p, approach))) continue;   // sealed already, or in a pocket another guard closes
+		// K's flyer rule (2026-10-05, ledger M-41): a flying hero lands on any free tile beside a pile, so a pile walled into a nook with no
+		// monster beside it is open to him even when no walker can reach it. Only a pile with no free approach tile at all is closed to a flyer.
+		// Before, a pile whose approach was not the zone's main open ground was skipped as "in a pocket another guard closes", and the nooks
+		// that walls alone close kept their dear loot unguarded: dd03e56, Coldshadow 144 two levels 4 players, 16 seeds, 4.2% of dear piles
+		// open to a flyer a map, 8 of the 12 on seed 1 in start-zone nooks with the nearest monster 5 to 16 tiles off (Opus Map Vision,
+		// 2026-11-01). VMAPGEN_FLYER_GUARD=0 is the earlier rule.
+		const onMain = !zone || isOpen(p, approach);
+		if (!approach.some(freeHere) || (!onMain && process.env.VMAPGEN_FLYER_GUARD === '0')) continue;
 		out.open++;
 		const own = new Set(blockingCells(p.template, p.x, p.y).map(([a, b]) => b * W + a));
 		const clips = c => { const x = c % W, y = (c / W) | 0; return [[0, 0], [-1, 0], [0, -1], [-1, -1]].some(([dx, dy]) => own.has((y + dy) * W + x + dx)); };
 		// the pile's own approach tiles carry the APPROACH mark its landing left, so only RESERVED (doors, roads) is refused
 		const why = out.why || (out.why = {});
 		const bump = k => { why[k] = (why[k] || 0) + 1; return false; };
-		const cands = approach.filter(c => (free(c) || bump('taken'))
+		const cands = approach.filter(c => (freeHere(c) || bump('taken'))
 			&& (!(blocked[base + c] & RESERVED) || bump('reserved')) && (!(road && road.has(c)) || bump('road'))
 			&& (!zone || zone[c] === zone[p.y * W + p.x] || bump('zone')) && !own.has(c)
-			&& (footprintFits(monsterTpl, c % W, (c / W) | 0, l, W, H, blocked, true) || bump('fit')) && (!cuts(c) || bump('cuts')))
+			&& (objCells || footprintFits(monsterTpl, c % W, (c / W) | 0, l, W, H, blocked, true) || bump('fit')) && (objCells || !onMain || !cuts(c) || bump('cuts')))
 			.sort((a, b) => (clips(a) - clips(b)) || (nb(a).filter(free).length - nb(b).filter(free).length));
 		// not within 2 of another stack (the guard spacing of 2026-10-08): a pile with only such tiles is left to guardDearLoot and the approach
 		// closing, which move it into a guard's ring

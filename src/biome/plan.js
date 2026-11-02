@@ -10560,6 +10560,17 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		const r = evenMonolithPairs(plans, W, H, blocked, rng);
 		if (r.sealed || r.guarded || r.opened || r.left) console.error(`[gen] monolith pairs with one end sealed, last: ${r.sealed} sealed at the other end too, ${r.guarded} guarded at the other end, ${r.opened} opened at both, ${r.left} left`);
 	}
+	// K's flyer rule, last (ledger M-41, 2026-11-01): the orphan sweep takes away a guard whose pile no walker reaches (a pile walled into a nook),
+	// but a flying hero lands beside that pile and takes it without a fight. Every dear pile with no monster on or beside it gets one here, after
+	// every pass that moves or removes stacks; guardHigh guards nook piles too (fix-flyer-open-1101). VMAPGEN_FLYER_LAST=0 off.
+	if (process.env.VMAPGEN_FLYER_LAST !== '0' && (params.guardTreasure === undefined || Number(params.guardTreasure) !== 0))
+		for (let l = 0; l < levels; l++) {
+			const r = require('./guardhigh').guardHigh(plans[l], W, H, l, blocked, {
+				OCCUPIED, RESERVED, APPROACH, blockingCells, visitableCells, allowedDirs, footprintFits, footprintBlock, markApproach,
+				objectEntry, monsterTpl: require('./content').FILL_TYPES.creeps[0].tpl, monsterOptions, flyer: true,
+				rng: xorshift(((params.seed || 1) ^ 0x6a2f) + l * 977 >>> 0) });
+			if (r.open) console.error(`[gen] level ${l}: dear piles open to a flyer, last: ${r.open}, ${r.guarded} guarded, ${r.left} with no tile ${JSON.stringify(r.why || {})}`);
+		}
 	return { plans, blocked };
 }
 
