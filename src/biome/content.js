@@ -371,6 +371,8 @@ const STOCK_GUARDS = process.env.VMAPGEN_STOCK_GUARDS !== '0';
 // loose loot beside a guarded target is part of its pile, as stock builds a pile of adjacent items under one guard (TreasurePlacer;
 // HotA's template docs: "All objects of a group are adjacent, and share the same protection"): a guard's ring may cover its way in
 const STOCK_HOLD = STOCK_GUARDS && process.env.VMAPGEN_STOCK_HOLD !== '0';
+// prisons with the zone's other piles, before the artifacts (the Foreman's e5137f8, folded in 2026-11-02); VMAPGEN_PRISON_EARLY=1 on
+const PRISON_EARLY = process.env.VMAPGEN_PRISON_EARLY === '1';
 const STOCK_HOLD_TYPES = /^(creatureBank|dragonUtopia|crypt|randomArtifactRelic|randomArtifactMajor|artifact|pandoraBox)$/;
 // a dwelling or a prison holds a guard tile when one is there and is never refused a spot for want of one: dwellings are laid on a fixed
 // list of spots with no fallback tries, and refusing them took Coldshadow's dwellings from 1.03 to 0.35 of the engine's in the other zones
@@ -3764,6 +3766,40 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const stockLoot = STOCK_LOOT && !pileMan;
 	// the stock table is per zone tile (density_table.js counts every tile of a zone), so its counts take the zone's tiles, not the usable ones
 	const stockRare = rate => { const n = cells.length / 1000 * rate; return Math.floor(n) + (rng() < n - Math.floor(n) ? 1 : 0); };
+	// Prisons with the zone's other piles (stock: TreasurePlacer::addPrisons puts them in the pile list): run after the banks, they found a
+	// full zone (the Foreman, e5137f8: Jebus Cross 108 seed 1 on 0.3.24, the central zone's prisons refused 86 times for room and 33 for the
+	// gap to buildings). On a template zone they go before the artifacts, scrolls, pickups, chests and Pandora's boxes. VMAPGEN_PRISON_EARLY=1.
+	const prisonPile = new Map();
+	const prisonsEarly = PRISON_EARLY && !!(pileMan && pileMan.has('prison'));
+	function placePrisons() {
+	if (fill.prisons || stockLoot || (pileMan && pileMan.has('prison'))) {
+		if (!objectPools.prisonHeroes)
+			objectPools.prisonHeroes = makePrisonHeroPool(players.length, rng, objectPools.pickedHeroes);
+		// Prisons by tier (K, 2026-10-07: "the highest-yielding prisons would be in high loot areas behind significant guards"; the
+		// engine's rule, TreasurePlacer::addPrisons and HotA's template format: tier values 2500, 5000, 10000, 20000 and 30000 for 0, 5000,
+		// 15000, 90000 and 500000 experience, a tier only where the zone's treasure reaches its value). The piles draw them by that rule
+		// (piles.js addPrisons), so each prison takes the tier of the prison its pile drew, and the pile's guard (sized on the pile's
+		// value) stands at it below. Before this the tier was a corpus roll that ignored the zone: 500000-experience prisons in start
+		// zones 12 of 45, and their guards no stronger than a tier-0 prison's (2026-10-08 assessment). The count stays (K, 2026-10-04).
+		const tiers = pileMan ? (pileMan.get('prison') || []).slice() : [];
+		for (let i = pileMan ? manCount('prison') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].prison * lootMul * (lootKind === 'other' ? STOCK_PRISON_LAND * (STOCK_GUARDS ? 1.28 : 1) : (STOCK_GUARDS ? 1.38 : 1))) : rare(fill.prisons * (uMul ? uMul.prison : 1)); i > 0; i--) {
+			const hero = objectPools.prisonHeroes.pop();
+			if (!hero) break;
+			const src = tiers.length ? tiers.splice((rng() * tiers.length) | 0, 1)[0] : null;
+			// a start zone's prison keeps to the low tiers (K, 2026-10-07: "starter biomes get lower tiered prisons, with higher tiered ones
+			// landing in high loot zones"): the engine's value rule let Coldshadow's rich start zones draw 90000 (MapGen Dev's check, 2026-10-09)
+			const startZone = cls === BIOME_CLASS.PLAYER || !!(zoneMeta && zoneMeta.spec && /^(playerStart|cpuStart)$/.test(zoneMeta.spec.type));
+			let exp = src ? PRISON_TIER_EXP[src.value] : undefined;
+			if (startZone && exp > 15000) exp = 15000;
+			const opts = exp === undefined ? prisonOptions(hero, rng) : (exp ? { gender: -1, type: hero, experience: exp } : { gender: -1, type: hero });
+			// the free layout's corpus roll keeps to the same low tiers in a start zone
+			if (startZone && opts.experience > 15000) opts.experience = 15000;
+			const e = src ? putLoot('prison', prisonTemplate(), opts, 'prison') : put('prison', prisonTemplate(), opts, 'prison');
+			if (e && src && pileOf.get(src)) prisonPile.set(e, pileOf.get(src));
+		}
+	}
+	}
+	if (prisonsEarly) placePrisons();
 	const artifactCount = pileMan || stockLoot ? 0 : Math.round(area * p.artifactDensity * fill.artifacts * 10);
 	if (stockLoot) {
 		const artLever = p.artifactDensity / BIOME_DEFAULTS.artifactDensity;
@@ -3931,33 +3967,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const pandoraTpl = pandoraTemplate();
 	for (let i = pileMan ? manCount('pandoraBox') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].pandoraBox * lootMul * ((lootKind === 'other' && STOCK_GUARD_LAND.pandoraBox) || 1)) : rare(fill.pandoras * (uMul ? uMul.pandora : 1)); i > 0; i--)
 		putLoot('pandoraBox', pandoraTpl, pandoraOptions(rng));
-	const prisonPile = new Map();
-	if (fill.prisons || stockLoot || (pileMan && pileMan.has('prison'))) {
-		if (!objectPools.prisonHeroes)
-			objectPools.prisonHeroes = makePrisonHeroPool(players.length, rng, objectPools.pickedHeroes);
-		// Prisons by tier (K, 2026-10-07: "the highest-yielding prisons would be in high loot areas behind significant guards"; the
-		// engine's rule, TreasurePlacer::addPrisons and HotA's template format: tier values 2500, 5000, 10000, 20000 and 30000 for 0, 5000,
-		// 15000, 90000 and 500000 experience, a tier only where the zone's treasure reaches its value). The piles draw them by that rule
-		// (piles.js addPrisons), so each prison takes the tier of the prison its pile drew, and the pile's guard (sized on the pile's
-		// value) stands at it below. Before this the tier was a corpus roll that ignored the zone: 500000-experience prisons in start
-		// zones 12 of 45, and their guards no stronger than a tier-0 prison's (2026-10-08 assessment). The count stays (K, 2026-10-04).
-		const tiers = pileMan ? (pileMan.get('prison') || []).slice() : [];
-		for (let i = pileMan ? manCount('prison') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].prison * lootMul * (lootKind === 'other' ? STOCK_PRISON_LAND * (STOCK_GUARDS ? 1.28 : 1) : (STOCK_GUARDS ? 1.38 : 1))) : rare(fill.prisons * (uMul ? uMul.prison : 1)); i > 0; i--) {
-			const hero = objectPools.prisonHeroes.pop();
-			if (!hero) break;
-			const src = tiers.length ? tiers.splice((rng() * tiers.length) | 0, 1)[0] : null;
-			// a start zone's prison keeps to the low tiers (K, 2026-10-07: "starter biomes get lower tiered prisons, with higher tiered ones
-			// landing in high loot zones"): the engine's value rule let Coldshadow's rich start zones draw 90000 (MapGen Dev's check, 2026-10-09)
-			const startZone = cls === BIOME_CLASS.PLAYER || !!(zoneMeta && zoneMeta.spec && /^(playerStart|cpuStart)$/.test(zoneMeta.spec.type));
-			let exp = src ? PRISON_TIER_EXP[src.value] : undefined;
-			if (startZone && exp > 15000) exp = 15000;
-			const opts = exp === undefined ? prisonOptions(hero, rng) : (exp ? { gender: -1, type: hero, experience: exp } : { gender: -1, type: hero });
-			// the free layout's corpus roll keeps to the same low tiers in a start zone
-			if (startZone && opts.experience > 15000) opts.experience = 15000;
-			const e = src ? putLoot('prison', prisonTemplate(), opts, 'prison') : put('prison', prisonTemplate(), opts, 'prison');
-			if (e && src && pileOf.get(src)) prisonPile.set(e, pileOf.get(src));
-		}
-	}
+	if (!prisonsEarly) placePrisons();
 	const obeliskTpl = obeliskTemplate(terrain);
 	for (let i = pileMan ? manCount('obelisk') : rare(fill.obelisks * (uMul ? uMul.obelisk : 1)); i > 0; i--)
 		if (put('obelisk', obeliskTpl))
