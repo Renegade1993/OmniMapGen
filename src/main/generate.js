@@ -2988,6 +2988,23 @@ async function generateMap(params) {
 
 	// the planner's own marks on link ends and their guards (plan.js endGuardTag, endGuardPosted, endGuardSkip) stay out of the map file
 	for (const o of objects) for (const k of ['_endGuard', '_guardPosted', '_guardDraw', '_guardSkip']) if (o && k in o) delete o[k];
+	// The duplicate-name check above runs before the rock-corner pass, zoneFloorLate's new piles and the export's syncs, and every one
+	// of them names objects by anchor: Coldshadow 144 two levels seed 1 (cold_h8's option line) wrote two rock_69_87_1 (a rock-corner
+	// obstacle on an anchor another rock already had) and the engine refused the map ("Object instance name duplicated"; 0.3.23 and
+	// 0.3.24). So the same rule runs once more on the objects as written: the later of two equal names gets _2, _3.
+	{
+		const seen = new Set();
+		let late = 0;
+		for (const o of objects) {
+			if (!seen.has(o.instanceName)) { seen.add(o.instanceName); continue; }
+			let n = 2, candidate;
+			do { candidate = `${o.instanceName}_${n++}`; } while (seen.has(candidate));
+			o.instanceName = candidate;
+			seen.add(candidate);
+			late++;
+		}
+		if (late) console.error(`[gen] ${late} duplicate instance name(s) made unique before the write`);
+	}
 	const vmapBuf = serializeVmap({ header, tilesByLevel, objects });
 	fs.mkdirSync(path.dirname(path.resolve(params.outFile)), { recursive: true });
 	fs.writeFileSync(params.outFile, vmapBuf);
