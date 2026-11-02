@@ -2307,6 +2307,20 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 						// mask from the start of the fill, and the prisons the prefilter let into tight nooks were laid with their guard in a pocket the
 						// fill's own scenery had already closed (12c4646, seeds 17-32 outside 22: 21 drops, 6 of them a prison with its guard)
 						if (type === 'prison' && connectivity && connectivity.reachable && !connectivity.reachable[c] && process.env.VMAPGEN_PRISON_MAIN !== '0') continue;
+						// and at a mouth onto open ground, not in a corridor: a prison whose guard stood in a one-tile strip was sealed in with it by
+						// scenery the seal pass could not open (12381c5 = 12c4646 to the object: the guard tile was reachable when laid; seed 23, the
+						// prison at (101,9) and its guard in a strip between craters and trees). At least PRISON_OPEN_MIN (3) free tiles round the
+						// guard's, outside the prison. VMAPGEN_PRISON_OPEN_MIN=0 off.
+						if (type === 'prison') {
+							const need = process.env.VMAPGEN_PRISON_OPEN_MIN !== undefined ? Number(process.env.VMAPGEN_PRISON_OPEN_MIN) : 3;
+							let freeN = 0;
+							for (let ny = gy - 1; ny <= gy + 1; ny++) for (let nx = gx - 1; nx <= gx + 1; nx++) {
+								if ((nx === gx && ny === gy) || nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+								const q = ny * W + nx;
+								if (!foot.has(q) && !(blocked[l * W * H + q] & OCCUPIED)) freeN++;
+							}
+							if (freeN < need) continue;
+						}
 						if (connectivity && !connectivity.accepts([...walls, c])) continue;
 						heldTile = c; break;
 					}
