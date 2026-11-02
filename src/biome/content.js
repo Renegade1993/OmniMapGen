@@ -3341,6 +3341,17 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			if (s1.length) spaced = s1;
 			if (s3.length) spaced3 = s3;
 		}
+		// a prison's own refusals (its footprint, the 2-tile building gap, the prison spacing) are applied to the list it draws from, so its
+		// tries go to spots it can take: Coldshadow 144 two levels seed 1 asked for 35 prisons and placed 15, the other 20 spending their 32
+		// tries on 369 footprint misses and 294 building-gap refusals (fill trace on e7627ac, 2026-11-02). The rules themselves are unchanged.
+		// VMAPGEN_PRISON_PREFILTER=0 off.
+		if (type === 'prison' && process.env.VMAPGEN_PRISON_PREFILTER !== '0') {
+			const ok = c => { const x = c % W, y = (c / W) | 0; return !(blocked[l * W * H + c] & 1) && !crossesEdge(tpl, x, y) && footprintFits(tpl, x, y, l, W, H, blocked, REMOVABLE_TYPES.has(type))
+				&& !(PRISON_GAP > 0 && nearBuilding(tpl, x, y, PRISON_GAP)) && !prisonBlocked(x, y); };
+			spaced3 = spaced3.filter(ok);
+			const spots2 = spots.filter(ok);
+			spots.length = 0; spots.push(...spots2);
+		}
 		if (within && !spaced3.length) return null;
 		const e = within ? put(type, tpl, opts, subtype, 40, spaced3, true, true)
 			: put(type, tpl, opts, subtype, 32, spaced3.length ? spaced3 : spots.length ? spots : null);
