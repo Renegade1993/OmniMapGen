@@ -2301,6 +2301,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 						if (gx < 1 || gy < 1 || gx >= W - 1 || gy >= H - 1) continue;
 						const c = gy * W + gx;
 						if (foot.has(c) || (blocked[l * W * H + c] & OCCUPIED) || heldGuard.has(c) || (reachable && !reachable[c]) || guardTightAt(gx, gy)) continue;
+						// a prison's guard tile in the ground reachable NOW (connectivity.reachable, refreshed after every placement): `reachable` is the
+						// mask from the start of the fill, and the prisons the prefilter let into tight nooks were laid with their guard in a pocket the
+						// fill's own scenery had already closed (12c4646, seeds 17-32 outside 22: 21 drops, 6 of them a prison with its guard)
+						if (type === 'prison' && connectivity && connectivity.reachable && !connectivity.reachable[c] && process.env.VMAPGEN_PRISON_MAIN !== '0') continue;
 						if (connectivity && !connectivity.accepts([...walls, c])) continue;
 						heldTile = c; break;
 					}
@@ -2324,6 +2328,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 						if (ex < 1 || ey < 1 || ex >= W - 1 || ey >= H - 1) continue;
 						const e = ey * W + ex;
 						if (foot.has(e) || (blocked[l * W * H + e] & OCCUPIED) || heldGuard.has(e) || (reachable && !reachable[e])) continue;
+						if (connectivity && connectivity.reachable && !connectivity.reachable[e] && process.env.VMAPGEN_PRISON_MAIN !== '0') continue;
 						if (blockingCells(tpl, x, y).some(([a, b]) => Math.max(Math.abs(a - ex), Math.abs(b - ey)) <= 1)) continue;   // a tile away from the prison
 						if (connectivity && !connectivity.accepts([...walls, heldTile, e])) continue;
 						exitTile = e; break;
