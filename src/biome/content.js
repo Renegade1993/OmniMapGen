@@ -2306,7 +2306,12 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					}
 					if (heldTile >= 0) break;
 				}
-				if (heldTile < 0 && tries < tryBudget - 4 && !STOCK_HOLD_SOFT.test(type)) { rej('stockGuardTile'); continue; }
+				// a prison is laid with its guard's tile, as stock lays a pile with its guard (TreasurePlacer): with the prefilter above giving it more
+				// spots, a prison laid with no tile for its guard was taken back after (a08f936, 16 seeds: prisons 10.9 -> 13.1 a map, taken back
+				// 33 -> 75, unreachable drops 7 -> 16). It draws from a list of tries, unlike a dwelling, so refusing a spot costs it only a try.
+				// VMAPGEN_PRISON_HOLD=0 keeps it soft.
+				const softHold = STOCK_HOLD_SOFT.test(type) && !(type === 'prison' && process.env.VMAPGEN_PRISON_HOLD !== '0');
+				if (heldTile < 0 && tries < tryBudget - 4 && !softHold) { rej('stockGuardTile'); continue; }
 			}
 			// i may have come from pickFrom, so it is not guaranteed to still
 			// be in free; splice(-1, 1) would drop an unrelated cell.
