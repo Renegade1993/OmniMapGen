@@ -2292,7 +2292,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					REMOVABLE_TYPES.has(type) ? 1 : 2)) { rej('weld'); continue; }
 			// a held guard tile stays free; a must-guard object takes its guard tile with it (heldGuard above)
 			if (heldGuard.size && blockingCells(tpl, x, y).some(([a, b]) => heldGuard.has(b * W + a))) { rej('heldGuard'); continue; }
-			let heldTile = -1;
+			let heldTile = -1, exitTile = -1;
 			if (STOCK_HOLD && (STOCK_HOLD_TYPES.test(type) || STOCK_HOLD_SOFT.test(type))) {
 				const foot = new Set(blockingCells(tpl, x, y).map(([a, b]) => b * W + a));
 				for (const [vx, vy] of visitableCells(tpl, x, y)) {
@@ -2312,6 +2312,24 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				// VMAPGEN_PRISON_HOLD=0 keeps it soft.
 				const softHold = STOCK_HOLD_SOFT.test(type) && !(type === 'prison' && process.env.VMAPGEN_PRISON_HOLD !== '0');
 				if (heldTile < 0 && tries < tryBudget - 4 && !softHold) { rej('stockGuardTile'); continue; }
+				// the guard's way out is held too: stock keeps the path to a placed object (ObjectManager), and a prison laid in a nook with only its
+				// guard's tile held was sealed in with that guard by later scenery (59e74aa, Coldshadow seeds 17 to 32 outside seed 22: unreachable
+				// drops 2 -> 22; seed 23: the prison at (101,9) and its guard at (102,9) in a strip a crystal wall and a slab closed). One tile beside
+				// the guard's, outside the prison's footprint and reachable, is held as the guard's is and freed at the end of the fill.
+				// VMAPGEN_PRISON_EXIT=0 off.
+				if (heldTile >= 0 && type === 'prison' && !softHold && process.env.VMAPGEN_PRISON_EXIT !== '0') {
+					const hx = heldTile % W, hy = (heldTile / W) | 0;
+					for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+						const ex = hx + dx, ey = hy + dy;
+						if (ex < 1 || ey < 1 || ex >= W - 1 || ey >= H - 1) continue;
+						const e = ey * W + ex;
+						if (foot.has(e) || (blocked[l * W * H + e] & OCCUPIED) || heldGuard.has(e) || (reachable && !reachable[e])) continue;
+						if (blockingCells(tpl, x, y).some(([a, b]) => Math.max(Math.abs(a - ex), Math.abs(b - ey)) <= 1)) continue;   // a tile away from the prison
+						if (connectivity && !connectivity.accepts([...walls, heldTile, e])) continue;
+						exitTile = e; break;
+					}
+					if (exitTile < 0 && tries < tryBudget - 4) { rej('prisonExit'); continue; }
+				}
 			}
 			// i may have come from pickFrom, so it is not guaranteed to still
 			// be in free; splice(-1, 1) would drop an unrelated cell.
@@ -2341,6 +2359,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// later objects keep off it: marked RESERVED, 146 of seed 1's Coldshadow held tiles were still covered by scenery passes that read only
 			// OCCUPIED, and walls stamped into the grid; the guard's own posting clears and re-stamps it, and the fill frees any left at its end
 			if (heldTile >= 0) { heldGuard.add(heldTile); holdGuard(heldTile % W, (heldTile / W) | 0); entry.__stockGuard = heldTile; blocked[l * W * H + heldTile] |= OCCUPIED; heldReserved.add(heldTile); heldFloor(blocked).add(l * W * H + heldTile); if (connectivity) connectivity.refresh(); }
+			if (exitTile >= 0) { blocked[l * W * H + exitTile] |= OCCUPIED; heldReserved.add(exitTile); heldFloor(blocked).add(l * W * H + exitTile); if (connectivity) connectivity.refresh(); }
 			if (connectivity) connectivity.refresh();
 			if (GUARD_CHANCE[type]) guardable.push({ entry, tpl });
 			if (fillStat) fillStat['placed|' + type] = (fillStat['placed|' + type] || 0) + 1;
