@@ -245,7 +245,10 @@ const TPL_PILE_LAND_VERY_RICH_TREASURE = Number(process.env.VMAPGEN_TPL_PILE_LAN
 // after a band from 50000, lands at this share of its own in a zone that is not a treasure zone (Coldshadow's central
 // treasure zone 21, whose 20000-60000 band follows two from 100000, fell to half the engine's guards with it) (2026-10-03).
 // A rule of the registry.
-const TPL_PILE_LAND_AFTER_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_AFTER_RICH) || 0.3;
+// 0.3 to 0.15 (Opus Map Vision, 2026-11-01): Coldshadow's junctions 17-20, 0.3.21, 8 maps against the engine's 7 with K's mods, per
+// junction tile: chests 2.06x -> 1.51x, minor artifacts 1.55x -> 1.21x, majors 1.49x -> 1.33x; neutral dragon dwellings 32.0 -> 32.5 a
+// map (a pile holding a dwelling keeps its share). Resources 1.69x and stacks 1.56x barely move: they ride with the dwelling piles.
+const TPL_PILE_LAND_AFTER_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_AFTER_RICH) || 0.15;
 const TPL_PILE_LAND_CHEAP_AFTER_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_CHEAP_AFTER_RICH) || 0.6;
 /**
  * The treasure piles a template zone lands, band by band, richest first, as
@@ -343,7 +346,24 @@ function engineGuard(value, idx, rng, zoneGuard = false, pool = GUARD_POOL) {
 /** The nearest another guard may stand to a guard, in tiles (Chebyshev): the engine's stacks on 20 Coldshadow maps, nearest other stack p10 4,
  * median 5, crowded (within 2) 0.1%. Used by the guard register here and by guardDearLoot and the approach closing (plan.js, approachclose.js). */
 const GUARD_GAP = 4;
+// guards posted by stock's rule (content.js postGuard stockOk, dropUnguarded); VMAPGEN_STOCK_GUARDS=0 is the earlier posting, for A/B runs only
+const STOCK_GUARDS = process.env.VMAPGEN_STOCK_GUARDS !== '0';
+// loose loot beside a guarded target is part of its pile, as stock builds a pile of adjacent items under one guard (TreasurePlacer;
+// HotA's template docs: "All objects of a group are adjacent, and share the same protection"): a guard's ring may cover its way in
+const STOCK_HOLD = STOCK_GUARDS && process.env.VMAPGEN_STOCK_HOLD !== '0';
+const STOCK_HOLD_TYPES = /^(creatureBank|dragonUtopia|crypt|randomArtifactRelic|randomArtifactMajor|artifact|pandoraBox)$/;
+// a dwelling or a prison holds a guard tile when one is there and is never refused a spot for want of one: dwellings are laid on a fixed
+// list of spots with no fallback tries, and refusing them took Coldshadow's dwellings from 1.03 to 0.35 of the engine's in the other zones
+const STOCK_HOLD_SOFT = /^(creatureGenerator\w*|prison)$/;
+const STOCK_PILE_ITEM = /^(resource|randomResource|treasureChest|campfire|randomArtifact\w*|artifact|spellScroll|scholar|corpse|seaChest|flotsam)$/;
 const PRISON_TIER_EXP = { 2500: 0, 5000: 5000, 10000: 15000, 20000: 90000, 30000: 500000 };
+// The stock rule for a prison (the Opus Reviewer's ruling, 2026-11-01, roster\REVIEW-1101-stock-guards.md): a pile is guarded when its value
+// is over the zone's minGuardedValue (TreasurePlacer::isGuardNeededForTreasure; 6500, 4167, 3000, 1833, 1333 by monster strength, 3000 at
+// normal), so a prison worth more is always guarded and a cheaper one never (stock leaves 28% of its prisons bare; a prison's value is its
+// tier's, piles.js PRISON_VALUES by PRISON_TIER_EXP)
+const MIN_GUARDED_VALUES = [6500, 4167, 3000, 1833, 1333];
+const prisonValue = o => { const e = (o && o.options && o.options.experience) || 0; return e >= 500000 ? 30000 : e >= 90000 ? 20000 : e >= 15000 ? 10000 : e >= 5000 ? 5000 : 2500; };
+const prisonGuarded = (o, p) => prisonValue(o) > MIN_GUARDED_VALUES[Math.max(0, Math.min(4, 2 + Math.round((p && p.monsterStrength) || 0)))];
 // prisons by experience: the medians of the guards beside the engine's prisons of that tier on 20 Coldshadow maps (prison_tiers.js, 2026-10-08)
 const LOOT_GUARD_STRENGTH = { randomArtifactRelic: 65000, pandoraBox: 21000, randomArtifactMajor: 11000, artifact: 17000, spellScroll: 5000,
 	dwelling: 8000, dragonDwelling: 50000, prison90000: 61000, prison500000: 80000,
@@ -577,6 +597,17 @@ const STOCK_LOOT_CLASS = { town: 0.33, standard: 0.59, highLoot: 2.22, lowLoot: 
 // prison spacing and building gap refuse the rest in crowded zones), so they are asked at 3.2x (2.5x on 10 seeds still landed 0.72 of the pooled table); the start zones land on the table as asked
 // (a try budget of 120 for them hung put in the fill on seed 16 of K's settings; the default 32 is kept, the 2.5x ask is what lands them)
 const STOCK_PRISON_LAND = 3.2;
+// under the stock guard rule every prison takes a guard or is taken back: 10 seeds landed other 0.297 and start 0.083 against the pooled 0.381
+// and 0.115, so the asks are raised 1.28x and 1.38x there (kguard7)
+// under the stock guard rule a dear pickup with no legal guard tile is taken back, so of those asked in the other zones only part lands
+// (10 seeds of K's settings, .tmp\m1023\kguard2: majors 0.934, relics 0.024, Pandora's boxes 0.726 per 1,000 tiles against the pooled
+// 1.377, 0.034 and 1.078); they are asked at the measured ratio, as the prisons are (asked at 1.47, 1.4 and 1.48, kguard3 landed 1.219, 0.048
+// and 1.041: majors raised, relics lowered). Off with VMAPGEN_STOCK_GUARDS=0.
+// start zones: majors landed 0.132 against the pooled 0.177 over 20 seeds (kguard8, kguard8b); asked 1.3x they landed 0.232 (kguard9), so 1.15
+const STOCK_GUARD_LAND_START = STOCK_GUARDS ? { randomArtifactMajor: 1.15 } : {};
+// with the guard tile held at placement (STOCK_HOLD) far fewer are taken back: 20 seeds landed majors 1.790 and Pandora's boxes 1.239 at 1.6
+// and 1.48 (khold4), so 1.23 and 1.29
+const STOCK_GUARD_LAND = STOCK_GUARDS ? { randomArtifactMajor: STOCK_HOLD ? 1.23 : 1.6, randomArtifactRelic: 1.2, pandoraBox: STOCK_HOLD ? 1.29 : 1.48 } : {};
 // per zone kind, on CLASS_FILL's columns (see fillBiome)
 const STOCK_FILL_FACTOR = {
 	start: { dwellings: 0.29, banks: 0.67, chests: 2.0, piles: 0.77, creeps: 0.20 },
@@ -1262,10 +1293,18 @@ function markApproach(tpl, x, y, l, W, H, blocked) {
  * Walkable cells reachable from `seed`, as a count and a flag array.
  * Eight way, matching hero movement; RESERVED ground is walkable.
  */
+// Guard tiles held for an object's guard (fillBiome heldGuard) are OCCUPIED, so nothing else is placed on them, but a hero walks through
+// them once the guard is beaten: the connectivity flood counts them as floor. Counted as walls, the ground behind a held tile left the
+// region the guard protects, and a later wall that cut it off for good was accepted (Coldshadow seed 12: a bank's ring walled a cave
+// passage shut, 41 objects dropped as unreachable; the Opus Reviewer's blocker on 9a29e28). Keyed by the blocked grid, absolute indices.
+const HELD_FLOOR = new WeakMap();
+const heldFloor = blocked => { let h = HELD_FLOOR.get(blocked); if (!h) { h = new Set(); HELD_FLOOR.set(blocked, h); } return h; };
 function floodFrom(blocked, l, W, H, seed, out) {
 	const base = l * W * H;
+	const held = HELD_FLOOR.get(blocked);
+	const wall = i => (blocked[i] & OCCUPIED) && !(held && held.has(i));
 	out.fill(0);
-	if (seed < 0 || (blocked[base + seed] & OCCUPIED)) return 0;
+	if (seed < 0 || wall(base + seed)) return 0;
 	const stack = [seed];
 	out[seed] = 1;
 	let n = 0;
@@ -1279,7 +1318,7 @@ function floodFrom(blocked, l, W, H, seed, out) {
 				const nx = x + dx, ny = y + dy;
 				if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
 				const i = ny * W + nx;
-				if (out[i] || (blocked[base + i] & OCCUPIED)) continue;
+				if (out[i] || wall(base + i)) continue;
 				out[i] = 1;
 				stack.push(i);
 			}
@@ -1375,7 +1414,17 @@ function makeConnectivityGuard(blocked, l, W, H, tolerance = 2, preferred = -1) 
 					for (let k = 0; k < W * H; k++) if (scratch[k]) seen[k] = 1;
 					if (n > bestSize) { bestSize = n; bestSeed = i; }
 				}
-				if (bestSize >= count - lost - tolerance && bestSeed >= 0) { seedCell = bestSeed; after = floodFrom(blocked, l, W, H, seedCell, scratch); }
+				// the largest region left takes over only when it is the protected region itself (nearly all of its tiles): a separate,
+				// larger piece elsewhere on the level is no answer for a placement that cut the protected one, and taking it over left the
+				// old region unguarded, so later walls sealed its ground off (Coldshadow seed 12, level 1: a placement at (6,27) cut 8 tiles,
+				// the guard moved to a 3,259-tile piece it had never protected, and a bank's ring then walled 52 tiles of zone 19 shut)
+				if (bestSize >= count - lost - tolerance && bestSeed >= 0) {
+					const was = flags;
+					const n = floodFrom(blocked, l, W, H, bestSeed, scratch);
+					let overlap = 0;
+					for (let k = 0; k < W * H; k++) if (scratch[k] && was[k]) overlap++;
+					if (overlap >= count - lost - tolerance) { seedCell = bestSeed; after = n; }
+				}
 			}
 			for (const c of newly) blocked[base + c] &= ~OCCUPIED;
 			if (after < count - lost - tolerance) return false;
@@ -1761,7 +1810,7 @@ function objectEntry(type, x, y, l, tpl, opts, subtype = 'object') {
 		template,
 	};
 	if (opts) entry.options = opts;
-	if (process.env.VMAPGEN_SRC_TRACE && /^randomMonster/.test(type)) entry.__src = new Error().stack.split('\n').slice(2, 6).map(x => (/at (\S+)/.exec(x) || [])[1]).join('<');
+	if (process.env.VMAPGEN_SRC_TRACE && /^randomMonster/.test(type)) { entry.__src = new Error().stack.split('\n').slice(2, 6).map(x => (/at (\S+)/.exec(x) || [])[1]).join('<'); require('./srcTrace').traceMoves(entry); }
 	return entry;
 }
 
@@ -1960,11 +2009,25 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const guardReg = GREG[l] || (GREG[l] = { near: new Uint16Array(W * H), tight: new Uint16Array(W * H), at: new Set() });
 	const guardNear = guardReg.near, guardTight = guardReg.tight, guardAt = guardReg.at;
 	// a stack keeps GUARD_GAP - 1 tiles of ground between it and the next (nearest other stack 4 tiles off, the engine's p10)
+	// Stock picks each pile's guard tile as it lays the pile (ObjectManager placeAndConnectObject with its guard, TreasurePlacer), at a distance
+	// from everything placed; ours laid a whole zone, then looked for a stock-legal guard tile, and a dense start zone had none left: Coldshadow
+	// 144 two levels seed 1 (Opus Map Vision's trace, roster\NOTE-coldshadow-and-manual-gaps-1101.md, Update 09:19) took back 222 of 661 objects
+	// that needed a guard, 110 of them creature banks, 943 of the refusals the stack spacing. So a must-guard object takes its guard tile when it
+	// is placed: put() refuses a spot with no free tile before it 3 or more from every stack and held tile (all but its last 4 tries), holds the
+	// tile (holdGuard, so later objects keep their own guard tiles clear of it) and postGuard posts the guard there first. VMAPGEN_STOCK_HOLD=0 off.
+	const heldGuard = new Set();
+	const heldReserved = new Set();
 	const holdGuard = (x, y) => {
 		if (guardAt.has(y * W + x)) return;
 		guardAt.add(y * W + x);
 		const R = GUARD_GAP - 1;
 		for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H) { guardNear[v * W + u]++; if (Math.abs(dx) <= 2 && Math.abs(dy) <= 2) guardTight[v * W + u]++; } }
+	};
+	// a hold given up (the pile's ring chose another guard tile): the registry forgets it
+	const unholdGuard = (x, y) => {
+		if (!guardAt.delete(y * W + x)) return;
+		const R = GUARD_GAP - 1;
+		for (let dy = -R; dy <= R; dy++) for (let dx = -R; dx <= R; dx++) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H) { guardNear[v * W + u]--; if (Math.abs(dx) <= 2 && Math.abs(dy) <= 2) guardTight[v * W + u]--; } }
 	};
 	const guardCrowd = (x, y) => x >= 0 && y >= 0 && x < W && y < H && guardNear[y * W + x] > 0 && !(guardAt.has(y * W + x) && guardNear[y * W + x] === 1);
 	// within 2 of another stack: the crowding the engine never shows (the first choice keeps GUARD_GAP, the second at least 3)
@@ -1973,6 +2036,26 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (guardAt.has((vy + dy) * W + vx + dx)) return true;
 		return false;
 	});
+	// the stock rule: one guard per pile. A pickup whose pile (pickups chained by touching tiles) already has a stack beside one of its items is
+	// guarded by it (two fill piles laid touching, each with its own guard 3 or 4 tiles off, were most of the piles with two stacks on K's settings)
+	const PILE_PICK = /^(resource|randomResource|treasureChest|campfire|randomArtifact\w*|artifact|spellScroll|pandoraBox|prison|seaChest|flotsam)$/;
+	const pileGuarded = (entry, l) => {
+		if (!STOCK_GUARDS || !PILE_PICK.test(entry.type)) return false;
+		const at = new Map();
+		for (const o of out) if ((o.l || 0) === l && PILE_PICK.test(o.type)) at.set(o.y * W + o.x, o);
+		const seen = new Set([entry.y * W + entry.x]), todo = [entry.y * W + entry.x];
+		while (todo.length) {
+			const c = todo.pop(), x = c % W, y = (c / W) | 0;
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const u = x + dx, v = y + dy;
+				if (u < 0 || v < 0 || u >= W || v >= H) continue;
+				const n = v * W + u;
+				if (guardAt.has(n)) return true;
+				if (!seen.has(n) && at.has(n)) { seen.add(n); todo.push(n); }
+			}
+		}
+		return false;
+	};
 	const lootNook = (x, y) => {
 		let walls = 0;
 		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
@@ -2163,6 +2246,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// blocker art").
 			if (zoneMeta && POCKET_LOOT.test(type) && tries < tryBudget * 0.75 && closable(x, y) < 0) { rej('nook'); if (process.env.VMAPGEN_NOOK_TRACE) { const k = 'L' + l + (openMask ? 'cave' : ''); NOOK_T[k] = (NOOK_T[k] || 0) + 1; } continue; }
 			if (type === 'prison' && PRISON_GAP > 0 && nearBuilding(tpl, x, y, PRISON_GAP)) { rej('prisonGap'); continue; }
+			// stock lays a guarded pile at a distance from everything placed, so its guard has a tile by it that covers nothing else: a dear
+			// target keeps 3 tiles from buildings for the first half of its tries (laid beside a bank or a mine, 33 to 46% of them had no such
+			// guard tile and were taken back on seed 11 of K's settings); a prison keeps its own gap (PRISON_GAP), and more refusals lost it
+			if (STOCK_GUARDS && /^(randomArtifactRelic|randomArtifactMajor|artifact|pandoraBox)$/.test(type) && tries < tryBudget / 2 && nearBuilding(tpl, x, y, 3)) { rej('stockGap'); continue; }
 			if (type === 'prison' && prisonBlocked(x, y)) { rej('prisonSpacing'); continue; }
 			// Item 21: on a bound placement, a draw that would leave a one-cell
 			// sliver beside the object is refused for the first three quarters
@@ -2183,6 +2270,24 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// one cell of air.
 			if (weldsMasses(walls, blocked, l, W, H,
 					REMOVABLE_TYPES.has(type) ? 1 : 2)) { rej('weld'); continue; }
+			// a held guard tile stays free; a must-guard object takes its guard tile with it (heldGuard above)
+			if (heldGuard.size && blockingCells(tpl, x, y).some(([a, b]) => heldGuard.has(b * W + a))) { rej('heldGuard'); continue; }
+			let heldTile = -1;
+			if (STOCK_HOLD && (STOCK_HOLD_TYPES.test(type) || STOCK_HOLD_SOFT.test(type))) {
+				const foot = new Set(blockingCells(tpl, x, y).map(([a, b]) => b * W + a));
+				for (const [vx, vy] of visitableCells(tpl, x, y)) {
+					for (const [dx, dy] of allowedDirs(tpl)) {
+						const gx = vx + dx, gy = vy + dy;
+						if (gx < 1 || gy < 1 || gx >= W - 1 || gy >= H - 1) continue;
+						const c = gy * W + gx;
+						if (foot.has(c) || (blocked[l * W * H + c] & OCCUPIED) || heldGuard.has(c) || (reachable && !reachable[c]) || guardTightAt(gx, gy)) continue;
+						if (connectivity && !connectivity.accepts([...walls, c])) continue;
+						heldTile = c; break;
+					}
+					if (heldTile >= 0) break;
+				}
+				if (heldTile < 0 && tries < tryBudget - 4 && !STOCK_HOLD_SOFT.test(type)) { rej('stockGuardTile'); continue; }
+			}
 			// i may have come from pickFrom, so it is not guaranteed to still
 			// be in free; splice(-1, 1) would drop an unrelated cell.
 			const fi = free.indexOf(i);
@@ -2207,6 +2312,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			registerBuilding(type, tpl, x, y);
 			if (type === 'prison') prisonsHere.push([x, y]);
 			if (MONSTER_TYPE.test(type)) holdGuard(x, y);
+			// the held tile is OCCUPIED, as the guard standing there would make it (stock places the guard with its object), so scenery, walls and
+			// later objects keep off it: marked RESERVED, 146 of seed 1's Coldshadow held tiles were still covered by scenery passes that read only
+			// OCCUPIED, and walls stamped into the grid; the guard's own posting clears and re-stamps it, and the fill frees any left at its end
+			if (heldTile >= 0) { heldGuard.add(heldTile); holdGuard(heldTile % W, (heldTile / W) | 0); entry.__stockGuard = heldTile; blocked[l * W * H + heldTile] |= OCCUPIED; heldReserved.add(heldTile); heldFloor(blocked).add(l * W * H + heldTile); if (connectivity) connectivity.refresh(); }
 			if (connectivity) connectivity.refresh();
 			if (GUARD_CHANCE[type]) guardable.push({ entry, tpl });
 			if (fillStat) fillStat['placed|' + type] = (fillStat['placed|' + type] || 0) + 1;
@@ -2649,6 +2758,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			if (process.env.VMAPGEN_PILE_TRACE && band.min >= TPL_RICH_MIN) console.error(`[pileshare] zone ${zoneMeta.spec.id} ${zoneMeta.spec.type} level ${l} band ${band.min} rich share ${richShare}`);
 			const later = afterRich && zoneMeta.spec.type !== 'treasure' ? TPL_PILE_LAND_AFTER_RICH
 				: afterRichBand && band.min < TPL_RICH_MIN ? TPL_PILE_LAND_CHEAP_AFTER_RICH : 1;
+			const dwCut = afterRich && zoneMeta.spec.type !== 'treasure';   // the junction case only (dwelling piles below)
 			if (band.min >= TPL_VERY_RICH_MIN) afterRich = true;
 			const followsRich = afterRichBand;
 			if (band.min >= TPL_RICH_MIN) afterRichBand = true;
@@ -2675,7 +2785,12 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					// band's) model piles abandoned for room, and Coldshadow's junctions carry their neutral dragon dwellings in their
 					// last band: cut, the dragons came out 4-9 a map against the engine's 8-14 (K's mods, 2026-10-03).
 					// VMAPGEN_TPL_PILE_LAND_DWELLING=cut applies the cuts to them too.
-					const landP = holdsDwelling && process.env.VMAPGEN_TPL_PILE_LAND_DWELLING !== 'cut' ? share : share * later;
+					// ...but uncut they overshot (Opus Map Vision, 2026-11-01): Coldshadow 0.3.21, 8 maps, junction zones 16.8 neutral dragon
+					// dwellings a map against the engine's 9.7 (treasure and start zones matched it: 7.9 and 7.9 against 8.0 and 8.0), and their
+					// piles' riders kept the junctions' resources 1.7x and stacks 1.6x the engine's. A dwelling pile in a cut band lands at
+					// TPL_PILE_LAND_DWELLING_LATER of its share (9.7 / 16.8); VMAPGEN_TPL_PILE_LAND_DWELLING_LATER=1 the earlier rule.
+					const dwLater = dwCut ? (Number(process.env.VMAPGEN_TPL_PILE_LAND_DWELLING_LATER) || 0.58) : 1;
+					const landP = holdsDwelling && process.env.VMAPGEN_TPL_PILE_LAND_DWELLING !== 'cut' ? share * dwLater : share * later;
 					if (rng() < landP) pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects, followsRich });
 				}
 				made++;
@@ -3171,6 +3286,22 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			e.__walled = [e.x, e.y];
 			const note = (w, k) => { RING_T[k] = (RING_T[k] || 0) + 1; (e.__ringLog || (e.__ringLog = [])).push([w % W, (w / W) | 0, k]); };
 			const { g, others } = how.get(e.y * W + e.x);
+			// the ring's guard tile is the pile's guard tile: a tile held by put() elsewhere is given back before the ring walls its tiles
+			// (Coldshadow seed 1: the ring walled 18 dwellings' held tiles, the guard was posted over the wall piece, and the dwelling was dropped
+			// as unreachable)
+			if (e.__stockGuard !== undefined && e.__stockGuard !== g) {
+				const c0 = e.__stockGuard;
+				heldGuard.delete(c0);
+				heldFloor(blocked).delete(l * W * H + c0);
+				if (heldReserved.delete(c0)) blocked[l * W * H + c0] &= ~OCCUPIED;
+				unholdGuard(c0 % W, (c0 / W) | 0);
+				delete e.__stockGuard;
+				if (connectivity) connectivity.refresh();
+				// the hold moves to the ring's tile: spaced in the registry and kept off by other footprints, left open as the ring keeps it
+				// (given back with nothing held, Coldshadow's start dwellings fell from 0.89 to 0.59 of the engine's: their guard looked again later
+				// and found no legal tile)
+				if (g >= 0 && !heldGuard.has(g)) { heldGuard.add(g); holdGuard(g % W, (g / W) | 0); e.__stockGuard = g; }
+			}
 			// one tile closed, as rock in a cave or with a one-tile obstacle; false when it stays open
 			const wall = w => {
 				// in a cave the wall closes as rock where the rock's art fits no worse (as sealTarget does)
@@ -3536,7 +3667,8 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const base = ART_TIERS.map(t => T[t.type] * lootMul * artLever);
 		const leaned = ART_TIERS.map((t, i) => base[i] * (/Major|Relic/.test(t.type) ? lean : 1));
 		const sb = base.reduce((a, b) => a + b, 0), sl = leaned.reduce((a, b) => a + b, 0);
-		ART_TIERS.forEach((t, i) => { for (let n = stockRare(sl ? leaned[i] * sb / sl : 0); n > 0; n--) putLoot(t.type, t.tpl); });
+		const land = type => (lootKind === 'other' ? STOCK_GUARD_LAND[type] : STOCK_GUARD_LAND_START[type]) || 1;
+		ART_TIERS.forEach((t, i) => { for (let n = stockRare((sl ? leaned[i] * sb / sl : 0) * land(t.type)); n > 0; n--) putLoot(t.type, t.tpl); });
 		for (let n = stockRare(T.artifact * lootMul * artLever); n > 0; n--)
 			putLoot('artifact', OBJECT_TEMPLATES.randomArtifact, undefined, SEER_ARTIFACTS[(rng() * SEER_ARTIFACTS.length) | 0]);
 	}
@@ -3692,7 +3824,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// live. Multiplying the underground rates reproduces that split.
 	const uMul = l > 0 ? { pandora: 3, prison: 3, obelisk: 2.5 } : null;
 	const pandoraTpl = pandoraTemplate();
-	for (let i = pileMan ? manCount('pandoraBox') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].pandoraBox * lootMul) : rare(fill.pandoras * (uMul ? uMul.pandora : 1)); i > 0; i--)
+	for (let i = pileMan ? manCount('pandoraBox') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].pandoraBox * lootMul * ((lootKind === 'other' && STOCK_GUARD_LAND.pandoraBox) || 1)) : rare(fill.pandoras * (uMul ? uMul.pandora : 1)); i > 0; i--)
 		putLoot('pandoraBox', pandoraTpl, pandoraOptions(rng));
 	const prisonPile = new Map();
 	if (fill.prisons || stockLoot || (pileMan && pileMan.has('prison'))) {
@@ -3705,7 +3837,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// value) stands at it below. Before this the tier was a corpus roll that ignored the zone: 500000-experience prisons in start
 		// zones 12 of 45, and their guards no stronger than a tier-0 prison's (2026-10-08 assessment). The count stays (K, 2026-10-04).
 		const tiers = pileMan ? (pileMan.get('prison') || []).slice() : [];
-		for (let i = pileMan ? manCount('prison') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].prison * lootMul * (lootKind === 'other' ? STOCK_PRISON_LAND : 1)) : rare(fill.prisons * (uMul ? uMul.prison : 1)); i > 0; i--) {
+		for (let i = pileMan ? manCount('prison') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].prison * lootMul * (lootKind === 'other' ? STOCK_PRISON_LAND * (STOCK_GUARDS ? 1.28 : 1) : (STOCK_GUARDS ? 1.38 : 1))) : rare(fill.prisons * (uMul ? uMul.prison : 1)); i > 0; i--) {
 			const hero = objectPools.prisonHeroes.pop();
 			if (!hero) break;
 			const src = tiers.length ? tiers.splice((rng() * tiers.length) | 0, 1)[0] : null;
@@ -3773,7 +3905,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// as measured), and the per-context toggles (guardTreasure, guardMines,
 	// guardDwellings) switch a context off; a kind at 0 is never guarded and
 	// its share of the budget roams instead.
-	const guardWeight = g => (GUARD_CHANCE[g.entry.type] || 0.1)
+	const guardWeight = g => (STOCK_GUARDS && g.entry.type === 'prison' && !prisonGuarded(g.entry, p) ? 0 : (GUARD_CHANCE[g.entry.type] || 0.1))
 		* guardContextWeight(g.entry.type, p);
 	if (SEAL_TRACE) for (const g of guardable) SEAL_TRACE['guardable ' + g.entry.type] = (SEAL_TRACE['guardable ' + g.entry.type] || 0) + 1;
 	const ranked = guardable
@@ -3783,10 +3915,14 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 
 	/** Post a monster on a cell beside `target`'s entrance; `preset` is an
 	 * engine-rule guard (level and count) for a template zone. */
+	// targets that must carry a guard (a pile's, a pocket's, a dear pickup's chosen by share) and the targets that got one
+	const requiredTargets = new Set(), guardedTargets = new Set();
 	const postGuard = ({ entry, tpl }, preset = null, seal = false, gather = 0, retried = false) => {
+		if (seal && /^(creatureGenerator\w*|creatureBank|dragonUtopia|crypt|randomArtifactRelic|randomArtifactMajor|artifact|pandoraBox|prison)$/.test(entry.type)) requiredTargets.add(entry);
+		if (preset && !entry.__wantGuard) entry.__wantGuard = preset;
 		// a guard already stands beside its visiting tile (another pile's, a mine's): this one goes to the next object (a dwelling keeps its own: its
 		// approach is five tiles wide and one neighbour's ring left most of it open, 25 to 39% of dwellings on K's maps)
-		if (!(entry.__guardAt && entry.__walled) && !/^creatureGenerator/.test(entry.type) && !(entry.type === 'prison' && entry.options && entry.options.experience >= 90000) && guardBeside(tpl, entry.x, entry.y)) { if (SEAL_TRACE) SEAL_TRACE['guard shared'] = (SEAL_TRACE['guard shared'] || 0) + 1; return false; }
+		if (entry.__stockGuard === undefined && !(entry.__guardAt && entry.__walled) && !/^creatureGenerator/.test(entry.type) && !(entry.type === 'prison' && entry.options && entry.options.experience >= 90000) && (guardBeside(tpl, entry.x, entry.y) || pileGuarded(entry, l))) { guardedTargets.add(entry); if (SEAL_TRACE) SEAL_TRACE['guard shared'] = (SEAL_TRACE['guard shared'] || 0) + 1; return false; }
 		// A guard watches the approach its target's visitableFrom permits.
 		// Standing on a forbidden side of a front-facing building guards
 		// nothing: the engine will not let a hero come at it that way anyway.
@@ -3844,6 +3980,53 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) pileAround.add(vy * W + vx);
 			}
 		}
+		// Stock's rule for a guard's tile (K, 2026-10-31 21:35: "WHY CAN'T WE MAKE THE GUARDS EXACTLY LIKE THEY ARE ON THE MAN-MADE OR VCMI MADE MAPS"):
+		// the engine adds the guard to its object and places both together, every tile at a distance from everything already placed
+		// (ObjectManager placeAndConnectObject, TreasurePlacer minDistance), so a guard never stands within 2 of another stack and its ring never
+		// covers another object's way in (stock's 98 maps: 0 stacks touching, 0 piles with two stacks). No exception for dwellings or big prisons:
+		// a target with no such tile is not guarded here, and the fill takes it back (dropUnguarded). VMAPGEN_STOCK_GUARDS=0 as before.
+		const stockOk = (gx, gy) => {
+			if (!STOCK_GUARDS) return true;
+			const W0 = objectPools.__stockWhy || (objectPools.__stockWhy = {});
+			if (guardTightAt(gx, gy)) { W0.stack = (W0.stack || 0) + 1; return false; }
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const x = gx + dx, y = gy + dy;
+				if (x < 0 || y < 0 || x >= W || y >= H) continue;
+				const c = y * W + x;
+				if ((blocked[l * W * H + c] & APPROACH) && !targetApproach.has(c) && !(pileAround && pileAround.has(c))) { const own = out.find(o => o !== entry && (o.l || 0) === l && o.template && o.template.mask && visitableCells(o.template, o.x, o.y).some(([a, b]) => Math.abs(a - x) <= 1 && Math.abs(b - y) <= 1)); if (own && STOCK_PILE_ITEM.test(own.type)) continue; const k = 'ring covers ' + (own ? own.type.replace(/\d+$/, '') : 'unowned approach'); W0[k] = (W0[k] || 0) + 1; return false; }
+			}
+			// and never within 2 of another object's entrance (stock places every tile of an object and its guard at a distance from everything
+			// placed; its 98 maps: 1% of buildings with two stacks within 2 of the door, ours 17 to 25%); loose loot of the pile and stacks are
+			// not counted here (the stack rule above covers stacks)
+			const ent = ENTRANCES.get(blocked);
+			if (ent) for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+				const x = gx + dx, y = gy + dy;
+				if (x < 0 || y < 0 || x >= W || y >= H) continue;
+				const c = y * W + x;
+				if (!ent.has(l * W * H + c) || targetApproach.has(c) || (pileAround && pileAround.has(c))) continue;
+				const own = out.find(o => o !== entry && (o.l || 0) === l && o.template && o.template.mask && visitableCells(o.template, o.x, o.y).some(([a, b]) => a === x && b === y));
+				if (own && (STOCK_PILE_ITEM.test(own.type) || MONSTER_TYPE.test(own.type))) continue;
+				if (own === undefined && (blocked[l * W * H + c] & OCCUPIED) === 0) continue;
+				const k = 'within 2 of ' + (own ? own.type.replace(/\d+$/, '') : 'an entrance'); W0[k] = (W0[k] || 0) + 1;
+				return false;
+			}
+			return true;
+		};
+		// the tile held for this object's guard when it was placed (heldGuard): the guard stands there
+		if (STOCK_GUARDS && entry.__stockGuard !== undefined) {
+			const c = entry.__stockGuard, gx = c % W, gy = (c / W) | 0;
+			heldGuard.delete(c);
+			heldFloor(blocked).delete(l * W * H + c);
+			// another object on the held tile (a wall piece laid over it) keeps its mark: the guard looks elsewhere
+			const taken = out.some(o => o !== entry && (o.l || 0) === l && o.template && o.template.mask && blockingCells(o.template, o.x, o.y).some(([a, b]) => b * W + a === c));
+			if (heldReserved.delete(c) && !taken) blocked[l * W * H + c] &= ~OCCUPIED;
+			const walls = blockingCells(monsterTpl, gx, gy).map(([a, b]) => b * W + a);
+			if (!(blocked[l * W * H + c] & OCCUPIED) && footprintFits(monsterTpl, gx, gy, l, W, H, blocked, true) && (!connectivity || connectivity.accepts(walls))) {
+				const W0 = objectPools.__stockWhy || (objectPools.__stockWhy = {}); W0['held tile used'] = (W0['held tile used'] || 0) + 1;
+				return placeGuardAt(gx, gy);
+			}
+			const W0 = objectPools.__stockWhy || (objectPools.__stockWhy = {}); W0['held tile lost'] = (W0['held tile lost'] || 0) + 1;
+		}
 		// a pile walled as it was laid (putLoot) has one tile left open for its guard: the guard stands there, as the engine's does
 		if (entry.__guardAt && entry.__walled && entry.__walled[0] === entry.x && entry.__walled[1] === entry.y) {
 			const [gx, gy] = entry.__guardAt;
@@ -3853,7 +4036,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				&& !(zoneMeta && reachOnReserved(monsterTpl, gx, gy, l, W, H, blocked, pileAround || targetApproach))
 				&& entranceOpen(monsterTpl, gx, gy, l, W, H, blocked, reachable);
 			RING_T[ok ? 'guard on its tile' : 'guard tile refused'] = (RING_T[ok ? 'guard on its tile' : 'guard tile refused'] || 0) + 1;
-			if (ok) { pocketed.add(entry); return placeGuardAt(gx, gy, true); }
+			if (ok && stockOk(gx, gy)) { pocketed.add(entry); return placeGuardAt(gx, gy, true); }
 		}
 		const fits = [];
 		const why = SEAL_TRACE && (seal || entry.type === 'mine') ? {} : null;
@@ -3900,9 +4083,12 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// a pocket's guard is meant to join the walls round its pile: that is what seals it, and the fight removes it.
 			// The weld test refused 43 dwelling guards and 38 bank guards a map in the tunnels (2026-10-02).
 			// VMAPGEN_GUARD_WELD_OK=0 applies the test to pocket guards as before.
-			if (!(pocketing && process.env.VMAPGEN_GUARD_WELD_OK !== '0') && weldsMasses(walls, blocked, l, W, H, 2)) { no('welds masses'); continue; }
-			if (pocketing) { if (!fits.some(([x, y]) => x === gx && y === gy)) fits.push([gx, gy]); continue; }
+			// stock has no weld test: its guard stands on the object's access tile whatever is round it (a guard that would cut the zone is refused
+			// above all the same)
+			if (!STOCK_GUARDS && !(pocketing && process.env.VMAPGEN_GUARD_WELD_OK !== '0') && weldsMasses(walls, blocked, l, W, H, 2)) { no('welds masses'); continue; }
+			if (pocketing) { if (stockOk(gx, gy) && !fits.some(([x, y]) => x === gx && y === gy)) fits.push([gx, gy]); continue; }
 			if (!mustGuard && !wide && guardTightAt(gx, gy)) { no('crowded'); continue; }
+			if (!stockOk(gx, gy)) { no('stock: beside another object or stack'); continue; }
 			return placeGuardAt(gx, gy);
 		}
 		if (!fits.length) {
@@ -3934,6 +4120,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		return placeGuardAt(best[0], best[1]);
 
 		function placeGuardAt(gx, gy, ringed = false) {
+			guardedTargets.add(entry);
 			const tier = preset ? preset.level : creepTier(cls, rng,
 				(GUARD_VALUE_BUMP[entry.type] || 0) + monsterShift);
 			const guardEntry = objectEntry(`randomMonsterLevel${tier}`, gx, gy, l, monsterTpl,
@@ -4611,7 +4798,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			for (const g of ranked) {
 				const share = HIGH_LOOT_GUARDED[g.entry.type];
 				if (!share || guardContextWeight(g.entry.type, p) <= 0) continue;
-				if (rng() < Math.min(1, share * guardContextWeight(g.entry.type, p)) && postGuard(g)) { posted++; guardedHere.add(g); }
+				if (rng() < Math.min(1, share * guardContextWeight(g.entry.type, p)) && (requiredTargets.add(g.entry), postGuard(g))) { posted++; guardedHere.add(g); }
 			}
 		for (const g of ranked) {
 			if (posted >= wantGuards) break;
@@ -5068,10 +5255,77 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				+ `(${Math.round(spent / target * 100)}%)`);
 	}
 
+	// Stock places an object only where its guard fits (the guard is part of it): a target that had to carry a guard and got none
+	// is taken back, its tiles freed (K, 2026-10-31 21:35, guards exactly as stock). Mines, towns and link ends are never taken back.
+	if (STOCK_GUARDS) {
+		// stock searches the zone for a spot where the object and its guard fit together (placeAndConnectObject over the zone's
+		// possible area): a one-tile target first tries the 150 most open free tiles of its zone with no object beside them, and posts its
+		// guard there; it is taken back only when none takes it
+		let rehomed = 0;
+		const base0 = l * W * H;
+		const clear5 = c => { const x = c % W, y = (c / W) | 0; if (x < 2 || y < 2 || x >= W - 2 || y >= H - 2) return false;
+			if (blocked[base0 + c] & (OCCUPIED | RESERVED | APPROACH)) return false;
+			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const k = c + dy * W + dx; if (blocked[base0 + k] & (OCCUPIED | RESERVED)) return false; if (openMask && !openMask[k]) return false; if (!zoneCellSet.has(k)) return false; }
+			return true; };
+		for (const e of requiredTargets) {
+			if (guardedTargets.has(e) || !e.template || !oneTile(e) || out.indexOf(e) < 0) continue;
+			const old = e.y * W + e.x, ox = e.x, oy = e.y;
+			const ga = e.__guardAt, gw = e.__walled; delete e.__guardAt; delete e.__walled;
+			let whyRe = null;
+			// the most open tiles first, as stock's placer takes the spot farthest from everything placed (OptimizeType::DISTANCE): fewest
+			// objects, ways in and entrances in the 7x7 round it
+			const ent0 = ENTRANCES.get(blocked);
+			const crowd7 = c => { const x = c % W, y = (c / W) | 0; let n = 0;
+				for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) { const u = x + dx, v = y + dy; if (u < 0 || v < 0 || u >= W || v >= H) { n++; continue; }
+					const k = v * W + u; if (blocked[base0 + k] & (OCCUPIED | APPROACH)) n++; if (ent0 && ent0.has(base0 + k)) n += 3; }
+				return n; };
+			const cands = cells.filter(c => (!reachable || reachable[c]) && clear5(c)).map(c => [c, crowd7(c)]).sort((a, b) => a[1] - b[1]).slice(0, 150).map(e => e[0]);
+			for (let t = 0; t < cands.length; t++) {
+				const c = cands[t];
+				if (!clear5(c)) continue;
+				blocked[base0 + old] &= ~OCCUPIED;
+				e.x = c % W; e.y = (c / W) | 0;
+				blocked[base0 + c] |= OCCUPIED;
+				if (connectivity) connectivity.refresh();
+				if ((!connectivity || connectivity.accepts([c])) && postGuard({ entry: e, tpl: e.template }, e.__wantGuard || null, true)) {
+					markApproach(e.template, e.x, e.y, l, W, H, blocked);
+					const fi = free.indexOf(c); if (fi >= 0) free.splice(fi, 1); free.push(old);
+					rehomed++; break;
+				}
+				blocked[base0 + c] &= ~OCCUPIED; if (process.env.VMAPGEN_STOCK_TRACE && !whyRe) { whyRe = 1; console.error(`[stockre] ${e.type} try (${c % W},${(c / W) | 0}) failed`); } e.x = ox; e.y = oy; blocked[base0 + old] |= OCCUPIED;
+				if (connectivity) connectivity.refresh();
+			}
+		}
+		if (rehomed) objectPools.__stockRehomed = (objectPools.__stockRehomed || 0) + rehomed;
+		if (process.env.VMAPGEN_STOCK_TRACE && objectPools.__stockWhy) console.error('[stockwhy] ' + JSON.stringify(objectPools.__stockWhy));
+		if (process.env.VMAPGEN_STOCK_TRACE) { const need = [...requiredTargets].filter(e => !guardedTargets.has(e)); console.error(`[stock] L${l} required ${requiredTargets.size}, unguarded ${need.length} (${need.map(e => e.type + (e.__wantGuard ? '' : ':noguard') + (oneTile(e) ? '' : ':multi')).join(' ')}), free clear ${free.filter(clear5).length}, rehomed ${rehomed}`); }
+		let taken = 0;
+		for (const e of requiredTargets) {
+			if (guardedTargets.has(e) || !/^(resource|randomResource|treasureChest|campfire|randomArtifact\w*|artifact|spellScroll|pandoraBox|prison|creatureGenerator\w*|creatureBank|dragonUtopia|crypt)$/.test(e.type)) continue;
+			const k = out.indexOf(e);
+			if (k < 0) continue;
+			out.splice(k, 1);
+			const still = new Set();
+			for (const o of out) if ((o.l || 0) === l && o.template && o.template.mask) for (const [a, b] of blockingCells(o.template, o.x, o.y)) still.add(b * W + a);
+			for (const [a, b] of blockingCells(e.template, e.x, e.y)) if (a >= 0 && b >= 0 && a < W && b < H && !still.has(b * W + a)) blocked[l * W * H + b * W + a] &= ~OCCUPIED;
+			taken++;
+		}
+		if (taken) { objectPools.__stockTaken = (objectPools.__stockTaken || 0) + taken; if (SEAL_TRACE) SEAL_TRACE['stock: taken back, no guard tile'] = (SEAL_TRACE['stock: taken back, no guard tile'] || 0) + taken; }
+		if (connectivity && taken) connectivity.refresh();
+	}
+	// held guard tiles no guard came to (a target the guard lottery did not pick) are freed
+	if (heldReserved.size) {
+		const still = new Set();
+		for (const o of out) if ((o.l || 0) === l && o.template && o.template.mask) for (const [a, b] of blockingCells(o.template, o.x, o.y)) still.add(b * W + a);
+		for (const c of heldReserved) { if (!still.has(c)) blocked[l * W * H + c] &= ~OCCUPIED; heldFloor(blocked).delete(l * W * H + c); }
+		heldReserved.clear();
+		if (connectivity) connectivity.refresh();
+	}
 	return out;
 }
 
 module.exports = {
+	prisonGuarded,
 	isBuilding, artPix, roamStats, artStackLastId, artStackDrop,
 	GUARD_GAP, fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	footprintCells, blockingCells, footprintFits, footprintBlock, visitableCells,

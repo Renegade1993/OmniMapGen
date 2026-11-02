@@ -28,12 +28,16 @@ const walled = () => {
 	return wall;
 };
 
-test('a pocket closed by a prison is crossed under the prison', () => {
+// K, 2026-10-31: no road under a prison. The pocket is still joined: the prison steps off the run (gateroad.js movePrison)
+test('a pocket closed by a prison is joined, the prison moved off the road', () => {
 	const prison = { type: 'prison', l: 0, x: 8, y: 7, template: { mask: ['A'] } };
 	const m = level([gate(8, 8), prison], [[2, 8], [1, 8]], walled());
 	const r = teleportRoads(m.plan, W, H, 0, m.blocked, OCC, visit, fp);
 	assert.strictEqual(r.joined, 1);
-	assert.ok(m.plan.roadCells.has(at(8, 7)), 'the road lies under the prison');
+	assert.ok(m.plan.roadCells.has(at(8, 7)), 'the road leaves the pocket by its mouth');
+	assert.ok(!m.plan.roadCells.has(at(prison.x, prison.y)), `the prison stands off the road, at (${prison.x},${prison.y})`);
+	assert.ok(m.blocked[at(prison.x, prison.y)] & OCC, 'its new tile is held');
+	assert.ok(!(m.blocked[at(8, 7)] & OCC) || m.plan.roadCells.has(at(8, 7)), 'its old tile is freed');
 });
 
 test('a pocket closed by a building that stays is still not crossed', () => {

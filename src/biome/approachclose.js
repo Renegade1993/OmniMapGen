@@ -1,4 +1,6 @@
 'use strict';
+// guards posted by the stock rule (content.js STOCK_GUARDS): one guard per object, more blockers
+const STOCK_GUARDS = process.env.VMAPGEN_STOCK_GUARDS !== '0';
 /**
  * Dwellings and dear piles are closed to a flying hero (K, 2026-10-05 15:14 and 2026-10-06 15:03).
  *
@@ -270,8 +272,12 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		if (!isFree(c) || roads.has(c) || zone[c] !== zone[o.y * W + o.x] || byStartRoad(c)) return false;
 		return !cutsWay(c);
 	};
+	// within 2 of a stack: under the stock rule that stack is the pile's one guard, and no other stack may stand that close
+	const stackWithin2 = c => { const x = c % W, y = (c / W) | 0; for (const m of monsterAt) if (Math.max(Math.abs(m % W - x), Math.abs(((m / W) | 0) - y)) <= 2) return true; return false; };
 	const besideFix = o => {
 		if (!DEAR.test(o.type, o) || monsterBeside(o)) return;
+		// the stock rule: a stack within 2 of the pile already guards it (K, 2026-10-31: one creature per pile)
+		if (STOCK_GUARDS && visitableCells(o.template, o.x, o.y).some(([a, b]) => stackWithin2(at(a, b)))) { out.noSecond = (out.noSecond || 0) + 1; return; }
 		const foot = new Set(blockingCells(o.template, o.x, o.y).map(([a, b]) => at(a, b)));
 		const vis = visitableCells(o.template, o.x, o.y).map(([a, b]) => at(a, b)).filter(c => c >= 0);
 		const cs = new Set();
@@ -284,6 +290,8 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 				.sort((u, v) => ((roads.has(u) ? 2 : 0) + ((blocked[base + u] & RESERVED) ? 1 : 0)) - ((roads.has(v) ? 2 : 0) + ((blocked[base + v] & RESERVED) ? 1 : 0)));
 			if (last.length) pick.push(last[0]);
 		}
+		// never within 2 of another stack under the stock rule (stock: 0 of 15,920 stacks touch, 0.4% within 2)
+		if (STOCK_GUARDS) { const ok = pick.filter(c => !stackWithin2(c)); pick.splice(0, pick.length, ...ok); }
 		if (pick.length) { post(pick[0], o); out.beside = (out.beside || 0) + 1; }
 		else { const r = [...cs].map(c => (!isFree(c) ? 'occ' : (blocked[base + c] & RESERVED) ? 'res' : roads.has(c) ? 'road' : zone[c] !== zone[o.y * W + o.x] ? 'zone' : 'nearroad')); for (const k of r) no('beside ' + k); }
 	};
@@ -345,6 +353,8 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			for (const c of todo) {
 				const ok = guardOk(c, o);
 				if (!ok && (crowdAt(c, backAt) || !wayGuardOk(c, o))) continue;
+				// the stock rule: the first guard never stands within 2 of another stack (a gold mine's guard 2 tiles from a fill guard, seed 13 of K's settings)
+				if (STOCK_GUARDS && crowdAt(c, backAt)) continue;
 				// a tile a guard may usually take wins a tie
 				let n = (crowdAt(c, backAt) ? -100 : farAt(c, backAt) ? 0 : -50) + (ok ? 0.5 : 0);
 				for (const e of todo) if (Math.max(Math.abs(e % W - c % W), Math.abs(((e / W) | 0) - ((c / W) | 0))) <= 1) n++;
@@ -375,8 +385,13 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			// cannot be closed: a guard on it, as before; if that cannot stand either it stays open
 			// not beside another stack: the tile stays open instead (approach-open has room under the engine's 7 to 18%; a second
 			// stack beside the first is the crowding the engine never shows)
-			if (guardOk(c, o) && !crowdAt(c)) { post(c, o); continue; }
-			if (!crowdAt(c) && wayGuardOk(c, o)) { post(c, o); out.onWay = (out.onWay || 0) + 1; continue; }
+			// one guard and more blockers (K, 2026-10-31 22:20: "generally we cluster creatures/guards where we should instead have one creature and more
+			// blockers"): an object a stack already guards (a way in inside a ring) takes no second guard; the tile stays open when no blocker fits.
+			// VMAPGEN_STOCK_GUARDS=0 posts as before.
+			const guarded = STOCK_GUARDS && process.env.VMAPGEN_STOCK_NOSECOND !== '0' && app.some(u => ring.has(u));
+			if (!guarded && guardOk(c, o) && !crowdAt(c)) { post(c, o); continue; }
+			if (!guarded && !crowdAt(c) && wayGuardOk(c, o)) { post(c, o); out.onWay = (out.onWay || 0) + 1; continue; }
+			if (guarded) out.noSecond = (out.noSecond || 0) + 1;
 			if (process.env.VMAPGEN_THIN_TRACE && /^creatureGenerator/.test(o.type)) { const k = 'dw open: ' + lastNo + (guardOk(c, o) ? ' (guard would crowd)' : ' (no guard: ' + ((blocked[base + c] & RESERVED) ? 'reserved' : roads.has(c) ? 'road' : 'near road/edge/zone') + ')'); why[k] = (why[k] || 0) + 1; }
 			skip.add(c);
 			out.left++;
@@ -846,6 +861,8 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 				for (let dy = -1; dy <= 1 && best < 0; dy++) for (let dx = -1; dx <= 1; dx++) {
 					const c = at(tx + dx, ty + dy), x = tx + dx, y = ty + dy;
 					if (c < 0 || !isFree(c) || pickC.has(c) || roadBlock(c, o) || zone[c] !== zone[o.y * W + o.x]) continue;
+					// the stock rule: never beside another stack (36x36 eight players two levels seed 43: this fallback's guard beside a pile guard)
+					if (STOCK_GUARDS && [...monsterAt].some(m => Math.max(Math.abs(m % W - x), Math.abs(((m / W) | 0) - y)) <= 1)) continue;
 					best = c; break;
 				}
 			if (best < 0 && process.env.VMAPGEN_GOLD_TRACE && ((o.type === 'mine' && o.subtype === 'goldMine') || DEAR_TYPE.test(o.type))) { const why = []; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const c = at(tx + dx, ty + dy), x = tx + dx, y = ty + dy; const r = c < 0 || x < 1 || y < 1 || x >= W - 1 || y >= H - 1 ? 'edge' : !isFree(c) ? (land(c) ? 'occupied' : 'water/rock') : pickC.has(c) ? 'pile' : byStartRoad(c) ? 'startroad' : zone[c] !== zone[o.y * W + o.x] ? 'zone' : crowdAt(c) ? 'crowd' : 'ok'; why.push(`(${x},${y}) ${r}`); } console.error(`[goldtrace] mine (${o.x},${o.y}) open tile (${tx},${ty}) pile ${pickC.has(t)}: ` + why.join('; ')); }
@@ -865,6 +882,8 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			}
 			// no tile clear of other stacks: the open tile stays (counted), the next one is tried
 			if (best < 0) { out.flyerLeft = (out.flyerLeft || 0) + 1; appOf.set(o, appOf.get(o).filter(u => u !== t)); continue; }
+			// the stock rule: no second guard for a pile a stack already guards
+			if (STOCK_GUARDS && appOf.get(o).some(u => ring.has(u))) { out.noSecond = (out.noSecond || 0) + 1; continue; }
 			post(best, o);
 			out.flyerShut++;
 		}

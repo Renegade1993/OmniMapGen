@@ -2135,6 +2135,9 @@ async function generateMap(params) {
 		}
 		console.error('[srctrace] stacks by source ' + JSON.stringify(all));
 		console.error('[srctrace] crowded ordered pairs ' + JSON.stringify(t));
+		// VMAPGEN_SRC_DUMP=PATH: every stack's tile and the pass that posted it, for a stack scanner to join on (monster stacking, 2026-10-31)
+		if (process.env.VMAPGEN_SRC_DUMP) require('fs').writeFileSync(process.env.VMAPGEN_SRC_DUMP,
+			JSON.stringify(ms.map(m => ({ l: m.l || 0, x: m.x, y: m.y, src: String(m.__src || '?'), at0: m.__at0 || null, moves: m.__moves || [] }))));
 	}
 	if (process.env.VMAPGEN_DWFAC_TRACE) {
 		const bareF = s => String(s || '').slice(String(s || '').lastIndexOf(':') + 1).toLowerCase();

@@ -53,6 +53,37 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 			if ((o.l || 0) === l && o.template && o.template.mask && PICKUP.test(o.type))
 				for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) pick.add(fy * W + fx);
 	const under = c => floor(c) && pick.has(c);
+	// a prison in the pocket's only mouth: the last try runs over its tiles and the prison moves off the run (no road under a prison, K's
+	// 2026-10-31 order, and the pocket still joined: test/teleport-road-prison.test.js, the 2026-10-15 case 72x72 underground (50,2), (57,24)).
+	// VMAPGEN_PRISON_MOVE=0 leaves such an end without a road, as 802e1ed did.
+	const prisonAt = new Map();
+	if (blockingCells && process.env.VMAPGEN_PRISON_MOVE !== '0')
+		for (const o of plan.objects)
+			if ((o.l || 0) === l && o.type === 'prison' && o.template && o.template.mask)
+				for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) prisonAt.set(fy * W + fx, o);
+	const overPrison = c => floor(c) && prisonAt.has(c);
+	// the prison steps to the nearest spot within 4 tiles whose tiles are free floor off every road and off the run, its visiting tile free too
+	const movePrison = (o, run) => {
+		const own = blockingCells(o.template, o.x, o.y).map(([x, y]) => y * W + x);
+		const zone = plan.zone;
+		for (let r = 1; r <= 4; r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+			if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+			const nx = o.x + dx, ny = o.y + dy;
+			const cells = blockingCells(o.template, nx, ny), vis = visitableCells(o.template, nx, ny);
+			const okCell = ([x, y]) => x >= 1 && y >= 1 && x < W - 1 && y < H - 1;
+			if (!cells.every(okCell) || !vis.every(okCell)) continue;
+			const ids = cells.map(([x, y]) => y * W + x), vids = vis.map(([x, y]) => y * W + x);
+			const clear = c => floor(c) && !R.has(c) && !run.has(c) && !guard.has(c) && (own.includes(c) ? false : !(blocked[base + c] & OCCUPIED));
+			if (!ids.every(clear) || !vids.every(c => floor(c) && !run.has(c) && !(blocked[base + c] & OCCUPIED))) continue;
+			if (zone && zone[ny * W + nx] !== zone[o.y * W + o.x]) continue;
+			for (const c of own) { blocked[base + c] &= ~OCCUPIED; prisonAt.delete(c); }
+			for (const c of ids) { blocked[base + c] |= OCCUPIED; prisonAt.set(c, o); }
+			o.x = nx; o.y = ny;
+			if (o.instanceName) o.instanceName = `${o.type}_${nx}_${ny}_${l}`;
+			return true;
+		}
+		return false;
+	};
 	// the tiles a building a hero visits (not scenery, which is everywhere and partly from mods) is drawn over (its whole mask, the picture above its feet included): a run under them is a road the building hides,
 	// which the engine penalises tenfold where it places an object (TreasurePlacer, "objects hiding roads"). A run under them costs HIDE_COST a step, so a run off them
 	// wins unless it is ten times longer (K, 2026-10-31, the prison at (41,39) of his 180x180 seed 1157895410: with the road off its tiles it still ran behind its picture;
@@ -86,14 +117,18 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 		for (let dy = -1; dy <= 1 && !beside; dy++) for (let dx = -1; dx <= 1; dx++)
 			if ((dx || dy) && vx0 + dx >= 0 && vy0 + dy >= 0 && vx0 + dx < W && vy0 + dy < H && R.has((vy0 + dy) * W + vx0 + dx)) { beside = true; break; }
 		if (beside) { R.add(v); out.onto++; continue; }
-		let prev, hit = -1;
+		let prev, hit = -1, viaPrison = false;
 		// four ways first, eight only where no straight run reaches a road (an eight-way run drew staircases of corner-only steps, which the game
 		// shows as dead ends: a gold mine's road on K's 180x180 seed 669067840, (14,46), the Opus Reviewer's R27)
 		for (const dirs of [D8.slice(0, 4), D8]) {
 		// off the map's outermost row first: a run along it is the only floor once the rim fill closes round it (pw_010, 36x36: a monolith's
 		// road along the bottom row, ten tiles; the lead, 2026-10-17 15:30). VMAPGEN_ROAD_RIM=1 takes the old order
-		for (const ok of [free, c => free(c) || under(c)]) {
-			if (ok !== free && !pick.size) break;
+		const OKS = [free, c => free(c) || under(c), c => free(c) || under(c) || overPrison(c)];
+		for (let k = 0; k < OKS.length; k++) {
+			const ok = OKS[k];
+			if (k === 1 && !pick.size) continue;
+			if (k === 2 && !prisonAt.size) break;
+			viaPrison = k === 2;
 			// cheapest run, a step under a building's picture costing HIDE_COST (1 without the hidden set: the shortest, as before)
 			prev = new Map([[v, -1]]);
 			const cost = new Map([[v, 0]]), steps = new Map([[v, 0]]), heap = [[0, v]];
@@ -120,6 +155,13 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 			if (hit >= 0) break;
 		}
 		if (hit < 0) { out.none++; continue; }
+		if (viaPrison) {
+			const run = new Set();
+			for (let c = prev.get(hit); c >= 0; c = prev.get(c)) run.add(c);
+			const on = [...new Set([...run].filter(c => prisonAt.has(c)).map(c => prisonAt.get(c)))];
+			if (!on.every(o => movePrison(o, run))) { out.none++; continue; }
+			out.prisonMoved = (out.prisonMoved || 0) + on.length;
+		}
 		let n = 0;
 		for (let c = prev.get(hit); c >= 0; c = prev.get(c)) { if (!R.has(c)) { R.add(c); n++; } }
 		if (n > 1) out.joined++; else out.onto++;

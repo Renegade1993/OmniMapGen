@@ -21,9 +21,12 @@ const { genEnv, testTmp } = require('./_vcmi');
 const { runChecks } = require('../tools/harness/playtest_checks');
 
 const SEEDS = Array.from({ length: 24 }, (_, i) => i + 1);
-const BAR = 0.15;
+// stock's own rate since 2026-11-01 (the Opus Reviewer's ruling, roster\REVIEW-1101-stock-guards.md): the way-past-guard measure (.tmp\m1023\
+// open_rate.js) on the 98 VCMI 1.7.5 engine maps opens 2,125 of 7,474 dear piles (28.4%; 36x36 rests on 15 piles, so the pooled rate for every
+// size); stock guards a pile with one guard and closes the rest with blockers, which leaves more piles open than the old 15% bar allowed
+const BAR = 0.28;
 
-test('36x36 two players two levels, seeds 1 to 24: dear piles open under 15% (HEAD 12.7% on this install)', { timeout: 1800000 }, t => {
+test('36x36 two players two levels, seeds 1 to 24: dear piles open under stock\'s 28%', { timeout: 1800000 }, t => {
 	let open = 0, piles = 0;
 	for (const seed of SEEDS) {
 		const out = path.join(testTmp(), `vmapgen_way_past_guard_${process.pid}_${seed}.vmap`);
@@ -38,6 +41,8 @@ test('36x36 two players two levels, seeds 1 to 24: dear piles open under 15% (HE
 		}
 	}
 	t.diagnostic(`dear piles open ${open} of ${piles} (${(100 * open / piles).toFixed(1)}%)`);
-	assert.ok(piles >= 20 * SEEDS.length, `piles ${piles}`);
+	// a floor so the rate rests on enough piles: 12 a seed since loot follows the stock comparison maps' density (K's M-35; 0aec0a8 reads
+	// 340 piles over the 24 seeds, the stock guard rule 379; the old 20 a seed was the denser fill's)
+	assert.ok(piles >= 12 * SEEDS.length, `piles ${piles}`);
 	assert.ok(open / piles < BAR, `dear piles open ${open} of ${piles} (${(100 * open / piles).toFixed(1)}%), bar ${100 * BAR}%`);
 });

@@ -22,6 +22,8 @@ const SCROLL_VALUES = [500, 2000, 3000, 4000, 5000];
 const PANDORA = { gold: 5000, experience: 6000, spells: 2500, school: 15000, spell60: 30000,
 	creatures: [5000, 7000, 9000, 12000, 16000, 21000, 27000] };
 const SEER_HUT_VALUE = 500;
+// config/randomMap.json quests.rewardValue: the experience and gold seer huts, one of each per value
+const QUEST_REWARD_VALUES = [5000, 10000, 15000, 20000];
 
 // TreasurePlacer::addCommonObjects leaves these to their own add functions
 const OWN_POOL = new Set(['prison', 'creatureGeneratorCommon', 'creatureGeneratorSpecial',
@@ -169,9 +171,21 @@ function zonePool(common, opts = {}, rng = Math.random) {
 		for (let i = 0; i < 4; i++)
 			add({ key: 'pandoraSchool', type: 'pandoraBox', value: PANDORA.school, probability: 2, large: false }, Infinity);
 		add({ key: 'pandoraSpell60', type: 'pandoraBox', value: PANDORA.spell60, probability: 2, large: false }, Infinity);
-		// addSeerHuts: placed at 500 whatever the reward, one quest artifact each
-		for (let i = 0; i < (opts.seerHuts === undefined ? 1 : opts.seerHuts); i++)
-			add({ key: 'seerHut', type: 'seerHut', value: SEER_HUT_VALUE, probability: 3, large: true }, 1);
+		// addSeerHuts (TreasurePlacer.cpp): placed at 500 whatever the reward, and only while the zone has quest artifacts. The engine
+		// offers one entry per native creature (a creature reward, probability 3) and two per quest reward value (experience and gold,
+		// probability 10), each once a zone and each only when its reward is within the zone's richest band; all of them draw from one
+		// stock of quest artifacts (the quota below). One entry at probability 3 placed 0.22 of the engine's seer huts on Coldshadow
+		// (0.3.21, K's mods: 0.040 per 1,000 walkable tiles against 0.179; seed 1's piles drew none).
+		const quota = { left: opts.seerHuts === undefined ? 1 : opts.seerHuts };
+		if (quota.left > 0) {
+			const seer = (key, probability) => add({ key, type: 'seerHut', value: SEER_HUT_VALUE, probability, large: true, quota }, 1);
+			for (const c of opts.creatures || []) {
+				const n = creatureCount(c);
+				if (n && Math.floor(2 * c.aiValue * n * (1 + native / total)) <= maxValue) seer('seerHut', 3);
+			}
+			for (const v of QUEST_REWARD_VALUES)
+				if (v <= maxValue) { seer('seerHutExperience', 10); seer('seerHutGold', 10); }
+		}
 		// addScrolls
 		SCROLL_VALUES.forEach(v => add({ key: 'spellScroll', type: 'spellScroll', value: v, probability: 30, large: false }, Infinity));
 	}
@@ -208,7 +222,7 @@ function randomObject(pool, desired, current, allowLarge, rng) {
 	for (const o of pool) {
 		if (o.value > maxVal) break;
 		if (o.large && !allowLarge) continue;
-		if (o.value >= minVal && o.left > 0 && o.probability > 0) {
+		if (o.value >= minVal && o.left > 0 && (!o.quota || o.quota.left > 0) && o.probability > 0) {
 			total += o.probability;
 			cands.push([total, o]);
 		}
@@ -230,6 +244,7 @@ function preparePile(pool, band, rng = Math.random) {
 		if (o.large) large = true;
 		objects.push(o);
 		o.left--;
+		if (o.quota) o.quota.left--;
 		value += o.value;
 		if (value >= band.min && rng() < 0.5) break;
 	}

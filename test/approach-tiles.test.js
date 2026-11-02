@@ -48,10 +48,27 @@ test('approach tiles are guarded or closed, roads pass objects, towns have road 
 	// tile closed by a second guard beside the first is the crowding below, which the engine never shows
 	if (dw.n >= 10) assert.ok(dw.open / dw.n < 0.20, `${dw.open} of ${dw.n} dwellings have an open approach tile a flyer can visit from`);
 	assert.ok(hi.open / hi.n < 0.15, `${hi.open} of ${hi.n} dear piles have an open approach tile a flyer can visit from`);
-	// a flyer that lands on a relic, a major, an artifact or a Pandora's box meets a monster beside it (K, 2026-10-05)
+	// a flyer that lands on a relic, a major, an artifact or a Pandora's box meets a monster (K, 2026-10-05), by stock's rule (the Opus
+	// Reviewer, 2026-11-01, roster\REVIEW-1101-stock-guards.md: stock has a monster beside only 65.7% of its dear piles and within 2 of 94.5%):
+	// a monster within 2 tiles whose rings cover every free tile beside the pile
 	const dear = M.objs.filter(o => o.cls === 'high' && o.type !== 'spellScroll');
-	const bare = dear.filter(o => !M.monsters.some(m => m.l === o.l && Math.max(Math.abs(m.at[0] - o.at[0]), Math.abs(m.at[1] - o.at[1])) <= 1));
-	assert.ok(bare.length / dear.length < 0.01, `${bare.length} of ${dear.length} dear piles have no monster beside them`);
+	const cheb = (a, b) => Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]));
+	const guardedByStock = o => {
+		const near = M.monsters.filter(m => m.l === o.l && cheb(m.at, o.at) <= 2);
+		if (!near.length) return false;
+		if (near.some(m => cheb(m.at, o.at) <= 1)) return true;
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+			if (!dx && !dy) continue;
+			const x = o.at[0] + dx, y = o.at[1] + dy;
+			if (x < 0 || y < 0 || x >= M.W || y >= M.H) continue;
+			const i = (o.l * M.H + y) * M.W + x;
+			if (!M.ground(i) || M.blocked[i]) continue;
+			if (!M.monsters.some(m => m.l === o.l && cheb(m.at, [x, y]) <= 1)) return false;
+		}
+		return true;
+	};
+	const bare = dear.filter(o => !guardedByStock(o));
+	assert.ok(bare.length / dear.length < 0.01, `${bare.length} of ${dear.length} dear piles are not guarded by stock's rule (a monster within 2 whose rings cover the free tiles beside it)`);
 	// stacks keep their distance (K, 2026-10-06 15:03, guard clusters; the engine's Coldshadow maps: 0.1% of stacks with another within 2 tiles)
 	const crowded = M.monsters.filter(m => M.monsters.some(n => n !== m && n.l === m.l && Math.max(Math.abs(n.at[0] - m.at[0]), Math.abs(n.at[1] - m.at[1])) <= 2));
 	assert.ok(crowded.length / M.monsters.length < 0.05, `${crowded.length} of ${M.monsters.length} stacks have another within 2 tiles`);

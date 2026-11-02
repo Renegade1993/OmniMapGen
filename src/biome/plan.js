@@ -268,7 +268,7 @@ function objectEntry(type, x, y, l, tpl, subtype = 'object', opts) {
 		template,
 	};
 	if (opts) entry.options = opts;
-	if (process.env.VMAPGEN_SRC_TRACE && /^randomMonster/.test(type)) entry.__src = new Error().stack.split('\n').slice(2, 6).map(x => (/at (\S+)/.exec(x) || [])[1]).join('<');
+	if (process.env.VMAPGEN_SRC_TRACE && /^randomMonster/.test(type)) { entry.__src = new Error().stack.split('\n').slice(2, 6).map(x => (/at (\S+)/.exec(x) || [])[1]).join('<'); require('./srcTrace').traceMoves(entry); }
 	return entry;
 }
 
@@ -2062,6 +2062,8 @@ function guardZoneJoins(pl, l, W, H, blocked, p, seed, linkGuardsOff, opts = {})
 	for (const o of pl.objects) if ((o.l || 0) === l && /^(monster|randomMonster)/.test(o.type)) stacks.push(o.y * W + o.x);
 	const calm = process.env.VMAPGEN_JOIN_CALM === '0' ? null : makeCalmLoss(pl, l, W, H, blocked);
 	const crowdAt = g => process.env.VMAPGEN_JOIN_SPACING !== '0' && stacks.some(m => Math.max(Math.abs(m % W - g % W), Math.abs(((m / W) | 0) - ((g / W) | 0))) < GAP);
+	const STOCK_JOIN = process.env.VMAPGEN_STOCK_GUARDS !== '0';
+	const tightJ = g => stacks.some(m => Math.max(Math.abs(m % W - g % W), Math.abs(((m / W) | 0) - ((g / W) | 0))) <= 2);
 	// a third round, 'last', for a step that neither a guard the calm test allows nor scenery that keeps the starts' ground can close: a guard
 	// as before 825dcaa, the calm test off (a guarded step is a fight; one left open is a free walk between zones: 36x36 four players seed 3,
 	// zone 4 into zone 5 at (8,19), test/zone-joins.test.js). VMAPGEN_JOIN_LAST_GUARD=0 leaves such a step open.
@@ -2083,6 +2085,9 @@ function guardZoneJoins(pl, l, W, H, blocked, p, seed, linkGuardsOff, opts = {})
 					for (let ey = -1; ey <= 1 && !onDoor; ey++) for (let ex = -1; ex <= 1; ex++) if (door.has((v + ey) * W + u + ex)) { onDoor = true; break; }
 					if (onDoor || (!tier && !footprintFits(OBJECT_TEMPLATES.randomMonster, u, v, l, W, H, blocked, true))) continue;
 					if (!allowCrowd && crowdAt(g)) continue;
+					// the stock rule (the Opus Reviewer, 2026-11-01): one guard per border, every guard 2 clear of the next; a step no such tile
+					// closes goes to the scenery below (36x36 eight players two levels seeds 41 and 42: two join guards touching across one zone line)
+					if (STOCK_JOIN && tightJ(g)) continue;
 					cand.set(g, todo.filter(([p1, p2]) => near(g, p1) || near(g, p2)).length);
 				}
 			}
@@ -10072,7 +10077,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	if (process.env.VMAPGEN_TELEPORT_ROADS !== '0' && process.env.VMAPGEN_ROAD_SPLINES !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = require('./gateroad').teleportRoads(plans[l], W, H, l, blocked, OCCUPIED, visitableCells, blockingCells, { reach: teleReach });
-			if (r.onto || r.joined || r.none) console.error(`[gen] level ${l}: road onto the visiting tile of gates and monoliths: ${r.onto} the tile only, ${r.joined} by a longer run, ${r.none} not reached`);
+			if (r.onto || r.joined || r.none) console.error(`[gen] level ${l}: road onto the visiting tile of gates and monoliths: ${r.onto} the tile only, ${r.joined} by a longer run, ${r.none} not reached${r.prisonMoved ? `, ${r.prisonMoved} prison(s) moved off the run` : ''}`);
 		}
 	// The engine's mines stand on a road 19 to 35% of the time (tier-1 subset: road_mine_at engine 0.19, ours 0.02; its roads run to the
 	// mines of a zone with fewer than two road nodes); a mine here joins the road net within 30 tiles with that chance, over free floor
@@ -10147,7 +10152,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		// leading nowhere (the Reviewer's maps2_d144p2u, the monolith (85,49,L1), 7 tiles joined to nothing; mapsight teleport off road)
 		if (lp.pieces && process.env.VMAPGEN_TELEPORT_ROADS !== '0') {
 			const r = require('./gateroad').teleportRoads(plans[l], W, H, l, blocked, OCCUPIED, visitableCells, blockingCells, { reach: teleReach });
-			if (r.joined || r.none) console.error(`[gen] level ${l}: gates and monoliths whose road was taken up: ${r.joined} run to the road net, ${r.none} not reached`);
+			if (r.joined || r.none) console.error(`[gen] level ${l}: gates and monoliths whose road was taken up: ${r.joined} run to the road net, ${r.none} not reached${r.prisonMoved ? `, ${r.prisonMoved} prison(s) moved off the run` : ''}`);
 		}
 	}
 	// The loop pass once more, after every road pass that came after it (K, 2026-10-31: "weird loops abound in the mapgen version i have installed"; a
@@ -10475,7 +10480,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	if (process.env.VMAPGEN_TELEPORT_ROADS !== '0' && process.env.VMAPGEN_TELEPORT_LATE !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = require('./gateroad').teleportRoads(plans[l], W, H, l, blocked, OCCUPIED, visitableCells, blockingCells, { reach: teleReach });
-			if (r.joined || r.none) console.error(`[gen] level ${l}: gates and monoliths after the late passes: ${r.joined} run to the road net, ${r.none} not reached`);
+			if (r.joined || r.none) console.error(`[gen] level ${l}: gates and monoliths after the late passes: ${r.joined} run to the road net, ${r.none} not reached${r.prisonMoved ? `, ${r.prisonMoved} prison(s) moved off the run` : ''}`);
 		}
 	// Both ends of a monolith pair alike, last (the lead's ruling, 2026-10-23, on K's trap: "every monolith end sealed by a guard of the pair's
 	// one strength (stock), and where a guard cannot seal an end, open both ends of that pair"). portalGuard seals each end as it is laid, but
@@ -10736,7 +10741,10 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 	const tpl = OBJECT_TEMPLATES.randomMonster;
 	// a prison of 90000 experience or more is dear loot too (K, 2026-10-07: "the highest-yielding prisons would be in high loot areas behind
 	// significant guards"; its pile's guard could not always stand in its pocket's mouth, 19 to 27% of them unguarded, 2026-10-08)
-	const dear = o => DEAR.test(o.type) || (o.type === 'prison' && o.options && o.options.experience >= 90000);
+	// the stock rule: a prison worth more than the zone's minGuardedValue is guarded, a cheaper one is not (content.js prisonGuarded; the Opus
+	// Reviewer's ruling of 2026-11-01). VMAPGEN_STOCK_GUARDS=0: only prisons of 90000 experience or more.
+	const prisonGuarded = require('./content').prisonGuarded;
+	const dear = o => DEAR.test(o.type) || (o.type === 'prison' && (process.env.VMAPGEN_STOCK_GUARDS !== '0' ? prisonGuarded(o, p) : (o.options && o.options.experience >= 90000)));
 	// guard spacing (content.js, the guard register): a tile within 2 of another stack is the last choice; when every tile beside a
 	// one-tile pile is that close to a stack, the pile moves into that stack's ring instead (the engine's piles share one guard)
 	const GAP = require('./content').GUARD_GAP;
@@ -10814,7 +10822,27 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 	for (const o of pl.objects.slice()) {
 		if ((o.l || 0) !== l || !dear(o)) continue;
 		let near = false;
-		for (let dy = -1; dy <= 1 && !near; dy++) for (let dx = -1; dx <= 1; dx++) if (monsterAt.has((o.y + dy) * W + o.x + dx)) { near = true; break; }
+		// the stock rule (K, 2026-10-31: guards exactly as stock, one creature per pile): a stack within 2 of the pile already guards it, its ring
+		// over the pile's ways in, and no second guard is posted. VMAPGEN_STOCK_GUARDS=0 counts only a stack beside it, as before.
+		const R0 = process.env.VMAPGEN_STOCK_GUARDS !== '0' ? 2 : 1;
+		for (let dy = -R0; dy <= R0 && !near; dy++) for (let dx = -R0; dx <= R0; dx++) if (monsterAt.has((o.y + dy) * W + o.x + dx)) { near = true; break; }
+		// a stack 2 tiles off guards the pile only when every free tile beside it lies in a stack's ring (one 2 off with a free side left
+		// the pile walkable: 36x36 two levels, dear piles open 20.8% against 15.6% before the stock rule; approach-tiles 9 of 204 bare)
+		if (near && R0 === 2) {
+			let beside = false;
+			for (let dy = -1; dy <= 1 && !beside; dy++) for (let dx = -1; dx <= 1; dx++) if (monsterAt.has((o.y + dy) * W + o.x + dx)) { beside = true; break; }
+			if (!beside) {
+				const ringedC = c => { const x = c % W, y = (c / W) | 0; for (let ey = -1; ey <= 1; ey++) for (let ex = -1; ex <= 1; ex++) if (monsterAt.has((y + ey) * W + x + ex)) return true; return false; };
+				for (let dy = -1; dy <= 1 && near; dy++) for (let dx = -1; dx <= 1; dx++) {
+					if (!dx && !dy) continue;
+					const x = o.x + dx, y = o.y + dy, c = y * W + x;
+					if (x < 0 || y < 0 || x >= W || y >= H || (blocked[base + c] & OCCUPIED)) continue;
+					if (pl.openMask && !pl.openMask[c]) continue;
+					if (pl.p && pl.p.water && pl.p.water[c]) continue;
+					if (!ringedC(c)) { near = false; break; }
+				}
+			}
+		}
 		if (process.env.VMAPGEN_DEAR_TRACE) console.error(`[dear] (${o.x},${o.y}) ${o.type} near ${near}`);
 		if (near) continue;
 		let spot = -1;
@@ -10842,9 +10870,20 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		if (spot === undefined) {
 			if (intoRing(o, 6)) { out.shared = (out.shared || 0) + 1; continue; }
 			spot = moveToGuardable(o);
+			// the stock rule: a pile whose guard would stand within 2 of another stack is not placed (stock: 0.4% of stacks within 2 of another;
+			// 6 of the 9 close pairs on 4 seeds of K's settings were this pass's guard 2 tiles from a fill guard). VMAPGEN_STOCK_GUARDS=0 off.
+			if (spot < 0 && process.env.VMAPGEN_STOCK_GUARDS !== '0') {
+				for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) blocked[base + fy * W + fx] &= ~OCCUPIED;
+				pl.objects.splice(pl.objects.indexOf(o), 1);
+				out.stockTaken = (out.stockTaken || 0) + 1;
+				continue;
+			}
 			if (spot < 0) spot = spots.find(c => !crowdAt(c));
 			if (spot === undefined || spot < 0) spot = spots.find(c => !tight(c));
-			if (spot === undefined) spot = spots.length ? spots[0] : -1;
+			// never a tile touching another stack (stock: 0 of 15,920 stacks touch); with none, the pile stays as it is
+			if (spot === undefined) spot = process.env.VMAPGEN_STOCK_GUARDS !== '0'
+				? (spots.find(c => ![...monsterAt].some(m => Math.max(Math.abs(m % W - c % W), Math.abs(((m / W) | 0) - ((c / W) | 0))) <= 1)) ?? -1)
+				: (spots.length ? spots[0] : -1);
 		}
 		// no free tile beside it: a one-tile scenery piece beside it makes room (a relic walled in on every side but by loot,
 		// its guard's tile taken by later scenery: 72x72 one level seed 1, DMB Dev's picture pass, 2026-10-05)
@@ -10983,7 +11022,12 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		// of equal rank, the tile whose ring covers most of the open front
 		const cover = c => frontFree.filter(f => !ringed(f) && Math.max(Math.abs(f % W - c % W), Math.abs(((f / W) | 0) - ((c / W) | 0))) <= 1).length;
 		cands.sort((a, b) => (rank.get(a) + (crowdAt(a) ? 2 : 0) + (byRoad(a) ? 1 : 0) - cover(a) * 0.5) - (rank.get(b) + (crowdAt(b) ? 2 : 0) + (byRoad(b) ? 1 : 0) - cover(b) * 0.5));
-		const spot = cands.length ? cands[0] : -1;
+		// the stock rule: the mine's one guard never stands within 2 of another stack (all 6 close pairs this pass made on 4 seeds of K's
+		// settings stood by a gold mine, 2 tiles from a fill guard: the crowding was only a ranking penalty); with no such tile the mine keeps
+		// the stack near it. VMAPGEN_STOCK_GUARDS=0 off.
+		const stockOk = process.env.VMAPGEN_STOCK_GUARDS === '0' ? cands : cands.filter(c => !tightAt(c));
+		if (!stockOk.length && cands.length) { out.goldStock = (out.goldStock || 0) + 1; continue; }
+		const spot = stockOk.length ? stockOk[0] : -1;
 		if (spot < 0) { out.goldLeft = (out.goldLeft || 0) + 1; continue; }
 		const sized = lootGuardEntry(pl, l, W, o, p, rng, spot, tpl);
 		// no creature of the zone's pool fits the strength: the nearest concrete guard of the zone lends its creature and level, as for a dear pile
@@ -13199,7 +13243,8 @@ function guardsOffDoorsteps(pl, l, W, H, blocked, extra = null, opts = null) {
 		};
 		return (g, x, y) => { const off = ground(g, -9, -9), at = ground(g, x, y); return Math.max(...off.map((n, k) => n - at[k])); };
 	})();
-	const spread = !!(opts && opts.spread), mons = spread ? pl.objects.filter(o => (o.l || 0) === l && o.template && /^(monster|randomMonster)/.test(o.type)) : [];
+	const spread = !!(opts && opts.spread), spacedFirst = process.env.VMAPGEN_DOORSTEP_SPACED !== '0';
+	const mons = spread || spacedFirst ? pl.objects.filter(o => (o.l || 0) === l && o.template && /^(monster|randomMonster)/.test(o.type)) : [];
 	const avoid = opts && opts.avoid && opts.avoid.size && opts.tier ? opts.avoid : null;
 	const avoidHit = (x, y, t) => {
 		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
@@ -13243,6 +13288,13 @@ function guardsOffDoorsteps(pl, l, W, H, blocked, extra = null, opts = null) {
 		}
 		// a tile still beside what it guarded first and covering its entrances; then beside it; in a corridor with none, any tile clear of the way
 		// (the way is the engine's: a town's paths are laid before any guard, and no guard stands on them)
+		// A moved stack lands two or more tiles clear of every other stack, the way opts.spread always did (K, 2026-10-31, "still have a lot of
+		// monster stacking": on his 180x180 six player map the start floor rounds, which called this without opts.spread, moved seven pile guards off
+		// a start's ground onto other stacks, among them an Arch Mage from (11,150) beside a gold mine's guard at (14,149), the stacks in his
+		// picture). With opts.keep a stack with no clear tile is stuck, and the caller decides (the floor rounds take away a small pile's guard and
+		// keep the rest); a caller without it, which takes away a stack that has no tile, takes a nearer tile first. VMAPGEN_DOORSTEP_SPACED=0 as before.
+		for (const spaced of spread || !spacedFirst ? [spread] : opts && opts.keep ? [true] : [true, false]) {
+		if (best) break;
 		for (const mode of ['ring', 'beside', 'loose']) {
 			if (mode === 'ring' && !keepRing.length) continue;
 			// with opts.keep, a guard that covers a mine's, a dwelling's or a dear pile's way in and finds no tile still covering it stays where it is: the
@@ -13260,7 +13312,7 @@ function guardsOffDoorsteps(pl, l, W, H, blocked, extra = null, opts = null) {
 				if (ringHits(x, y)) continue;
 				// opts.spread: never within two tiles of another stack (the engine's Coldshadow maps: 0.1% of stacks with another that near; the start caps round
 				// crowded 7 of 431 on approach-tiles.test.js's map)
-				if (spread && mons.some(m => m !== g && Math.max(Math.abs(m.x - x), Math.abs(m.y - y)) <= 2)) continue;
+				if (spaced && mons.some(m => m !== g && Math.max(Math.abs(m.x - x), Math.abs(m.y - y)) <= 2)) continue;
 				// opts.avoid (cell -> the highest level a ring may cover there, -1 none) with opts.tier: where a moved guard may not land, without moving
 				// any more guards (the start caps round moved a sawmill's level 2 guard onto a wood pile 4 tiles from the town, p4_72L1_s2 (65,6))
 				if (avoid && avoidHit(x, y, opts.tier(g))) continue;
@@ -13270,9 +13322,11 @@ function guardsOffDoorsteps(pl, l, W, H, blocked, extra = null, opts = null) {
 				for (let ddy = -1; ddy <= 1 && !keeps; ddy++) for (let ddx = -1; ddx <= 1; ddx++) if (near.has(cover.get((y + ddy) * W + x + ddx))) { keeps = true; break; }
 				if (!keeps) continue;
 				best = [x, y];
+				if (!spaced && spacedFirst && mons.some(m => m !== g && Math.max(Math.abs(m.x - x), Math.abs(m.y - y)) <= 2)) { out.crowded = (out.crowded || 0) + 1; if (process.env.VMAPGEN_SRC_TRACE) console.error(`[doorstep] L${l} ${g.type} (${g.x},${g.y}) to (${x},${y}) crowded, mode ${mode}, keepRing ${keepRing.length}, near ${near.size}`); }
 				break;
 			}
 			if (best) break;
+		}
 		}
 		// nowhere clear of the way within six tiles: the guard goes, as the engine never posts one there
 		if (!best && process.env.VMAPGEN_WATCH) { const [wx, wy] = process.env.VMAPGEN_WATCH.split(',').map(Number); if (Math.abs(g.x - wx) <= 4 && Math.abs(g.y - wy) <= 4) console.error(`[watch] guard ${g.type} (${g.x},${g.y}) REMOVED`); }
