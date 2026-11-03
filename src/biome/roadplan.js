@@ -310,6 +310,11 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null, stan
 			const endCells = list.filter(n => n !== townNode).map(n => { const m = met(n); const g = doorNodes.has(n) && standOn ? m.find(c => standOn.has(c)) : undefined; if (g !== undefined) return g; const mid = m[(m.length / 2) | 0]; return [mid, ...m.filter(c => c !== mid)]; });
 			const inner = zc.filter(c => { const x = c % W, y = (c / W) | 0; for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) { const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= W || ny >= H || zone[ny * W + nx] !== z) return false; } return true; });
 			const missed = [];
+			const wallRetried = [];
+			// a tile on the line with a zone this one has no land link to (a leak); beside a linked zone it opens nothing new (K's seed: Meg's arm runs
+			// along her own link's line, and keeping off every line left her with no road again)
+			const linked = new Set([z]); for (const o of plan.openings || []) if (o.kind !== 'portal') { if (o.a === z) linked.add(o.b); if (o.b === z) linked.add(o.a); }
+			const lineCell = c => { const x = c % W, y = (c / W) | 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H && zone[v * W + u] >= 0 && !linked.has(zone[v * W + u])) return true; } return false; };
 			// a zone in pieces (joined only through the other level) gets one tree per piece: the pieces of its open
 			// ground, 4-neighbour, each with the ends and the town that touch it
 			const piece = new Map(); let np = 0;
@@ -327,7 +332,7 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null, stan
 			for (const [k, ends] of groups) {
 				const cellsK = k >= 0 ? zc.filter(c => piece.get(c) === k) : zc;
 				const innerK = inner.filter(c => k < 0 || piece.get(c) === k);
-				const t = require('./roadsplines').zoneTree({ W, H, open: inZone, cost, zoneCells: cellsK.length ? cellsK : zc, inner: innerK.length ? innerK : (cellsK.length ? cellsK : zc),
+				const t = require('./roadsplines').zoneTree({ W, H, open: inZone, openLoose: plan.p && plan.p.zonePlan ? null : c => holeCells.has(c) || (zone[c] === z && !(blocked[base + c] & OCCUPIED) && !lineCell(c)), /* never on a tile touching another zone: the leak trace found one there (s108p4chain_s11, 3-7) */ /* free layouts only: a template's map stays as it was (the Reviewer, Coldshadow seed 1) */ wallRetried, cost, zoneCells: cellsK.length ? cellsK : zc, inner: innerK.length ? innerK : (cellsK.length ? cellsK : zc),
 					town: townNode && k === townPiece ? townNode[0] : -1, ends, rng: rnd, existing: before || null, missed, edges: splineEdges, stub: Number(process.env.VMAPGEN_ROAD_STUB || 7) });
 				if (t) for (const c of t) tree.add(c);
 			}
@@ -346,6 +351,7 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null, stan
 					}
 				}
 				// an end no path reached is joined after the fill (joinFailed), as before
+				if (wallRetried.length) console.error(`[gen] level ${l}: zone ${z}: ${wallRetried.length} road end(s) its open ground did not reach laid through its own wall band (${wallRetried.join(', ')} tiles)`);
 				if (process.env.VMAPGEN_ROAD_TRACE) console.error(`[roads] level ${l}: zone ${z}: spline tree ${tree.size} tiles, ${endCells.length} end(s) [${endCells.map(e => { const c = Array.isArray(e) ? e[0] : e; return (c % W) + ',' + ((c / W) | 0); }).join(' ')}], missed ${missed.length}${before ? ', joining roads already there' : ''}${missed.length ? ' at ' + missed.map(e => { const c = Array.isArray(e) ? e[0] : e; return `(${c % W},${(c / W) | 0})${townNodes.has(list.find(q => met(q).includes(c))) ? ' town' : doorNodes.has(list.find(q => met(q).includes(c))) ? ' door' : ' link end'}`; }).join(' ') : ''}`);
 				// An end in a pocket of the cave whose only way out is a diagonal step (a town's chamber, its corners meeting
 				// past the town's own tiles) gets its road through the one rock tile between: the engine lays its paths
