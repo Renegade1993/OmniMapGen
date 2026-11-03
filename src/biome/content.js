@@ -2386,7 +2386,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// later objects keep off it: marked RESERVED, 146 of seed 1's Coldshadow held tiles were still covered by scenery passes that read only
 			// OCCUPIED, and walls stamped into the grid; the guard's own posting clears and re-stamps it, and the fill frees any left at its end
 			if (heldTile >= 0) { heldGuard.add(heldTile); holdGuard(heldTile % W, (heldTile / W) | 0); entry.__stockGuard = heldTile; blocked[l * W * H + heldTile] |= OCCUPIED; heldReserved.add(heldTile); heldFloor(blocked).add(l * W * H + heldTile); if (connectivity) connectivity.refresh(); }
-			if (exitTile >= 0) { blocked[l * W * H + exitTile] |= OCCUPIED; heldReserved.add(exitTile); heldFloor(blocked).add(l * W * H + exitTile); if (connectivity) connectivity.refresh(); }
+			if (exitTile >= 0) { entry.__stockExit = exitTile; blocked[l * W * H + exitTile] |= OCCUPIED; heldReserved.add(exitTile); heldFloor(blocked).add(l * W * H + exitTile); if (connectivity) connectivity.refresh(); }
 			if (connectivity) connectivity.refresh();
 			if (GUARD_CHANCE[type]) guardable.push({ entry, tpl });
 			if (fillStat) fillStat['placed|' + type] = (fillStat['placed|' + type] || 0) + 1;
@@ -3428,6 +3428,28 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				// (given back with nothing held, Coldshadow's start dwellings fell from 0.89 to 0.59 of the engine's: their guard looked again later
 				// and found no legal tile)
 				if (g >= 0 && !heldGuard.has(g)) { heldGuard.add(g); holdGuard(g % W, (g / W) | 0); e.__stockGuard = g; }
+			}
+			// a prison's way out goes with its guard: put() held an exit beside the tile it chose, and the ring moved the guard to its own tile,
+			// whose one free tile outside the ring was then covered by later scenery (Coldshadow seed 7 on a2ad505: the prison (103,132) level 1,
+			// its ring guard (102,133), a crater over (101,134); traced tile by tile; a2ad505 dropped 18 objects on 16 seeds against e7627ac's 7).
+			// The exit is held beside the ring's guard tile, outside the ring, and freed at the end of the fill as before. VMAPGEN_PRISON_RING_EXIT=0 off.
+			if (type === 'prison' && g >= 0 && process.env.VMAPGEN_PRISON_RING_EXIT !== '0') {
+				const inRing = new Set([...(others || []), g, ...blockingCells(tpl, e.x, e.y).map(([a, b]) => b * W + a)]);
+				const gx = g % W, gy = (g / W) | 0;
+				const ex0 = e.__stockExit;
+				const near = ex0 !== undefined && Math.max(Math.abs(ex0 % W - gx), Math.abs(((ex0 / W) | 0) - gy)) <= 1 && !inRing.has(ex0);
+				if (!near) {
+					if (ex0 !== undefined) { heldFloor(blocked).delete(l * W * H + ex0); if (heldReserved.delete(ex0)) blocked[l * W * H + ex0] &= ~OCCUPIED; delete e.__stockExit; }
+					for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+						const ex = gx + dx, ey = gy + dy;
+						if (ex < 1 || ey < 1 || ex >= W - 1 || ey >= H - 1) continue;
+						const c1 = ey * W + ex;
+						if (inRing.has(c1) || (blocked[l * W * H + c1] & OCCUPIED) || heldGuard.has(c1) || !floorAt(c1)) continue;
+						e.__stockExit = c1; blocked[l * W * H + c1] |= OCCUPIED; heldReserved.add(c1); heldFloor(blocked).add(l * W * H + c1);
+						break;
+					}
+					if (connectivity) connectivity.refresh();
+				}
 			}
 			// one tile closed, as rock in a cave or with a one-tile obstacle; false when it stays open
 			const wall = w => {
