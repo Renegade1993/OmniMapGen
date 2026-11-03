@@ -103,8 +103,20 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 			for (const [vx, vy] of visitableCells(o.template, o.x, o.y))
 				if (vx >= 0 && vy >= 0 && vx < W && vy < H) { ends.push(vy * W + vx); endObj.set(vy * W + vx, o); }
 	if (!R.size) return out;
+	// a gate's or monolith's road arrives from a side its template lets a hero step in from (visitableFrom, content.js allowedDirs): the run's
+	// first step leaves the visiting tile that way, and a road beside it counts only on such a side. A road that met the tile only across a
+	// forbidden side (the row above a monolith, under its arch) left a road the hero cannot follow in: K, November 2nd 2026, "the road
+	// connects to the monolith's front by running underneath it"; Coldshadow e7627ac 6 of 122 monolith ends, the engine's 0 of 92
+	// (TemplateFactory\tools\map9b\mono_roads.js). VMAPGEN_TELEPORT_ROAD_SIDE=0 takes every side, as before.
+	const sided = process.env.VMAPGEN_TELEPORT_ROAD_SIDE !== '0';
+	const { allowedDirs } = require('./content');
+	const sidesOf = v => { const o = endObj.get(v); return sided && o && o.template && o.template.visitableFrom ? allowedDirs(o.template) : D8; };
+	const roadBeside = (v, dirs) => { const x = v % W, y = (v / W) | 0; return dirs.some(([dx, dy]) => x + dx >= 0 && y + dy >= 0 && x + dx < W && y + dy < H && R.has((y + dy) * W + x + dx)); };
 	for (const v of ends) {
-		if (R.has(v)) continue;
+		const sides = sidesOf(v);
+		// served: road on the tile and on a side it is entered from (a road on the tile met only across a forbidden side takes a run)
+		if (R.has(v) && (!sided || roadBeside(v, sides) || !roadBeside(v, D8))) continue;
+		if (R.has(v)) out.resided = (out.resided || 0) + 1;
 		// a mine's (any building's but a gate's or a monolith's) road reaches its door from in front, never from under its own roof: the engine's 98 maps
 		// have no such door, ours 19 mines on 33 grid maps (K, 2026-10-31: "a illegal route of a road under a alchemists lab to reach it's front door").
 		// Gates and monoliths are entered from under their arch in the engine's maps too (391 doors), and keep the run as it was. VMAPGEN_OWN_ROOF=0 off.
@@ -113,9 +125,7 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 			for (const [fx, fy, ch] of require('./content').footprintCells(eo.template, eo.x, eo.y)) if (ch !== 'A' && ch !== 'T' && fx >= 0 && fy >= 0 && fx < W && fy < H) roof.add(fy * W + fx);
 		// a road tile beside the visiting tile, even only across a corner (a gate in a wall is entered diagonally): the tile joins it
 		const vx0 = v % W, vy0 = (v / W) | 0;
-		let beside = false;
-		for (let dy = -1; dy <= 1 && !beside; dy++) for (let dx = -1; dx <= 1; dx++)
-			if ((dx || dy) && vx0 + dx >= 0 && vy0 + dy >= 0 && vx0 + dx < W && vy0 + dy < H && R.has((vy0 + dy) * W + vx0 + dx)) { beside = true; break; }
+		const beside = roadBeside(v, sides);
 		if (beside) { R.add(v); out.onto++; continue; }
 		let prev, hit = -1, viaPrison = false;
 		// four ways first, eight only where no straight run reaches a road (an eight-way run drew staircases of corner-only steps, which the game
@@ -141,6 +151,7 @@ function teleportRoads(plan, W, H, l, blocked, OCCUPIED, visitableCells, blockin
 				if (steps.get(c) >= reach) continue;
 				const x = c % W, y = (c / W) | 0;
 				for (const [dx, dy] of dirs) {
+					if (c === v && !sides.some(([sx, sy]) => sx === dx && sy === dy)) continue;
 					const nx = x + dx, ny = y + dy;
 					if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
 					const m = ny * W + nx;
@@ -1338,11 +1349,11 @@ function sideDoorStubs(plan, W, H, l, visitableCells, allowedDirs) {
 	const visit = new Set(), front = new Set(), doorsOf = new Map();
 	for (const o of plan.objects) {
 		if ((o.l || 0) !== l || !o.template || !o.template.mask || !SERVED.test(o.type)) continue;
-		const dirs = allowedDirs ? allowedDirs(o.template) : D8, d = { main: [] };
+		const dirs = allowedDirs ? allowedDirs(o.template) : D8, d = { main: [], visit: new Set(), dirs };
 		const hasFront = dirs.some(([dx, dy]) => dx === 0 && dy === 1);
 		const e = new Set();
 		for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) {
-			const v = at(vx, vy); if (v >= 0) { visit.add(v); d.main.push(v); }
+			const v = at(vx, vy); if (v >= 0) { visit.add(v); d.main.push(v); d.visit.add(v); }
 			const f = hasFront ? at(vx, vy + 1) : -1; if (f >= 0) { front.add(f); d.main.push(f); }
 			for (const [dx, dy] of dirs) { const u = at(vx + dx, vy + dy); if (u >= 0) e.add(u); }
 		}
@@ -1359,7 +1370,13 @@ function sideDoorStubs(plan, W, H, l, visitableCells, allowedDirs) {
 		let any = false;
 		for (const [t, es] of doorsOf) {
 			if (!R.has(t) || visit.has(t) || front.has(t) || kept.has(t) || !stub(t)) continue;
-			if (!es.every(d => d.main.some(u => u !== t && R.has(u)))) continue;
+			// the visiting tile counts as the road passing only where road meets it on another side it is entered from: a road that met a
+			// monolith only from the row above (a side its visitableFrom forbids) left this side door its one way in, and taking it left the
+			// road running under the monolith's picture (K, November 2nd 2026, feedback item 13; Coldshadow seed 12, (103,48) level 1).
+			// VMAPGEN_TELEPORT_ROAD_SIDE=0 counts the visiting tile's road alone, as before.
+			const passes = d => d.main.some(u => u !== t && R.has(u) && (process.env.VMAPGEN_TELEPORT_ROAD_SIDE === '0' || !d.visit.has(u) ||
+				d.dirs.some(([dx, dy]) => { const n = at((u % W) + dx, ((u / W) | 0) + dy); return n >= 0 && n !== t && R.has(n); })));
+			if (!es.every(passes)) continue;
 			R.delete(t); out.cut++; any = true;
 		}
 		if (!any) break;
