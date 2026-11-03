@@ -424,6 +424,8 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 						...(owner ? { overrides: ownerId } : rmg ? { rmg } : {}),
 						...(creatureId ? { creature: creatureId, creatures: allCreatures } : {}),
 						...(bankCreatures.length ? { bankCreatures: [...new Set(bankCreatures)] } : {}),
+						// the tiles it shows when visited (a reward's revealTiles radius: the Redwood Observatory's 20), for spacing
+						...((r => (r > 0 ? { sight: r } : {}))((function deep(o, d) { if (!o || typeof o !== 'object' || d > 8) return 0; let m = o.revealTiles && Number(o.revealTiles.radius) > 0 ? Number(o.revealTiles.radius) : 0; for (const v of Object.values(o)) m = Math.max(m, deep(v, d + 1)); return m; })(sub, 0))),
 					});
 				}
 			}

@@ -2939,19 +2939,38 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	landmark.sort((a, b) =>
 		blockingCells(b.tpl, 0, 0).length - blockingCells(a.tpl, 0, 0).length);
 	const owed = [];
+	// The same building twice in sight of itself (K, 2026-11-02, items 8 and 12: Redwood Observatories should stand about as far apart as
+	// they see; three Trees of Knowledge within a few tiles of Meg's start). A building that shows tiles when visited keeps its own sight
+	// radius (the object data's revealTiles: the observatory's 20, a mod's own) from any other of its type on the level; every other
+	// landmark keeps SAME_TYPE_GAP. The engine's 98 maps: 0 of 875 observatory pairs and 0 of 20 Tree of Knowledge pairs within 5
+	// tiles, ours 3 of 155. An anchor too near is dropped; with none left the building is owed to the next biome as one that does not
+	// fit. VMAPGEN_SAME_TYPE_GAP sets the gap (0 turns the rule off).
+	// placement-time spacing is off by default: it moved every later draw (the lead, 11-03); generate.js spaces after placement instead
+	const SAME_GAP = process.env.VMAPGEN_SAME_TYPE_GAP_PLACE !== undefined ? Number(process.env.VMAPGEN_SAME_TYPE_GAP_PLACE) : 0;
+	const spaced = objectPools.__spaced || (objectPools.__spaced = new Map());
+	const gapOf = type => (SAME_GAP > 0 ? Math.max(SAME_GAP, (objectPools.sightOf && objectPools.sightOf.get(String(type))) || 0) : 0);
+	const spacedAnchors = o => {
+		const all = fitAnchors(o.tpl), gap = gapOf(o.type), had = spaced.get(o.type);
+		if (!gap || !had || !had.length) return all;
+		return all.filter(i => { const x = i % W, y = (i / W) | 0; return had.every(([pl, px, py]) => pl !== l || Math.max(Math.abs(px - x), Math.abs(py - y)) >= gap); });
+	};
 	for (const o of landmark) {
 		if (o.pair) { putPair(o); continue; }
+		const anchors = spacedAnchors(o);
+		// owed only when the gap emptied the list: an empty list from fitAnchors goes to put as it always did
+		if (!anchors.length && anchors !== fitAnchors(o.tpl)) { owed.push(o); continue; }
 		const e = BONUS_POOL.includes(o)
 			? put(o.type, o.tpl,
 				o.type === 'tavern' || o.type === 'altarOfSacrifice'
 					? undefined : emptyRewardable(),
-				o.subtype, 40, fitAnchors(o.tpl), true)
+				o.subtype, 40, anchors, true)
 			: put(o.type, o.tpl,
 				o.type === 'seerHut' ? seerHutOptions(rng)
 					: (o.type === 'crypt' || o.type === 'redwoodObservatory' || o.generic)
 						? emptyRewardable() : undefined,
-				o.subtype, 40, fitAnchors(o.tpl), true);
+				o.subtype, 40, anchors, true);
 		if (!e) owed.push(o);
+		else { if (!spaced.has(o.type)) spaced.set(o.type, []); spaced.get(o.type).push([l, e.x, e.y]); }
 	}
 	objectPools.__landmarkDebt = owed;
 

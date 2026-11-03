@@ -1944,6 +1944,8 @@ async function generateMap(params) {
 		// pileCommon: the engine's common treasure pool (src/rmg/piles.js), for
 		// template zones' piles with VMAPGEN_TPL_PILE_MODEL=engine
 		objectPools: { banks, dwellings, engineDwellings, dwellingFactions, coreBanks, chests, terrainNames,
+			// object type -> the radius it shows when visited, from the object data (spacing of sight buildings, content.js)
+			sightOf: (() => { const m = new Map(); for (const o of assetIndex.objects.values()) if (o && o.sight && o.type) m.set(String(o.type), Math.max(m.get(String(o.type)) || 0, o.sight)); return m; })(),
 			// the humans' lobby picks (--heroes): no prison holds one
 			pickedHeroes: new Set((params.pickedHeroes || []).map(h => String(h).toLowerCase())),
 			pileCommon: require('../rmg/piles').commonPool(assetIndex.objects, useMods,
@@ -2959,6 +2961,32 @@ async function generateMap(params) {
 		const gone = objects.length - kept.length;
 		objects.length = 0; objects.push(...kept, ...added);
 		if (gone || added.length) console.error(`[gen] objects the export's passes took off or added, written as they stand: ${gone} off, ${added.length} added`);
+	}
+	// The same building twice in sight of itself (K, 2026-11-02, items 8 and 12), after placement so nothing else moves (the lead, 11-03: done
+	// at placement it moved about 2,500 objects): a building that shows tiles when visited (the object data's revealTiles radius: the
+	// observatory's 20, a mod's own) or a bonus building (economy.js BONUS_POOL: Tree of Knowledge, schools, shrines...) that stands nearer
+	// than its gap (its sight radius, at least VMAPGEN_SAME_TYPE_GAP, 10) to an earlier one of its type on the level is taken off. The
+	// engine's 98 maps: 0 of 875 observatory pairs and 0 of 20 Tree of Knowledge pairs within 5 tiles. VMAPGEN_SAME_TYPE_GAP=0 off.
+	{
+		const GAP = process.env.VMAPGEN_SAME_TYPE_GAP !== undefined ? Number(process.env.VMAPGEN_SAME_TYPE_GAP) : 10;
+		if (GAP > 0) {
+			const sight = new Map(); for (const o of assetIndex.objects.values()) if (o && o.sight && o.type) { const sk = String(o.type) + '|' + String(o.subtype || o.type); sight.set(sk, Math.max(sight.get(sk) || 0, o.sight)); }
+			const bonus = new Set(require('../biome/economy').BONUS_POOL.map(b => b.type));
+			const kept = new Map(), off = new Set(), offBy = {};
+			for (const o of objects) {
+				const t = String(o.type || ''), st = t + '|' + String(o.subtype || t), sub = sight.get(st) || (o.subtype === 'object' ? sight.get(t + '|' + t) : 0) || 0;
+				if (!sub && !bonus.has(t)) continue;
+				const gap = Math.max(GAP, sub), k = st + '|' + (o.l || 0);
+				const had = kept.get(k) || [];
+				if (had.some(p => Math.max(Math.abs(p.x - o.x), Math.abs(p.y - o.y)) < gap)) { off.add(o); offBy[t] = (offBy[t] || 0) + 1; continue; }
+				had.push(o); kept.set(k, had);
+			}
+			if (off.size) {
+				const keep = objects.filter(o => !off.has(o)); objects.length = 0; objects.push(...keep);
+				for (const pl of plans) if (pl.objects) { const k2 = pl.objects.filter(o => !off.has(o)); pl.objects.length = 0; pl.objects.push(...k2); }
+				console.error(`[gen] the same building within its gap of another taken off: ${off.size} (${Object.entries(offBy).map(([t, n]) => t + ' ' + n).join(', ')})`);
+			}
+		}
 	}
 	// Every object is written with the draw priority the engine gives its art. The engine writes zIndex 100 on a lake, a crater, a fissure, a
 	// lava flow, a canyon or a frozen lake (OBJECTS.TXT column 8, or a mod template's own zIndex), and VCMI draws such an object under every
