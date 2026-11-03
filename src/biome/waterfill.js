@@ -63,6 +63,21 @@ const SCENERY_RATE = { kelp: 5, blocking: 4 };
 const MOD_RATE = process.env.VMAPGEN_WATER_RATES === 'old' ? 1.2 : 3.0;
 let MOD_WATER = [];
 function setModWater(list) { MOD_WATER = Array.isArray(list) ? list : []; }
+// the mods' water creature banks (generate.js): placed after a body's other water objects, on a stream of their own (K, 2026-11-03, item 19a)
+let MOD_WATER_BANKS = [];
+function setModWaterBanks(list) { MOD_WATER_BANKS = Array.isArray(list) ? list : []; }
+// 0.5 a 1,000 tiles of sea: K's 180 archipelago (10,544 sea tiles) gets about five; no engine reference (stock VCMI has no water bank)
+const MOD_BANK_RATE = 0.5;
+// the mods' water decor (HotA's seaweeds, rocks, waterfalls) and one-visit pickups of a generic handler (bluebottle, altar of mana):
+// 2 a 1,000 tiles of sea, beside the core kelp's 5 and rocks' 4 (SCENERY_RATE)
+let MOD_WATER_EXTRA = [];
+function setModWaterExtra(list) { MOD_WATER_EXTRA = Array.isArray(list) ? list : []; }
+const MOD_EXTRA_RATE = 2;
+// the mods' water sites: a dwelling (Tides of War's Coral Reef) or a market (HotA's Seafaring Academy) with only water templates, 0.1 a
+// 1,000 tiles of sea (about one each on K's 180 archipelago). No guard: stock VCMI posts none on the water.
+let MOD_WATER_SITES = [];
+function setModWaterSites(list) { MOD_WATER_SITES = Array.isArray(list) ? list : []; }
+const MOD_SITE_RATE = 0.1;
 const MIN_BODY = 25;
 
 function waterBodies(water, W, H) {
@@ -495,7 +510,7 @@ function fillWater(ctx) {
 			}
 	}
 	const { id, bodies } = waterBodies(water, W, H);
-	let placed = 0;
+	let placed = 0, banksPlaced = 0, extraPlaced = 0, sitesPlaced = 0;
 	const whirlpools = [];
 	for (const b of [...new Set(harbours.map(h => h.body))].sort((a, c) => a - c)) {
 		const seed = harbours.find(h => h.body === b).cell;
@@ -611,6 +626,39 @@ function fillWater(ctx) {
 				break;
 			}
 		}
+		// water banks: own stream, off-shore by a tile, the visit reached by a boat, the sea kept in one piece. VMAPGEN_MOD_WATER_BANKS=0 off.
+		for (const G of [{ list: MOD_WATER_BANKS, rate: MOD_BANK_RATE, salt: 0xba4c, on: process.env.VMAPGEN_MOD_WATER_BANKS !== '0' }, { list: MOD_WATER_EXTRA, rate: MOD_EXTRA_RATE, salt: 0x5ea1, on: process.env.VMAPGEN_MOD_WATER_EXTRA !== '0' }, { list: MOD_WATER_SITES, rate: MOD_SITE_RATE, salt: 0x517e, on: process.env.VMAPGEN_MOD_WATER_SITES !== '0' }]) if (G.list.length && G.on) {
+			const MOD_LIST = G.list;
+			let h = ((Number(ctx.seed || (p && p.seed)) || 1) * 2654435761 + b * 40503 + G.salt) >>> 0 || 1;
+			const brng = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+			const n = area * G.rate, k = Math.floor(n) + (brng() < n - Math.floor(n) ? 1 : 0);
+			for (let i = 0; i < k; i++) {
+				let r = brng() * MOD_LIST.reduce((a2, m) => a2 + m.weight, 0);
+				const m = MOD_LIST.find(q => (r -= q.weight) < 0) || MOD_LIST[0], tpl = m.tpl;
+				const start = (brng() * cells.length) | 0;
+				for (let tries = 0; tries < cells.length; tries++) {
+					const c = cells[(start + tries) % cells.length], x = c % W, y = (c / W) | 0;
+					if (!inMask(tpl, x, y, W, H)) continue;
+					let ok = true;
+					for (let rr = 0; rr < tpl.mask.length && ok; rr++) for (let ii = 0; ii < tpl.mask[rr].length && ok; ii++) {
+						const u = x - (tpl.mask[rr].length - 1 - ii), v = y - (tpl.mask.length - 1 - rr);
+						for (let dy = -1; dy <= 1 && ok; dy++) for (let dx = -1; dx <= 1; dx++) { const nu = u + dx, nv = v + dy; if (nu < 0 || nv < 0 || nu >= W || nv >= H || !water[nv * W + nu] || id[nv * W + nu] !== b) { ok = false; break; } }
+					}
+					if (!ok || !footprintFits(tpl, x, y, 0, W, H, wb)) continue;
+					const walls = blockingCells(tpl, x, y).map(([u, v]) => v * W + u);
+					if (walls.length && !guard.accepts(walls)) continue;
+					const vis = visitableCells(tpl, x, y);
+					if (vis.length && !vis.some(([vx, vy]) => allowedDirs(tpl).some(([dx, dy]) => { const u = vx + dx, v = vy + dy; if (u < 0 || v < 0 || u >= W || v >= H) return false; const q = v * W + u; return !walls.includes(q) && !(wb[q] & OCCUPIED) && guard.reachable[q]; }))) continue;
+					objects.push(objectEntry(m.type, x, y, l, tpl, m.subtype));
+					objects[objects.length - 1].mod = m.mod;
+					footprintBlock(tpl, x, y, 0, W, H, wb);
+					if (walls.length) guard.refresh();
+					for (const [vx, vy] of vis) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const u = vx + dx, v = vy + dy; if (u >= 0 && v >= 0 && u < W && v < H) wb[v * W + u] |= RESERVED; }
+					placed++; if (G.list === MOD_WATER_BANKS) banksPlaced++; else if (G.list === MOD_WATER_SITES) sitesPlaced++; else extraPlaced++;
+					break;
+				}
+			}
+		}
 	}
 	// whirlpools throw a ship to one another, any body of water to any other:
 	// one whose partner found no room would lead nowhere, so it goes too
@@ -618,7 +666,7 @@ function fillWater(ctx) {
 		objects.splice(objects.indexOf(whirlpools.pop()), 1);
 		placed--;
 	}
-	if (placed) console.error(`[gen] level ${l}: ${placed} object(s) on the water`);
+	if (placed) console.error(`[gen] level ${l}: ${placed} object(s) on the water${banksPlaced ? `, ${banksPlaced} of them mods' water banks` : ''}${extraPlaced ? `, ${extraPlaced} mods' water decor and pickups` : ''}${sitesPlaced ? `, ${sitesPlaced} mods' water sites` : ''}`);
 	return placed;
 }
 
@@ -649,4 +697,4 @@ function sailLinksFor(harbours, water, W, H) {
 	return harbours.map(h => [h.boarding, shoreOf.get(h.body) || [], true, h.kind]);
 }
 
-module.exports = { placeHarbours, fillWater, waterBodies, sailLinksFor, setModWater, MIN_BODY };
+module.exports = { setModWaterBanks, setModWaterExtra, setModWaterSites, placeHarbours, fillWater, waterBodies, sailLinksFor, setModWater, MIN_BODY };

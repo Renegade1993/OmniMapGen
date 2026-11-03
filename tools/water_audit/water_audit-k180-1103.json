@@ -1,0 +1,896 @@
+{
+ "objects": [
+  {
+   "id": "core:prison.prison",
+   "type": "prison",
+   "subtype": "prison",
+   "handler": "prison",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:pandoraBox.object",
+   "type": "pandoraBox",
+   "subtype": "object",
+   "handler": "pandora",
+   "rmg": {
+    "value": 0,
+    "rarity": 0
+   },
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:questGuard.object",
+   "type": "questGuard",
+   "subtype": "object",
+   "handler": "questGuard",
+   "rmg": {
+    "value": 0,
+    "rarity": 0
+   },
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:randomHero.object",
+   "type": "randomHero",
+   "subtype": "object",
+   "handler": "randomHero",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:tavern.object",
+   "type": "tavern",
+   "subtype": "object",
+   "handler": "generic",
+   "rmg": {
+    "value": 100,
+    "rarity": 20,
+    "zoneLimit": 1
+   },
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:kelp.object",
+   "type": "kelp",
+   "subtype": "object",
+   "handler": "static",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:rock.object",
+   "type": "rock",
+   "subtype": "object",
+   "handler": "static",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:reef.object",
+   "type": "reef",
+   "subtype": "object",
+   "handler": "static",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGuard.lblue",
+   "type": "borderGuard",
+   "subtype": "lblue",
+   "handler": "borderGuard",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGuard.green",
+   "type": "borderGuard",
+   "subtype": "green",
+   "handler": "borderGuard",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGuard.red",
+   "type": "borderGuard",
+   "subtype": "red",
+   "handler": "borderGuard",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGuard.dblue",
+   "type": "borderGuard",
+   "subtype": "dblue",
+   "handler": "borderGuard",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGuard.brown",
+   "type": "borderGuard",
+   "subtype": "brown",
+   "handler": "borderGuard",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGuard.purple",
+   "type": "borderGuard",
+   "subtype": "purple",
+   "handler": "borderGuard",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGuard.white",
+   "type": "borderGuard",
+   "subtype": "white",
+   "handler": "borderGuard",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGuard.black",
+   "type": "borderGuard",
+   "subtype": "black",
+   "handler": "borderGuard",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGate.lblue",
+   "type": "borderGate",
+   "subtype": "lblue",
+   "handler": "borderGate",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGate.green",
+   "type": "borderGate",
+   "subtype": "green",
+   "handler": "borderGate",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGate.red",
+   "type": "borderGate",
+   "subtype": "red",
+   "handler": "borderGate",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGate.dblue",
+   "type": "borderGate",
+   "subtype": "dblue",
+   "handler": "borderGate",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGate.brown",
+   "type": "borderGate",
+   "subtype": "brown",
+   "handler": "borderGate",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGate.purple",
+   "type": "borderGate",
+   "subtype": "purple",
+   "handler": "borderGate",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGate.white",
+   "type": "borderGate",
+   "subtype": "white",
+   "handler": "borderGate",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:borderGate.black",
+   "type": "borderGate",
+   "subtype": "black",
+   "handler": "borderGate",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:garrisonHorizontal.normal",
+   "type": "garrisonHorizontal",
+   "subtype": "normal",
+   "handler": "garrison",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:garrisonHorizontal.antiMagic",
+   "type": "garrisonHorizontal",
+   "subtype": "antiMagic",
+   "handler": "garrison",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:garrisonVertical.normal",
+   "type": "garrisonVertical",
+   "subtype": "normal",
+   "handler": "garrison",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:garrisonVertical.antiMagic",
+   "type": "garrisonVertical",
+   "subtype": "antiMagic",
+   "handler": "garrison",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:fountainOfYouth.fountainOfYouth",
+   "type": "fountainOfYouth",
+   "subtype": "fountainOfYouth",
+   "handler": "configurable",
+   "rmg": {
+    "value": 100,
+    "rarity": 50,
+    "zoneLimit": 1
+   },
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:schoolOfMagic.schoolOfMagic",
+   "type": "schoolOfMagic",
+   "subtype": "schoolOfMagic",
+   "handler": "configurable",
+   "rmg": {
+    "value": 1000,
+    "rarity": 50
+   },
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:shrineOfMagicLevel1.shrineOfMagicLevel1",
+   "type": "shrineOfMagicLevel1",
+   "subtype": "shrineOfMagicLevel1",
+   "handler": "configurable",
+   "rmg": {
+    "value": 500,
+    "rarity": 50
+   },
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:shrineOfMagicLevel2.shrineOfMagicLevel2",
+   "type": "shrineOfMagicLevel2",
+   "subtype": "shrineOfMagicLevel2",
+   "handler": "configurable",
+   "rmg": {
+    "value": 2000,
+    "rarity": 100
+   },
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "core:shrineOfMagicLevel3.shrineOfMagicLevel3",
+   "type": "shrineOfMagicLevel3",
+   "subtype": "shrineOfMagicLevel3",
+   "handler": "configurable",
+   "rmg": {
+    "value": 3000,
+    "rarity": 50
+   },
+   "waterOnly": true,
+   "why": "core",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.cove:core:boat.boatCove",
+   "type": "boat",
+   "subtype": "boatCove",
+   "handler": "boat",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler boat",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:core:boat.boatNeutral",
+   "type": "boat",
+   "subtype": "boatNeutral",
+   "handler": "boat",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler boat",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:core:boat.boatConflux",
+   "type": "boat",
+   "subtype": "boatConflux",
+   "handler": "boat",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler boat",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:core:monolithTwoWay.hotaPortalWaterWhite",
+   "type": "monolithTwoWay",
+   "subtype": "hotaPortalWaterWhite",
+   "handler": "monolith",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler monolith",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:core:monolithTwoWay.hotaPortalWaterRed",
+   "type": "monolithTwoWay",
+   "subtype": "hotaPortalWaterRed",
+   "handler": "monolith",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler monolith",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:core:monolithTwoWay.hotaPortalWaterBlue",
+   "type": "monolithTwoWay",
+   "subtype": "hotaPortalWaterBlue",
+   "handler": "monolith",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler monolith",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:core:monolithTwoWay.hotaPortalWaterGreen",
+   "type": "monolithTwoWay",
+   "subtype": "hotaPortalWaterGreen",
+   "handler": "monolith",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler monolith",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:core:monolithTwoWay.hotaPortalWaterYellow",
+   "type": "monolithTwoWay",
+   "subtype": "hotaPortalWaterYellow",
+   "handler": "monolith",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler monolith",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:core:seerHut.seerHutHota3",
+   "type": "seerHut",
+   "subtype": "seerHutHota3",
+   "handler": "seerHut",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler seerHut",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:bluebottle.bluebottle",
+   "type": "bluebottle",
+   "subtype": "bluebottle",
+   "handler": "generic",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler generic",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:rubble.rubble",
+   "type": "rubble",
+   "subtype": "rubble",
+   "handler": "static",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler static",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:seaweeds.hotaSeaweeds",
+   "type": "seaweeds",
+   "subtype": "hotaSeaweeds",
+   "handler": "static",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler static",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:portu.portu",
+   "type": "portu",
+   "subtype": "portu",
+   "handler": "static",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler static",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:stonySphere.stonySphere",
+   "type": "stonySphere",
+   "subtype": "stonySphere",
+   "handler": "static",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler static",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:waterfalls.waterfalls",
+   "type": "waterfalls",
+   "subtype": "waterfalls",
+   "handler": "static",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler static",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapdecorations:core:redwoodObservatory.hotaObservationTower",
+   "type": "redwoodObservatory",
+   "subtype": "hotaObservationTower",
+   "handler": "configurable",
+   "rmg": {
+    "value": 750,
+    "rarity": 100,
+    "zoneLimit": 1
+   },
+   "waterOnly": true,
+   "why": "TAKEN",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapobjects:core:creatureBank.beholderSanctuary",
+   "type": "creatureBank",
+   "subtype": "beholderSanctuary",
+   "handler": "configurable",
+   "rmg": {
+    "value": 2500,
+    "rarity": 100
+   },
+   "waterOnly": true,
+   "why": "bank/guard/hut",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapobjects:jetsam.jetsam",
+   "type": "jetsam",
+   "subtype": "jetsam",
+   "handler": "configurable",
+   "rmg": {
+    "value": 500,
+    "rarity": 600
+   },
+   "waterOnly": true,
+   "why": "TAKEN",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapobjects:observatory.observatory",
+   "type": "observatory",
+   "subtype": "observatory",
+   "handler": "configurable",
+   "rmg": {
+    "value": 500,
+    "rarity": 20,
+    "zoneLimit": 1
+   },
+   "waterOnly": true,
+   "why": "TAKEN",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapobjects:seaBarrel.seaBarrel",
+   "type": "seaBarrel",
+   "subtype": "seaBarrel",
+   "handler": "configurable",
+   "rmg": {
+    "value": 500,
+    "rarity": 400
+   },
+   "waterOnly": true,
+   "why": "TAKEN",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapobjects:core:shrineOfMagicLevel1.shrineOfMagicMystery",
+   "type": "shrineOfMagicLevel1",
+   "subtype": "shrineOfMagicMystery",
+   "handler": "configurable",
+   "rmg": {
+    "value": 7000,
+    "rarity": 100,
+    "zoneLimit": 1,
+    "mapLimit": 32
+   },
+   "waterOnly": true,
+   "why": "TAKEN",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapobjects:core:creatureBank.templeOfTheSea",
+   "type": "creatureBank",
+   "subtype": "templeOfTheSea",
+   "handler": "configurable",
+   "rmg": {
+    "value": 10000,
+    "rarity": 100
+   },
+   "waterOnly": true,
+   "why": "bank/guard/hut",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapobjects:vialOfMana.vialOfMana",
+   "type": "vialOfMana",
+   "subtype": "vialOfMana",
+   "handler": "configurable",
+   "rmg": {
+    "value": 3000,
+    "rarity": 50
+   },
+   "waterOnly": true,
+   "why": "TAKEN",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapobjects:altarOfMana.altarOfMana",
+   "type": "altarOfMana",
+   "subtype": "altarOfMana",
+   "handler": "generic",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler generic",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapobjects:core:questGuard.questGate",
+   "type": "questGuard",
+   "subtype": "questGate",
+   "handler": "questGuard",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler questGuard",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.mapobjects:seafaringAcademy.seafaringAcademy",
+   "type": "seafaringAcademy",
+   "subtype": "seafaringAcademy",
+   "handler": "market",
+   "rmg": {
+    "value": 8000,
+    "rarity": 20,
+    "zoneLimit": 1
+   },
+   "waterOnly": true,
+   "why": "handler market",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "hota.bulwark:core:boat.boatBulwark",
+   "type": "boat",
+   "subtype": "boatBulwark",
+   "handler": "boat",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler boat",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "new-pavilion:core:boat.boatPavilion",
+   "type": "boat",
+   "subtype": "boatPavilion",
+   "handler": "boat",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler boat",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "asylum-town:core:boat.boatAsylum",
+   "type": "boat",
+   "subtype": "boatAsylum",
+   "handler": "boat",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler boat",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "tides-of-war.neutral-creatures:core:creatureGeneratorCommon.mdtCoralReef",
+   "type": "creatureGeneratorCommon",
+   "subtype": "mdtCoralReef",
+   "handler": "dwelling",
+   "rmg": null,
+   "waterOnly": true,
+   "why": "handler dwelling",
+   "terrains": [
+    "water"
+   ]
+  },
+  {
+   "id": "tides-of-war.banks:core:creatureBank.mdtDreadSkipperBankWater",
+   "type": "creatureBank",
+   "subtype": "mdtDreadSkipperBankWater",
+   "handler": "configurable",
+   "rmg": {
+    "value": 2500,
+    "rarity": 100,
+    "mapLimit": 8
+   },
+   "waterOnly": true,
+   "why": "bank/guard/hut",
+   "terrains": [
+    "water"
+   ]
+  }
+ ],
+ "creatures": [
+  {
+   "id": "core:waterElemental",
+   "level": 3,
+   "faction": "conflux",
+   "onlyOnWaterMap": false
+  },
+  {
+   "id": "core:phoenix",
+   "level": 7,
+   "faction": "conflux",
+   "onlyOnWaterMap": false
+  },
+  {
+   "id": "hota.cove:nix",
+   "level": 6,
+   "faction": "cove",
+   "onlyOnWaterMap": false
+  },
+  {
+   "id": "hota.cove:nixWarrior",
+   "level": 6,
+   "faction": "cove",
+   "onlyOnWaterMap": false
+  },
+  {
+   "id": "hota.cove:oceanid",
+   "level": 1,
+   "faction": "cove",
+   "onlyOnWaterMap": false
+  },
+  {
+   "id": "hota.cove:pirate",
+   "level": 3,
+   "faction": "cove",
+   "onlyOnWaterMap": false
+  },
+  {
+   "id": "hota.cove:seaWitch",
+   "level": 5,
+   "faction": "cove",
+   "onlyOnWaterMap": false
+  },
+  {
+   "id": "hota.cove:seadog",
+   "level": 3,
+   "faction": "cove",
+   "onlyOnWaterMap": false
+  },
+  {
+   "id": "hota.cove:seaman",
+   "level": 2,
+   "faction": "cove",
+   "onlyOnWaterMap": false
+  },
+  {
+   "id": "hota.cove:seaserpent",
+   "level": 7,
+   "faction": "cove",
+   "onlyOnWaterMap": false
+  }
+ ]
+}

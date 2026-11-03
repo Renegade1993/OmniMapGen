@@ -510,6 +510,8 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 				const acc = factionAcc.get(id) || {};
 				if (val.name !== undefined && acc.name === undefined) acc.name = val.name;
 				if (val.nativeTerrain !== undefined) acc.nativeTerrain = val.nativeTerrain;
+				// the boat its shipyards build (factions/*.json "boat"): a harbour's boat beside a town of it takes it (item 19a)
+				if (val.boat !== undefined) acc.boat = String(val.boat);
 				// TownPlacer::getRandomTownType prefers these on underground zones
 				if (val.preferUndergroundPlacement !== undefined)
 					acc.preferUnderground = !!val.preferUndergroundPlacement;
@@ -608,7 +610,7 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 		index.factions.set(id, { name: f.name !== undefined ? f.name : f.fallbackName,
 			nativeTerrain: f.nativeTerrain, preferUnderground: !!f.preferUnderground,
 			townMap: f.townMap || null, townMapCore: f.townMapCore || null,
-			townMapScope: f.townMapScope || null });
+			townMapScope: f.townMapScope || null, boat: f.boat || null });
 	}
 	return index;
 }

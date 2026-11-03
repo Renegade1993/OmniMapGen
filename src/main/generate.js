@@ -1221,7 +1221,52 @@ async function generateMap(params) {
 				list.push({ type: o.type, subtype: o.subtype, mod: id.split(':')[0], weight: o.rmg.rarity,
 					tpl: { animation: String(t.raw.animation).replace(/\.def$/i, ''), mask: t.raw.mask, visitableFrom: t.raw.visitableFrom } });
 			}
+		// VMAPGEN_WATER_AUDIT=FILE: every object (core and mods) with a template that allows water, and whether the water pass takes it (K 11-03, item 19a)
+		if (process.env.VMAPGEN_WATER_AUDIT) {
+			const rows = [];
+			for (const [id, o] of assetIndex.objects) {
+				if (o.overrides) continue;
+				const ts = placeables(o); const wet = ts.filter(x => Array.isArray(x.allowedTerrains) && x.allowedTerrains.some(t => unscope(t) === 'water'));
+				if (!wet.length) continue;
+				const only = wet.some(x => x.allowedTerrains.every(t => unscope(t) === 'water'));
+				const why = String(id).startsWith('core:') ? 'core' : o.handler !== 'configurable' ? 'handler ' + o.handler : /bank|utopia|guard|gate|hut|seer/i.test(String(o.type)) ? 'bank/guard/hut' : !(o.rmg && o.rmg.value > 0 && o.rmg.rarity > 0) ? 'no rmg value/rarity' : !only ? 'templates allow land too' : 'TAKEN';
+				rows.push({ id, type: o.type, subtype: o.subtype, handler: o.handler, rmg: o.rmg || null, waterOnly: only, why, terrains: [...new Set(wet.flatMap(x => x.allowedTerrains.map(unscope)))] });
+			}
+			const cre = []; for (const [id, c] of assetIndex.creatures || []) if (c && (c.onlyOnWaterMap || /water|sea|ocean|kraken|pirate|sail|siren|nix/i.test(id))) cre.push({ id, level: c.level, faction: c.faction, onlyOnWaterMap: !!c.onlyOnWaterMap });
+			fs.writeFileSync(process.env.VMAPGEN_WATER_AUDIT, JSON.stringify({ objects: rows, creatures: cre }, null, 1));
+		}
 		require('../biome/waterfill').setModWater(list);
+		// the mods' water creature banks (HotA's Temple of the Sea, Tides of War's Dread Skipper...): every template only water, an rmg entry
+		// (waterfill.js places them after a sea's other objects, on a stream of their own; K 2026-11-03, item 19a)
+		const banks = [];
+		if (useMods) for (const [id, o] of assetIndex.objects) {
+			if (String(id).startsWith('core:') || o.overrides || !/^(creatureBank|dragonUtopia)$/.test(String(o.type))) continue;
+			if (!o.rmg || !(o.rmg.value > 0) || !(o.rmg.rarity > 0)) continue;
+			const t = placeables(o).find(x => Array.isArray(x.allowedTerrains) && x.allowedTerrains.length && x.allowedTerrains.every(q => unscope(q) === 'water'));
+			if (!t) continue;
+			banks.push({ type: o.type, subtype: o.subtype, mod: id.split(':')[0], weight: o.rmg.rarity, tpl: { animation: String(t.raw.animation).replace(/.def$/i, ''), mask: t.raw.mask, visitableFrom: t.raw.visitableFrom } });
+		}
+		require('../biome/waterfill').setModWaterBanks(banks);
+		// the mods' water decor (static, every template only water) and generic one-visit objects with an rmg entry and only water templates
+		const extra = [];
+		if (useMods) for (const [id, o] of assetIndex.objects) {
+			if (String(id).startsWith('core:') || o.overrides || !(o.handler === 'static' || (o.handler === 'generic' && o.rmg && o.rmg.value > 0 && o.rmg.rarity > 0))) continue;
+			const t = placeables(o).find(x => Array.isArray(x.allowedTerrains) && x.allowedTerrains.length && x.allowedTerrains.every(q => unscope(q) === 'water'));
+			if (!t) continue;
+			extra.push({ type: o.type, subtype: o.subtype, mod: id.split(':')[0], weight: (o.rmg && o.rmg.rarity) || 100, tpl: { animation: String(t.raw.animation).replace(/.def$/i, ''), mask: t.raw.mask, visitableFrom: t.raw.visitableFrom } });
+		}
+		require('../biome/waterfill').setModWaterExtra(extra);
+		const sites = [];
+		if (useMods) for (const [id, o] of assetIndex.objects) {
+			if (String(id).startsWith('core:') || o.overrides || !/^(dwelling|market)$/.test(String(o.handler))) continue;
+			const t = placeables(o).find(x => Array.isArray(x.allowedTerrains) && x.allowedTerrains.length && x.allowedTerrains.every(q => unscope(q) === 'water'));
+			if (!t) continue;
+			sites.push({ type: o.type, subtype: o.subtype, mod: id.split(':')[0], weight: (o.rmg && o.rmg.rarity) || 100, tpl: { animation: String(t.raw.animation).replace(/.def$/i, ''), mask: t.raw.mask, visitableFrom: t.raw.visitableFrom } });
+		}
+		require('../biome/waterfill').setModWaterSites(sites);
+		if (sites.length) console.error(`[gen] water: ${sites.length} mod water site kind(s): ${sites.map(m => m.subtype).join(', ')}`);
+		if (extra.length) console.error(`[gen] water: ${extra.length} mod water decor and pickup kind(s): ${extra.map(m => m.subtype).join(', ')}`);
+		if (banks.length) console.error(`[gen] water: ${banks.length} mod water bank(s) to place: ${banks.map(m => m.subtype).join(', ')}`);
 		if (list.length) console.error(`[gen] water: ${list.length} mod object(s) made for the water: ${list.map(m => m.type).join(', ')}`);
 	}
 	// Scenery for the mod terrains, from the obstacles their mods bring
@@ -2993,6 +3038,30 @@ async function generateMap(params) {
 				console.error(`[gen] the same building within its gap of another taken off: ${off.size} (${Object.entries(offBy).map(([t, n]) => t + ' ' + n).join(', ')})`);
 			}
 		}
+	}
+	// A harbour boat takes the boat its nearest town's faction builds (factions/*.json "boat": a Cove town's boatCove), after
+	// placement and only where the footprint is the same, so nothing moves (K 2026-11-03, item 19a). VMAPGEN_FACTION_BOATS=0 off.
+	if (process.env.VMAPGEN_FACTION_BOATS !== '0') {
+		const boatTpl = new Map();
+		for (const [id, o] of assetIndex.objects) if (o.type === 'boat' && !o.overrides) { const t = placeables(o)[0]; if (t) boatTpl.set(String(o.subtype), { animation: String(t.raw.animation).replace(/.def$/i, ''), mask: t.raw.mask, visitableFrom: t.raw.visitableFrom, mod: id.split(':')[0] }); }
+		const factionBoat = new Map(); for (const [id, f] of assetIndex.factions) if (f.boat) { factionBoat.set(id, f.boat); factionBoat.set(id.slice(id.lastIndexOf(':') + 1), f.boat); }
+		const towns = objects.filter(o => /^(town|randomTown)$/.test(String(o.type)));
+		let swapped = 0;
+		for (const o of objects) {
+			if (o.type !== 'boat' || !o.template) continue;
+			let best = null, bd = Infinity;   // the nearest town: a boat stands in a townless zone (a town zone gets a shipyard), so it takes its nearest town's
+			for (const t of towns) if ((t.l || 0) === (o.l || 0)) { const d = Math.max(Math.abs(t.x - o.x), Math.abs(t.y - o.y)); if (d < bd) { bd = d; best = t; } }
+			// a player's town is written as a random town: its faction is the player's pinned one (an unpinned player's is rolled at game start)
+			const pinned = best && (players || []).find(p => p.pinnedFaction && p.townPos && p.townPos.x === best.x && p.townPos.y === best.y && (p.townPos.l || 0) === (best.l || 0));
+			const fac = best && (pinned ? pinned.pinnedFaction : (best.options && (best.options.faction || best.options.type)) || (best.subtype !== 'object' ? best.subtype : null));
+			const want = fac && factionBoat.get(String(fac));
+			const tpl = want && want !== o.subtype && boatTpl.get(want);
+			if (!tpl || JSON.stringify(tpl.mask) !== JSON.stringify(o.template.mask)) continue;
+			o.subtype = want; o.template = { ...o.template, animation: tpl.animation, visitableFrom: tpl.visitableFrom || o.template.visitableFrom };
+			if (tpl.mod && tpl.mod !== 'core') o.mod = tpl.mod;
+			swapped++;
+		}
+		if (swapped) console.error(`[gen] boats given their town's faction boat: ${swapped}`);
 	}
 	// Every object is written with the draw priority the engine gives its art. The engine writes zIndex 100 on a lake, a crater, a fissure, a
 	// lava flow, a canyon or a frozen lake (OBJECTS.TXT column 8, or a mod template's own zIndex), and VCMI draws such an object under every
