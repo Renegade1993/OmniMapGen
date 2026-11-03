@@ -668,11 +668,13 @@ function fillWater(ctx) {
 	if (MOD_WATER_PORTALS.length && process.env.VMAPGEN_MOD_WATER_PORTALS !== '0') {
 		const seas = [...new Set(harbours.map(q => q.body))].filter(b => bodies[b].size >= 400).sort((a2, c) => bodies[c].size - bodies[a2].size).slice(0, 2);
 		// the pair joins no zones that were not linked already (the Reviewer, 11-03: a land monolith pair gets a guard, a water pair cannot):
-		// it is placed only when one zone touches both seas, so a boat that takes it reaches no zone that zone's own shore does not
+		// it is placed only when one sea's shore zones are all on the other's, so no zone gains a sea route to a zone it could not sail to
 		const shore = b => { const z = new Set(); if (!ctx.zone) return z; for (const c of bodies[b].cells) { const x = c % W, y = (c / W) | 0; for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H && !water[v * W + u] && ctx.zone[v * W + u] >= 0) z.add(ctx.zone[v * W + u]); } } return z; };
 		const zA = seas.length === 2 ? shore(seas[0]) : new Set(), zB = seas.length === 2 ? shore(seas[1]) : new Set(), both = [...zA].filter(z => zB.has(z));
-		if (seas.length === 2) console.error(`[gen] level ${l}: water portal check: shore zones of the two largest seas [${[...zA].sort((a2, c) => a2 - c)}] and [${[...zB].sort((a2, c) => a2 - c)}], shared [${both}]${both.length ? '' : ': no pair (it would join zones not linked already)'}`);
-		if (seas.length === 2 && both.length) {
+		// one sea's shore zones all on the other's (the Reviewer: sharing one zone let a boat from zone 2 land in zone 1 with no fight)
+		const subset = zA.size && zB.size && ([...zB].every(z => zA.has(z)) || [...zA].every(z => zB.has(z)));
+		if (seas.length === 2) console.error(`[gen] level ${l}: water portal check: shore zones of the two largest seas [${[...zA].sort((a2, c) => a2 - c)}] and [${[...zB].sort((a2, c) => a2 - c)}], shared [${both}]${subset ? '' : ': no pair (one shore is not inside the other, so it would join zones not linked already)'}`);
+		if (seas.length === 2 && subset) {
 			let h = ((Number(ctx.seed || (p && p.seed)) || 1) * 2654435761 + 0x9047) >>> 0 || 1;
 			const prng = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
 			const m = MOD_WATER_PORTALS[(prng() * MOD_WATER_PORTALS.length) | 0], tpl = m.tpl, spots = [];
