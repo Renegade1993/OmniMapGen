@@ -35,7 +35,7 @@ const WATER_SHAPES = [
 	{ id: 'mediterranean', label: 'Mediterranean',
 		help: 'a sea in the middle of the map with land all around it.' },
 	{ id: 'highland', label: 'Highland',
-		help: 'many small lakes scattered through the land.' },
+		help: 'a land map cut by wide rivers with a few narrow fords: one river on a map up to Large, two on Extra Large, three on the biggest, splitting the land into continents a hero crosses at the fords.' },
 	// Island shapes (W3): the land is in pieces, boats are the way across
 	{ id: 'islands', label: 'Islands', islands: true, perStart: 0,
 		help: 'every player on an island of their own, with open sea between. Each player starts with a shipyard and a boat on the shore, and boats are the only way across. The straits take water of their own, so a small amount comes out higher.' },
@@ -256,6 +256,34 @@ function scoreField(W, H, shape, rng, starts = [], cover = 0.4) {
 	}
 	const s = new Float64Array(W * H);
 	const edgeBand = 0.1 * Math.min(W, H) + 3;
+	// Highland (K, 2026-11-02, items 16 and 20; the Age of Empires Highland map): a LAND map with a few wide rivers, 1 up to Large, 2 at
+	// Extra Large, 3 on the biggest, each crossed at narrow fords, so the land between is bottlenecked continents. The rivers run across the
+	// map the way that best splits the starts between their banks; their width is the water amount's (no clamp); each has two or more fords
+	// three tiles wide, kept dry (s.fords, forced land in layWater). VMAPGEN_HIGHLAND_RIVERS=0 keeps the old scattered lakes.
+	if (shape.id === 'highland' && process.env.VMAPGEN_HIGHLAND_RIVERS !== '0') {
+		const side = Math.max(W, H), n = side <= 108 ? 1 : side <= 160 ? 2 : 3;
+		const bal = horiz => { const L = horiz ? H : W; let worst = 0; for (let k = 0; k < n; k++) { const at = L * (k + 1) / (n + 1); const below = starts.filter(q => q && (horiz ? q.y : q.x) < at).length; worst = Math.max(worst, Math.abs(starts.length - 2 * below)); } return worst; };
+		const bh = bal(true), bv = bal(false), horiz = bh < bv ? true : bv < bh ? false : rng() < 0.5;
+		const L = horiz ? W : H, D = horiz ? H : W;
+		const wander = valueNoise((rng() * 1e9) | 0, Math.max(8, Math.round(L / 5)));
+		const amp = D / (n + 1) * 0.35;
+		const curve = (k, t) => D * (k + 1) / (n + 1) + amp * (wander(t, k * 37) - 0.5) * 2;
+		const fords = new Uint8Array(W * H), halfBand = Math.max(3, cover * D / n);
+		for (let k = 0; k < n; k++) {
+			const nf = Math.max(2, Math.round(L / 45));
+			for (let j = 0; j < nf; j++) {
+				const t0 = Math.round(L * (j + 0.5 + (rng() - 0.5) * 0.5) / nf);
+				for (let t = t0 - 1; t <= t0 + 1; t++) { if (t < 0 || t >= L) continue; const mid = curve(k, t); for (let u = Math.floor(mid - halfBand - 3); u <= Math.ceil(mid + halfBand + 3); u++) { if (u < 0 || u >= D) continue; fords[horiz ? u * W + t : t * W + u] = 1; } }
+			}
+		}
+		for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+			const t = horiz ? x : y, u = horiz ? y : x;
+			let d = Infinity; for (let k = 0; k < n; k++) d = Math.min(d, Math.abs(u - curve(k, t)));
+			s[y * W + x] = -d / D + 0.04 * (fine(x, y) - 0.5);
+		}
+		s.fords = fords; s.rivers = n;
+		return s;
+	}
 	// the Islands and Archipelago layouts (K, 2026-10-08: "the static/deterministic corner growth algorithm for map generation which i hate");
 	// the Voronoi of the starts below is left only for a map too small to hold the players' islands
 	if (shape.islands) {
@@ -735,6 +763,7 @@ function layWater(W, H, p, shape, rng, base, cover, N, given = null) {
 	const moved = s.starts ? s.starts.map(q => ({ ...q }))
 		: shape.relocate ? relocateStarts(selectTop(s, target, null), base, W, H) : base.map(q => ({ ...q }));
 	const forced = forcedAround(moved, W, H, START_CLEAR);
+	if (s.fords) for (let c = 0; c < N; c++) if (s.fords[c]) forced[c] = 1;   // Highland's fords stay dry
 	const startCells = moved.map(q => q.y * W + q.x);
 	// The template's crossroads (a start the caller marks `hub`) may be left an island of its own,
 	// with no land bridge, when boats can sail there: a harbour setting above None. K, 2026-09-29,
