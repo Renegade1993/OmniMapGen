@@ -3078,11 +3078,12 @@ async function generateMap(params) {
 		const Wm = params.mapW, Hm = params.mapH, pl0 = plans[0];
 		const here = objects.filter(o => (o.l || 0) === 0);
 		const closed = c => !!((pl0.p && pl0.p.water && pl0.p.water[c]) || (pl0.openMask && !pl0.openMask[c]));
-		const st = (params.players || []).map(p => p.townPos).filter(t => t && (t.l || 0) === 0);
+		// the generator's own player list: water moves a start inland there, and params.players keeps the old spot (the walk then found no town on Coastal and Lakes maps)
+		const st = (players || []).map(p => p.townPos).filter(t => t && (t.l || 0) === 0);
 		const r = require('../biome/startwalk').startWalk(Wm, Hm, here, pl0.zone, closed, st, o => ({ block: blockingCells(o.template, o.x, o.y), visit: visitableCells(o.template, o.x, o.y) }));
 		if (r.removed) { const keep = objects.filter(o => !o.__startWalkDrop); objects.length = 0; objects.push(...keep); for (const pl of plans) if (pl.objects) { const k2 = pl.objects.filter(o => !o.__startWalkDrop); pl.objects.length = 0; pl.objects.push(...k2); } }
 		for (const o of r.posted || []) { objects.push(o); if (plans[0].objects) plans[0].objects.push(o); }
-		if (r.fixed || r.left) console.error(`[gen] starts' walk to the middle (zone ${r.middle}): ${r.fixed} given a way (${r.removed} scenery object(s) taken off, ${(r.posted || []).length} guard(s) posted where it enters another zone), ${r.left} with none`);
+		if (r.fixed || r.left) console.error(`[gen] starts' walk to the middle (zone ${r.middle}): ${r.bySea || 0} by sea, ${r.fixed} given a way (${r.removed} scenery object(s) taken off, ${(r.posted || []).length} guard(s) posted where it enters another zone), ${r.left} with none`);
 	}
 	// Every object is written with the draw priority the engine gives its art. The engine writes zIndex 100 on a lake, a crater, a fissure, a
 	// lava flow, a canyon or a frozen lake (OBJECTS.TXT column 8, or a mod template's own zIndex), and VCMI draws such an object under every
