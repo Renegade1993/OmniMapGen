@@ -647,6 +647,8 @@ async function generateMap(params) {
 		roots.installDir ? path.join(roots.installDir, 'config') : null,
 		ordered, params.noCache);
 	stage('assetIndex');
+	// a mod's ground takes the art of the core ground it is nearest (K, 2026-11-02, item 22: the grass ore pit on plateau)
+	{ const kin = require('../biome/terrainArt').setKin(assetIndex.terrains, params.seed); if (kin) console.error(`[gen] mod grounds take the art of: ${kin}`); }
 	// VMAPGEN_TERRAIN_DUMP=FILE: every terrain's code, name and move cost from the loaded mods (tools/geometry/travelweb.js)
 	if (process.env.VMAPGEN_TERRAIN_DUMP)
 		fs.writeFileSync(process.env.VMAPGEN_TERRAIN_DUMP, JSON.stringify(Object.fromEntries([...assetIndex.terrains]
@@ -2774,6 +2776,13 @@ async function generateMap(params) {
 				}
 			}
 
+		// mod grounds take their kin's art, after placement, where the footprint is the same (terrainArt.kinSwap; K 2026-11-02, item 22)
+		if (process.env.VMAPGEN_MOD_GROUND_KIN !== '0') {
+			const here = objects.filter(o => (o.l || 0) === li);
+			const groundAt = o => { const v = o.template && o.template.mask ? visitableCells(o.template, o.x, o.y)[0] : null; const [x, y] = v || [o.x, o.y]; return x >= 0 && y >= 0 && x < lv.width && y < lv.height ? shortAt(x, y) : null; };
+			const n = require('../biome/terrainArt').kinSwap(here, groundAt, (sub, k) => { try { return require('../biome/economy').mineTemplate(sub, k); } catch (e) { return null; } });
+			if (n) console.error(`[gen] level ${li}: ${n} object(s) on mod grounds given their kin ground's art`);
+		}
 		phase('rivers');
 		// Rivers. They neither block nor cost movement, so unlike roads they can
 		// run under anything, and the type comes from the ground each tile

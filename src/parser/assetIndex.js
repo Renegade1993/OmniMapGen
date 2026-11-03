@@ -297,6 +297,8 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 			if (val.shortIdentifier && val.moveCost !== undefined && val.tiles !== undefined) {
 				index.terrains.set(val.shortIdentifier, {
 					name: `${scope}:${key}`, moveCost: val.moveCost,
+					// what a mod's ground is nearest among the core grounds (terrainArt.js setKin): its minimap colour and its music
+					minimap: Array.isArray(val.minimapUnblocked) ? val.minimapUnblocked.map(Number) : null, music: Array.isArray(val.music) ? val.music.map(String) : (val.music ? [String(val.music)] : []),
 					types: val.type || [], allowedLayers: val.allowedLayers || [],
 					// which group of terrainViewPatterns.json this terrain draws
 					// from, and so which sprite indices are plain ground rather

@@ -20,9 +20,12 @@ const DATA = require('./economy.templates.json');
 const { BIOME_CLASS } = require('./biomes');
 
 /** Build a vmap template record for a mine of `subtype` standing on `terrain`. */
-function mineTemplate(subtype, terrain) {
+function mineTemplate(subtype, terrain, kinAsked = false) {
 	const byTerrain = DATA.mineTerrainAnim[subtype] || {};
-	const animation = byTerrain[terrain] || DATA.mineDefaultAnim[subtype];
+	// a mod's ground takes its kin's mine (terrainArt.js setKin; K 2026-11-02 item 22: the grass ore pit on plateau)
+	// a mod ground's kin is applied after placement (terrainArt.kinSwap), so placement stays as it was
+	const kin = byTerrain[terrain] || !kinAsked ? null : require('./terrainArt').kinOf(terrain);
+	const animation = byTerrain[terrain] || (kin && byTerrain[kin]) || DATA.mineDefaultAnim[subtype];
 	const t = DATA.templates[animation];
 	return { animation, mask: t.mask, visitableFrom: t.visitableFrom };
 }

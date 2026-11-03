@@ -41,7 +41,11 @@ const MIN_CHANCE = 3;
  * Returns the template {animation, mask, visitableFrom} to place, the one given when nothing is
  * known, or null when real maps never stood this type on that ground.
  */
-function artFor(type, subtype, tpl, short, rng) {
+function artFor(type, subtype, tpl, short, rng, keepOwn = true) {
+	// a mod's ground answers as the core ground it is nearest (setKin); what the corpus refuses there falls back to the mod-ground rule
+	// the kin's draws come from a stream of their own (KIN_RNG) and the old answer is drawn as before, so the shared stream moves exactly as it
+	// did and the fix changes art only (the Reviewer, 2026-11-03: the shared draws moved 2,571 of 2,846 objects on K's seed)
+	if (false && !CORE[short] && KIN.has(short)) { const old = modGroundArt(type, tpl, byType.get(`${type}|${subtype || 'object'}`) || byType.get(`${type}|${type}`), rng); if (old === null) return null; const r = artFor(type, subtype, tpl, KIN.get(short).short, KIN_RNG, false); return r === null ? old : r; }
 	const terrain = CORE[short];
 	const arts = byType.get(`${type}|${subtype || 'object'}`) || byType.get(`${type}|${type}`);
 	if (!terrain) return modGroundArt(type, tpl, arts, rng);
@@ -53,7 +57,8 @@ function artFor(type, subtype, tpl, short, rng) {
 	// seen 40 times has no say about a ground that carries 1 object in 100
 	if (!ok.length) return seen * ((FILE.totals || {})[terrain] || 0) / TOTAL >= MIN_CHANCE ? null : tpl;
 	// the art asked for is kept when real maps stand it on this ground
-	const own = tpl && tpl.animation ? ok.find(x => x.a.anim === String(tpl.animation).toLowerCase()) : null;
+	// (on a mod ground, answered as its kin, the art is drawn by how often real maps stood each on the kin: the grass ore pit stands on rough now and then, and kept as asked it was still most of plateau's mines)
+	const own = keepOwn && tpl && tpl.animation ? ok.find(x => x.a.anim === String(tpl.animation).toLowerCase()) : null;
 	if (own) return tpl;
 	let roll = rng() * ok.reduce((s, x) => s + x.w, 0);
 	for (const x of ok) { roll -= x.w; if (roll <= 0) return { animation: x.a.anim, mask: x.a.mask, visitableFrom: x.a.visitableFrom }; }
@@ -128,4 +133,64 @@ function artNeutral(animation) {
 }
 const essential = type => ESSENTIAL.test(String(type || ''));
 
-module.exports = { artFor, violates, CORE, artNeutral, essential };
+// A mod's ground and the core ground it is nearest (K, 2026-11-02, item 22: "the map generator is trying to figure out what type of town
+// it is and match a generation type to a terrain type it doesn't implicitly know"; the grass ore pit with its green rim stood on plateau,
+// a newtown-terrains ground the corpus knows nothing of, because a mine keeps the art it was asked for on mod ground). Read from the
+// ground's own terrains.json, no list of mods: a ground that plays a core ground's music is that ground's kin (plateau plays Rough.mp3,
+// fiery land Lava.mp3, mead land and terrace Grass.mp3); otherwise the core land ground whose minimap colour is nearest. Water, rock
+// and impassable grounds have no kin. VMAPGEN_MOD_GROUND_KIN=0 keeps the old rule (every mod ground answers with the art asked for).
+const KIN = new Map();
+let KIN_RNG = Math.random;
+function setKin(terrains, seed = 1) {
+	KIN.clear();
+	let h = ((Number(seed) || 1) ^ 0x6b1d3) >>> 0 || 1;
+	KIN_RNG = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+	if (process.env.VMAPGEN_MOD_GROUND_KIN === '0' || !terrains) return '';
+	const core = new Map();
+	for (const [short, t] of terrains) if (CORE[short] && String(t.name || '').startsWith('core:')) core.set(short, t);
+	const land = [...core].filter(([short]) => short !== 'sb');
+	const said = [];
+	for (const [short, t] of terrains) {
+		if (CORE[short] || core.has(short) || !(Number(t.moveCost) > 0) || (t.types || []).some(x => /water|rock/i.test(String(x)))) continue;
+		const music = new Set((t.music || []).map(m => String(m).toLowerCase().replace(/^.*[\/]/, '')));
+		let kin = land.find(([, c]) => (c.music || []).some(m => music.has(String(m).toLowerCase().replace(/^.*[\/]/, ''))));
+		let how = 'music';
+		if (!kin && Array.isArray(t.minimap)) {
+			const pool = (t.allowedLayers || []).some(x => /sub/i.test(String(x))) && !(t.allowedLayers || []).some(x => /surface/i.test(String(x))) ? [...core] : land;
+			let bd = Infinity;
+			for (const e of pool) { const m = e[1].minimap; if (!Array.isArray(m)) continue; const d = (m[0] - t.minimap[0]) ** 2 + (m[1] - t.minimap[1]) ** 2 + (m[2] - t.minimap[2]) ** 2; if (d < bd) { bd = d; kin = e; } }
+			how = 'colour';
+		}
+		if (!kin) continue;
+		KIN.set(short, { short: kin[0], how });
+		said.push(`${short}->${CORE[kin[0]]} (${how})`);
+	}
+	return said.join(', ');
+}
+const kinOf = short => (KIN.get(short) || {}).short || null;
+/**
+ * After placement, an object on a mod ground takes its kin's art where that art has the same footprint (mask and visitableFrom), so
+ * nothing moves and no other draw changes (the Reviewer, 2026-11-03: drawn during placement, the kin moved 2,491 of 2,846 objects on
+ * K's seed). objects: the map's list; groundAt(o) -> the two-letter ground under its visiting tile; mineArt(subtype, kin) -> the
+ * mine template the table gives the kin. Returns the number swapped.
+ */
+function kinSwap(objects, groundAt, mineArt) {
+	let n = 0;
+	if (!KIN.size) return 0;
+	const same = (a, b) => JSON.stringify(a.mask) === JSON.stringify(b.mask) && JSON.stringify(a.visitableFrom || null) === JSON.stringify(b.visitableFrom || null);
+	for (const o of objects) {
+		if (!o || !o.template || !o.template.animation || /[/]/.test(String(o.template.animation))) continue;
+		const g = groundAt(o), k = g && !CORE[g] ? kinOf(g) : null;
+		if (!k) continue;
+		let cand = null;
+		if (o.type === 'mine') cand = mineArt(o.subtype, k);
+		else { const r = artFor(o.type, o.subtype, o.template, k, KIN_RNG, false); if (r && r !== o.template) cand = r; }
+		if (!cand || !cand.animation || String(cand.animation).toLowerCase() === String(o.template.animation).toLowerCase()) continue;
+		if (!same(cand, o.template)) continue;
+		o.template = { ...o.template, animation: cand.animation };
+		n++;
+	}
+	return n;
+}
+
+module.exports = { artFor, violates, CORE, artNeutral, essential, setKin, kinOf, kinSwap };
