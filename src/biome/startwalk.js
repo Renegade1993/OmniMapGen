@@ -28,6 +28,7 @@ function startWalk(W, H, objects, zone, closed, starts, cellsOf) {
 		if (/^(town|randomTown)$/.test(String(o.type))) townCells.set(`${o.x},${o.y}`, visit);
 	});
 	const walk = c => !closed(c) && !building[c] && scenery[c] < 0;
+	const harbourCells = []; for (const o of objects) if (o && /^(boat|shipyard)$/.test(String(o.type)) && o.template && o.template.mask) for (const [vx, vy] of cellsOf(o).visit) for (const [dx, dy] of N8) { const u = vx + dx, w = vy + dy; if (u >= 0 && w >= 0 && u < W && w < H) harbourCells.push(w * W + u); }
 	if (process.env.VMAPGEN_START_REACH_PROBE) for (const p of process.env.VMAPGEN_START_REACH_PROBE.split(';')) { const [x, y] = p.split(',').map(Number), c = y * W + x; console.error(`[startwalk] probe ${x},${y}: zone ${zone[c]} closed ${closed(c)} building ${building[c]} scenery ${scenery[c] >= 0 ? objects[scenery[c]].type + '@' + objects[scenery[c]].x + ',' + objects[scenery[c]].y : '-'}; objects at all ${objects.length}`); }
 	const startZones = new Map();
 	const seeds = starts.map(s => {
@@ -49,6 +50,8 @@ function startWalk(W, H, objects, zone, closed, starts, cellsOf) {
 		const notOther = c => !(startZones.has(zone[c]) && zone[c] !== st.z);
 		const mine = flood(st.cells, c => walk(c) && notOther(c));
 		if (midCells.some(c => mine[c])) continue;
+		// a start that walks to a boat or a shipyard leaves by sea (an island or a lake shore): its way out is the harbour
+		if (harbourCells.some(c => mine[c])) { res.bySea = (res.bySea || 0) + 1; continue; }
 		// the middle's side: what walks to the middle without entering any start's zone but this one
 		const theirs = flood(midCells, c => walk(c) && notOther(c));
 		// cheapest way from mine to theirs: open ground 0, a scenery tile 1 (0-1 BFS), never a building, another start's zone or closed ground
