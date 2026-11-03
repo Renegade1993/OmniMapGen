@@ -164,6 +164,10 @@ function zoneTree(opts) {
 	for (const e of ends) {
 		let p = null;
 		for (const st of (Array.isArray(e) ? e : [e])) { p = routeEdge(st, roads.size ? roads : new Set([T]), { ...opts, ...((process.env.VMAPGEN_ROAD_BEND === 'pick' ? null : Number(process.env.VMAPGEN_ROAD_BEND || 0.2)) === null ? { ctrl: [pick(), pick()] } : { ctrl: null, bend: (process.env.VMAPGEN_ROAD_BEND === 'pick' ? null : Number(process.env.VMAPGEN_ROAD_BEND || 0.2)) }) }); if (p) break; }
+		// an end the zone's open ground does not reach (a doorway at the tip of a thin arm whose whole width is wall band, K's and Meg's
+		// game 2026-11-02: the start's one road toward the middle was never laid) is routed once more through the zone's own wall band
+		// (opts.openLoose: the zone's cells nothing occupies); the neighbour's band beside it still stands. VMAPGEN_ROAD_WALL_RETRY=0 off.
+		if (!p && opts.openLoose && process.env.VMAPGEN_ROAD_WALL_RETRY !== '0') for (const st of (Array.isArray(e) ? e : [e])) { p = routeEdge(st, roads.size ? roads : new Set([T]), { ...opts, open: opts.openLoose, ctrl: null }); if (p) { if (opts.wallRetried) opts.wallRetried.push(p.length); if (process.env.VMAPGEN_LINK_DUMP) (global.__wallRetriedCells || (global.__wallRetriedCells = [])).push(...p); break; } }
 		if (!p && process.env.VMAPGEN_ROAD_TRACE) { const g = roads.size ? roads : new Set([T]); const st0 = Array.isArray(e) ? e : [e]; const seen = new Set(st0), q = [...st0]; let hit = false; for (let i = 0; i < q.length && !hit; i++) { const c = q[i], x = c % W, y = (c / W) | 0; for (const [dx, dy] of DIRS) { const m = (y + dy) * W + x + dx; if (seen.has(m)) continue; if (g.has(m)) { hit = true; break; } if (!open(m)) continue; seen.add(m); q.push(m); } } console.error(`[roads] zoneTree miss: starts ${st0.length} (${st0.map(c => (c % W) + ',' + ((c / W) | 0)).join(' ')}), goal ${g.size}${roads.size ? '' : ' (T ' + (T % W) + ',' + ((T / W) | 0) + ')'}, bfs reaches ${hit} over ${seen.size}`); }
 		if (!p) { if (opts.missed) opts.missed.push(e); continue; }
 		p.forEach(c => roads.add(c));

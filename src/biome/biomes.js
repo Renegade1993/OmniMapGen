@@ -1166,6 +1166,200 @@ function assignConnections(edges, params, rng, zoneCount) {
 }
 
 /**
+ * A start's zone that borders only other starts' zones (the cut enclosed it: a 5-player seed 13 at 108, green's zone met only blue's)
+ * is given a neighbour that is no start: a corridor of a bordering start zone's cells, five wide, from the enclosed zone to the
+ * nearest zone that is no start, goes to that zone. A corridor that would split the zone it comes from, or take its seed, is not
+ * used. Mutates zone. Free layouts only (plan.js). VMAPGEN_ENCLOSED_START=0 off.
+ */
+function openEnclosedStarts(zone, W, H, seeds, water) {
+	const isStart = i => !!(seeds[i] && seeds[i].player);
+	const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]], N = W * H;
+	const land = c => !(water && water[c]);
+	const around = (c, f) => { const x = c % W, y = (c / W) | 0; for (const [dx, dy] of N4) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H) f(v * W + u); } };
+	const res = { moved: 0, left: 0, cells: 0 };
+	for (let a = 0; a < seeds.length; a++) {
+		if (!isStart(a)) continue;
+		const nb = new Set();
+		for (let c = 0; c < N; c++) if (zone[c] === a && land(c)) around(c, n => { if (land(n) && zone[n] >= 0 && zone[n] !== a) nb.add(zone[n]); });
+		if (!nb.size || [...nb].some(z => !isStart(z))) continue;
+		let done = false;
+		for (const b of nb) {
+			const prev = new Int32Array(N).fill(-2), q = [];
+			for (let c = 0; c < N; c++) if (zone[c] === b && land(c)) { let t = false; around(c, n => { if (zone[n] === a) t = true; }); if (t) { prev[c] = -1; q.push(c); } }
+			let end = -1, target = -1;
+			for (let h = 0; h < q.length && end < 0; h++) { const c = q[h]; around(c, n => { if (end < 0 && land(n) && zone[n] >= 0 && !isStart(zone[n])) { end = c; target = zone[n]; } }); if (end >= 0) break; around(c, n => { if (prev[n] === -2 && zone[n] === b && land(n)) { prev[n] = c; q.push(n); } }); }
+			if (end < 0) continue;
+			const path = []; for (let c = end; c >= 0; c = prev[c]) path.push(c);
+			const take = new Set();
+			for (const c of path) { take.add(c); const x = c % W, y = (c / W) | 0; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H && zone[v * W + u] === b && land(v * W + u)) take.add(v * W + u); } }
+			const seedCell = seeds[b] ? Math.round(seeds[b].y) * W + Math.round(seeds[b].x) : -1;
+			if (take.has(seedCell)) continue;
+			for (const c of take) zone[c] = target;
+			// the zone it came from must stay in one piece
+			let first = -1, total = 0; for (let c = 0; c < N; c++) if (zone[c] === b && land(c)) { total++; if (first < 0) first = c; }
+			let seen = 0; if (first >= 0) { const vis = new Uint8Array(N), st = [first]; vis[first] = 1; while (st.length) { const c = st.pop(); seen++; around(c, n => { if (!vis[n] && zone[n] === b && land(n)) { vis[n] = 1; st.push(n); } }); } }
+			if (!total || seen !== total) { for (const c of take) zone[c] = b; continue; }
+			res.moved++; res.cells += take.size; done = true; break;
+		}
+		if (!done) res.left++;
+	}
+	return res;
+}
+
+/**
+ * Every start leaves for the middle by land on a road, and a portal pair is a real shortcut (K, 2026-11-02, the game he and
+ * Meg abandoned, mapgen_108x108_p4_s430478304: Meg's only link toward the middle had no road, her one road led to two monolith
+ * pairs whose four ends all stood in pockets beside her own zone, and blue's only way to the middle ran through green's start
+ * zone; roster\FEEDBACK-K-1102 items 11, 12, 15). Acts on a free layout's chosen links (`out`, key a*100000+b -> kind), after
+ * the family and Portal share have drawn them, with no draw of its own, so the rest of the map draws what it drew before:
+ *   1. the middle is the non-start biome of the land cell nearest the map's centre;
+ *   2. a start that cannot reach the middle without entering another start's biome (land links, portal links and the family's
+ *      pairs all count) opens the widest border between what it reaches and what the middle reaches without any start;
+ *   3. the shortest land way from each start to the middle that enters no other start's biome (widest borders on ties) is
+ *      made a road link by link; with no land way, the widest border joining the two land pieces is opened as a road first;
+ *   4. a portal link whose two biomes are joined without it by a walk shorter than SHORTCUT tiles, or which joins two biomes of one start's
+ *      pocket (biomes whose every way to the middle passes that start), becomes a land link with no road: a monolith pair
+ *      that only moves a hero round where he can already walk is what Meg's game had twice.
+ * The road links of step 3 are recorded on out.startRoads (keys), so the town road net's trim (plan.js) keeps them.
+ * VMAPGEN_START_EXIT=0 turns all of it off.
+ */
+function startExits(out, edges, seeds, pairs, ctx, isStart) {
+	const key = (a, b) => Math.min(a, b) * 100000 + Math.max(a, b);
+	const W = ctx.W || 0, H = ctx.H || 0;
+	const bordered = new Set();
+	for (const e of edges) { bordered.add(e.a); bordered.add(e.b); }
+	const starts = [...bordered].filter(isStart);
+	const others = [...bordered].filter(i => !isStart(i));
+	if (!starts.length || !others.length || !W) return;
+	// the middle: the biome of the land cell nearest the map's centre that is no start's (the seed nearest the centre picked a biome
+	// whose land lay off to one side on 5 of 12 seeds at K's 108 settings); the seed nearest the centre when there is no zone grid
+	let mid = -1;
+	if (ctx.zone) {
+		let bd = Infinity;
+		for (let c = 0; c < W * H; c++) {
+			const z = ctx.zone[c];
+			if (z < 0 || (ctx.water && ctx.water[c]) || isStart(z) || !bordered.has(z)) continue;
+			const d = ((c % W) + 0.5 - W / 2) ** 2 + (((c / W) | 0) + 0.5 - H / 2) ** 2;
+			if (d < bd) { bd = d; mid = z; }
+		}
+	}
+	if (mid < 0) {
+		const d2 = i => (seeds[i].x - W / 2) ** 2 + (seeds[i].y - H / 2) ** 2;
+		mid = others.reduce((b, i) => (d2(i) < d2(b) ? i : b), others[0]);
+	}
+	const width = new Map(edges.map(e => [key(e.a, e.b), e.borderCells.length]));
+	const isLand = k => /^open/.test(out.get(k) || '');
+	const links = (landOnly) => {
+		const adj = new Map();
+		const add = (a, b) => { if (!adj.has(a)) adj.set(a, []); if (!adj.has(b)) adj.set(b, []); adj.get(a).push(b); adj.get(b).push(a); };
+		for (const e of edges) { const k = key(e.a, e.b), kind = out.get(k); if (kind === 'portal' ? !landOnly : isLand(k)) add(e.a, e.b); }
+		if (!landOnly) for (const [a, b] of pairs) add(a, b);
+		return adj;
+	};
+	const reach = (from, adj, banned) => {
+		const seen = new Set([from]), q = [from];
+		for (let h = 0; h < q.length; h++) for (const n of adj.get(q[h]) || []) if (!seen.has(n) && !banned(n)) { seen.add(n); q.push(n); }
+		return seen;
+	};
+	const open = (a, b, why) => { out.set(key(a, b), 'openRoad'); opened.push(`${a}-${b} ${why}`); };
+	const opened = [];
+	// walking distance between two biomes on the chosen links, seed to the border's middle to seed (a portal costs 2), without link `skip`;
+	// a portal is a shortcut when this is at least SHORTCUT tiles (the Reviewer, 2026-11-03: two links can be 60 tiles at 144 or 180)
+	const SHORTCUT = Math.max(24, Math.round((W + H) / 2 * 0.25));
+	const mids = new Map(edges.map(e => { const bc = e.borderCells || []; let sx = 0, sy = 0; for (const c of bc) { sx += c % W; sy += (c / W) | 0; } return [key(e.a, e.b), bc.length ? [sx / bc.length, sy / bc.length] : [(seeds[e.a].x + seeds[e.b].x) / 2, (seeds[e.a].y + seeds[e.b].y) / 2]]; }));
+	const walkDist = (a, b, skipKey, skipPair) => {
+		const d = new Map([[a, 0]]), done = new Set();
+		const nb = c => { const r = []; for (const e of edges) { if (e.a !== c && e.b !== c) continue; const k = key(e.a, e.b); if (k === skipKey) continue; const kind = out.get(k); if (!kind || kind === 'blocked') continue; const o = e.a === c ? e.b : e.a;
+			const m = mids.get(k); const w = kind === 'portal' ? 2 : Math.hypot(seeds[c].x - m[0], seeds[c].y - m[1]) + Math.hypot(seeds[o].x - m[0], seeds[o].y - m[1]); r.push([o, w]); }
+			for (const p of pairs) { if (p === skipPair) continue; if (p[0] === c) r.push([p[1], 2]); else if (p[1] === c) r.push([p[0], 2]); } return r; };
+		for (;;) { let c = -1, cd = Infinity; for (const [z, v] of d) if (!done.has(z) && v < cd) { cd = v; c = z; } if (c < 0) return Infinity; if (c === b) return cd; done.add(c); for (const [o, w] of nb(c)) if (!d.has(o) || d.get(o) > cd + w) d.set(o, cd + w); }
+	};
+	const widest = (A, B) => {
+		let best = null;
+		for (const e of edges) {
+			const k = key(e.a, e.b);
+			if (isLand(k)) continue;
+			if (!((A.has(e.a) && B.has(e.b)) || (A.has(e.b) && B.has(e.a)))) continue;
+			if (!best || e.borderCells.length > best.borderCells.length) best = e;
+		}
+		return best;
+	};
+	// 2. every start reaches the middle without another start's biome
+	for (const s of starts) {
+		const notOther = n => isStart(n) && n !== s;
+		const mine = reach(s, links(false), notOther);
+		if (mine.has(mid)) continue;
+		const theirs = reach(mid, links(false), n => isStart(n));
+		const e = widest(new Set([...mine].filter(n => !notOther(n))), theirs);
+		if (e) open(e.a, e.b, `start ${s} reaches the middle`);
+	}
+	// 3. a land way with a road from each start to the middle
+	const roads = new Set();
+	for (const s of starts) {
+		const notOther = n => isStart(n) && n !== s;
+		let landAdj = links(true);
+		if (!reach(s, landAdj, notOther).has(mid)) {
+			const A = new Set([...reach(s, landAdj, notOther)]), B = reach(mid, landAdj, n => isStart(n));
+			const e = widest(A, B);
+			if (!e) continue;
+			open(e.a, e.b, `start ${s} walks to the middle`);
+			landAdj = links(true);
+		}
+		// shortest by steps, widest border first on a tie
+		const prev = new Map([[s, -1]]), q = [s];
+		for (let h = 0; h < q.length && !prev.has(mid); h++) {
+			const c = q[h];
+			const ns = (landAdj.get(c) || []).filter(n => !prev.has(n) && !notOther(n)).sort((x, y) => (width.get(key(c, y)) || 0) - (width.get(key(c, x)) || 0));
+			for (const n of ns) { prev.set(n, c); q.push(n); }
+		}
+		if (!prev.has(mid)) continue;
+		for (let c = mid; prev.get(c) !== -1; c = prev.get(c)) {
+			const k = key(c, prev.get(c));
+			if (out.get(k) !== 'openRoad') { out.set(k, 'openRoad'); opened.push(`${c}-${prev.get(c)} road for start ${s}`); }
+			roads.add(k);
+		}
+	}
+	// 4. portals that are no shortcut, or loop inside one start's pocket
+	const pocketOf = new Map();
+	for (const s of starts) {
+		const all = links(false);
+		const fromMid = reach(mid, all, n => n === s);
+		for (const z of bordered) if (!fromMid.has(z) && z !== s) pocketOf.set(z, s);
+		pocketOf.set(s, s);
+	}
+	let landed = 0;
+	for (const e of edges) {
+		const k = key(e.a, e.b);
+		if (out.get(k) !== 'portal') continue;
+		out.set(k, 'blocked');
+		const adj = links(false);
+		const d = new Map([[e.a, 0]]), q = [e.a];
+		for (let h = 0; h < q.length && !d.has(e.b); h++) for (const n of adj.get(q[h]) || []) if (!d.has(n)) { d.set(n, d.get(q[h]) + 1); q.push(n); }
+		const hops = d.has(e.b) ? d.get(e.b) : Infinity;
+		const walk = walkDist(e.a, e.b, k, null);
+		const pocket = pocketOf.has(e.a) && pocketOf.get(e.a) === pocketOf.get(e.b);
+		if ((hops < Infinity && walk < SHORTCUT) || pocket) { out.set(k, 'openNoRoad'); landed++; } else out.set(k, 'portal');
+	}
+	// the family's own pairs (Hub, Pairs: biomes that share no border) under the same rule; one that is no shortcut is left out,
+	// its biomes already joined within two steps (Pairs at K's 108 settings, seed 4: two starts two steps apart joined by monoliths)
+	let dropped = 0;
+	for (let i = pairs.length - 1; i >= 0; i--) {
+		const [a, b] = pairs[i];
+		const save = pairs.splice(i, 1)[0];
+		const adj = links(false);
+		const d = new Map([[a, 0]]), q = [a];
+		for (let h = 0; h < q.length && !d.has(b); h++) for (const n of adj.get(q[h]) || []) if (!d.has(n)) { d.set(n, d.get(q[h]) + 1); q.push(n); }
+		const hops = d.has(b) ? d.get(b) : Infinity;
+		const walk = hops < Infinity ? walkDist(a, b, -1, null) : Infinity;
+		const pocket = pocketOf.has(a) && pocketOf.get(a) === pocketOf.get(b);
+		if ((hops < Infinity && walk < SHORTCUT) || (pocket && hops < Infinity)) dropped++; else pairs.splice(i, 0, save);
+	}
+	out.startRoads = roads;
+	out.startExitLog = `middle biome ${mid}; ${opened.length} link(s) opened or roaded for the starts${opened.length ? ' (' + opened.join(', ') + ')' : ''}; `
+		+ `${landed} portal link(s) that were no shortcut made land, ${dropped} portal pair(s) between biomes with no border left out`;
+}
+
+/**
  * The links of a free layout of one family (Layout family, BIOME_DEFAULTS.layoutFamily): a skeleton chosen over the cut's borders, the
  * other borders closed. The cut stays as it is, so the zones and the starts' share of the land do not move. Mixed (0) never comes here:
  * assignConnections draws each border on its own, and ensureConnected then opens borders until every biome joins, so the borders that
@@ -1310,6 +1504,7 @@ function familyConnections(family, edges, seedCount, params, rng, ctx = {}) {
 		}
 		out.set(key(e), rng() < noRoad ? 'openNoRoad' : 'openRoad');
 	}
+	if (process.env.VMAPGEN_START_EXIT !== '0') startExits(out, edges, seeds, pairs, ctx, isStart);
 	return out;
 }
 
@@ -1378,7 +1573,7 @@ function ensureConnected(edges, connections, seedCount, params, rng, joined = []
 	return opened;
 }
 
-module.exports = { BIOME_CLASS, BIOME_DEFAULTS, partitionBiomes, partitionSeeded, wobbleWaves,
+module.exports = { startExits, openEnclosedStarts, BIOME_CLASS, BIOME_DEFAULTS, partitionBiomes, partitionSeeded, wobbleWaves,
 	layoutZoneSeeds, symmetricEigen, spectralCoords, fitSimilarity, assignClasses, zoneDistances, physZoneDistances,
 	biomeEdges, assignConnections, familyConnections, ensureConnected, valueNoise, zonesWhole,
 	rimModeOf, rimLobeScale, bordersOff, nearestLand,

@@ -4658,6 +4658,10 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		}
 	}
 
+	if (!(tplZones && tplZones.length) && process.env.VMAPGEN_ENCLOSED_START !== '0') {
+		const r = require('./biomes').openEnclosedStarts(zone, W, H, seeds, water);
+		if (r.moved || r.left) console.error(`[gen] level ${levelIndex}: start zones that met only other starts: ${r.moved} given a neighbour (${r.cells} cells), ${r.left} left`);
+	}
 	const edges = biomeEdges(zone, W, H, seeds.length, water);
 	let connections;
 	if (tplZones && tplZones.length) {
@@ -4768,10 +4772,15 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			? require('./biomes').familyConnections(family, edges, seeds.length, p, xorshift((Math.floor(rng() * 4294967296) ^ 0x1a7f) >>> 0),
 				{ seeds, W, H, zone, water, pairs: familyPairs })
 			: assignConnections(edges, p, rng, seeds.length);
+		// Mixed (Classic's and Random's default) gets the starts' way out too (the Reviewer, 2026-11-03: K's seed at layoutFamily 0 went
+		// through assignConnections and kept a start with no road out and 4 portal pairs that were no shortcut)
+		if (!(family >= 1 && family <= 6) && process.env.VMAPGEN_START_EXIT !== '0')
+			require('./biomes').startExits(connections, edges, seeds, familyPairs, { seeds, W, H, zone, water }, i => !!(seeds[i] && seeds[i].player));
 		if (family >= 1 && family <= 6) console.error(`[gen] level ${levelIndex}: Layout family ${['Mixed', 'Tree', 'Sparse mesh', 'Hub', 'Pairs', 'Ring', 'Chain'][family]}`
 			+ `${asked === 7 ? ' (Random)' : ''}: `
 			+ `${[...connections.values()].filter(k => k !== 'blocked').length + familyPairs.length} link(s) over ${edges.length} border(s)`
 			+ (familyPairs.length ? `, ${familyPairs.length} of them portal pair(s) between zones that do not touch` : ''));
+		if (connections.startExitLog) console.error(`[gen] level ${levelIndex}: starts' way out: ${connections.startExitLog}`);
 		edgeInfo = new Map();
 		unfulfilled = familyPairs.map(([a, b]) => ({ a, b, guard: 0, road: false, type: 'family' }));
 	}
@@ -4862,6 +4871,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			console.error(`[gen] level ${levelIndex}: ${opened} portal border(s) opened as doorways, `
 				+ 'the monolith channels all taken');
 	}
+	if (process.env.VMAPGEN_LINK_DUMP && !(tplZones && tplZones.length)) { global.__linkDump = global.__linkDump || {}; global.__linkDump[levelIndex] = [...edges.map(e => [e.a, e.b, connections.get(e.a * 100000 + e.b)]).filter(x => x[2] && x[2] !== 'blocked'), ...(unfulfilled || []).map(c => [c.a, c.b, 'pair'])]; }
 	// layout only (VMAPGEN_PLAN_ONLY, for analysis): zones and links are
 	// decided, which is all the water compatibility matrix measures
 	if (p.layoutOnly)
@@ -6200,6 +6210,8 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 					// start town stood with no road while every other start had one (K's islands map, 2026-10-08)
 					const other = roads[0].a === z ? roads[0].b : roads[0].a;
 					if (holding.has(other) && doors.filter(o => o.kind === 'openRoad' && (o.a === other || o.b === other)).length === 1) continue;
+					// a start's road to the middle stays (biomes.js startExits)
+					if (connections && connections.startRoads && connections.startRoads.has(Math.min(roads[0].a, roads[0].b) * 100000 + Math.max(roads[0].a, roads[0].b))) continue;
 					roads[0].kind = 'openNoRoad';
 					if (!linked.delete(roads[0])) trimmed++;
 					changed = true;
