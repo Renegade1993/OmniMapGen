@@ -575,6 +575,11 @@
 			"description": "Many islands. Each player starts on one, and the others are neutral, holding towns, mines and treasure for whoever sails there first.\n\nA race by boat for the free islands before the fighting starts. Needs about a quarter of a small map under water.",
 			"picture": "mapgen/preview/water_archipelago",
 			"previewConfig": "config/mapgen/preview/water_archipelago.json"
+		},
+		"none": {
+			"label": "Random or Template",
+			"oneLine": "Random picks one of the land layouts from the seed; Template places the water as the template does.",
+			"description": "Random: one of the layouts that keep the players on land (Lakes, Coastal, Continental, Mediterranean or Highland), picked from the map's seed, so the same seed always gives the same water.\n\nTemplate: the water goes where the chosen template puts it. On the open layout (Classic) that is the water amount and content you set on this page."
 		}
 	},
 	"_aboutWaterLayouts": "waterLayouts: what the template panel shows for each Water layout (K, 2026-11-02, item 18), keyed by the layout id of the generator (src/biome/water.js WATER_SHAPES). label, oneLine and description (plain text, paragraphs split by a blank line). picture: the sprite path DMB ships the layout picture under (Content/Sprites/mapgen/preview/water_<id>.png); previewConfig: its caption file (Content/config/mapgen/preview/water_<id>.json, the same shape as the template pictures' files)."
