@@ -239,6 +239,10 @@ function scoreField(W, H, shape, rng, starts = [], cover = 0.4) {
 	const coarse = valueNoise((rng() * 1e9) | 0, coarseCell);
 	const fine = valueNoise((rng() * 1e9) | 0, Math.max(3, Math.round((W + H) / 30)));
 	const side = (rng() * 4) | 0;                    // coastal: which edge
+	// Coastal on 1, 2 or 3 sides of the map, by seed (K, 2026-11-02, item 19b: "seems like there should sometimes be water on two or even three
+	// sides"), drawn only for this layout, so the other layouts draw what they drew. VMAPGEN_COAST_SIDES=0 keeps one side.
+	const coastSides = [side];
+	if (shape.id === 'coastal' && process.env.VMAPGEN_COAST_SIDES !== '0') { const r2 = rng; const n = 1 + ((r2() * 3) | 0); for (let k = 1; k < n; k++) coastSides.push((side + (k === 1 ? (r2() < 0.5 ? 1 : 3) : 2)) % 4); }
 	const stretch = 0.55 + rng() * 0.45;             // mediterranean: aspect
 	const alongX = rng() < 0.5;
 	// Mediterranean: the sea varies from seed to seed, an oval the rare case (K, 2026-10-12, a six-player open Mediterranean: "strange
@@ -339,8 +343,8 @@ function scoreField(W, H, shape, rng, starts = [], cover = 0.4) {
 			let v;
 			switch (shape.id) {
 				case 'coastal': {
-					const t = side === 0 ? y / (H - 1) : side === 1 ? 1 - x / (W - 1)
-						: side === 2 ? 1 - y / (H - 1) : x / (W - 1);
+					const tOf = sd => (sd === 0 ? y / (H - 1) : sd === 1 ? 1 - x / (W - 1) : sd === 2 ? 1 - y / (H - 1) : x / (W - 1));
+					const t = Math.min(...coastSides.map(tOf));
 					v = (1 - t) + 0.3 * (n - 0.5);
 					break;
 				}
