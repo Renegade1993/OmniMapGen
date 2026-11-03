@@ -9824,7 +9824,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		if (plan.harbours && plan.harbours.length)
 			fillWater({ W, H, l: plan.levelIndex, water: plan.p.water, harbours: plan.harbours,
 				rng: xorshift(((params.seed || 1) ^ 0x7a7e2) >>> 0), p: plan.p,
-				objects: plan.objects, objectEntry });
+				objects: plan.objects, objectEntry, zone: plan.zone });
 
 	// underground floor nothing uses becomes rock, as the engine's does (emptyrock.js)
 	for (let l = 0; l < levels; l++) {
