@@ -1264,6 +1264,13 @@ async function generateMap(params) {
 			sites.push({ type: o.type, subtype: o.subtype, mod: id.split(':')[0], weight: (o.rmg && o.rmg.rarity) || 100, tpl: { animation: String(t.raw.animation).replace(/.def$/i, ''), mask: t.raw.mask, visitableFrom: t.raw.visitableFrom } });
 		}
 		require('../biome/waterfill').setModWaterSites(sites);
+		const wportals = [];
+		if (useMods) for (const [id, o] of assetIndex.objects) {
+			if (String(id).startsWith('core:') || o.overrides || o.type !== 'monolithTwoWay') continue;
+			const t = placeables(o).find(x => Array.isArray(x.allowedTerrains) && x.allowedTerrains.length && x.allowedTerrains.every(q => unscope(q) === 'water'));
+			if (t) wportals.push({ type: o.type, subtype: o.subtype, mod: id.split(':')[0], tpl: { animation: String(t.raw.animation).replace(/\.def$/i, ''), mask: t.raw.mask, visitableFrom: t.raw.visitableFrom } });
+		}
+		require('../biome/waterfill').setModWaterPortals(wportals);
 		if (sites.length) console.error(`[gen] water: ${sites.length} mod water site kind(s): ${sites.map(m => m.subtype).join(', ')}`);
 		if (extra.length) console.error(`[gen] water: ${extra.length} mod water decor and pickup kind(s): ${extra.map(m => m.subtype).join(', ')}`);
 		if (banks.length) console.error(`[gen] water: ${banks.length} mod water bank(s) to place: ${banks.map(m => m.subtype).join(', ')}`);

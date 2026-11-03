@@ -78,6 +78,10 @@ const MOD_EXTRA_RATE = 2;
 let MOD_WATER_SITES = [];
 function setModWaterSites(list) { MOD_WATER_SITES = Array.isArray(list) ? list : []; }
 const MOD_SITE_RATE = 0.1;
+// the mods' water portals (HotA's two-way water monoliths): one pair, only where two separate seas of 400+ tiles both have a harbour
+// (the lead, 11-03, option b: K's maps have one connected sea, so this is nearly never)
+let MOD_WATER_PORTALS = [];
+function setModWaterPortals(list) { MOD_WATER_PORTALS = Array.isArray(list) ? list : []; }
 const MIN_BODY = 25;
 
 function waterBodies(water, W, H) {
@@ -660,6 +664,35 @@ function fillWater(ctx) {
 			}
 		}
 	}
+	// a water portal pair between the two largest seas that both have a harbour; own stream. VMAPGEN_MOD_WATER_PORTALS=0 off.
+	if (MOD_WATER_PORTALS.length && process.env.VMAPGEN_MOD_WATER_PORTALS !== '0') {
+		const seas = [...new Set(harbours.map(q => q.body))].filter(b => bodies[b].size >= 400).sort((a2, c) => bodies[c].size - bodies[a2].size).slice(0, 2);
+		if (seas.length === 2) {
+			let h = ((Number(ctx.seed || (p && p.seed)) || 1) * 2654435761 + 0x9047) >>> 0 || 1;
+			const prng = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+			const m = MOD_WATER_PORTALS[(prng() * MOD_WATER_PORTALS.length) | 0], tpl = m.tpl, spots = [];
+			for (const b of seas) {
+				const guard = makeConnectivityGuard(wb, 0, W, H, 0, harbours.find(q => q.body === b).cell);
+				const cells = bodies[b].cells, start = (prng() * cells.length) | 0;
+				for (let tries = 0; tries < cells.length; tries++) {
+					const c = cells[(start + tries) % cells.length], x = c % W, y = (c / W) | 0;
+					if (!inMask(tpl, x, y, W, H)) continue;
+					let ok = true;
+					for (let rr = 0; rr < tpl.mask.length && ok; rr++) for (let ii = 0; ii < tpl.mask[rr].length && ok; ii++) { const u = x - (tpl.mask[rr].length - 1 - ii), v = y - (tpl.mask.length - 1 - rr); for (let dy = -1; dy <= 1 && ok; dy++) for (let dx = -1; dx <= 1; dx++) { const nu = u + dx, nv = v + dy; if (nu < 0 || nv < 0 || nu >= W || nv >= H || !water[nv * W + nu] || id[nv * W + nu] !== b) { ok = false; break; } } }
+					if (!ok || !footprintFits(tpl, x, y, 0, W, H, wb)) continue;
+					const walls = blockingCells(tpl, x, y).map(([u, v]) => v * W + u);
+					if (walls.length && !guard.accepts(walls)) continue;
+					const vis = visitableCells(tpl, x, y);
+					if (!vis.some(([vx, vy]) => allowedDirs(tpl).some(([dx, dy]) => { const u = vx + dx, v = vy + dy; if (u < 0 || v < 0 || u >= W || v >= H) return false; const q = v * W + u; return !walls.includes(q) && !(wb[q] & OCCUPIED) && guard.reachable[q]; }))) continue;
+					spots.push([x, y]); break;
+				}
+			}
+			if (spots.length === 2) {
+				for (const [x, y] of spots) { objects.push(objectEntry(m.type, x, y, l, tpl, m.subtype)); objects[objects.length - 1].mod = m.mod; footprintBlock(tpl, x, y, 0, W, H, wb); placed++; }
+				console.error(`[gen] level ${l}: a water portal pair (${m.subtype}) between the two largest seas, ${bodies[seas[0]].size} and ${bodies[seas[1]].size} tiles`);
+			}
+		}
+	}
 	// whirlpools throw a ship to one another, any body of water to any other:
 	// one whose partner found no room would lead nowhere, so it goes too
 	if (whirlpools.length % 2) {
@@ -697,4 +730,4 @@ function sailLinksFor(harbours, water, W, H) {
 	return harbours.map(h => [h.boarding, shoreOf.get(h.body) || [], true, h.kind]);
 }
 
-module.exports = { setModWaterBanks, setModWaterExtra, setModWaterSites, placeHarbours, fillWater, waterBodies, sailLinksFor, setModWater, MIN_BODY };
+module.exports = { setModWaterBanks, setModWaterExtra, setModWaterSites, setModWaterPortals, placeHarbours, fillWater, waterBodies, sailLinksFor, setModWater, MIN_BODY };
