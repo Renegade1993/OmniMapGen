@@ -525,5 +525,57 @@
 			},
 			"oneLine": "Approximate: the open layout set toward Heroes of Might and Magic HD's Nostalgia, a mesh of 24 zones on two levels."
 		}
-	}
+	},
+	"waterLayouts": {
+		"lakes": {
+			"label": "Lakes",
+			"oneLine": "A few inland lakes; land all the way round the map.",
+			"description": "A land map with a few lakes scattered inland. The map edge is all land, so every player walks wherever they need to go; the lakes are obstacles to go round, with treasure on their shores and sometimes a boat.\n\nGood for a first water map: nothing is cut off, and a hero never needs a ship.",
+			"picture": "mapgen/preview/water_lakes",
+			"previewConfig": "config/mapgen/preview/water_lakes.json"
+		},
+		"coastal": {
+			"label": "Coastal",
+			"oneLine": "A sea along the side of the map; the starts there move inland.",
+			"description": "Land with a sea along one side of the map. Players whose start would fall in the sea are moved inland. Shipyards and boats let a hero sail along the coast to treasure and to the other players.\n\nPlay it as a land map with a back door: most fighting happens on land, and the sea is the long way round.",
+			"picture": "mapgen/preview/water_coastal",
+			"previewConfig": "config/mapgen/preview/water_coastal.json"
+		},
+		"continental": {
+			"label": "Continental",
+			"oneLine": "Sea all round the edge and one big land mass in the middle.",
+			"description": "One large continent surrounded by sea on every side. All players start on it and can walk to each other; the sea round the edge carries the water treasure, sea banks and the occasional island reached by boat.\n\nA land map with a rich shore: worth a ship once the land is settled.",
+			"picture": "mapgen/preview/water_continental",
+			"previewConfig": "config/mapgen/preview/water_continental.json"
+		},
+		"mediterranean": {
+			"label": "Mediterranean",
+			"oneLine": "A sea in the middle with land all the way round it.",
+			"description": "A sea in the middle of the map, ringed by land. Players start on the ring and can walk round it to each other, or sail across the middle for a shortcut and the treasure out on the water.\n\nThe centre is the prize and the fastest road; the long walk round is the safe one.",
+			"picture": "mapgen/preview/water_mediterranean",
+			"previewConfig": "config/mapgen/preview/water_mediterranean.json"
+		},
+		"highland": {
+			"label": "Highland",
+			"oneLine": "A land map cut by wide rivers with a few narrow fords.",
+			"description": "A land map split by wide rivers into separate continents. One river runs through a map up to Large, two on Extra Large, three on the biggest maps. Each river is crossed only at a few narrow fords, so armies meet at those crossings.\n\nHold the fords and you hold your continent: a map of bottlenecks, after the Highland map of Age of Empires.",
+			"picture": "mapgen/preview/water_highland",
+			"previewConfig": "config/mapgen/preview/water_highland.json"
+		},
+		"islands": {
+			"label": "Islands",
+			"oneLine": "Every player on an island of their own; boats are the only way across.",
+			"description": "Every player starts on an island of their own with open sea between them. Each start has a shipyard and a boat on its shore, and sailing is the only way to reach anyone else.\n\nA naval map: scout by sea, and carry your army across when you are ready.",
+			"picture": "mapgen/preview/water_islands",
+			"previewConfig": "config/mapgen/preview/water_islands.json"
+		},
+		"archipelago": {
+			"label": "Archipelago",
+			"oneLine": "Many islands: one per player and the rest neutral, for whoever sails there first.",
+			"description": "Many islands. Each player starts on one, and the others are neutral, holding towns, mines and treasure for whoever sails there first.\n\nA race by boat for the free islands before the fighting starts. Needs about a quarter of a small map under water.",
+			"picture": "mapgen/preview/water_archipelago",
+			"previewConfig": "config/mapgen/preview/water_archipelago.json"
+		}
+	},
+	"_aboutWaterLayouts": "waterLayouts: what the template panel shows for each Water layout (K, 2026-11-02, item 18), keyed by the layout id of the generator (src/biome/water.js WATER_SHAPES). label, oneLine and description (plain text, paragraphs split by a blank line). picture: the sprite path DMB ships the layout picture under (Content/Sprites/mapgen/preview/water_<id>.png); previewConfig: its caption file (Content/config/mapgen/preview/water_<id>.json, the same shape as the template pictures' files)."
 }
