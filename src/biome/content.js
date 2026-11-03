@@ -2313,13 +2313,19 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 						// guard's, outside the prison. VMAPGEN_PRISON_OPEN_MIN=0 off.
 						if (type === 'prison') {
 							const need = process.env.VMAPGEN_PRISON_OPEN_MIN !== undefined ? Number(process.env.VMAPGEN_PRISON_OPEN_MIN) : 3;
-							let freeN = 0;
+							// and one of them outside the ring the pile walls (the free tiles within 1 of the prison; put's ringed path walls them as the
+							// prison lands): a guard whose free neighbours all lay in that ring was walled in with its prison (Coldshadow seed 7, a2ad505,
+							// the prison (103,132) level 1 and its guard (102,133): their way out (100..101,132), (101,133) closed in the same placement,
+							// traced tile by tile; a2ad505's 16 seeds dropped 18 objects against e7627ac's 7). VMAPGEN_PRISON_OPEN_RING=0 off.
+							const ringOf = q => { const qx = q % W, qy = (q / W) | 0; for (const f of foot) if (Math.abs(f % W - qx) <= 1 && Math.abs(((f / W) | 0) - qy) <= 1) return true; return false; };
+							let freeN = 0, outside = 0;
 							for (let ny = gy - 1; ny <= gy + 1; ny++) for (let nx = gx - 1; nx <= gx + 1; nx++) {
 								if ((nx === gx && ny === gy) || nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
 								const q = ny * W + nx;
-								if (!foot.has(q) && !(blocked[l * W * H + q] & OCCUPIED)) freeN++;
+								if (!foot.has(q) && !(blocked[l * W * H + q] & OCCUPIED)) { freeN++; if (!ringOf(q)) outside++; }
 							}
 							if (freeN < need) continue;
+							if (!outside && process.env.VMAPGEN_PRISON_OPEN_RING !== '0') continue;
 						}
 						if (connectivity && !connectivity.accepts([...walls, c])) continue;
 						heldTile = c; break;
