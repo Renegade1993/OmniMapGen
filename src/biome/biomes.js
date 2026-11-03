@@ -104,6 +104,8 @@ const BIOME_DEFAULTS = {
 	resourceDensity: 1.0,
 	pickupDensity: 1.0,
 	starterMines: true,
+	// Obelisks and Grail (K, 2026-11-03): 0 as the template places them, 1 on any map, 2 none (and no Grail); applied after placement (generate.js)
+	obelisks: 0,
 	dwellingDensity: 1.0,
 	guardDensity: 1.0,
 	bonusDensity: 1.0,

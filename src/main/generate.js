@@ -3065,6 +3065,51 @@ async function generateMap(params) {
 		}
 		if (swapped) console.error(`[gen] boats given their town's faction boat: ${swapped}`);
 	}
+	// Obelisks and Grail (K, 2026-11-03: "default to template's preference 'Template' but should be toggleable and changeable for any map"),
+	// after placement so the rest of the map is the map Template gives: 0 Template, nothing changes; 2 Off, every obelisk taken off and the
+	// map's grail object written with options.grailRadius -1, which DMB's engine (branch dmb-grail-off-1103) reads as no Grail; 1 On, a level
+	// with no obelisk gets them at the engine's rate (its 98 maps: every template carries them, about one per 1,500 tiles), one per open
+	// spot at least 12 tiles from the last, outside the starts' zones.
+	{
+		const mode = Math.round(Number(biomeParams.obelisks) || 0);
+		if (mode === 2) {
+			const n = objects.filter(o => o.type === 'obelisk').length;
+			const keep = objects.filter(o => o.type !== 'obelisk'); objects.length = 0; objects.push(...keep);
+			for (const pl of plans) if (pl.objects) { const k2 = pl.objects.filter(o => o.type !== 'obelisk'); pl.objects.length = 0; pl.objects.push(...k2); }
+			const gt = require('../parser/h3data').h3ObjectTemplates([roots.userDir, roots.installDir].filter(Boolean), 36).get(0) || { animation: 'AVZgrail', mask: ['VA'], visitableFrom: ['+++', '+-+', '+++'] };
+			const gx = params.mapW - 1, gy = params.mapH - 1;
+			// the map's own grail object (the generator writes one, options.radius 0) says no Grail; one is written when there is none
+			const had = objects.filter(o => o.type === 'grail');
+			for (const o of had) o.options = { ...(o.options || {}), radius: -1, grailRadius: -1 };
+			if (!had.length) objects.push({ instanceName: `grail_${gx}_${gy}_0`, l: 0, x: gx, y: gy, type: 'grail', subtype: 'object', options: { radius: -1, grailRadius: -1 },
+				template: { animation: gt.animation, editorAnimation: '', mask: gt.mask, visitableFrom: gt.visitableFrom } });
+			console.error(`[gen] Obelisks and Grail Off: ${n} obelisk(s) taken off, the map says it has no Grail`);
+		} else if (mode === 1) {
+			for (let li = 0; li < plans.length; li++) {
+				if (objects.some(o => o.type === 'obelisk' && (o.l || 0) === li)) continue;
+				const Wm = params.mapW, Hm = params.mapH, pl = plans[li], N = Wm * Hm, taken = new Uint8Array(N);
+				for (const o of objects) if ((o.l || 0) === li && o.template && o.template.mask) for (const [x, y] of [...blockingCells(o.template, o.x, o.y), ...visitableCells(o.template, o.x, o.y)]) if (x >= 0 && y >= 0 && x < Wm && y < Hm) taken[y * Wm + x] = 1;
+				const shut = c => taken[c] || (pl.p && pl.p.water && pl.p.water[c]) || (pl.openMask && !pl.openMask[c]);
+				const startZ = new Set((params.players || []).map(p => p.townPos).filter(t => t && (t.l || 0) === li).map(t => pl.zone ? pl.zone[t.y * Wm + t.x] : -1));
+				const want = Math.max(1, Math.round(N / 1500)), put = [];
+				let h = ((params.seed || 1) ^ 0x0be115) >>> 0 || 1; const rnd = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+				for (let tries = 0; tries < want * 400 && put.length < want; tries++) {
+					const x = 2 + ((rnd() * (Wm - 4)) | 0), y = 2 + ((rnd() * (Hm - 4)) | 0);
+					if (pl.zone && startZ.has(pl.zone[y * Wm + x])) continue;
+					if (put.some(p => Math.max(Math.abs(p[0] - x), Math.abs(p[1] - y)) < 12)) continue;
+					const tpl = require('../biome/economy').obeliskTemplate(null);
+					const cells = [...blockingCells(tpl, x, y), ...visitableCells(tpl, x, y)];
+					if (cells.some(([u, v]) => u < 0 || v < 0 || u >= Wm || v >= Hm || shut(v * Wm + u))) continue;
+					const [vx, vy] = visitableCells(tpl, x, y)[0] || [x, y];
+					if (![[0, 1], [1, 1], [-1, 1]].some(([dx, dy]) => { const u = vx + dx, v = vy + dy; return u >= 0 && v >= 0 && u < Wm && v < Hm && !shut(v * Wm + u); })) continue;
+					for (const [u, v] of cells) taken[v * Wm + u] = 1;
+					objects.push({ instanceName: `obelisk_${x}_${y}_${li}`, l: li, x, y, type: 'obelisk', subtype: 'object', template: { animation: tpl.animation, editorAnimation: '', mask: tpl.mask, visitableFrom: tpl.visitableFrom } });
+					put.push([x, y]);
+				}
+				if (put.length) console.error(`[gen] Obelisks and Grail On: level ${li} had none, ${put.length} placed`);
+			}
+		}
+	}
 	// Every object is written with the draw priority the engine gives its art. The engine writes zIndex 100 on a lake, a crater, a fissure, a
 	// lava flow, a canyon or a frozen lake (OBJECTS.TXT column 8, or a mod template's own zIndex), and VCMI draws such an object under every
 	// object without one (CMap::compareObjectBlitOrder). Written without it, the same art was drawn by row like a building, so a lake or a
