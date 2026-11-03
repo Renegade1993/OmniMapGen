@@ -551,8 +551,10 @@ function fillWater(ctx) {
 						if (!water[v * W + u] || id[v * W + u] !== b) { onWater = false; break; }
 						// and off the shoreline: the shore pass after this one turns some coastal water to land, and a sea chest stood on
 						// the beach (MapGen Dev's water-objects on 3b5987a, coast108 seeds 1 and 2 and cont108 seed 1, once every sea was
-						// stocked). Scenery may still touch the coast. VMAPGEN_SEA_OFF_SHORE=0 lets the rest touch it too.
-						if (kind !== 'kelp' && kind !== 'blocking' && process.env.VMAPGEN_SEA_OFF_SHORE !== '0')
+						// stocked). Blocking scenery may still touch the coast. VMAPGEN_SEA_OFF_SHORE=0 lets the rest touch it too.
+						// kelp too (K, 2026-11-02, item 26: "kelp patch floating on the shore", its tail over the sand beside a chest): it is water-only
+						// decoration and the shore pass turned the water under its edge to beach. VMAPGEN_KELP_OFF_SHORE=0 lets kelp touch the coast again.
+						if ((kind !== 'kelp' || process.env.VMAPGEN_KELP_OFF_SHORE !== '0') && kind !== 'blocking' && process.env.VMAPGEN_SEA_OFF_SHORE !== '0')
 							for (let dy = -1; dy <= 1 && onWater; dy++) for (let dx = -1; dx <= 1; dx++) {
 								const nu = u + dx, nv = v + dy;
 								if (nu < 0 || nv < 0 || nu >= W || nv >= H || !water[nv * W + nu]) { onWater = false; break; }
