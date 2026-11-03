@@ -68,7 +68,7 @@ function traceRiver(W, H, rng, cells, budget = Infinity) {
  * 176 river ends in the open, 52% of river tiles under an object (the engine's own maps: 76 of 119 and 9%; K's rule is stricter).
  * Returns the set of river cells.
  */
-function routeRivers(W, H, rng, share, { forbid = null, water = null, open = null, under = null } = {}) {
+function routeRivers(W, H, rng, share, { forbid = null, water = null, open = null, under = null, nodes = null } = {}) {
 	const cells = new Set();
 	const target = Math.round(W * H * share);
 	if (target < 4) return cells;
@@ -112,6 +112,31 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 	if (!starts.length) { if (T) console.error("[river] " + JSON.stringify(T)); return cells; }
 	let failed = 0;
 	const dist = new Float64Array(N), prev = new Int32Array(N);   // doubles, as the heap holds them: a float32 store skipped tiles
+	// River nodes first, as the engine's RiverPlacer connects its nodes before anything (ObjectManager: a Water Wheel's visiting tile is
+	// a river node; the engine's 98 maps: 158 of 159 wheels within a tile of a river, ours 4 of 81; K, 2026-11-02, item 21). Each node
+	// is the free ground beside one object; the cheapest way from any of it to an end (edge, water, a river) is laid, of any length.
+	let nodeRivers = 0;
+	for (const group of nodes || []) {
+		const src = group.filter(c => free(c) && !cells.has(c));
+		if (!src.length || group.some(c => cells.has(c))) continue;
+		dist.fill(Infinity); prev.fill(-1);
+		const hp = [];
+		const hpush = (d, c) => { hp.push([d, c]); let i = hp.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (hp[p][0] <= hp[i][0]) break; [hp[p], hp[i]] = [hp[i], hp[p]]; i = p; } };
+		const hpop = () => { const top = hp[0], last = hp.pop(); if (hp.length) { hp[0] = last; let i = 0; for (;;) { const l = 2 * i + 1, r = l + 1; let m = i; if (l < hp.length && hp[l][0] < hp[m][0]) m = l; if (r < hp.length && hp[r][0] < hp[m][0]) m = r; if (m === i) break; [hp[m], hp[i]] = [hp[i], hp[m]]; i = m; } } return top; };
+		for (const c of src) { dist[c] = 0; hpush(0, c); }
+		let goal = -1;
+		while (hp.length) {
+			const [d, c] = hpop();
+			if (d > dist[c]) continue;
+			if (onEdge(c) || wetBeside(c) || riverBeside(c)) { goal = c; break; }
+			const cx = c % W, cy = (c / W) | 0;
+			for (const [dx, dy] of N4) { const u = cx + dx, v = cy + dy; if (u < 0 || v < 0 || u >= W || v >= H) continue; const n = v * W + u; if (!free(n) || cells.has(n)) continue; const nd = d + cost[n]; if (nd < dist[n]) { dist[n] = nd; prev[n] = c; hpush(nd, n); } }
+		}
+		if (goal < 0) continue;
+		for (let c = goal; c >= 0; c = prev[c]) cells.add(c);
+		nodeRivers++;
+	}
+	if (nodes && nodes.length) console.error(`[gen] rivers from ${nodeRivers} of ${nodes.length} water wheel(s)`);
 	for (let tries = 0; tries < 80 && cells.size < target; tries++) {
 		const s = starts[(rng() * starts.length) | 0];
 		if (cells.has(s) || riverBeside(s)) continue;

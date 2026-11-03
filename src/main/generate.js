@@ -2808,10 +2808,16 @@ async function generateMap(params) {
 			for (const [x, y] of vis) mark(x, y);
 		}
 		if (process.env.VMAPGEN_RIVER_TRACE) { let f = 0, o = 0, w = 0; for (let c = 0; c < riverForbid.length; c++) { if (riverForbid[c]) f++; if (openMask && !openMask[c]) o++; if (li === 0 && water && water[c]) w++; } console.error(`[river] level ${li}: forbidden ${f}, closed ${o}, water ${w} of ${riverForbid.length}; openMask ${!!openMask}`); }
+		// a Water Wheel is a river node (the engine's ObjectManager); the free ground beside its tiles is where its river starts. VMAPGEN_WHEEL_RIVER=0 off.
+		const riverNodes = process.env.VMAPGEN_WHEEL_RIVER === '0' ? null : objects.filter(o => (o.l || 0) === li && o.type === 'waterWheel' && o.template && o.template.mask).map(o => {
+			const own = [...blockingCells(o.template, o.x, o.y), ...visitableCells(o.template, o.x, o.y)], out = new Set();
+			for (const [x, y] of own) for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < lv.width && v < lv.height) out.add(v * lv.width + u); }
+			return [...out];
+		});
 		let riverCells = params.rivers === false ? new Set()
 			: buildRiverNetwork(lv.width, lv.height, riverRng,
 				params.riverShare !== undefined ? params.riverShare : 0.018,
-				{ forbid: riverForbid, under: riverUnder, water: li === 0 ? water : null, open: openMask || null });
+				{ forbid: riverForbid, under: riverUnder, water: li === 0 ? water : null, open: openMask || null, nodes: riverNodes });
 		// a river through solid rock is not a river. Underground, keep the
 		// water inside the carved chambers and tunnels.
 		if (openMask)
