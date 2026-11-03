@@ -425,7 +425,9 @@ function buildAssetIndex(coreConfigDir, orderedMods) {
 						...(creatureId ? { creature: creatureId, creatures: allCreatures } : {}),
 						...(bankCreatures.length ? { bankCreatures: [...new Set(bankCreatures)] } : {}),
 						// the tiles it shows when visited (a reward's revealTiles radius: the Redwood Observatory's 20), for spacing
-						...((r => (r > 0 ? { sight: r } : {}))((function deep(o, d) { if (!o || typeof o !== 'object' || d > 8) return 0; let m = o.revealTiles && Number(o.revealTiles.radius) > 0 ? Number(o.revealTiles.radius) : 0; for (const v of Object.values(o)) m = Math.max(m, deep(v, d + 1)); return m; })(sub, 0))),
+						// only an object whose every reward reveals tiles (the observatory: that is what it does); a reveal among other rewards (a bank's, a
+						// den's, a temple's) is no sight building (the Reviewer, Coldshadow seed 1: banks, corpses and temples were taken off)
+						...((rw => (rw.length && rw.every(e => e && e.revealTiles && Number(e.revealTiles.radius) > 0) ? { sight: Math.max(...rw.map(e => Number(e.revealTiles.radius))) } : {}))(Array.isArray(sub.rewards) ? sub.rewards : [])),
 					});
 				}
 			}

@@ -3022,11 +3022,13 @@ async function generateMap(params) {
 		const GAP = process.env.VMAPGEN_SAME_TYPE_GAP !== undefined ? Number(process.env.VMAPGEN_SAME_TYPE_GAP) : 10;
 		if (GAP > 0) {
 			const sight = new Map(); for (const o of assetIndex.objects.values()) if (o && o.sight && o.type) { const sk = String(o.type) + '|' + String(o.subtype || o.type); sight.set(sk, Math.max(sight.get(sk) || 0, o.sight)); }
-			const bonus = new Set(require('../biome/economy').BONUS_POOL.map(b => b.type));
+			// buildings only: never a pickup, a one-time loot site or a bank (the Reviewer, 11-03)
+			const NEVER = /^(corpse|wagon|warriorTomb|leanTo|campfire|treasureChest|resource|randomResource|artifact|randomArtifact|spellScroll|pandoraBox|seaChest|flotsam|shipwreck|derelictShip|creatureBank|dragonUtopia|crypt|prison)/;
+			const bonus = new Set(require('../biome/economy').BONUS_POOL.map(b => b.type).filter(t => !NEVER.test(t)));
 			const kept = new Map(), off = new Set(), offBy = {};
 			for (const o of objects) {
 				const t = String(o.type || ''), st = t + '|' + String(o.subtype || t), sub = sight.get(st) || (o.subtype === 'object' ? sight.get(t + '|' + t) : 0) || 0;
-				if (!sub && !bonus.has(t)) continue;
+				if ((!sub && !bonus.has(t)) || NEVER.test(t)) continue;
 				const gap = Math.max(GAP, sub), k = st + '|' + (o.l || 0);
 				const had = kept.get(k) || [];
 				if (had.some(p => Math.max(Math.abs(p.x - o.x), Math.abs(p.y - o.y)) < gap)) { off.add(o); offBy[t] = (offBy[t] || 0) + 1; continue; }
