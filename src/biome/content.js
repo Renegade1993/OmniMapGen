@@ -195,8 +195,8 @@ const AZURE = GUARD_POOL.find(c => c.id === 'azureDragon') || GUARD_POOL[GUARD_P
 // VMAPGEN_TPL_PILE_SHARE, _SHARE_RICH and _RICH_MIN override them.
 const TPL_PILE_SHARE = Number(process.env.VMAPGEN_TPL_PILE_SHARE) || 0.65;
 // the piles a template zone has room for, per 1,000 of its tiles (the room note at pileSim below)
-const TPL_ROOM_OTHER = Number(process.env.VMAPGEN_TPL_ROOM_OTHER) || 22;
-const TPL_ROOM_START = Number(process.env.VMAPGEN_TPL_ROOM_START) || 28;
+const TPL_ROOM_RICH = Number(process.env.VMAPGEN_TPL_ROOM_RICH) || 21.5;
+const TPL_ROOM_CHEAP = Number(process.env.VMAPGEN_TPL_ROOM_CHEAP) || 28;
 const TPL_PILE_SHARE_RICH = Number(process.env.VMAPGEN_TPL_PILE_SHARE_RICH) || 0.40;
 const TPL_RICH_MIN = Number(process.env.VMAPGEN_TPL_RICH_MIN) || 10000;
 // VMAPGEN_TPL_PILE_MODEL=engine: a template zone's piles built as the engine
@@ -2755,13 +2755,17 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		pileSim = { landed: [] };
 		// The engine asks each band for floor(tiles x density / 400) piles but places one only where it still fits (TreasurePlacer.cpp createTreasures:
 		// placeAndConnectObject fails once the zone is full), so the piles it lands stop growing with density. Its landed piles level off at about
-		// TPL_ROOM_OTHER per 1,000 tiles in a treasure or junction zone and TPL_ROOM_START in a start zone (Jebus Cross 108 and 144, Headquarters 108,
-		// Golems Aplenty 72, one level, engine maps against ours, MapGen Dev 2026-11-04: treasure zones 21.1 to 24.5, start zones 26.7 to 29.0).
+		// TPL_ROOM_RICH per 1,000 tiles where the piles are rich (a band from TPL_RICH_MIN) and about TPL_ROOM_CHEAP where they are cheaper (Jebus Cross
+		// 108 and 144 and Headquarters 108 treasure zones, all rich: 21.1 to 23.8; Golems Aplenty 72's cheaper treasure zone 24.5; start zones, mostly
+		// cheap: 26.7 to 29.0; one level, engine maps against ours, MapGen Dev 2026-11-04). Each landed pile spends 1,000 / that many tiles of the zone.
 		// Ours landed a fixed share of what was asked, which never runs out: Jebus Cross's middle (densities 3 + 10 + 10) landed 49 per 1,000
 		// tiles, about 2.5 times the engine's loot (K, 2026-11-03: "the loot on this jebus cross medium with underground is insance"). Piles land
 		// richest band first, as the engine places them, until the zone's room is spent. VMAPGEN_TPL_ROOM=0 turns it off.
-		const roomPer1000 = process.env.VMAPGEN_TPL_ROOM === '0' ? 0 : /^(playerStart|cpuStart|player)$/.test(zoneMeta.spec.type || '') ? TPL_ROOM_START : TPL_ROOM_OTHER;
-		const roomPiles = roomPer1000 > 0 ? Math.max(1, Math.round(cells.length * roomPer1000 / 1000)) : Infinity;
+		// start zones are left as they were: ours already land at or under the engine's there (Jebus Cross and Headquarters start zones 0.8 to 1.0 of
+		// its chests and resources), and Coldshadow's start-zone fit is Opus Map Vision's. VMAPGEN_TPL_ROOM=all spends room in start zones too.
+		const roomOn = process.env.VMAPGEN_TPL_ROOM !== '0' && (process.env.VMAPGEN_TPL_ROOM === 'all' || !/^(playerStart|cpuStart|player)$/.test(zoneMeta.spec.type || ''));
+		let roomLeft = cells.length;
+		const roomCost = b => 1000 / (b.min >= TPL_RICH_MIN ? TPL_ROOM_RICH : TPL_ROOM_CHEAP);
 		// VMAPGEN_PILE_TRACE: every candidate pile's contents by landing class
 		// (open, guarded, rich), landed or not, for fitting the three shares
 		const tally = process.env.VMAPGEN_PILE_TRACE ? { open: {}, guarded: {}, rich: {} } : null;
@@ -2808,7 +2812,11 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					// TPL_PILE_LAND_DWELLING_LATER of its share (9.7 / 16.8); VMAPGEN_TPL_PILE_LAND_DWELLING_LATER=1 the earlier rule.
 					const dwLater = dwCut ? (Number(process.env.VMAPGEN_TPL_PILE_LAND_DWELLING_LATER) || 0.58) : 1;
 					const landP = holdsDwelling && process.env.VMAPGEN_TPL_PILE_LAND_DWELLING !== 'cut' ? share * dwLater : share * later;
-					if (rng() < landP && pileSim.landed.length < roomPiles) pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects, followsRich });
+					const fits = !roomOn || roomLeft >= roomCost(band);   // rng() is drawn either way, so a zone with room is generated as before
+					if (rng() < landP && fits) {
+						if (roomOn) roomLeft -= roomCost(band);
+						pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects, followsRich });
+					}
 				}
 				made++;
 			}
