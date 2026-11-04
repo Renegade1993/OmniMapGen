@@ -194,6 +194,21 @@ const AZURE = GUARD_POOL.find(c => c.id === 'azureDragon') || GUARD_POOL[GUARD_P
 // where the old linear reading at 0.75 had level 7 at 0.63).
 // VMAPGEN_TPL_PILE_SHARE, _SHARE_RICH and _RICH_MIN override them.
 const TPL_PILE_SHARE = Number(process.env.VMAPGEN_TPL_PILE_SHARE) || 0.65;
+// the piles a template zone has room for, per 1,000 of its tiles (the room note at pileSim below)
+const TPL_ROOM_RICH = Number(process.env.VMAPGEN_TPL_ROOM_RICH) || 21.5;
+const TPL_ROOM_CHEAP = Number(process.env.VMAPGEN_TPL_ROOM_CHEAP) || 28;
+// crowding (the note at the landing): 0.4, the lead's pick on 2026-11-04 (Jebus Cross and Headquarters against the engine); off on the templates in
+// TPL_ROOM_CROWD_OFF until their owner says yes (Coldshadow's Fantasy is Opus Map Vision's). VMAPGEN_TPL_ROOM_CROWD sets it for every template (1 off);
+// VMAPGEN_TPL_ROOM_CROWD_OFF a comma list of template names (part of a name will do), "none" for none.
+const TPL_ROOM_CROWD_DEFAULT = 0.4;
+const TPL_ROOM_CROWD_ENV = process.env.VMAPGEN_TPL_ROOM_CROWD !== undefined ? Number(process.env.VMAPGEN_TPL_ROOM_CROWD) : null;
+const TPL_ROOM_CROWD_OFF = (process.env.VMAPGEN_TPL_ROOM_CROWD_OFF || 'coldshadow').toLowerCase().split(',').map(t => t.trim()).filter(t => t && t !== 'none');
+function roomCrowd(templateName) {
+	if (TPL_ROOM_CROWD_ENV !== null && Number.isFinite(TPL_ROOM_CROWD_ENV)) return TPL_ROOM_CROWD_ENV;
+	const n = String(templateName || '').toLowerCase();
+	return n && TPL_ROOM_CROWD_OFF.some(t => n.includes(t)) ? 1 : TPL_ROOM_CROWD_DEFAULT;
+}
+const TPL_ROOM_CROWD_AT = Number(process.env.VMAPGEN_TPL_ROOM_CROWD_AT) || 0.5;
 const TPL_PILE_SHARE_RICH = Number(process.env.VMAPGEN_TPL_PILE_SHARE_RICH) || 0.40;
 const TPL_RICH_MIN = Number(process.env.VMAPGEN_TPL_RICH_MIN) || 10000;
 // VMAPGEN_TPL_PILE_MODEL=engine: a template zone's piles built as the engine
@@ -2750,6 +2765,24 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const gPool = objectPools.guards ? zoneGuardPool(objectPools.guards, zoneMeta.spec) : undefined;
 		const guarded = zoneMeta.spec.monsters !== 'none';
 		pileSim = { landed: [] };
+		// The engine asks each band for floor(tiles x density / 400) piles but places one only where it still fits (TreasurePlacer.cpp createTreasures:
+		// placeAndConnectObject fails once the zone is full), so the piles it lands stop growing with density. Its landed piles level off at about
+		// TPL_ROOM_RICH per 1,000 tiles where the piles are rich (a band from TPL_RICH_MIN) and about TPL_ROOM_CHEAP where they are cheaper (Jebus Cross
+		// 108 and 144 and Headquarters 108 treasure zones, all rich: 21.1 to 23.8; Golems Aplenty 72's cheaper treasure zone 24.5; start zones, mostly
+		// cheap: 26.7 to 29.0; one level, engine maps against ours, MapGen Dev 2026-11-04). Each landed pile spends 1,000 / that many tiles of the zone.
+		// Ours landed a fixed share of what was asked, which never runs out: Jebus Cross's middle (densities 3 + 10 + 10) landed 49 per 1,000
+		// tiles, about 2.5 times the engine's loot (K, 2026-11-03: "the loot on this jebus cross medium with underground is insance"). Piles land
+		// richest band first, as the engine places them, until the zone's room is spent. VMAPGEN_TPL_ROOM=0 turns it off.
+		// start zones are left as they were: ours already land at or under the engine's there (Jebus Cross and Headquarters start zones 0.8 to 1.0 of
+		// its chests and resources), and Coldshadow's start-zone fit is Opus Map Vision's. VMAPGEN_TPL_ROOM=all spends room in start zones too.
+		const isStartZone = /^(playerStart|cpuStart|player)$/.test(zoneMeta.spec.type || '');
+		// VMAPGEN_TPL_ROOM_START=room (trial): a start zone lands its bands richest first until its room is spent, as the engine does, in place of
+		// the cut that lands every band after a rich one at TPL_PILE_LAND_CHEAP_AFTER_RICH (which also cut the 5,000-16,000 band, where the banks are)
+		const startRoom = isStartZone && process.env.VMAPGEN_TPL_ROOM_START === 'room';
+		const roomOn = process.env.VMAPGEN_TPL_ROOM !== '0' && (process.env.VMAPGEN_TPL_ROOM === 'all' || startRoom || !isStartZone);
+		let roomLeft = cells.length;
+		const roomCost = b => 1000 / (b.min >= TPL_RICH_MIN ? TPL_ROOM_RICH : TPL_ROOM_CHEAP);
+		const crowdQ = roomCrowd(p.zonePlan && p.zonePlan.templateName);
 		// VMAPGEN_PILE_TRACE: every candidate pile's contents by landing class
 		// (open, guarded, rich), landed or not, for fitting the three shares
 		const tally = process.env.VMAPGEN_PILE_TRACE ? { open: {}, guarded: {}, rich: {} } : null;
@@ -2761,7 +2794,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			const richShare = band.min >= TPL_VERY_RICH_MIN ? (zoneMeta.spec.type === 'treasure' ? TPL_PILE_LAND_VERY_RICH_TREASURE : TPL_PILE_LAND_VERY_RICH)
 				: zoneMeta.spec.type === 'treasure' ? (l === 0 && !(Number(p.waterCoverage) > 0) ? TPL_PILE_LAND_RICH_TREASURE_SURFACE : TPL_PILE_LAND_RICH_TREASURE) : TPL_PILE_LAND_RICH;
 			if (process.env.VMAPGEN_PILE_TRACE && band.min >= TPL_RICH_MIN) console.error(`[pileshare] zone ${zoneMeta.spec.id} ${zoneMeta.spec.type} level ${l} band ${band.min} rich share ${richShare}`);
-			const later = afterRich && zoneMeta.spec.type !== 'treasure' ? TPL_PILE_LAND_AFTER_RICH
+			const later = startRoom ? 1 : afterRich && zoneMeta.spec.type !== 'treasure' ? TPL_PILE_LAND_AFTER_RICH
 				: afterRichBand && band.min < TPL_RICH_MIN ? TPL_PILE_LAND_CHEAP_AFTER_RICH : 1;
 			const dwCut = afterRich && zoneMeta.spec.type !== 'treasure';   // the junction case only (dwelling piles below)
 			if (band.min >= TPL_VERY_RICH_MIN) afterRich = true;
@@ -2796,7 +2829,15 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					// TPL_PILE_LAND_DWELLING_LATER of its share (9.7 / 16.8); VMAPGEN_TPL_PILE_LAND_DWELLING_LATER=1 the earlier rule.
 					const dwLater = dwCut ? (Number(process.env.VMAPGEN_TPL_PILE_LAND_DWELLING_LATER) || 0.58) : 1;
 					const landP = holdsDwelling && process.env.VMAPGEN_TPL_PILE_LAND_DWELLING !== 'cut' ? share * dwLater : share * later;
-					if (rng() < landP) pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects, followsRich });
+					// a crowded zone (under TPL_ROOM_CROWD_AT of its room left) fits a pile of n objects with chance crowdQ ^ (n - 1): the engine places a
+					// guarded pile only where every tile of it keeps clear of other objects (TreasurePlacer.cpp createTreasures, minDistance), so a bigger pile
+					// fails more once the zone fills and the single objects still fit (roomCrowd: 0.4, off on Coldshadow's Fantasy for now)
+					const crowded = roomOn && crowdQ < 1 && roomLeft < cells.length * TPL_ROOM_CROWD_AT;
+					const fits = !roomOn || (roomLeft >= roomCost(band) && (!crowded || rng() < Math.pow(crowdQ, pile.objects.length - 1)));   // the landing rng() below is drawn either way; the crowding draw only in a crowded zone for a pile that fits by room
+					if (rng() < landP && fits) {
+						if (roomOn) roomLeft -= roomCost(band);
+						pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects, followsRich });
+					}
 				}
 				made++;
 			}
