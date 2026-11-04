@@ -20,7 +20,7 @@
    "legend": [
     "Player start",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Open land",
@@ -28,7 +28,7 @@
    ],
    "path": "mapgen/preview/water_coastal/01",
    "seconds": 3.0,
-   "contentSha256": "876072d1fb02a7606e6305e79b54f9203d0b2a33c111cbde8029465e6801e98b"
+   "contentSha256": "cf9765d0c8883c5ccd01e082d0c314adc7cb23b86df509a47c2664be8cbff3e0"
   },
   {
    "order": 2,
@@ -49,7 +49,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -58,7 +58,7 @@
    ],
    "path": "mapgen/preview/water_coastal/02",
    "seconds": 3.0,
-   "contentSha256": "4565d48def1b3dc4f3d0239f315338748298dbccba1b711642afd7a30df6efb8"
+   "contentSha256": "2c868ecfb2b08ea25ee3c3c98421a9dfbf87d3c080f6c7dc3eb334fc382afa03"
   },
   {
    "order": 3,
@@ -79,7 +79,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -88,7 +88,7 @@
    ],
    "path": "mapgen/preview/water_coastal/03",
    "seconds": 3.0,
-   "contentSha256": "17e70fae173f1856ddd8133c0a713c6c1e1f15fa37eac62e2c42c6b664d70b2e"
+   "contentSha256": "b31ec65c31ad2baafb58b3b22717369382000904da1affb1e2c1cb2e418c8e4d"
   },
   {
    "order": 4,
@@ -109,7 +109,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -118,7 +118,7 @@
    ],
    "path": "mapgen/preview/water_coastal/04",
    "seconds": 3.0,
-   "contentSha256": "c1ebd4dff2c2f3a751a4bebe49a55c694643afd641ac333790eaa31a8160a610"
+   "contentSha256": "1eff6355eaca7d06220d6cdb59d715145ec5d5ed0de8760fd3273a3cc0abff6d"
   },
   {
    "order": 5,
@@ -139,7 +139,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -148,7 +148,7 @@
    ],
    "path": "mapgen/preview/water_coastal/05",
    "seconds": 3.0,
-   "contentSha256": "afc7334e080c3f5562bf1241cb7d9b62fb81d620638f9522c63e9f3a9961b956"
+   "contentSha256": "87e71a4928b6948455fafca8240295f9dd2ada6486801eebd75ad3e2a0510a97"
   },
   {
    "order": 6,
@@ -169,7 +169,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -178,7 +178,7 @@
    ],
    "path": "mapgen/preview/water_coastal/06",
    "seconds": 3.0,
-   "contentSha256": "7ecd6160a5d6b08874901ac97594b3f7be346699e337c5d1967c8b2a8e1c6f59"
+   "contentSha256": "21ca323d204fa70df69daf3db1464f1078444c801c3abd04010513c3206140de"
   },
   {
    "order": 7,
@@ -204,7 +204,7 @@
    ],
    "path": "mapgen/preview/water_coastal/07",
    "seconds": 3.0,
-   "contentSha256": "a08fc5127ecb3bf40ff567e47e008b77b8199da99438305f3780bb39d7937a37"
+   "contentSha256": "dd425644a4d8b72cb6b1e86fba76e60ad249704a7774a17e5b8c2a55927c86fe"
   },
   {
    "order": 8,
@@ -224,14 +224,14 @@
    "legend": [
     "Player start",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Water"
    ],
    "path": "mapgen/preview/water_coastal/08",
    "seconds": 3.0,
-   "contentSha256": "9cc7521b508cfe47a4f617fa9a338a4f61f47a558288bc558d0747b5698c6e8b"
+   "contentSha256": "650512dcd34e83c0ee6edd46837572829f81a4c9eec915236c360e58f12eba05"
   },
   {
    "order": 9,
@@ -252,7 +252,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -261,7 +261,7 @@
    ],
    "path": "mapgen/preview/water_coastal/09",
    "seconds": 3.0,
-   "contentSha256": "dc82389decf293bfe2f211404849009e35820f3f829376cf121d8605853d755b"
+   "contentSha256": "abd03bc29cbf1fbb89a8859e08375994787a8ff6e31ece0f4f7beb5b5951e406"
   },
   {
    "order": 10,
@@ -282,7 +282,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -291,7 +291,7 @@
    ],
    "path": "mapgen/preview/water_coastal/10",
    "seconds": 3.0,
-   "contentSha256": "2d084be91eee528ae31419dcd2c593222c5c241d859364f89e3456ba12fa55aa"
+   "contentSha256": "d4c9e032046e6d718603fabcf36492a8099f846e009329742e5f9a40ff68b0fb"
   },
   {
    "order": 11,
@@ -312,7 +312,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -321,7 +321,7 @@
    ],
    "path": "mapgen/preview/water_coastal/11",
    "seconds": 3.0,
-   "contentSha256": "1b1aa1b3e26da35453139042f561628abf5f853b8442945997b617e5d9879031"
+   "contentSha256": "eba4e4d7e615fb1edaaf3624bf0b864d93d061bc896cdcf5bdc835e7a03d5c92"
   },
   {
    "order": 12,
@@ -342,7 +342,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -351,7 +351,7 @@
    ],
    "path": "mapgen/preview/water_coastal/12",
    "seconds": 3.0,
-   "contentSha256": "d943105217298bcad6cdba70512e1a44dc2049bdc24f4fbd3926efdea02f5731"
+   "contentSha256": "d2fddd76ad7f3ddba099e71d7cdf69b8d9f60ccc2b08aeb5605bf34b462adfb8"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

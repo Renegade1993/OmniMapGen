@@ -7,6 +7,6 @@
  "levels": 1,
  "players": 4,
  "water": "coastal",
- "contentSha256": "876072d1fb02a7606e6305e79b54f9203d0b2a33c111cbde8029465e6801e98b",
+ "contentSha256": "cf9765d0c8883c5ccd01e082d0c314adc7cb23b86df509a47c2664be8cbff3e0",
  "note": "frame 1 of water_coastal.frames.json (the preferred setup)"
 }

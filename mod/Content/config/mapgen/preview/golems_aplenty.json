@@ -1,12 +1,12 @@
 {
  "schemaVersion": 1,
  "id": "golems_aplenty",
- "caption": "Golems Aplenty, Small 36x36: 4 players, 1 level",
- "width": 36,
- "height": 36,
+ "caption": "Golems Aplenty, Medium 72x72: 4 players, 1 level",
+ "width": 72,
+ "height": 72,
  "levels": 1,
  "players": 4,
  "water": null,
- "contentSha256": "6dafe584c0feb09d4a7fc60a7cf63bbd46fb24e1e76c347f8e778a288a02f606",
+ "contentSha256": "cd1679c88a8cd22b95e1b440743869a845cbe6c35b0c74e78227d4b074dac5a5",
  "note": "frame 1 of golems_aplenty.frames.json (the preferred setup)"
 }

@@ -1,12 +1,12 @@
 {
  "schemaVersion": 1,
  "id": "classic",
- "caption": "Classic, Small 36x36: 2 players, 1 level",
- "width": 36,
- "height": 36,
+ "caption": "Classic, Large 108x108: 4 players, 1 level",
+ "width": 108,
+ "height": 108,
  "levels": 1,
- "players": 2,
+ "players": 4,
  "water": null,
- "contentSha256": "c1c9423679a7d64edd633adf13f104bd2d1e6c4620ff9e4b80a6dc0e29f5d35f",
+ "contentSha256": "93671c5c116d5048f957f32a4434ffb7e80a643ab7f60f2a024049c803687ead",
  "note": "frame 1 of classic.frames.json (the preferred setup)"
 }

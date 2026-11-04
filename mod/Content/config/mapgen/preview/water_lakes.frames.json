@@ -29,7 +29,7 @@
    ],
    "path": "mapgen/preview/water_lakes/01",
    "seconds": 3.0,
-   "contentSha256": "29f3b0fa473b8e78b71fb213c9accf7fd26f84b6f0921ac919b32ec95e178378"
+   "contentSha256": "d8c45b00e2507465f21af348550ea4cd54f329fbf3f4090b61d325d15a6e0d5d"
   },
   {
    "order": 2,
@@ -50,7 +50,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -59,7 +59,7 @@
    ],
    "path": "mapgen/preview/water_lakes/02",
    "seconds": 3.0,
-   "contentSha256": "d23c9afa808e73dd70220e3c2ba901f9c5409f9201fd9fcb8415862108f25b0f"
+   "contentSha256": "ebce2c128640af7378b564959ed4c5d083174d9d6add8b84e1d3e11f794c23dc"
   },
   {
    "order": 3,
@@ -80,7 +80,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -89,7 +89,7 @@
    ],
    "path": "mapgen/preview/water_lakes/03",
    "seconds": 3.0,
-   "contentSha256": "a21e33483bc7482748e45da35047a2e28ec5d3cc2e45a490a46ee52d8fbfead9"
+   "contentSha256": "4fd395fb875419800f3862b15d2367273ff850dde0f4e8297ff66fe75c6b91bf"
   },
   {
    "order": 4,
@@ -110,7 +110,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -119,7 +119,7 @@
    ],
    "path": "mapgen/preview/water_lakes/04",
    "seconds": 3.0,
-   "contentSha256": "78b038937218e0bc001bfc535690c8282efccafbc27c25e9c4186d7fc4253c24"
+   "contentSha256": "d9c63acdc2310aed3ff6f204cab952d1fcb29974973610eaf72eaf147d44c896"
   },
   {
    "order": 5,
@@ -140,7 +140,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -149,7 +149,7 @@
    ],
    "path": "mapgen/preview/water_lakes/05",
    "seconds": 3.0,
-   "contentSha256": "acd2af00278b6abf4f3ef46626b0ec2ddf535bbc17546099d689e4c3fb0ac3a9"
+   "contentSha256": "cad8d16bf6c54afad19b782b6ce54dc94d1ee54f1d0f569079aabe51cbf8f625"
   },
   {
    "order": 6,
@@ -178,7 +178,7 @@
    ],
    "path": "mapgen/preview/water_lakes/06",
    "seconds": 3.0,
-   "contentSha256": "70de93f5f1075cfe9e02e90f8ea57a1abc244cb3480bf990cd18006cd9403873"
+   "contentSha256": "816c9ade274c2f43f7d81ec5a354468eb8f45ec3bb8567946379a95442fa82b0"
   },
   {
    "order": 7,
@@ -204,7 +204,7 @@
    ],
    "path": "mapgen/preview/water_lakes/07",
    "seconds": 3.0,
-   "contentSha256": "56dbfeda0b33109ee331aac030341dcf7c4427d6403a7ea43d674cf8233a859f"
+   "contentSha256": "9e9ecdd6fbbb6e60dd138eaf3ab885f12e2c55893eaad549962d06dc1b21a9e6"
   },
   {
    "order": 8,
@@ -230,7 +230,7 @@
    ],
    "path": "mapgen/preview/water_lakes/08",
    "seconds": 3.0,
-   "contentSha256": "74671701fc3688c73e1b43e163a556814b95b4b12f535df92ea45820dd6d2ece"
+   "contentSha256": "c8029ed65e8c5f0e0c5f28691926337dbae6f008155e5877b6c64d239defc69e"
   },
   {
    "order": 9,
@@ -251,7 +251,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -260,7 +260,7 @@
    ],
    "path": "mapgen/preview/water_lakes/09",
    "seconds": 3.0,
-   "contentSha256": "ca22f332fe1fa5019b9b667203802ffb1989b86762e0497d7129a8839e7a4f82"
+   "contentSha256": "32c18c06717861686409017d8602a443f6b61a616cf3a4caa89a9ff48ec1bfca"
   },
   {
    "order": 10,
@@ -281,7 +281,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -290,7 +290,7 @@
    ],
    "path": "mapgen/preview/water_lakes/10",
    "seconds": 3.0,
-   "contentSha256": "e8980712a34d7c9a1e37e437e6202f124a88ad44b383eb822af6a5dae17f09dd"
+   "contentSha256": "094a2dcdf1fa1e77208b97ca5cf835c744a3678f65d3c2c1f083069f95f82311"
   },
   {
    "order": 11,
@@ -311,7 +311,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -320,7 +320,7 @@
    ],
    "path": "mapgen/preview/water_lakes/11",
    "seconds": 3.0,
-   "contentSha256": "756ab5924c1fa53b2af4b99d84d4f3a3e8c8bbe683b5418b156e8c0ae98b7cc9"
+   "contentSha256": "99f6161d822e394de3941c6f216e33e3de02c541f855945a402ea9a75027de84"
   },
   {
    "order": 12,
@@ -341,7 +341,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -350,7 +350,7 @@
    ],
    "path": "mapgen/preview/water_lakes/12",
    "seconds": 3.0,
-   "contentSha256": "06f10d629fdfb885737c6b8e16b779711b01e2a608ddca050cd9ad04bc844272"
+   "contentSha256": "2d65dcc8b1170547a2f8a036ba2bcb87e0972798b47f65e0d840e438f0f2f231"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

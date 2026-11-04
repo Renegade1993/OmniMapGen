@@ -26,7 +26,7 @@
    ],
    "path": "mapgen/preview/jebus_cross/01",
    "seconds": 3.0,
-   "contentSha256": "aa7729244d1cfbd12afab863c46e2db7e010722d0d72d0332a6bc4e067531387"
+   "contentSha256": "fc271549734c1a2431bdbfb0eade57aa2998c3a1b35c030cc4f456e4728d55c2"
   },
   {
    "order": 2,
@@ -52,7 +52,7 @@
    ],
    "path": "mapgen/preview/jebus_cross/02",
    "seconds": 3.0,
-   "contentSha256": "e8b2a6e694beecdaf69e9abe4bfc80f8aac8568b8ac535a49c9fafd092ba6826"
+   "contentSha256": "5bf4c701aa0aa9adb5a31ce796038cec2d9246026c94f25c5d1b1b872874442d"
   },
   {
    "order": 3,
@@ -78,7 +78,7 @@
    ],
    "path": "mapgen/preview/jebus_cross/03",
    "seconds": 3.0,
-   "contentSha256": "91122d4bbcd7fb5c4fe3e3462ed77728aa4d43b9779438bcc6d1a1ee0e1c66f1"
+   "contentSha256": "7298ca4536cf38de23c0b3430c8e75c4ae9a2205e3bd473cdc16f24a43a6a0da"
   },
   {
    "order": 4,
@@ -104,7 +104,7 @@
    ],
    "path": "mapgen/preview/jebus_cross/04",
    "seconds": 3.0,
-   "contentSha256": "81656edfc8af64d6c6e883a374d51c59702f8346827d3c2d9df221203be91a96"
+   "contentSha256": "c7867185d0192a1bc1bfeac61b489c21e5c449ce2da8fa73229fe49ff136d0ff"
   },
   {
    "order": 5,
@@ -130,7 +130,7 @@
    ],
    "path": "mapgen/preview/jebus_cross/05",
    "seconds": 3.0,
-   "contentSha256": "15f552d99b8ebb33b404e1505bbda79787d6643eaddbd5b84008120c49758f26"
+   "contentSha256": "c979f606ac8acac1eb87470afeb32c5064aaeedfe3085acae43ab80dac80eb22"
   },
   {
    "order": 6,
@@ -155,7 +155,7 @@
    ],
    "path": "mapgen/preview/jebus_cross/06",
    "seconds": 3.0,
-   "contentSha256": "041839783de9892df067c141ca01ebf8186f5d11952f366e0d6a851aaac284ab"
+   "contentSha256": "8cda7efa98abe50d9fe26dc49227ffe07396e09f48348bd3148016224bfdecdf"
   },
   {
    "order": 7,
@@ -181,7 +181,7 @@
    ],
    "path": "mapgen/preview/jebus_cross/07",
    "seconds": 3.0,
-   "contentSha256": "aea73052bec8744ef9e3849b3d7d5d6710d293f4fdcf42078d6bb26216fd7ce8"
+   "contentSha256": "eb6442c77a7834bd7ca72ce374ea9e06507d9afcfb82f6c45cf39c007fdd5be4"
   },
   {
    "order": 8,
@@ -289,7 +289,7 @@
    ],
    "path": "mapgen/preview/jebus_cross/11",
    "seconds": 3.0,
-   "contentSha256": "8ceebaae34176000769e915ed859c0240097346e618f715e0bbc7f261b2f8635"
+   "contentSha256": "53718b8f25c8ab367184d144efd96a988fee65d99006df7cc8eaaff96382f36b"
   },
   {
    "order": 12,
@@ -338,14 +338,14 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Water"
    ],
    "path": "mapgen/preview/jebus_cross/13",
    "seconds": 3.0,
-   "contentSha256": "300ff962b571cae9eb220cb32c17a4800aca446bc0c8dde835ec207c93f6eff5"
+   "contentSha256": "923f9e4dfd8121a5180151e6630b7e277c3ab3ec055e86025579e64fe2f4bd79"
   },
   {
    "order": 14,
@@ -399,7 +399,7 @@
    ],
    "path": "mapgen/preview/jebus_cross/15",
    "seconds": 3.0,
-   "contentSha256": "60579769915e7425ba7c15b424a40dadb03326cd1486d64ed91331227e48e3f8"
+   "contentSha256": "b3440fe653295e0271de143db7fcedf05ab2ddeaac2e377a3080cb91eb271d3a"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

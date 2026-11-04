@@ -52,9 +52,15 @@ CLASSIC_P = {36: 2, 72: 4, 108: 4, 144: 6, 180: 8, 216: 8, 252: 8}   # the open 
 TI = json.load(open(os.path.join(REPO, "mod", "template-info.json"), encoding="utf-8"))["templates"]
 
 
+# lobby seat and team choices listed among the preference levers, not map levers: passed as --bio. they set the seats (compOnly 3 made every
+# Nostalgia frame 1 human + 3 computer players whatever the caption asked; Opus Reviewer, 2026-11-04)
+NOT_MAP_LEVERS = {"compOnly", "teams"}
+
+
 def levers_of(name):
-    """an approximate entry is the open layout with its levers set (mod/template-info.json originalPreferences.levers)"""
-    return dict((TI.get(name, {}).get("originalPreferences") or {}).get("levers") or {})
+    """an approximate entry is the open layout with its levers set (mod/template-info.json originalPreferences.levers), less the seat choices"""
+    lv = (TI.get(name, {}).get("originalPreferences") or {}).get("levers") or {}
+    return {k: v for k, v in lv.items() if k not in NOT_MAP_LEVERS}
 
 
 # slug: (name in the caption, template name or None for the open layout, [frames], {lever: value}); frame 1 is the preferred setup at the original's smallest size
@@ -70,9 +76,9 @@ PLANS = {
     "headquarters": ("Headquarters", "Headquarters", plan(108, lambda s: F(s, 7, 1, 1),
         [F(36, 2, 1, 2), F(72, 4, 2, 3), F(108, 3, 1, 4), F(144, 5, 2, 5, "coastal"), F(180, 6, 1, 6), F(252, 2, 2, 7), F(108, 7, 1, 8, "lakes"),
          F(108, 7, 2, 1)]), {}),
-    "golems_aplenty": ("Golems Aplenty", "Golems Aplenty", plan(36, lambda s: F(s, 4, 1 if s < 108 else 2, 1),   # Small to Large with the underground, 2 to 4 players
+    "golems_aplenty": ("Golems Aplenty", "Golems Aplenty", plan(72, lambda s: F(s, 4, 1 if s < 108 else 2, 1),   # Small to Large with the underground, 2 to 4 players; 72 4p is the template's own setup
         [F(36, 2, 2, 2), F(72, 3, 1, 3, "lakes"), F(108, 2, 1, 4), F(144, 3, 2, 5), F(180, 4, 1, 6, "coastal"), F(252, 2, 2, 7), F(72, 4, 2, 8)]), {}),
-    "classic": ("Classic", None, plan(36, lambda s: F(s, CLASSIC_P[s], 1, 1),
+    "classic": ("Classic", None, plan(108, lambda s: F(s, CLASSIC_P[s], 1, 1),   # the still: Large 108, 4 players, as the lobby's own start
         [F(36, 2, 2, 2), F(72, 6, 1, 3, "coastal"), F(108, 3, 2, 4), F(144, 8, 1, 5, "islands"), F(180, 5, 2, 6), F(252, 4, 1, 7, "archipelago"),
          F(72, 2, 1, 8, "continental"), F(108, 4, 1, 9, "mediterranean")]), {}),
     "mini_nostalgia": ("Mini Nostalgia (approximate)", None, plan(108, lambda s: F(s, 8, 1 if s < 144 else 2, 1),   # Large on one level, Extra Large on two, 8 players
@@ -118,6 +124,10 @@ def work(slug, name, template, levers, n, f, out, gen, env):
                            creationflags=NO_WINDOW)
         if r.returncode != 0:
             return n, None, "dump failed " + (r.stderr or r.stdout)[-300:]
+    # the map's own starts must be the count the caption names (a seat choice passed as a lever once made every Nostalgia frame 4 players)
+    drawn = len(json.load(open(dump, encoding="utf-8"))["starts"])
+    if drawn != f["players"]:
+        return n, None, f"map has {drawn} starts, caption says {f['players']} players"
     png = os.path.join(out, f"{slug}_{n:02d}.png")
     info = render(dump, png, caption(name, f))
     return n, {"order": n, "file": os.path.basename(png), **f, "map": os.path.basename(vm), "caption": caption(name, f), **info}, None

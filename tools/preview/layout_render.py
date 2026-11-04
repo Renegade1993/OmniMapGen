@@ -6,10 +6,12 @@ DMB Dev, 2026-11-03 (K, 2026-11-02: player starts labelled, portal lanes colour 
 2026-11-03: "preview images for all templates need to be: 1. Consistent look/aesthetic across previews for different templates 2. Be easy to read 3. Have clear major
 symbology, like start positions (little castles, colored for player starts, grey for non)"; spec table roster\\SPEC-MapGenDev-previews-1104.md).
 
-564x282, always, so the lobby panel (282 wide, 141 high box) halves it exactly. One look for every template: zone fills by role, a dark line where two zones meet, every
-link between zones its own colour with a dark outline (links that meet at a zone never share a colour; a portal is the same line dashed), a coloured square at each end
-of a link between the two levels, a castle on every town (the player's own colour with the player's number for a start, grey for a town no player owns), and a legend
-underneath that names exactly what the picture shows. No game art.
+564x282, always, so the lobby panel (282 wide, 141 high box) halves it exactly. One look for every template: zone fills by role (treasure zones that touch
+in different greens), a dark line where two zones meet, a short bar across the border where a passage joins two zones, a diamond at each end of a portal pair
+and a square at each gate between the levels (each link its own colour, both ends of one link the same, links that share a zone different), a castle on every
+start (the player's own colour with the player's number; grey for a start with no player), a small dot on every neutral town, castles pushed apart where
+they would overlap, a legend that names exactly what the picture shows, and the caption under it. No game art. Opus Reviewer's rollout review, 2026-11-04:
+bars and diamonds in place of lines to the zone centres, which knotted.
 """
 import json
 import numpy as np
@@ -98,14 +100,38 @@ def dashed(dr, p, q, fill, width, dash, gap):
         t = e + gap
 
 
+# treasure zones that touch each other take different greens (Opus Reviewer, 2026-11-04: Headquarters' two prizes were one colour)
+TREASURE_SHADES = [(92, 176, 112), (54, 128, 78), (146, 206, 150)]
+
+
+def treasure_shades(d, level):
+    """zone id -> shade index for the treasure zones of one level, touching zones different (greedy, biggest first)"""
+    W, H = d["W"], d["H"]
+    ids = np.array(d["grid"][level], dtype=np.int32).reshape(H, W)
+    tz = {z["z"]: z for z in d["zones"] if z["l"] == level and z["role"] in ("treasure", "lowLoot")}
+    nb = {k: set() for k in tz}
+    for a, b in ((ids[:, :-1], ids[:, 1:]), (ids[:-1, :], ids[1:, :])):
+        m = (a != b)
+        for x, y in set(zip(a[m].tolist(), b[m].tolist())):
+            if x in tz and y in tz:
+                nb[x].add(y); nb[y].add(x)
+    out = {}
+    for k in sorted(tz, key=lambda k: -tz[k]["n"]):
+        used = {out[j] for j in nb[k] if j in out}
+        out[k] = next((i for i in range(len(TREASURE_SHADES)) if i not in used), 0)
+    return out
+
+
 def panel_image(d, level, P):
     """the zone fills of one level as a P x P RGB image at SS times the size, with the dark borders between zones"""
     W, H = d["W"], d["H"]
     ids = np.array(d["grid"][level], dtype=np.int32).reshape(H, W)
+    shade = treasure_shades(d, level)
     lut = {}
     for z in d["zones"]:
         if z["l"] == level:
-            lut[z["z"]] = tuple(int(c * DARKEN) for c in FILL.get(z["role"], FILL["standard"]))
+            base = TREASURE_SHADES[shade[z["z"]]] if z["z"] in shade else FILL.get(z["role"], FILL["standard"])
+            lut[z["z"]] = tuple(int(c * DARKEN) for c in base)
     n = P * SS
     big = np.array(Image.fromarray(ids.astype(np.int32), mode="I").resize((n, n), Image.NEAREST))
     img = np.empty((n, n, 3), dtype=np.uint8)
@@ -147,6 +173,33 @@ def town_marks(d):
     return empty, [t for t in towns if key(t) not in used]
 
 
+def spread_castles(items, at, gap, size):
+    """id(item) -> drawing position: castles closer than gap pushed apart in small steps, kept inside the panel"""
+    pos = {id(t): list(at(t["l"], t["x"], t["y"])) for t in items}
+    edge = 14 * SS
+    for _ in range(30):
+        moved = False
+        for i, a in enumerate(items):
+            for b in items[i + 1:]:
+                if a["l"] != b["l"]:
+                    continue
+                pa, pb = pos[id(a)], pos[id(b)]
+                dx, dy = pb[0] - pa[0], pb[1] - pa[1]
+                dist = (dx * dx + dy * dy) ** 0.5
+                if dist >= gap:
+                    continue
+                if dist < 1e-6:
+                    dx, dy, dist = 1.0, 0.0, 1.0
+                push = (gap - dist) / 2 + 1
+                for q, sgn in ((pa, -1), (pb, 1)):
+                    q[0] = min(size - edge, max(edge, q[0] + sgn * dx / dist * push))
+                    q[1] = min(size - edge, max(edge, q[1] + sgn * dy / dist * push))
+                moved = True
+        if not moved:
+            break
+    return {k: tuple(v) for k, v in pos.items()}
+
+
 def legend_items(d, zone, lanes):
     empty, neutral = town_marks(d)
     items = [("castle", "Player start")]
@@ -154,14 +207,12 @@ def legend_items(d, zone, lanes):
         items.append(("grey", "Empty start"))
     if neutral:
         items.append(("dot", "Neutral town"))
-    if any(not l.get("portal") for l in lanes if zone[tuple(l["a"])]["l"] == zone[tuple(l["b"])]["l"]):
+    if any(l.get("border") for l in lanes):
         items.append(("lane", "Passage"))
     if any(l.get("portal") for l in lanes):
-        items.append(("portal", "Portal"))
+        items.append(("diamond", "Portal pair (same colour)"))
     if any(zone[tuple(l["a"])]["l"] != zone[tuple(l["b"])]["l"] and not l.get("portal") for l in lanes):
         items.append(("square", "Way between levels"))
-    if any(zone[tuple(l["a"])]["l"] != zone[tuple(l["b"])]["l"] and l.get("portal") for l in lanes):
-        items.append(("diamond", "Portal between levels"))
     roles = {z["role"] for z in d["zones"]}
     if roles & {"start", "cpuStart"}:
         items.append((FILL["start"], "Start zone"))
@@ -221,43 +272,42 @@ def render(dump_path, out_path, caption=None):
 
     def at(l, x, y):
         return (x * s + PAD * SS, y * s + PAD * SS)
-    # links: all dark outlines first, then the colours, so a colour is never covered by another link's outline
-    marks = {}   # (level, zone) -> count of level-link squares so far
-    squares = []
-    for pass_ in (0, 1):
-        for lane, ci in zip(lanes, cols):
-            a, b = zone[tuple(lane["a"])], zone[tuple(lane["b"])]
-            w = ((5 if lane["wide"] else 3) if len(lanes) <= 40 else (3 if lane["wide"] else 2)) * SS
-            if a["l"] == b["l"]:
-                dr = panels[a["l"]][1]
-                p, q = at(a["l"], a["cx"], a["cy"]), at(b["l"], b["cx"], b["cy"])
-                if lane.get("portal"):
-                    if pass_ == 0:
-                        dashed(dr, p, q, INK, w + 2 * SS, 9 * SS, 4 * SS)
-                    else:
-                        dashed(dr, p, q, LANES[ci], w, 9 * SS, 4 * SS)
-                    continue
-                if pass_ == 0:
-                    dr.line([p, q], fill=INK, width=w + 2 * SS)
-                    for e in (p, q):
-                        dr.ellipse([e[0] - (w + 2 * SS) / 2, e[1] - (w + 2 * SS) / 2, e[0] + (w + 2 * SS) / 2, e[1] + (w + 2 * SS) / 2], fill=INK)
-                else:
-                    dr.line([p, q], fill=LANES[ci], width=w)
-                    for e in (p, q):
-                        dr.ellipse([e[0] - w / 2, e[1] - w / 2, e[0] + w / 2, e[1] + w / 2], fill=LANES[ci])
-            elif pass_ == 1:
-                for e, z in enumerate((a, b)):
-                    if lane.get("ends"):   # the real gate (layout_dump.js)
-                        l0, gx, gy = lane["ends"][e]
-                        squares.append((l0, at(l0, gx, gy), ci, lane.get("portal")))
-                        continue
-                    k = marks.get((z["l"], z["z"]), 0); marks[(z["l"], z["z"])] = k + 1
-                    p = at(z["l"], z["cx"], z["cy"])
-                    squares.append((z["l"], (p[0] + (k % 3 - 1) * 2.6 * 6 * SS, p[1] + (k // 3) * 2.6 * 6 * SS), ci, lane.get("portal")))
-    for lv, (px, py), ci, portal in squares:
+    # links (Opus Reviewer, 2026-11-04: lines to the zone centres knotted): a passage is a short bar across the border where its zones meet, a
+    # portal a diamond at each of its two monolith ends, a way between levels a square at each gate; each link its own colour, the two ends of
+    # one link the same, links that share a zone different
+    marks = {}   # (level, zone) -> count of symbols placed at a zone centre for want of a real position
+
+    def centre_spot(z):
+        k = marks.get((z["l"], z["z"]), 0); marks[(z["l"], z["z"])] = k + 1
+        p = at(z["l"], z["cx"], z["cy"])
+        return (p[0] + (k % 3 - 1) * 2.6 * 6 * SS, p[1] + (k // 3) * 2.6 * 6 * SS)
+    marksym = []
+    for lane, ci in zip(lanes, cols):
+        a, b = zone[tuple(lane["a"])], zone[tuple(lane["b"])]
+        if lane.get("portal"):
+            ends = lane.get("portalEnds") or [None, None]
+            for e, z in enumerate((a, b)):
+                pos = (ends[e][0], at(ends[e][0], ends[e][1], ends[e][2])) if ends[e] else (z["l"], centre_spot(z))
+                marksym.append(("diamond", pos[0], pos[1], ci))
+        elif a["l"] != b["l"]:
+            for e, z in enumerate((a, b)):
+                pos = (lane["ends"][e][0], at(lane["ends"][e][0], lane["ends"][e][1], lane["ends"][e][2])) if lane.get("ends") else (z["l"], centre_spot(z))
+                marksym.append(("square", pos[0], pos[1], ci))
+        elif lane.get("border"):
+            l0, bx, by, dx, dy = lane["border"]
+            marksym.append(("bar", l0, at(l0, bx, by), ci, (dx, dy), lane["wide"]))
+    for m in marksym:
+        kind, lv, (px, py), ci = m[0], m[1], m[2], m[3]
         dr = panels[lv][1]
         h = 6 * SS
-        if portal:   # a portal between the levels: a diamond in the link's colour
+        if kind == "bar":
+            (dx, dy), wide = m[4], m[5]
+            half = 9 * SS   # across the border: half the bar in each zone
+            wb = (6 if wide else 4) * SS
+            p0, p1 = (px - dx * half, py - dy * half), (px + dx * half, py + dy * half)
+            dr.line([p0, p1], fill=INK, width=wb + 3 * SS)
+            dr.line([p0, p1], fill=LANES[ci], width=wb)
+        elif kind == "diamond":
             dr.polygon([(px, py - h - 2 * SS), (px + h + 2 * SS, py), (px, py + h + 2 * SS), (px - h - 2 * SS, py)], fill=INK)
             dr.polygon([(px, py - h), (px + h, py), (px, py + h), (px - h, py)], fill=LANES[ci])
         else:
@@ -265,18 +315,19 @@ def render(dump_path, out_path, caption=None):
             dr.rectangle([px - h, py - h, px + h, py + h], fill=LANES[ci])
     # towns: grey castles for towns no player owns, then the player castles on top, each with the player's number under it
     empty, neutral = town_marks(d)
+    spot = spread_castles(d["starts"] + empty, at, 26 * SS, P * SS)
     for t in neutral:   # a neutral town: a small light dot with a dark ring
         p = at(t["l"], t["x"], t["y"])
         r0 = 4.5 * SS
         panels[t["l"]][1].ellipse([p[0] - r0 - 1.5 * SS, p[1] - r0 - 1.5 * SS, p[0] + r0 + 1.5 * SS, p[1] + r0 + 1.5 * SS], fill=INK)
         panels[t["l"]][1].ellipse([p[0] - r0, p[1] - r0, p[0] + r0, p[1] + r0], fill=NEUTRAL)
     for t in empty:   # a start position with no player: the start castle in grey, no number
-        p = at(t["l"], t["x"], t["y"])
+        p = spot[id(t)]
         castle(panels[t["l"]][1], p[0], p[1], 20 * SS, GREY)
     fn = font(12 * SS)
     for st in sorted(d["starts"], key=lambda t: t["colour"]):
         dr = panels[st["l"]][1]
-        p = at(st["l"], st["x"], st["y"])
+        p = spot[id(st)]
         hc = 22 * SS
         c = PCOL.get(st["colour"], GREY)
         castle(dr, p[0], p[1] - 4 * SS, hc, c, outline=(255, 255, 255), o=1.4 * SS)
@@ -305,10 +356,8 @@ def render(dump_path, out_path, caption=None):
             elif kind == "dot":
                 dc.ellipse([x + 4, y - 7, x + 18, y + 7], fill=INK); dc.ellipse([x + 6, y - 5, x + 16, y + 5], fill=NEUTRAL)
             elif kind == "lane":
-                for k, c in enumerate((LANES[2], LANES[1], LANES[3])):
-                    dc.line([(x + k * 7, y + 6), (x + 5 + k * 7, y - 6)], fill=INK, width=6)
-                for k, c in enumerate((LANES[2], LANES[1], LANES[3])):
-                    dc.line([(x + k * 7, y + 6), (x + 5 + k * 7, y - 6)], fill=c, width=3)
+                dc.line([(x + 4, y), (x + 18, y)], fill=INK, width=8)
+                dc.line([(x + 4, y), (x + 18, y)], fill=LANES[2], width=5)
             elif kind == "portal":
                 dashed(dc, (x, y), (x + 20, y), INK, 7, 6, 3)
                 dashed(dc, (x, y), (x + 20, y), LANES[0], 4, 6, 3)

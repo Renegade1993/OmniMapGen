@@ -5,6 +5,151 @@
   {
    "order": 1,
    "file": "01.png",
+   "size": 108,
+   "players": 4,
+   "levels": 1,
+   "seed": 1,
+   "water": null,
+   "preferred": true,
+   "caption": "Classic, Large 108x108: 4 players, 1 level",
+   "zones": 19,
+   "lanes": 16,
+   "portals": 7,
+   "starts": 4,
+   "towns": 11,
+   "legend": [
+    "Player start",
+    "Neutral town",
+    "Passage",
+    "Portal pair (same colour)",
+    "Start zone",
+    "Treasure zone",
+    "Town zone",
+    "Open land"
+   ],
+   "path": "mapgen/preview/classic/01",
+   "seconds": 3.0,
+   "contentSha256": "93671c5c116d5048f957f32a4434ffb7e80a643ab7f60f2a024049c803687ead"
+  },
+  {
+   "order": 2,
+   "file": "02.png",
+   "size": 144,
+   "players": 6,
+   "levels": 1,
+   "seed": 1,
+   "water": null,
+   "preferred": true,
+   "caption": "Classic, Extra Large 144x144: 6 players, 1 level",
+   "zones": 32,
+   "lanes": 21,
+   "portals": 4,
+   "starts": 6,
+   "towns": 11,
+   "legend": [
+    "Player start",
+    "Neutral town",
+    "Passage",
+    "Portal pair (same colour)",
+    "Start zone",
+    "Treasure zone",
+    "Town zone",
+    "Open land"
+   ],
+   "path": "mapgen/preview/classic/02",
+   "seconds": 3.0,
+   "contentSha256": "2c3428c68b3310f313374773f7db83d7e8c705c67a4b36a6aaa767b103d0ba5e"
+  },
+  {
+   "order": 3,
+   "file": "03.png",
+   "size": 180,
+   "players": 8,
+   "levels": 1,
+   "seed": 1,
+   "water": null,
+   "preferred": true,
+   "caption": "Classic, Huge 180x180: 8 players, 1 level",
+   "zones": 49,
+   "lanes": 34,
+   "portals": 6,
+   "starts": 8,
+   "towns": 14,
+   "legend": [
+    "Player start",
+    "Neutral town",
+    "Passage",
+    "Portal pair (same colour)",
+    "Start zone",
+    "Treasure zone",
+    "Town zone",
+    "Open land"
+   ],
+   "path": "mapgen/preview/classic/03",
+   "seconds": 3.0,
+   "contentSha256": "095bf54a51d8405ba753fa8e8d01eda74a23d59935dba8682426d369062c22c6"
+  },
+  {
+   "order": 4,
+   "file": "04.png",
+   "size": 216,
+   "players": 8,
+   "levels": 1,
+   "seed": 1,
+   "water": null,
+   "preferred": true,
+   "caption": "Classic, Extra Huge 216x216: 8 players, 1 level",
+   "zones": 66,
+   "lanes": 55,
+   "portals": 7,
+   "starts": 8,
+   "towns": 20,
+   "legend": [
+    "Player start",
+    "Neutral town",
+    "Passage",
+    "Portal pair (same colour)",
+    "Start zone",
+    "Treasure zone",
+    "Town zone",
+    "Open land"
+   ],
+   "path": "mapgen/preview/classic/04",
+   "seconds": 3.0,
+   "contentSha256": "239a772a892d626a3f27a1bd5afc36cb3d6114cdec4a302bd58d5ec4b6fc439d"
+  },
+  {
+   "order": 5,
+   "file": "05.png",
+   "size": 252,
+   "players": 8,
+   "levels": 1,
+   "seed": 1,
+   "water": null,
+   "preferred": true,
+   "caption": "Classic, Giant 252x252: 8 players, 1 level",
+   "zones": 87,
+   "lanes": 67,
+   "portals": 6,
+   "starts": 8,
+   "towns": 25,
+   "legend": [
+    "Player start",
+    "Neutral town",
+    "Passage",
+    "Portal pair (same colour)",
+    "Start zone",
+    "Treasure zone",
+    "Town zone",
+    "Open land"
+   ],
+   "path": "mapgen/preview/classic/05",
+   "seconds": 3.0,
+   "contentSha256": "aef56b1fd94ead07165fb508bf5c3503b724e3f813918e30f3e62762933c126d"
+  },
+  {
+   "order": 6,
+   "file": "06.png",
    "size": 36,
    "players": 2,
    "levels": 1,
@@ -20,17 +165,17 @@
    "legend": [
     "Player start",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone"
    ],
-   "path": "mapgen/preview/classic/01",
+   "path": "mapgen/preview/classic/06",
    "seconds": 3.0,
-   "contentSha256": "c1c9423679a7d64edd633adf13f104bd2d1e6c4620ff9e4b80a6dc0e29f5d35f"
+   "contentSha256": "41ecfc4e2f841b29b87272ea54a8c2c1a0526e22722db5bc0b9fc1523df82392"
   },
   {
-   "order": 2,
-   "file": "02.png",
+   "order": 7,
+   "file": "07.png",
    "size": 72,
    "players": 4,
    "levels": 1,
@@ -52,154 +197,9 @@
     "Town zone",
     "Open land"
    ],
-   "path": "mapgen/preview/classic/02",
-   "seconds": 3.0,
-   "contentSha256": "986aef51d171106ae6d9525968a5e652f5f0eae8fd343334bfcfbfad9a52fa92"
-  },
-  {
-   "order": 3,
-   "file": "03.png",
-   "size": 108,
-   "players": 4,
-   "levels": 1,
-   "seed": 1,
-   "water": null,
-   "preferred": true,
-   "caption": "Classic, Large 108x108: 4 players, 1 level",
-   "zones": 19,
-   "lanes": 16,
-   "portals": 7,
-   "starts": 4,
-   "towns": 11,
-   "legend": [
-    "Player start",
-    "Neutral town",
-    "Passage",
-    "Portal",
-    "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
-   ],
-   "path": "mapgen/preview/classic/03",
-   "seconds": 3.0,
-   "contentSha256": "78fdaffad394dfcb61a100c9c63e7a3b4fa949e158a1b095b1ff6d560d6ec238"
-  },
-  {
-   "order": 4,
-   "file": "04.png",
-   "size": 144,
-   "players": 6,
-   "levels": 1,
-   "seed": 1,
-   "water": null,
-   "preferred": true,
-   "caption": "Classic, Extra Large 144x144: 6 players, 1 level",
-   "zones": 32,
-   "lanes": 21,
-   "portals": 4,
-   "starts": 6,
-   "towns": 11,
-   "legend": [
-    "Player start",
-    "Neutral town",
-    "Passage",
-    "Portal",
-    "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
-   ],
-   "path": "mapgen/preview/classic/04",
-   "seconds": 3.0,
-   "contentSha256": "34bc2b2c9b03509b1afe08eebe4312452529f5c63d095153888cd439b7a13894"
-  },
-  {
-   "order": 5,
-   "file": "05.png",
-   "size": 180,
-   "players": 8,
-   "levels": 1,
-   "seed": 1,
-   "water": null,
-   "preferred": true,
-   "caption": "Classic, Huge 180x180: 8 players, 1 level",
-   "zones": 49,
-   "lanes": 34,
-   "portals": 6,
-   "starts": 8,
-   "towns": 14,
-   "legend": [
-    "Player start",
-    "Neutral town",
-    "Passage",
-    "Portal",
-    "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
-   ],
-   "path": "mapgen/preview/classic/05",
-   "seconds": 3.0,
-   "contentSha256": "ef97097a0913b36fdc6df2991f89ca911b2e9ea1045a6515ff86d33b1976ed7e"
-  },
-  {
-   "order": 6,
-   "file": "06.png",
-   "size": 216,
-   "players": 8,
-   "levels": 1,
-   "seed": 1,
-   "water": null,
-   "preferred": true,
-   "caption": "Classic, Extra Huge 216x216: 8 players, 1 level",
-   "zones": 66,
-   "lanes": 55,
-   "portals": 7,
-   "starts": 8,
-   "towns": 20,
-   "legend": [
-    "Player start",
-    "Neutral town",
-    "Passage",
-    "Portal",
-    "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
-   ],
-   "path": "mapgen/preview/classic/06",
-   "seconds": 3.0,
-   "contentSha256": "40ebd03f061ef5e6e8df2d124478187b31c9556e2b74aabde98988d24d818f23"
-  },
-  {
-   "order": 7,
-   "file": "07.png",
-   "size": 252,
-   "players": 8,
-   "levels": 1,
-   "seed": 1,
-   "water": null,
-   "preferred": true,
-   "caption": "Classic, Giant 252x252: 8 players, 1 level",
-   "zones": 87,
-   "lanes": 67,
-   "portals": 6,
-   "starts": 8,
-   "towns": 25,
-   "legend": [
-    "Player start",
-    "Neutral town",
-    "Passage",
-    "Portal",
-    "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
-   ],
    "path": "mapgen/preview/classic/07",
    "seconds": 3.0,
-   "contentSha256": "df7d8419f7129b2ca2a7a32b7ca5103d6c36b9da5b860ac90576dc5f8a60badb"
+   "contentSha256": "2aa92893a0619191c6cbc52f591d88fef2bfe0966888f7c33b9ee8f0a01cc72a"
   },
   {
    "order": 8,
@@ -220,14 +220,14 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Open land"
    ],
    "path": "mapgen/preview/classic/08",
    "seconds": 3.0,
-   "contentSha256": "d7741a8686c3c2a640d29b5705235bb3b1ece298344594b5b26ea6b06ec35ee9"
+   "contentSha256": "b8f5f8e9436ef89132cf0b33511482e0d3b911dadc640626c862ccb21b130cb7"
   },
   {
    "order": 9,
@@ -248,7 +248,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -257,7 +257,7 @@
    ],
    "path": "mapgen/preview/classic/09",
    "seconds": 3.0,
-   "contentSha256": "144f52a0da8ed38033dd70f3a7ed6ef5f3fcdb30b8c266efcc160c0115851509"
+   "contentSha256": "8ff50290d9ccf6ea999b984b78ae359d1f8ec442a956c6d908bbdc2e5927cf5c"
   },
   {
    "order": 10,
@@ -278,7 +278,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -286,7 +286,7 @@
    ],
    "path": "mapgen/preview/classic/10",
    "seconds": 3.0,
-   "contentSha256": "9ed46dd6a860fbfb6ff36c4a62cbefdaf21f5b711222f01678a40658caec2f7f"
+   "contentSha256": "fc27f7a6d39567f85263895e5cd0ae346779416c1291652171982d577da52227"
   },
   {
    "order": 11,
@@ -315,7 +315,7 @@
    ],
    "path": "mapgen/preview/classic/11",
    "seconds": 3.0,
-   "contentSha256": "1980ab7aed173d25cf2f9eb97480400fd80686478f3b27a44439fb87b8992552"
+   "contentSha256": "5ed8299b00ab1f3a4f44d59853d732f22e93a3c98fc3485965f0d511b47e5312"
   },
   {
    "order": 12,
@@ -336,7 +336,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -344,7 +344,7 @@
    ],
    "path": "mapgen/preview/classic/12",
    "seconds": 3.0,
-   "contentSha256": "3ef8c6393e8cab76ddaa27501957e5442f56cba42a18477b4c49544f7b0aa25f"
+   "contentSha256": "7169d60895ff0cf97a33f2be488fc5a6172cbd1e816456e51c7288e472f2d6f9"
   },
   {
    "order": 13,
@@ -373,7 +373,7 @@
    ],
    "path": "mapgen/preview/classic/13",
    "seconds": 3.0,
-   "contentSha256": "769527c6160c5703216c59d5055530baa7adf9761e9a616bcf9643f67ffcb1e6"
+   "contentSha256": "4d9310c68db446f7e37e466fb58ff6d78025cf461e86c1435292f707c0842e3a"
   },
   {
    "order": 14,
@@ -393,7 +393,7 @@
    "legend": [
     "Player start",
     "Neutral town",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -402,7 +402,7 @@
    ],
    "path": "mapgen/preview/classic/14",
    "seconds": 3.0,
-   "contentSha256": "f10c6f7524c606ad7533ba30c2c6c4d5e928339081f73c04eb592163ef0574da"
+   "contentSha256": "696d011c147740888c8c8fcac8077b3cd69238396c7ee2db6fe03b49900a8fa7"
   },
   {
    "order": 15,
@@ -431,7 +431,7 @@
    ],
    "path": "mapgen/preview/classic/15",
    "seconds": 3.0,
-   "contentSha256": "a8ed99431c124f2392a71aa1c0a8d2ca755b9fea96b2a40be144e309f4b45f02"
+   "contentSha256": "9604d9d307ae319512cdcc5e5baf195cd541dfa9bc50d8c4f4e53b07b6975900"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

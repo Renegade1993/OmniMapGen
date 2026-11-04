@@ -86,7 +86,8 @@ const portalKey = new Set();
 		if (portalKey.has(key)) continue;
 		portalKey.add(key);
 		const lane = lanes.find(n => [n.a.join(':'), n.b.join(':')].sort().join('-') === key);
-		if (lane) lane.portal = true; else if (zones[A.join(':')] && zones[B.join(':')]) lanes.push({ a: A, b: B, wide: false, portal: true });
+		const ends = [[g[0].l, g[0].at[0] + 0.5, g[0].at[1] + 0.5], [g[1].l, g[1].at[0] + 0.5, g[1].at[1] + 0.5]];
+		if (lane) { lane.portal = true; lane.portalEnds = ends; } else if (zones[A.join(':')] && zones[B.join(':')]) lanes.push({ a: A, b: B, wide: false, portal: true, portalEnds: ends });
 	}
 }
 // a way between levels is drawn at its real gates (Opus Reviewer, 2026-11-04: squares at the zone centre piled onto the castles and towns): each subterranean gate
@@ -109,6 +110,28 @@ const portalKey = new Set();
 		const [g0, g1] = zk(gpairs[i][0]) === A ? gpairs[i] : [gpairs[i][1], gpairs[i][0]];
 		n.ends = [[g0.l, g0.at[0] + 0.5, g0.at[1] + 0.5], [g1.l, g1.at[0] + 0.5, g1.at[1] + 0.5]];
 	}
+}
+// a passage is drawn where its two zones meet (Opus Reviewer, 2026-11-04: lines to the zone centres knotted on Headquarters and the Nostalgia
+// undergrounds): the border tile of zone a next to zone b closest to the middle of that border, walkable tiles first, and the way across it
+for (const n of lanes) {
+	if (n.portal || n.a[0] !== n.b[0]) continue;
+	const l = n.a[0], za = n.a[1], zb = n.b[1], pts = [], walkPts = [];
+	for (let y = 0; y < M.H; y++) for (let x = 0; x < M.W; x++) {
+		if (M.zoneAt(l, x, y) !== za) continue;
+		for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+			if (!M.inb(x + dx, y + dy) || M.zoneAt(l, x + dx, y + dy) !== zb) continue;
+			const pt = [x + 0.5 + dx / 2, y + 0.5 + dy / 2, dx, dy];
+			pts.push(pt);
+			const i = M.idx(l, x, y), j = M.idx(l, x + dx, y + dy);
+			if (M.ground(i) && !M.blocked[i] && M.ground(j) && !M.blocked[j]) walkPts.push(pt);
+		}
+	}
+	const use = walkPts.length ? walkPts : pts;
+	if (!use.length) continue;
+	const mx = use.reduce((a, p) => a + p[0], 0) / use.length, my = use.reduce((a, p) => a + p[1], 0) / use.length;
+	let best = use[0], bd = Infinity;
+	for (const p of use) { const d = (p[0] - mx) ** 2 + (p[1] - my) ** 2; if (d < bd) { bd = d; best = p; } }
+	n.border = [l, best[0], best[1], best[2], best[3]];
 }
 const starts = sight.starts(M).map(s => ({ colour: s.colour, l: s.l, x: s.at[0] + 0.5, y: s.at[1] + 0.5, zone: s.zone }));
 // every town on the map (K, 2026-11-03: "little castles, colored for player starts, grey for non"); the renderer marks the ones that are starts

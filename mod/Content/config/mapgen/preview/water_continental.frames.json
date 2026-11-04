@@ -21,7 +21,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -30,7 +30,7 @@
    ],
    "path": "mapgen/preview/water_continental/01",
    "seconds": 3.0,
-   "contentSha256": "f7a2a0600d2aabd8a6e20e705276454caa3094c9bea092fe921ff9e083fd0394"
+   "contentSha256": "984d2215c91f3077a63538b2b132723762245d797ea76ccb1e53c20a8b1ee994"
   },
   {
    "order": 2,
@@ -51,7 +51,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -60,7 +60,7 @@
    ],
    "path": "mapgen/preview/water_continental/02",
    "seconds": 3.0,
-   "contentSha256": "5d2e7a3d15ae3d6019306aed540e17458c4637228be6aa9be9332e65879ad703"
+   "contentSha256": "f8225bff75e8404e8e540dbac5aeb5f7208e27f7fc284917da068382ac6412d8"
   },
   {
    "order": 3,
@@ -81,7 +81,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -90,7 +90,7 @@
    ],
    "path": "mapgen/preview/water_continental/03",
    "seconds": 3.0,
-   "contentSha256": "1e6876edc15913d133a1fa4beef61cd16f17c410c33ce63eac31106c05a650cf"
+   "contentSha256": "50377735daa600c3654974374ef7aa4c7072899e26aa8bbbb8ec759d6b3ad21b"
   },
   {
    "order": 4,
@@ -111,7 +111,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -120,7 +120,7 @@
    ],
    "path": "mapgen/preview/water_continental/04",
    "seconds": 3.0,
-   "contentSha256": "1808b65fbf76eeb68719a2b2c6cfa7f65120df8f49a88d127128cf215e579050"
+   "contentSha256": "5a00f70901aa8799c4a5b8f77c3e358d51ad49ce452d419a38633d6a19335c07"
   },
   {
    "order": 5,
@@ -141,7 +141,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -150,7 +150,7 @@
    ],
    "path": "mapgen/preview/water_continental/05",
    "seconds": 3.0,
-   "contentSha256": "9b596eb4a6b1b3d8297da245625a5c8dc17ab43b7caa238d831052dca801b402"
+   "contentSha256": "83346d3666491cf036373062a5afd1698354b50e597d48148e7f5e94a51b3fbb"
   },
   {
    "order": 6,
@@ -171,7 +171,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -180,7 +180,7 @@
    ],
    "path": "mapgen/preview/water_continental/06",
    "seconds": 3.0,
-   "contentSha256": "f6780d4d9379364ec67784f73ded9adbe844cefb2948215f00e0cad1eb8c14c6"
+   "contentSha256": "00bd03c8e5ad9ee0d62687322dcb1c3796c44654740f59a42cc82c4d896f68e7"
   },
   {
    "order": 7,
@@ -206,7 +206,7 @@
    ],
    "path": "mapgen/preview/water_continental/07",
    "seconds": 3.0,
-   "contentSha256": "21b3a6c07793770f5c84766ad854741f21f401be71b7a03928556e9dc7066fb8"
+   "contentSha256": "36bd963000330ca54385d459565194d53c7a1e5902a9e17c6865c9c39860fd98"
   },
   {
    "order": 8,
@@ -232,7 +232,7 @@
    ],
    "path": "mapgen/preview/water_continental/08",
    "seconds": 3.0,
-   "contentSha256": "65293a2f5f3e9da464a4205af1058e49a0d2758ecfb44ed2ddea2250f7a39896"
+   "contentSha256": "54fb9abbeaf24968ef9145148f193b430b1c75795a58256a378539a40dc99fb2"
   },
   {
    "order": 9,
@@ -253,7 +253,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -262,7 +262,7 @@
    ],
    "path": "mapgen/preview/water_continental/09",
    "seconds": 3.0,
-   "contentSha256": "f2336e682a98e16e6a22f14e7c81ea21f1c3f5c960f65eecebe679959416dd15"
+   "contentSha256": "4cd4cc9a62d96aa92e920317f5dab8b049e53fbddb51e22f795183f0ff3e1735"
   },
   {
    "order": 10,
@@ -283,7 +283,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -292,7 +292,7 @@
    ],
    "path": "mapgen/preview/water_continental/10",
    "seconds": 3.0,
-   "contentSha256": "9cf3bab1df1878d4d67d87c8626a984b65e0a1592a50f4f449acb6809b85aaab"
+   "contentSha256": "e369b3c9001b3ca1b558cf444614dbca3672b3efded97ab336845a57bd33871d"
   },
   {
    "order": 11,
@@ -313,7 +313,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -322,7 +322,7 @@
    ],
    "path": "mapgen/preview/water_continental/11",
    "seconds": 3.0,
-   "contentSha256": "4c4bf5154b5c38950593a945e9a7d6c62f9462dbc33d919011c7305dcb2539b1"
+   "contentSha256": "c5afd9294281c7cd88643074b499bb99b69082e84c39650c28ab3d7035a6156f"
   },
   {
    "order": 12,
@@ -343,7 +343,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -352,7 +352,7 @@
    ],
    "path": "mapgen/preview/water_continental/12",
    "seconds": 3.0,
-   "contentSha256": "71ffff53dbfcb6ff2638dc1586b454e28a0284c23c266b394e88d86db2653be8"
+   "contentSha256": "979d4bbb442c965811a3df2db2cbd4a0db26da1bdd888b67c7e1373357e60f1c"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

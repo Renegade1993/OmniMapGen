@@ -21,7 +21,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Way between levels",
     "Start zone",
     "Treasure zone",
@@ -29,7 +29,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/01",
    "seconds": 3.0,
-   "contentSha256": "6f348c2d728993239881fc5f98298638ba59fa39d3d769ead5e84fd1432a72fb"
+   "contentSha256": "108ccb65c2571683a014decf08c2b9827eb4aad232858d7a7ee5853fa6e77cf6"
   },
   {
    "order": 2,
@@ -50,7 +50,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Way between levels",
     "Start zone",
     "Treasure zone",
@@ -58,7 +58,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/02",
    "seconds": 3.0,
-   "contentSha256": "db992be0448228cbc6b48862f9d8ee3b3ef30c07adfa5d606a45afa1ec6a293c"
+   "contentSha256": "9c2ecccdd2dd9e8ac1fd8e0511dd306663c08b754eeacc50afb1b067c80a63ba"
   },
   {
    "order": 3,
@@ -79,7 +79,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Way between levels",
     "Start zone",
     "Treasure zone",
@@ -87,7 +87,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/03",
    "seconds": 3.0,
-   "contentSha256": "9edaa4ee89649cfe0b58c5a12f392151287289fdbe2f4ac6692541e2a448f951"
+   "contentSha256": "8fa5adcbacb39d48d028ef1ded16cd6eabe8d5855196635b4859f084cc326838"
   },
   {
    "order": 4,
@@ -108,7 +108,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Way between levels",
     "Start zone",
     "Treasure zone",
@@ -116,7 +116,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/04",
    "seconds": 3.0,
-   "contentSha256": "a0e51e80291cc63a94c77755342dd924629b81902cf5a1c074bcde9a128ced1c"
+   "contentSha256": "66c5211df145bb3f5fe9d601bac5a4eac9b111d2866499c8e2d659fc9cfb9972"
   },
   {
    "order": 5,
@@ -137,15 +137,14 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
-    "Portal between levels",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Junction"
    ],
    "path": "mapgen/preview/coldshadows_fantasy/05",
    "seconds": 3.0,
-   "contentSha256": "832af8aea44140eb7821baa041a5875d3d6dd545be858ac54eecf04ef4259eca"
+   "contentSha256": "a853b650e4527c09b441ed8d07e5e2a5af5b6defb62b0a21aa1d4871830382a1"
   },
   {
    "order": 6,
@@ -166,7 +165,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Way between levels",
     "Start zone",
     "Treasure zone",
@@ -174,7 +173,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/06",
    "seconds": 3.0,
-   "contentSha256": "500230e503e357f69e75aed8580ed08dbb65e2fdf478b855d44b347a003d0612"
+   "contentSha256": "e133e938808903e18f3df75eb49aeb08eeb2c20ca8e28b52ef8fd56ed73bcb19"
   },
   {
    "order": 7,
@@ -195,16 +194,15 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Way between levels",
-    "Portal between levels",
     "Start zone",
     "Treasure zone",
     "Junction"
    ],
    "path": "mapgen/preview/coldshadows_fantasy/07",
    "seconds": 3.0,
-   "contentSha256": "fbe33921559cb60d32ce7d7f4b624ba0f1754b4f1c46a771cd58d5b745ad23aa"
+   "contentSha256": "15b26efc9e5027378cad282d6051e8d9b04577889b7930772101efae0f03801e"
   },
   {
    "order": 8,
@@ -226,7 +224,7 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Way between levels",
     "Start zone",
     "Treasure zone",
@@ -234,7 +232,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/08",
    "seconds": 3.0,
-   "contentSha256": "d865f8f5431aca12cd3639c7bcc2997e8e9877950f4f1467eca1b2cc8725fbd0"
+   "contentSha256": "61f345fdf4afb10d5fb1175b52b1422fc48847392990beff3b0ec7db3e489187"
   },
   {
    "order": 9,
@@ -256,14 +254,14 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Junction"
    ],
    "path": "mapgen/preview/coldshadows_fantasy/09",
    "seconds": 3.0,
-   "contentSha256": "95dd748d612452ff8b214c1c04375523df964adc55f7b3bfb6ffb49f29b1a9e0"
+   "contentSha256": "7c122c33c91378d5e3afc9e88714a717c98b197f45a357b765cab218b279cc1c"
   },
   {
    "order": 10,
@@ -285,16 +283,15 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Way between levels",
-    "Portal between levels",
     "Start zone",
     "Treasure zone",
     "Junction"
    ],
    "path": "mapgen/preview/coldshadows_fantasy/10",
    "seconds": 3.0,
-   "contentSha256": "3a78f18ccd2b56fbdf8cd71a0809839a9231c466f82150c84d4108c1368eb245"
+   "contentSha256": "0a085dc3e8f45666396ab69126ceecf972acb82cc8c84b2e416c46d8cf691fd6"
   },
   {
    "order": 11,
@@ -316,14 +313,14 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Junction"
    ],
    "path": "mapgen/preview/coldshadows_fantasy/11",
    "seconds": 3.0,
-   "contentSha256": "fed80ebba0f7f0f946540e3878c754919bd8090afa2050c6cffe7107fc8bdf7e"
+   "contentSha256": "088dcebb68df88c11b7106451604d4d53280d2a00e13da05dc75a5ddee60c55c"
   },
   {
    "order": 12,
@@ -345,16 +342,15 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Way between levels",
-    "Portal between levels",
     "Start zone",
     "Treasure zone",
     "Junction"
    ],
    "path": "mapgen/preview/coldshadows_fantasy/12",
    "seconds": 3.0,
-   "contentSha256": "9aa728719678f66a46a55a125354eae766d83a6576609e926db9e32c1dd04394"
+   "contentSha256": "f1c80ad40ca1b5c5284bb10b65f54aef818a089a5236ac9d90c2a1c9584b6cc7"
   },
   {
    "order": 13,
@@ -376,7 +372,7 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Junction",
@@ -384,7 +380,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/13",
    "seconds": 3.0,
-   "contentSha256": "455aa47f09a7bca1e381ae9de80c154e299ed1bfb13944a6aa4ae47c023eb7e7"
+   "contentSha256": "079463132074597faaab59eac2b86f1d2afd8871d35bad9f3e5e3a3186411c21"
   },
   {
    "order": 14,
@@ -405,7 +401,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Way between levels",
     "Start zone",
     "Treasure zone",
@@ -414,7 +410,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/14",
    "seconds": 3.0,
-   "contentSha256": "d4e5755b603da39a961ae8c52705659e7eaf268f0f5aeb31fbe58ebf7d498a44"
+   "contentSha256": "efa33cf5c11eaa33c9bdccb653962f8cc33a48e32a49acf4d6c33eb9db95db49"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

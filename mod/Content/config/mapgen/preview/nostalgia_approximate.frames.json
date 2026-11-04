@@ -12,16 +12,16 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Extra Large 144x144: 8 players, 2 levels",
-   "zones": 25,
-   "lanes": 24,
+   "zones": 29,
+   "lanes": 27,
    "portals": 8,
-   "starts": 4,
-   "towns": 16,
+   "starts": 8,
+   "towns": 18,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -29,7 +29,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/01",
    "seconds": 3.0,
-   "contentSha256": "5523c20d4a95ee61366cfc7104572cd5bda17af5575ef6c216cc381a0c613f32"
+   "contentSha256": "917f8640831ddcdb7a43874c462a85ca5a174ea26a56ba904e265d0be421a29f"
   },
   {
    "order": 2,
@@ -41,16 +41,16 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Huge 180x180: 8 players, 2 levels",
-   "zones": 37,
-   "lanes": 36,
+   "zones": 41,
+   "lanes": 39,
    "portals": 8,
-   "starts": 4,
-   "towns": 20,
+   "starts": 8,
+   "towns": 21,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -58,7 +58,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/02",
    "seconds": 3.0,
-   "contentSha256": "dd724b1041be8e6b37e4d79fcb502b3042e613f1c75ee18aa3c44b32880e6873"
+   "contentSha256": "3b46fbada2e8ff2b1c4aa2b12bda4fb70cb3719253ae5a48b84a00a6b2f5a337"
   },
   {
    "order": 3,
@@ -70,16 +70,16 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Extra Huge 216x216: 8 players, 2 levels",
-   "zones": 51,
-   "lanes": 48,
+   "zones": 55,
+   "lanes": 52,
    "portals": 8,
-   "starts": 4,
-   "towns": 28,
+   "starts": 8,
+   "towns": 31,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -87,7 +87,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/03",
    "seconds": 3.0,
-   "contentSha256": "8423df6c3ac51eb666c3a1a1d37b76764f16f328ca609ae6117a901e051bdff0"
+   "contentSha256": "60c1145ae49c4ba8bf1f4fde6f5a61d1ca375837dbeea69003661b588b055e4c"
   },
   {
    "order": 4,
@@ -99,16 +99,16 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Giant 252x252: 8 players, 2 levels",
-   "zones": 67,
-   "lanes": 69,
+   "zones": 71,
+   "lanes": 66,
    "portals": 8,
-   "starts": 4,
-   "towns": 39,
+   "starts": 8,
+   "towns": 40,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -116,7 +116,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/04",
    "seconds": 3.0,
-   "contentSha256": "9bed3d6c2ebd0373fc8e58073aef17bd3269f85460a5c6a6e1ce2bd431fefd7c"
+   "contentSha256": "7757dd1ba04926ebc0dd00a1e6238939b050b7273b84b86473ec5bee9b2bfb94"
   },
   {
    "order": 5,
@@ -128,23 +128,23 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Small 36x36: 8 players, 2 levels",
-   "zones": 8,
-   "lanes": 4,
-   "portals": 1,
-   "starts": 4,
-   "towns": 5,
+   "zones": 12,
+   "lanes": 10,
+   "portals": 2,
+   "starts": 8,
+   "towns": 9,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Open land"
    ],
    "path": "mapgen/preview/nostalgia_approximate/05",
    "seconds": 3.0,
-   "contentSha256": "0703224ad651db294bf87e9edaa5f9699c569296b6d4a14392a4f7841b826e09"
+   "contentSha256": "03c04e501b7af31ec65f1a9fad99176dddbe918a3f4dc9c9ce16637079c123ec"
   },
   {
    "order": 6,
@@ -156,23 +156,23 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Medium 72x72: 8 players, 2 levels",
-   "zones": 9,
-   "lanes": 6,
-   "portals": 3,
-   "starts": 4,
-   "towns": 8,
+   "zones": 13,
+   "lanes": 13,
+   "portals": 8,
+   "starts": 8,
+   "towns": 11,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Open land"
    ],
    "path": "mapgen/preview/nostalgia_approximate/06",
    "seconds": 3.0,
-   "contentSha256": "dd996f123893e03f647b3bd918ab2bfa07fbf93584cae0810d2e50e4b1fb4bd2"
+   "contentSha256": "0aaf92d8c9f5a784d9451a7982b3069d1d17998b486cd38cb6910cd130d653a9"
   },
   {
    "order": 7,
@@ -184,16 +184,16 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Large 108x108: 8 players, 2 levels",
-   "zones": 16,
-   "lanes": 10,
-   "portals": 7,
-   "starts": 4,
-   "towns": 14,
+   "zones": 20,
+   "lanes": 15,
+   "portals": 8,
+   "starts": 8,
+   "towns": 18,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -201,7 +201,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/07",
    "seconds": 3.0,
-   "contentSha256": "aaacf8999a8fa941b42ef8ac871dbac293c483ef121bb9e351426916d1ac8cad"
+   "contentSha256": "4cf67770b2e840cf2269c474e89a4db8d5c6c7a9253a3950de698c3ece7e8fb7"
   },
   {
    "order": 8,
@@ -213,21 +213,21 @@
    "water": null,
    "preferred": false,
    "caption": "Nostalgia (approximate), Small 36x36: 2 players, 1 level",
-   "zones": 6,
+   "zones": 4,
    "lanes": 2,
    "portals": 2,
-   "starts": 4,
-   "towns": 4,
+   "starts": 2,
+   "towns": 2,
    "legend": [
     "Player start",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Open land"
    ],
    "path": "mapgen/preview/nostalgia_approximate/08",
    "seconds": 3.0,
-   "contentSha256": "8e6bd6189b08d5f33836ca6f3d782576064da54b500996e0177abf6da911337f"
+   "contentSha256": "ae6ad6cd02dac4a3e71f20ab72b1553ee9d119b7118647095529d4e73701ed49"
   },
   {
    "order": 9,
@@ -248,14 +248,14 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Open land"
    ],
    "path": "mapgen/preview/nostalgia_approximate/09",
    "seconds": 3.0,
-   "contentSha256": "e55630c148e90cac08bd52de81a2fe6913995005dac13f077364aa0e3007cc55"
+   "contentSha256": "417dbc1fa9d85cfb3c13a2f273e86d858a56155f46cd809bb991dd7d72266fb8"
   },
   {
    "order": 10,
@@ -267,16 +267,16 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Nostalgia (approximate), Large 108x108: 6 players, 2 levels, Lakes water",
-   "zones": 14,
-   "lanes": 17,
+   "zones": 16,
+   "lanes": 18,
    "portals": 8,
-   "starts": 4,
+   "starts": 6,
    "towns": 12,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -285,7 +285,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/10",
    "seconds": 3.0,
-   "contentSha256": "9d3c5f681b617eff3ad10d7b538e492502a89561a1d6deee1a2fb6a4d9829d88"
+   "contentSha256": "6d1e5a9b94748c81bea9c66ec9f7932474f47dc6de77f2687870a92124fb1da3"
   },
   {
    "order": 11,
@@ -297,16 +297,16 @@
    "water": null,
    "preferred": false,
    "caption": "Nostalgia (approximate), Extra Large 144x144: 3 players, 1 level",
-   "zones": 11,
-   "lanes": 11,
-   "portals": 6,
-   "starts": 4,
-   "towns": 11,
+   "zones": 10,
+   "lanes": 6,
+   "portals": 4,
+   "starts": 3,
+   "towns": 9,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -314,7 +314,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/11",
    "seconds": 3.0,
-   "contentSha256": "988bb5ba47c3c69d94529dbd6c6a87294916be0872845ee6076bb009975b8729"
+   "contentSha256": "80fa52ac021283a29d6a7a72648a94bfdcb40893b4731feb303404a5d74bb147"
   },
   {
    "order": 12,
@@ -327,15 +327,15 @@
    "preferred": false,
    "caption": "Nostalgia (approximate), Huge 180x180: 5 players, 2 levels, Coastal water",
    "zones": 26,
-   "lanes": 25,
+   "lanes": 27,
    "portals": 8,
-   "starts": 4,
-   "towns": 18,
+   "starts": 5,
+   "towns": 16,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -344,7 +344,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/12",
    "seconds": 3.0,
-   "contentSha256": "08c95734cc7115934c490343b708656d9f76016883de074bf805a6e8491f98e1"
+   "contentSha256": "428e05367b50564992070f2031611f531b0fa72dfac18ba70a52b074a4186c1c"
   },
   {
    "order": 13,
@@ -365,7 +365,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal",
+    "Portal pair (same colour)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -373,7 +373,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/13",
    "seconds": 3.0,
-   "contentSha256": "4c472f0771837b7b42c2bbe927fe1089c1174b12bc7f88d9cfc63826ecf7d008"
+   "contentSha256": "48ed0290700cf76aee91e066b2232ae52af716bb82238c96560edf67ffad2918"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"
