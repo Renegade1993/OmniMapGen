@@ -382,6 +382,10 @@ def render(dump_path, out_path, caption=None):
             x += w
     if caption:
         fc = font(CAPTION_FONT)
+        for size in range(CAPTION_FONT, 9, -1):   # a long caption (starts and water named) steps down until it fits the width
+            fc = font(size)
+            if dc.textlength(caption, font=fc) <= CW - 10:
+                break
         dc.text((CW // 2, CH - CAPTION_H // 2 - 1), caption, font=fc, fill=(255, 226, 150), anchor="mm")
     canvas.save(out_path, optimize=True)
     return {"zones": len(zone), "lanes": len(lanes), "portals": sum(1 for l in lanes if l.get("portal")), "starts": len(d["starts"]), "towns": len(d.get("towns", [])),
