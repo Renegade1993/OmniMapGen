@@ -4651,8 +4651,9 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// sizes). The level balance can leave one zone alone on a level: Jebus Cross with the underground puts its four starts on the surface
 	// and its one treasure zone below, which got all 5184 tiles of a medium level against 1247 on one level, and four times the piles
 	// (K, November 3rd 2026: "the loot on this jebus cross medium with underground is insane (particularly the underground)").
-	// A zone at or under its share is untouched, and so is every one-level map. VMAPGEN_LEVEL_FAIR_LOOT=0 off.
-	if (zoneMeta && p.zonePlan && (p.zonePlan.perLevel || []).length > 1 && process.env.VMAPGEN_LEVEL_FAIR_LOOT !== '0') {
+	// Only a zone alone on its level is counted (the lead: zones sharing a level keep their stock loot); one at or under its share is
+	// untouched, and so is every one-level map. VMAPGEN_LEVEL_FAIR_LOOT=0 off.
+	if (zoneMeta && p.zonePlan && (p.zonePlan.perLevel || []).length > 1 && ((p.zonePlan.perLevel[levelIndex] || []).length === 1) && process.env.VMAPGEN_LEVEL_FAIR_LOOT !== '0') {
 		const all = p.zonePlan.zones || tplZones, sum = all.reduce((a, z) => a + (Number(z.size) || 0), 0);
 		const tiles = W * H;   // one level: a zone gets the piles it would have on a one-level map (the lead, November 3rd 2026)
 		if (sum > 0) zoneMeta.forEach((m, i) => { const s = Number(tplZones[i] && tplZones[i].size) || 0; if (m && s > 0) m.fairCells = Math.round(tiles * s / sum); });
