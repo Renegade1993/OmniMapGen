@@ -1973,6 +1973,11 @@ function makeCalmLoss(pl, l, W, H, blocked) {
 	const cover = new Map();
 	for (const o of pl.objects) if ((o.l || 0) === l && o.template) for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) cover.set(fy * W + fx, o);
 	const doors = owned.map(t => approachCells(t.template, t.x, t.y, l, W, H, blocked));
+	// a town's ground is its own zone's: a step into the next zone left open makes that zone's tiles look like the start's, and a guard on the step
+	// then looks as if it took them, so the calm test refused it and the step stayed open (Headquarters 36x36 seed 13: blue walked into the middle
+	// zone with no fight and took 108,500 there against 12,800 at home; DEFECT-MapGenDev-small-map-start-fairness-1104). VMAPGEN_CALM_OWN_ZONE=0 off.
+	const zoneOf = pl.zone && process.env.VMAPGEN_CALM_OWN_ZONE !== '0' ? pl.zone : null;
+	const ownZone = owned.map(t => { const v = visitableCells(t.template, t.x, t.y).find(([x, y]) => x >= 0 && y >= 0 && x < W && y < H); return zoneOf && v ? zoneOf[v[1] * W + v[0]] : -1; });
 	const ground = (g, gx, gy, extra) => {
 		const shut = new Uint8Array(N);
 		const ringAt = (mx, my) => { for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const u = mx + dx, v = my + dy; if (u >= 0 && v >= 0 && u < W && v < H) shut[v * W + u] = 1; } };
@@ -1982,14 +1987,17 @@ function makeCalmLoss(pl, l, W, H, blocked) {
 		}
 		if (extra) ringAt(extra[0], extra[1]);
 		const pass = c => !shut[c] && !(water && water[c]) && (!pl.openMask || pl.openMask[c]) && (!(blocked[base + c] & OCCUPIED) || PASS.test((cover.get(c) || {}).type || ''));
-		return doors.map(d => {
+		return doors.map((d, k) => {
 			const seen = new Uint8Array(N), q = d.filter(pass);
 			for (const c of q) seen[c] = 1;
 			for (let h = 0; h < q.length && q.length < 6000; h++) {
 				const x = q[h] % W, y = (q[h] / W) | 0;
 				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const u = x + dx, v = y + dy; if ((dx || dy) && u >= 0 && v >= 0 && u < W && v < H && !seen[v * W + u] && pass(v * W + u)) { seen[v * W + u] = 1; q.push(v * W + u); } }
 			}
-			return q.length;
+			if (ownZone[k] < 0) return q.length;
+			let n = 0;
+			for (const c of q) if (zoneOf[c] === ownZone[k]) n++;
+			return n;
 		});
 	};
 	// g: a stack already on the map that moves to (x, y); null: a new stack posted at (x, y)
