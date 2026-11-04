@@ -372,7 +372,7 @@ const STOCK_GUARDS = process.env.VMAPGEN_STOCK_GUARDS !== '0';
 // HotA's template docs: "All objects of a group are adjacent, and share the same protection"): a guard's ring may cover its way in
 const STOCK_HOLD = STOCK_GUARDS && process.env.VMAPGEN_STOCK_HOLD !== '0';
 // prisons with the zone's other piles, before the artifacts (the Foreman's e5137f8, folded in 2026-11-02); VMAPGEN_PRISON_EARLY=1 on
-const PRISON_EARLY = process.env.VMAPGEN_PRISON_EARLY === '1';
+const PRISON_EARLY = process.env.VMAPGEN_PRISON_EARLY !== '0'; // on by default (the lead, November 4th 2026: a requested fix ships on)
 const STOCK_HOLD_TYPES = /^(creatureBank|dragonUtopia|crypt|randomArtifactRelic|randomArtifactMajor|artifact|pandoraBox)$/;
 // a dwelling or a prison holds a guard tile when one is there and is never refused a spot for want of one: dwellings are laid on a fixed
 // list of spots with no fallback tries, and refusing them took Coldshadow's dwellings from 1.03 to 0.35 of the engine's in the other zones
@@ -2013,6 +2013,26 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		for (const [a, b] of visitableCells(tpl, x, y)) bld.add(b * W + a);
 	};
 	for (const t of towns) if ((t.l || 0) === l) for (const [gx, gy] of t.gates || []) bld.add(gy * W + gx);
+	// K, 2026-09-30: "Lots of instances of prisons being placed directly in front of other adventure map buildings". A town registers
+	// only its gate above, so a prison could stand against a town's walls: stock's 205 prisons on 7 Coldshadow maps have none within 2
+	// tiles of a town's picture (prison_near.js; the Reviewer's count with a 5x3 footprint agrees), e7627ac 4.6% and prisons early 6.7%.
+	// A prison keeps PRISON_TOWN_GAP tiles off every mask cell of a town on its level, the picture's top rows too. VMAPGEN_PRISON_TOWN_GAP=0 off.
+	const PRISON_TOWN_GAP = process.env.VMAPGEN_PRISON_TOWN_GAP !== undefined ? Number(process.env.VMAPGEN_PRISON_TOWN_GAP) : 2;
+	const townPic = new Set();
+	if (PRISON_TOWN_GAP > 0) for (const t of towns) if ((t.l || 0) === l) {
+		const m = (OBJECT_TEMPLATES.randomTown && OBJECT_TEMPLATES.randomTown.mask) || ['A'];
+		// a faction's town art is up to 6 by 6 with the picture's top rows above the walls; the random town's mask is 5 by 3, so the box
+		// is at least 6 by 6, ending at the town's anchor as every mask does
+		const mw = Math.max(6, ...m.map(r => r.length)), mh = Math.max(6, m.length);
+		for (let j = 0; j < mh; j++) for (let i = 0; i < mw; i++) { const cx = t.x - (mw - 1) + i, cy = t.y - (mh - 1) + j; if (cx >= 0 && cy >= 0 && cx < W && cy < H) townPic.add(cy * W + cx); }
+	}
+	const nearTownPic = (tpl, x, y) => {
+		if (!townPic.size) return false;
+		const r = PRISON_TOWN_GAP;
+		for (const [a, b] of blockingCells(tpl, x, y).concat(visitableCells(tpl, x, y)))
+			for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (townPic.has((b + dy) * W + a + dx)) return true;
+		return false;
+	};
 	const PRISON_GAP = process.env.VMAPGEN_PRISON_GAP === '0' ? -1 : 2;
 	// K, 2026-10-04: "the fuck is this prison stacking" (108x108 one level: 13 prisons, 1.11 a 1000 tiles against the engine's 0.6 to
 	// 0.77, two pairs side by side). A prison keeps PRISON_SPACING tiles from every other prison on its level, and a level holds at most
@@ -2268,6 +2288,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// blocker art").
 			if (zoneMeta && POCKET_LOOT.test(type) && tries < tryBudget * 0.75 && closable(x, y) < 0) { rej('nook'); if (process.env.VMAPGEN_NOOK_TRACE) { const k = 'L' + l + (openMask ? 'cave' : ''); NOOK_T[k] = (NOOK_T[k] || 0) + 1; } continue; }
 			if (type === 'prison' && PRISON_GAP > 0 && nearBuilding(tpl, x, y, PRISON_GAP)) { rej('prisonGap'); continue; }
+			if (type === 'prison' && nearTownPic(tpl, x, y)) { rej('prisonTown'); continue; }
 			// stock lays a guarded pile at a distance from everything placed, so its guard has a tile by it that covers nothing else: a dear
 			// target keeps 3 tiles from buildings for the first half of its tries (laid beside a bank or a mine, 33 to 46% of them had no such
 			// guard tile and were taken back on seed 11 of K's settings); a prison keeps its own gap (PRISON_GAP), and more refusals lost it
@@ -3403,7 +3424,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// VMAPGEN_PRISON_PREFILTER=0 off.
 		if (type === 'prison' && process.env.VMAPGEN_PRISON_PREFILTER !== '0') {
 			const ok = c => { const x = c % W, y = (c / W) | 0; return !(blocked[l * W * H + c] & 1) && !crossesEdge(tpl, x, y) && footprintFits(tpl, x, y, l, W, H, blocked, REMOVABLE_TYPES.has(type))
-				&& !(PRISON_GAP > 0 && nearBuilding(tpl, x, y, PRISON_GAP)) && !prisonBlocked(x, y); };
+				&& !(PRISON_GAP > 0 && nearBuilding(tpl, x, y, PRISON_GAP)) && !nearTownPic(tpl, x, y) && !prisonBlocked(x, y); };
 			spaced3 = spaced3.filter(ok);
 			const spots2 = spots.filter(ok);
 			spots.length = 0; spots.push(...spots2);
