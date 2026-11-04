@@ -174,7 +174,7 @@ const kinOf = short => (KIN.get(short) || {}).short || null;
  * K's seed). objects: the map's list; groundAt(o) -> the two-letter ground under its visiting tile; mineArt(subtype, kin) -> the
  * mine template the table gives the kin. Returns the number swapped.
  */
-function kinSwap(objects, groundAt, mineArt) {
+function kinSwap(objects, groundAt, mineArt, freeTile = null) {
 	let n = 0;
 	if (!KIN.size) return 0;
 	// the cells that block or are visited, counted from the bottom-right corner as the game anchors a picture; drawn-only cells ('V') may differ,
@@ -191,7 +191,36 @@ function kinSwap(objects, groundAt, mineArt) {
 	// every cell any used object's picture covers, with the objects there (several may share a cell: flowers drawn over a treasure pile)
 	const usedAt = new Map();
 	for (const q of objects) if (q && q.template && q.template.mask && used(q)) for (const k of cellsOf(q.template.mask, q.x, q.y)) { const key = `${q.l || 0}:${k}`; if (!usedAt.has(key)) usedAt.set(key, []); usedAt.get(key).push(q); }
-	const coversOther = (o, mask) => { const mine = new Set(cellsOf(o.template.mask, o.x, o.y)); return cellsOf(mask, o.x, o.y).some(k => !mine.has(k) && (usedAt.get(`${o.l || 0}:${k}`) || []).some(q => q !== o)); };
+	const coveredBy = (o, mask) => { const mine = new Set(cellsOf(o.template.mask, o.x, o.y)), out = new Set(); for (const k of cellsOf(mask, o.x, o.y)) if (!mine.has(k)) for (const q of usedAt.get(`${o.l || 0}:${k}`) || []) if (q !== o) out.add(q); return [...out]; };
+	// a pickup under the taller picture's extra row moves to the nearest free tile within 2 (passable ground, no water, no road, under no other
+	// object's picture, outside the new picture), so the right art can stand (the Opus Reviewer on 8302192); a building or a guard stays and so does
+	// the old art. VMAPGEN_KIN_MOVE_PICKUP=0 keeps every covered object where it is.
+	const PICKUP = /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|seaChest|flotsam)/;
+	const anyAt = new Map();
+	for (const q of objects) if (q && q.template && q.template.mask) for (const k of cellsOf(q.template.mask, q.x, q.y)) { const key = `${q.l || 0}:${k}`; if (!anyAt.has(key)) anyAt.set(key, []); anyAt.get(key).push(q); }
+	// the cells that block or are visited, of every object: a moved pickup lands on none of them (drawn-only scenery may overlap it, as in stock)
+	const solidOf = (m, x, y) => { const out = []; const h = m.length; for (let r = 0; r < h; r++) { const line = String(m[r]); for (let c = 0; c < line.length; c++) if ('BHAT'.includes(line[c])) out.push(`${x - (line.length - 1 - c)},${y - (h - 1 - r)}`); } return out; };
+	const solidAt = new Map();
+	for (const q of objects) if (q && q.template && q.template.mask) for (const k of solidOf(q.template.mask, q.x, q.y)) { const key = `${q.l || 0}:${k}`; if (!solidAt.has(key)) solidAt.set(key, []); solidAt.get(key).push(q); }
+	const unmark = (map, q) => { for (const k of cellsOf(q.template.mask, q.x, q.y)) { const key = `${q.l || 0}:${k}`, a = map.get(key); if (a) map.set(key, a.filter(z => z !== q)); } };
+	const mark = (map, q) => { for (const k of cellsOf(q.template.mask, q.x, q.y)) { const key = `${q.l || 0}:${k}`; if (!map.has(key)) map.set(key, []); map.get(key).push(q); } };
+	const movePickup = (q, keepOut) => {
+		if (!freeTile || process.env.VMAPGEN_KIN_MOVE_PICKUP === '0') return false;
+		// a pickup a stack guards keeps that stack within a tile of it (no free loot made by the move)
+		const MON = /^(monster|randomMonster)/, near = (m, x, y) => Math.max(Math.abs(m.x - x), Math.abs(m.y - y)) <= 1;
+		const guards = objects.filter(m => m && (m.l || 0) === (q.l || 0) && MON.test(String(m.type)) && near(m, q.x, q.y));
+		for (let r = 1; r <= Number(process.env.VMAPGEN_KIN_MOVE_R || 3); r++) for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+			if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+			const nx = q.x + dx, ny = q.y + dy, cells = cellsOf(q.template.mask, nx, ny);
+			const ok = cells.every(k => { const [x, y] = k.split(',').map(Number); return !keepOut.has(k) && freeTile(x, y, q.l || 0) && !(solidAt.get(`${q.l || 0}:${k}`) || []).some(z => z !== q) && !(usedAt.get(`${q.l || 0}:${k}`) || []).some(z => z !== q); });
+			if (!ok || !guards.every(m => near(m, nx, ny))) continue;
+			unmark(anyAt, q); unmark(usedAt, q); for (const k of solidOf(q.template.mask, q.x, q.y)) { const key = `${q.l || 0}:${k}`, z = solidAt.get(key); if (z) solidAt.set(key, z.filter(w => w !== q)); }
+			q.x = nx; q.y = ny;
+			mark(anyAt, q); mark(usedAt, q); for (const k of solidOf(q.template.mask, q.x, q.y)) { const key = `${q.l || 0}:${k}`; if (!solidAt.has(key)) solidAt.set(key, []); solidAt.get(key).push(q); }
+			return true;
+		}
+		return false;
+	};
 	for (const o of objects) {
 		if (!o || !o.template || !o.template.animation || /[/]/.test(String(o.template.animation))) continue;
 		const g = groundAt(o), k = g && !CORE[g] ? kinOf(g) : null;
@@ -201,7 +230,19 @@ function kinSwap(objects, groundAt, mineArt) {
 		else { const r = artFor(o.type, o.subtype, o.template, k, KIN_RNG, false); if (r && r !== o.template) cand = r; }
 		if (!cand || !cand.animation || String(cand.animation).toLowerCase() === String(o.template.animation).toLowerCase()) continue;
 		if (!same(cand, o.template)) continue;
-		if (cand.mask && o.template.mask && coversOther(o, cand.mask)) continue;
+		if (cand.mask && o.template.mask) {
+			const under = coveredBy(o, cand.mask);
+			if (under.length) {
+				if (!under.every(q => PICKUP.test(String(q.type)))) continue;
+				const keepOut = new Set(cellsOf(cand.mask, o.x, o.y));
+				let all = true;
+				// where one cannot move, the ones already moved go back, and the old art stays
+				const back = [];
+				for (const q of under) { const at = [q.x, q.y]; if (movePickup(q, keepOut)) back.push([q, at]); else { all = false; break; } }
+				if (!all || coveredBy(o, cand.mask).length) { for (const [q, [x, y]] of back.reverse()) { unmark(anyAt, q); unmark(usedAt, q); for (const k of solidOf(q.template.mask, q.x, q.y)) { const key = `${q.l || 0}:${k}`, z = solidAt.get(key); if (z) solidAt.set(key, z.filter(w => w !== q)); } q.x = x; q.y = y; mark(anyAt, q); mark(usedAt, q); for (const k of solidOf(q.template.mask, q.x, q.y)) { const key = `${q.l || 0}:${k}`; if (!solidAt.has(key)) solidAt.set(key, []); solidAt.get(key).push(q); } } continue; }
+				kinSwap.moved = (kinSwap.moved || 0) + under.length;
+			}
+		}
 		o.template = { ...o.template, animation: cand.animation };
 		n++;
 	}
