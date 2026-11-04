@@ -10534,12 +10534,28 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	// it was a choke point"; the pairwise grid had 110 such guards on 10 of 98 maps, e.g. pw_009's pikeman (4,2) on level 1, shut in a
 	// five-tile pocket beside red's start by the start mines placed late). A guard whose ring no hero reaches guards nothing and goes; the
 	// rest stays as placed. VMAPGEN_ORPHAN_GUARDS=0 skips it.
-	if (process.env.VMAPGEN_ORPHAN_GUARDS !== '0')
+	if (process.env.VMAPGEN_ORPHAN_GUARDS !== '0') {
+		// the ways between the levels opened now, not as they stood at the early sweep: a zone reached only through a gate or a cross-level
+		// monolith from the other level counted as no hero's, and every guard in it went (Coldshadow 144 seed 1: zones 13 and 5 on the surface,
+		// reached through monolith4 from below, lost 60 guards, three tier 4+ dwellings left with none; K 11-02: "Dwelling guards: yes, that's
+		// stock vcmi behavior across all maps, and should have never been removed"). VMAPGEN_ORPHAN_CROSS_LATE=0 keeps the early openings.
+		let crossLate = cross;
+		if (splitLevels(p) && process.env.VMAPGEN_ORPHAN_CROSS_LATE !== '0') {
+			const openPairs = new Set();
+			for (let round = 0; round < 12; round++) {
+				const before = openPairs.size;
+				for (let l = 0; l < levels; l++)
+					for (const k of sweepStranded(plans[l], W, H, l, startsOn(l), null, { openPairs, dry: true })) openPairs.add(k);
+				if (openPairs.size === before) break;
+			}
+			crossLate = { openPairs };
+		}
 		for (let l = 0; l < levels; l++)
-			sweepStranded(plans[l], W, H, l, startsOn(l).length ? startsOn(l) : (plans[l].entrances || []), null, cross,
+			sweepStranded(plans[l], W, H, l, startsOn(l).length ? startsOn(l) : (plans[l].entrances || []), null, crossLate,
 				// a link end's own guard stays: a hero comes to it out of the end itself, which this reach does not count (K, 2026-10-24: guards stay
 				// where the generator posted them; 14bca10's grid: pw_036's monolith (53,46) lost its guard below here)
 				{ only: o => /^(monster|randomMonster)/.test(o.type) && !o._endGuard, label: 'guard(s) no hero reaches taken off' });
+	}
 	// Integrity audit: every blocking cell of every written object must carry
 	// OCCUPIED in `blocked`. A cell that lost its mark is a hole the floods
 	// see through while the file keeps the wall - 72x72 s5 shipped green
@@ -14138,6 +14154,10 @@ function sweepStranded(plan, W, H, levelIndex, playerStarts, droppedPairs, cross
 	// water (water W3)
 	const sails = (plan.sailLinks || []).map(link => ({ link, used: false }));
 	const arrivals = new Set(plan.arrivals || []);
+	// a portal's pair: its pairId, or for a two-way monolith its subtype (one subtype is one channel): the ids are gone from the objects by the
+	// last sweep, and a cross-level monolith's surface end, never an arrival, then opened for nobody (Coldshadow 144 seed 1's monolith4 end
+	// (88,71): the zones it alone reaches lost 60 guards and three tier 4+ dwellings their stacks)
+	const pairKey = o => o.pairId || (o.type === 'monolithTwoWay' ? `mono_sub_${o.subtype}` : null);
 	const stand = (o, m) => {
 		for (const c of m.vis)
 			if (!reach[c]) { reach[c] = 1; exitDirs.set(c, m.dirsSet); stack.push(c); }
@@ -14149,7 +14169,7 @@ function sweepStranded(plan, W, H, levelIndex, playerStarts, droppedPairs, cross
 		const isStart = (o.type === 'randomTown' || o.type === 'town') && o.options && o.options.owner;
 		// on a split level (splitLevels) a gate or a cross-level monolith is a way in only once its other end is
 		// reached: cross.openPairs, from the other level's sweep
-		const isArrival = isPortal && (cross && o.pairId ? cross.openPairs.has(o.pairId) : m.vis.some(c => arrivals.has(c)));
+		const isArrival = isPortal && ((cross && pairKey(o) && cross.openPairs.has(pairKey(o))) || m.vis.some(c => arrivals.has(c)));
 		if (isStart || isArrival) {
 			m.dirsSet = allowedDirs(o.template || {});
 			stand(o, m);
@@ -14264,7 +14284,7 @@ function sweepStranded(plan, W, H, levelIndex, playerStarts, droppedPairs, cross
 		const out = new Set();
 		for (const o of objs) {
 			const m = meta.get(o);
-			if (o.pairId && m && m.appr.some(c => reach[c] && walkable(c))) out.add(o.pairId);
+			if (pairKey(o) && m && m.appr.some(c => reach[c] && walkable(c))) out.add(pairKey(o));
 		}
 		return out;
 	}
