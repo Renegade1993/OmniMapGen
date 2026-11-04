@@ -3440,14 +3440,30 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				const near = ex0 !== undefined && Math.max(Math.abs(ex0 % W - gx), Math.abs(((ex0 / W) | 0) - gy)) <= 1 && !inRing.has(ex0);
 				if (!near) {
 					if (ex0 !== undefined) { heldFloor(blocked).delete(l * W * H + ex0); if (heldReserved.delete(ex0)) blocked[l * W * H + ex0] &= ~OCCUPIED; delete e.__stockExit; }
-					for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
-						const ex = gx + dx, ey = gy + dy;
-						if (ex < 1 || ey < 1 || ex >= W - 1 || ey >= H - 1) continue;
-						const c1 = ey * W + ex;
-						if (inRing.has(c1) || (blocked[l * W * H + c1] & OCCUPIED) || heldGuard.has(c1) || !floorAt(c1)) continue;
-						e.__stockExit = c1; blocked[l * W * H + c1] |= OCCUPIED; heldReserved.add(c1); heldFloor(blocked).add(l * W * H + c1);
-						break;
+					// the way out as a path, not one tile: one held tile beside the guard kept, and the fill closed the tiles past it (Coldshadow seed 13
+					// on fe827f3: the prison (26,27) level 0, guard (25,28), exit (24,29) held, then (23,30) and (24,30) filled; traced tile by tile).
+					// The shortest run of free floor outside the ring from the guard's tile to a tile PRISON_PATH_LEN steps out or with 5 free
+					// neighbours (open ground) is held, as stock keeps the path to a placed object. VMAPGEN_PRISON_PATH=0: one tile, as fe827f3.
+					const LEN = process.env.VMAPGEN_PRISON_PATH === '0' ? 1 : 6;
+					const freeAt = c1 => { const x1 = c1 % W, y1 = (c1 / W) | 0; return x1 >= 1 && y1 >= 1 && x1 < W - 1 && y1 < H - 1 && !inRing.has(c1) && !(blocked[l * W * H + c1] & OCCUPIED) && !heldGuard.has(c1) && floorAt(c1); };
+					const openAt = c1 => { let n = 0; const x1 = c1 % W, y1 = (c1 / W) | 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && freeAt((y1 + dy) * W + x1 + dx)) n++; return n >= 5; };
+					const prev = new Map([[g, -1]]), q = [g], dist = new Map([[g, 0]]);
+					let end = -1;
+					for (let h = 0; h < q.length && end < 0; h++) {
+						const c0 = q[h], x0 = c0 % W, y0 = (c0 / W) | 0;
+						for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+							const c1 = (y0 + dy) * W + x0 + dx;
+							if (prev.has(c1) || !freeAt(c1)) continue;
+							prev.set(c1, c0); dist.set(c1, dist.get(c0) + 1); q.push(c1);
+							if (dist.get(c1) >= LEN || openAt(c1)) { end = c1; break; }
+						}
+						if (q.length > 400) break;
 					}
+					if (end < 0 && q.length > 1) end = q[1];
+					const path = [];
+					for (let c1 = end; c1 >= 0 && c1 !== g; c1 = prev.get(c1)) path.push(c1);
+					for (const c1 of path) { blocked[l * W * H + c1] |= OCCUPIED; heldReserved.add(c1); heldFloor(blocked).add(l * W * H + c1); }
+					if (path.length) e.__stockExit = path[path.length - 1];
 					if (connectivity) connectivity.refresh();
 				}
 			}
