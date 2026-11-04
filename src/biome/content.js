@@ -2032,6 +2032,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const addTownPic = (x, y) => { if (PRISON_TOWN_GAP <= 0) return; for (let j = 0; j < 6; j++) for (let i = 0; i < 6; i++) { const cx = x - 5 + i, cy = y - 5 + j; if (cx >= 0 && cy >= 0 && cx < W && cy < H) townPic.add(cy * W + cx); } };
 	const townNearPrison = (x, y) => PRISON_TOWN_GAP > 0 && prisonsHere.some(([px, py]) => px >= x - 5 - PRISON_TOWN_GAP - 1 && px <= x + PRISON_TOWN_GAP + 1
 		&& py >= y - 5 - PRISON_TOWN_GAP && py <= y + PRISON_TOWN_GAP);
+	// the spots planLevel held for this zone's towns are known now, before any prison is laid: they join the set, so a prison laid early
+	// keeps off them. Refusing the town its held spot instead (bc1397a) moved it and left the held ground as a walled pocket of cheap
+	// piles (Coldshadow seed 9: 14 objects dropped at (34..37,120..128), the prison at (36,120) laid first).
+	for (const sp of (zoneMeta && zoneMeta.townSpots) || []) addTownPic(sp % W, (sp / W) | 0);
 	const nearTownPic = (tpl, x, y) => {
 		if (!townPic.size) return false;
 		const r = PRISON_TOWN_GAP;
@@ -2437,7 +2441,6 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		if (!entranceOpen(tpl, x, y, l, W, H, blocked, reachable)) return why('entrance');
 		const walls = blockingCells(tpl, x, y).map(([a, b]) => b * W + a);
 		if (connectivity && !connectivity.accepts(walls)) return why('connectivity');
-		if (/^(town|randomTown)$/.test(type) && townNearPrison(x, y)) return why('prison');
 		const fi = free.indexOf(i);
 		if (fi >= 0) free.splice(fi, 1);
 		const o = typeof opts === 'function' ? opts(x, y) : opts;
