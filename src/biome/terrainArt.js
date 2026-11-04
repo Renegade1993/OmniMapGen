@@ -177,7 +177,20 @@ const kinOf = short => (KIN.get(short) || {}).short || null;
 function kinSwap(objects, groundAt, mineArt) {
 	let n = 0;
 	if (!KIN.size) return 0;
-	const same = (a, b) => JSON.stringify(a.mask) === JSON.stringify(b.mask) && JSON.stringify(a.visitableFrom || null) === JSON.stringify(b.visitableFrom || null);
+	// the cells that block or are visited, counted from the bottom-right corner as the game anchors a picture; drawn-only cells ('V') may differ,
+	// since they move nothing (the rough gold mine and crystal cavern are one drawn row taller than the grass ones; K item 22). VMAPGEN_KIN_FULL_MASK=1
+	// asks for the whole mask as before.
+	const solid = m => { const out = []; const h = m.length; for (let r = 0; r < h; r++) { const line = String(m[r]); const w = line.length; for (let c = 0; c < w; c++) if ('BHAT'.includes(line[c])) out.push(`${w - 1 - c},${h - 1 - r},${line[c]}`); } return out.sort().join(';'); };
+	const same = (a, b) => (process.env.VMAPGEN_KIN_FULL_MASK === '1' ? JSON.stringify(a.mask) === JSON.stringify(b.mask) : solid(a.mask) === solid(b.mask))
+		&& JSON.stringify(a.visitableFrom || null) === JSON.stringify(b.visitableFrom || null);
+	// every object's picture cells by level, so a taller art never draws over another object (the Opus Reviewer's condition on item 22)
+	const cellsOf = (m, x, y) => { const out = []; const h = m.length; for (let r = 0; r < h; r++) { const line = String(m[r]); for (let c = 0; c < line.length; c++) if (line[c] !== ' ' && line[c] !== '0') out.push(`${x - (line.length - 1 - c)},${y - (h - 1 - r)}`); } return out; };
+	// an object a hero uses has a visited cell ('A' or 'T'): a building, a guard, a pickup; scenery (rocks, flowers, lakes) has none and is drawn
+	// over freely, as in stock maps
+	const used = q => q.template.mask.some(r => /[AT]/.test(String(r)));
+	const owner = new Map();
+	for (const q of objects) if (q && q.template && q.template.mask) for (const k of cellsOf(q.template.mask, q.x, q.y)) owner.set(`${q.l || 0}:${k}`, q);
+	const coversOther = (o, mask) => { const mine = new Set(cellsOf(o.template.mask, o.x, o.y)); return cellsOf(mask, o.x, o.y).some(k => !mine.has(k) && owner.has(`${o.l || 0}:${k}`) && owner.get(`${o.l || 0}:${k}`) !== o && used(owner.get(`${o.l || 0}:${k}`))); };
 	for (const o of objects) {
 		if (!o || !o.template || !o.template.animation || /[/]/.test(String(o.template.animation))) continue;
 		const g = groundAt(o), k = g && !CORE[g] ? kinOf(g) : null;
@@ -187,6 +200,7 @@ function kinSwap(objects, groundAt, mineArt) {
 		else { const r = artFor(o.type, o.subtype, o.template, k, KIN_RNG, false); if (r && r !== o.template) cand = r; }
 		if (!cand || !cand.animation || String(cand.animation).toLowerCase() === String(o.template.animation).toLowerCase()) continue;
 		if (!same(cand, o.template)) continue;
+		if (cand.mask && o.template.mask && coversOther(o, cand.mask)) continue;
 		o.template = { ...o.template, animation: cand.animation };
 		n++;
 	}
