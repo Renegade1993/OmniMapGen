@@ -2775,7 +2775,11 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// richest band first, as the engine places them, until the zone's room is spent. VMAPGEN_TPL_ROOM=0 turns it off.
 		// start zones are left as they were: ours already land at or under the engine's there (Jebus Cross and Headquarters start zones 0.8 to 1.0 of
 		// its chests and resources), and Coldshadow's start-zone fit is Opus Map Vision's. VMAPGEN_TPL_ROOM=all spends room in start zones too.
-		const roomOn = process.env.VMAPGEN_TPL_ROOM !== '0' && (process.env.VMAPGEN_TPL_ROOM === 'all' || !/^(playerStart|cpuStart|player)$/.test(zoneMeta.spec.type || ''));
+		const isStartZone = /^(playerStart|cpuStart|player)$/.test(zoneMeta.spec.type || '');
+		// VMAPGEN_TPL_ROOM_START=room (trial): a start zone lands its bands richest first until its room is spent, as the engine does, in place of
+		// the cut that lands every band after a rich one at TPL_PILE_LAND_CHEAP_AFTER_RICH (which also cut the 5,000-16,000 band, where the banks are)
+		const startRoom = isStartZone && process.env.VMAPGEN_TPL_ROOM_START === 'room';
+		const roomOn = process.env.VMAPGEN_TPL_ROOM !== '0' && (process.env.VMAPGEN_TPL_ROOM === 'all' || startRoom || !isStartZone);
 		let roomLeft = cells.length;
 		const roomCost = b => 1000 / (b.min >= TPL_RICH_MIN ? TPL_ROOM_RICH : TPL_ROOM_CHEAP);
 		const crowdQ = roomCrowd(p.zonePlan && p.zonePlan.templateName);
@@ -2790,7 +2794,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			const richShare = band.min >= TPL_VERY_RICH_MIN ? (zoneMeta.spec.type === 'treasure' ? TPL_PILE_LAND_VERY_RICH_TREASURE : TPL_PILE_LAND_VERY_RICH)
 				: zoneMeta.spec.type === 'treasure' ? (l === 0 && !(Number(p.waterCoverage) > 0) ? TPL_PILE_LAND_RICH_TREASURE_SURFACE : TPL_PILE_LAND_RICH_TREASURE) : TPL_PILE_LAND_RICH;
 			if (process.env.VMAPGEN_PILE_TRACE && band.min >= TPL_RICH_MIN) console.error(`[pileshare] zone ${zoneMeta.spec.id} ${zoneMeta.spec.type} level ${l} band ${band.min} rich share ${richShare}`);
-			const later = afterRich && zoneMeta.spec.type !== 'treasure' ? TPL_PILE_LAND_AFTER_RICH
+			const later = startRoom ? 1 : afterRich && zoneMeta.spec.type !== 'treasure' ? TPL_PILE_LAND_AFTER_RICH
 				: afterRichBand && band.min < TPL_RICH_MIN ? TPL_PILE_LAND_CHEAP_AFTER_RICH : 1;
 			const dwCut = afterRich && zoneMeta.spec.type !== 'treasure';   // the junction case only (dwelling piles below)
 			if (band.min >= TPL_VERY_RICH_MIN) afterRich = true;
