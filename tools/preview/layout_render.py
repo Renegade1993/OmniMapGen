@@ -392,6 +392,49 @@ def render(dump_path, out_path, caption=None):
             "legend": [t for _, t in items]}
 
 
+# the water menu (K item 32, 2026-11-04: "biome delineation should not carry into the water....its not super intuitive"): land in one colour, water in
+# one, the player castles and nothing else; the menu draws one shared legend (land, water, player start) under all the layouts
+W_LAND = (150, 148, 96)
+W_SEA = (34, 82, 150)
+
+
+def render_water(dump_path, out_path, size=240):
+    """a size x size picture of the first level: every land tile W_LAND, every water tile W_SEA, a castle in the player's colour on each start"""
+    d = json.load(open(dump_path, encoding="utf-8")) if isinstance(dump_path, str) else dump_path
+    W, H = d["W"], d["H"]
+    PAD = 12
+    MP = size - 2 * PAD
+    n = MP * SS
+    img = np.empty((n, n, 3), dtype=np.uint8)
+    img[:] = W_LAND
+    wat = d.get("water")
+    if wat and any(wat[0]):
+        w = np.array(wat[0], dtype=np.uint8).reshape(H, W)
+        mask = np.array(Image.fromarray(w * 255, mode="L").resize((n, n), Image.NEAREST)) > 127
+        img[mask] = W_SEA
+    pi = Image.new("RGB", (size * SS, size * SS), BG)
+    pi.paste(Image.fromarray(img, "RGB"), (PAD * SS, PAD * SS))
+    dr = ImageDraw.Draw(pi)
+    s = MP * SS / W
+
+    def at(l, x, y):
+        return (x * s + PAD * SS, y * s + PAD * SS)
+    starts = [t for t in d["starts"] if t["l"] == 0]
+    spot = spread_castles(starts, at, 24 * SS, (PAD * SS, (PAD + MP) * SS))
+    fn = font(11 * SS)
+    for st in sorted(starts, key=lambda t: t["colour"]):
+        p = spot[id(st)]
+        hc = 20 * SS
+        c = PCOL.get(st["colour"], GREY)
+        castle(dr, p[0], p[1] - 4 * SS, hc, c, outline=(255, 255, 255), o=1.4 * SS)
+        castle(dr, p[0], p[1] - 4 * SS, hc, c, outline=INK, o=0)
+        label = str(PLAYERS.index(st["colour"]) + 1) if st["colour"] in PLAYERS else "?"
+        dr.text((p[0], p[1] + hc / 2 + 1 * SS), label, font=fn, fill=(255, 255, 255), anchor="mm", stroke_width=SS + 1, stroke_fill=INK)
+    out = pi.resize((size, size), Image.LANCZOS)
+    out.save(out_path, optimize=True)
+    return {"starts": len(starts), "water_tiles": int(np.array(wat[0]).sum()) if wat else 0}
+
+
 if __name__ == "__main__":
     import sys
     print(render(sys.argv[1], sys.argv[2]))
