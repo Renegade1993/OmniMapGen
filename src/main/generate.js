@@ -2687,7 +2687,7 @@ async function generateMap(params) {
 					for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < Wf && fy < Hf) solid[fy * Wf + fx] = 1;
 				const freeF = c => !solid[c] && !(plf.openMask && !plf.openMask[c]) && !(plf.p && plf.p.water && plf.p.water[c]);
 				const fs2 = require('../biome/gateroad').forbiddenSideRoads(plf, Wf, Hf, li, visitableCells, allowedDirs, freeF);
-				if (fs2.cut || fs2.kept) console.error(`[gen] level ${li}: roads onto a gate or monolith across a forbidden side cut back: ${fs2.cut} (${fs2.tiles} tile(s), ${fs2.rerouted} joined again from a side it is entered from), left: ${fs2.kept}`);
+				if (fs2.cut || fs2.kept) console.error(`[gen] level ${li}: roads onto a gate or monolith across a forbidden side cut back: ${fs2.cut} (${fs2.tiles} tile(s), ${fs2.rerouted} joined again from a side it is entered from, ${fs2.roadless} with no other way in left without a road), left: ${fs2.kept}`);
 			}
 			const roadArt = solveRoadTiles(roadCells, lv.width, lv.height, roadRng);
 
