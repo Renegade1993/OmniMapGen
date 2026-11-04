@@ -1,12 +1,12 @@
 {
  "schemaVersion": 1,
  "id": "headquarters",
- "caption": "Headquarters, Large 108x108: 7 players, 2 levels",
+ "caption": "Headquarters, Large 108x108: 7 players, 1 level",
  "width": 108,
  "height": 108,
- "levels": 2,
+ "levels": 1,
  "players": 7,
  "water": null,
- "contentSha256": "eb90ad55d945a65004bb0afdffb08ccdfca4196baae4d80313e93ff2c2525d2b",
+ "contentSha256": "660e7532cf6db253c25bb756fe343801aab7ea9b08320107bfbdcdfa460767be",
  "note": "frame 1 of headquarters.frames.json (the preferred setup)"
 }

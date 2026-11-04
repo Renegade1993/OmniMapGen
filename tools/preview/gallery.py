@@ -65,8 +65,11 @@ PLANS = {
          F(108, 3, 1, 13, "lakes")]), {}),
     "coldshadows_fantasy": ("Coldshadow's Fantasy", "Coldshadow's Fantasy", plan(144, lambda s: F(s, 8, 2, 1),   # Extra Large to Giant, two levels, eight players
         [F(144, 4, 2, 2), F(180, 2, 1, 3), F(252, 6, 2, 4), F(108, 3, 1, 5), F(72, 2, 2, 6), F(144, 5, 1, 7, "lakes"), F(180, 8, 2, 8, "coastal")]), {}),
-    "headquarters": ("Headquarters", "Headquarters", plan(108, lambda s: F(s, 7, 2, 1),   # Large with the underground, 2 to 7 players
-        [F(36, 2, 1, 2), F(72, 4, 2, 3), F(108, 3, 1, 4), F(144, 5, 2, 5, "coastal"), F(180, 6, 1, 6), F(252, 2, 2, 7), F(108, 7, 1, 8, "lakes")]), {}),
+    # Large, one level or two in the original, 2 to 7 players. One level is the preferred setup: on two levels all seven starts stay on the surface and both
+    # treasure zones go below, so the picture shows gates instead of the two shared prizes (MapGen Dev, 2026-11-04)
+    "headquarters": ("Headquarters", "Headquarters", plan(108, lambda s: F(s, 7, 1, 1),
+        [F(36, 2, 1, 2), F(72, 4, 2, 3), F(108, 3, 1, 4), F(144, 5, 2, 5, "coastal"), F(180, 6, 1, 6), F(252, 2, 2, 7), F(108, 7, 1, 8, "lakes"),
+         F(108, 7, 2, 1)]), {}),
     "golems_aplenty": ("Golems Aplenty", "Golems Aplenty", plan(36, lambda s: F(s, 4, 1 if s < 108 else 2, 1),   # Small to Large with the underground, 2 to 4 players
         [F(36, 2, 2, 2), F(72, 3, 1, 3, "lakes"), F(108, 2, 1, 4), F(144, 3, 2, 5), F(180, 4, 1, 6, "coastal"), F(252, 2, 2, 7), F(72, 4, 2, 8)]), {}),
     "classic": ("Classic", None, plan(36, lambda s: F(s, CLASSIC_P[s], 1, 1),
