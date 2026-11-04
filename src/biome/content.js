@@ -261,6 +261,11 @@ const TPL_PILE_LAND_CHEAP_AFTER_RICH = Number(process.env.VMAPGEN_TPL_PILE_LAND_
 // the template forces underground on the surface beside all the others, each with about half the room the engine's
 // map gives it (the engine still writes them on a level of their own), so their dragon dwellings came out 8 to 21
 // against the engine's 18 to 28 (Coldshadow's Fantasy, 2026-10-02).
+// the cells a zone's piles are counted on: its own, at most its template share of the map (plan.js fairCells, VMAPGEN_LEVEL_FAIR_LOOT)
+function lootCells(n, zoneMeta) {
+	const f = zoneMeta && zoneMeta.fairCells;
+	return f > 0 && f < n ? f : n;
+}
 function templatePiles(bands, cellCount, richScale = 1) {
 	const linearRoom = process.env.VMAPGEN_PILE_ROOM === 'linear';
 	const out = [];
@@ -2749,7 +2754,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// (open, guarded, rich), landed or not, for fitting the three shares
 		const tally = process.env.VMAPGEN_PILE_TRACE ? { open: {}, guarded: {}, rich: {} } : null;
 		let afterRich = false, afterRichBand = false;
-		for (const { band, byDensity, want } of templatePiles(bands, cells.length, (zoneMeta && zoneMeta.richScale) || 1)) {
+		for (const { band, byDensity, want } of templatePiles(bands, lootCells(cells.length, zoneMeta), (zoneMeta && zoneMeta.richScale) || 1)) {
 			// a band under TPL_RICH_MIN placed after a richer one (a treasure zone's cheap last band: 1.5x the engine's chests
 			// and random resources, 1.1x its guards) lands at TPL_PILE_LAND_CHEAP_AFTER_RICH of its share
 			// the share a rich pile of this band lands at (a guarded pile of a band from TPL_RICH_MIN)
@@ -3201,7 +3206,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			.filter(d => d.faction === (zoneMeta.faction || 'neutral') && !(d.fromRmg && d.value > maxV))
 			.map(d => ({ d, v: d.value * mod, odds: d.prob / 100 }));
 		dwellPicks = [];
-		for (const { band, count } of own.length ? templatePiles(bands, cells.length, (zoneMeta && zoneMeta.richScale) || 1) : []) {
+		for (const { band, count } of own.length ? templatePiles(bands, lootCells(cells.length, zoneMeta), (zoneMeta && zoneMeta.richScale) || 1) : []) {
 			const w = own.map(x => x.odds * bandEligibility(x.v, band));
 			const Z = w.reduce((a, b) => a + b, 0);
 			if (!(Z > 0)) continue;
@@ -4799,7 +4804,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// uniform draw spreads evenly across it (B4: the engine's piles of
 			// 3000-6000 guarded 31%, the even draw 61%)
 			const valuePool = TPL_PILE_VALUES === 'engine' && objectPools.pileCommon ? makePilePool() : null;
-			for (const { band: t, count, d, byDensity, byRoom } of templatePiles(bands, cells.length, (zoneMeta && zoneMeta.richScale) || 1)) {
+			for (const { band: t, count, d, byDensity, byRoom } of templatePiles(bands, lootCells(cells.length, zoneMeta), (zoneMeta && zoneMeta.richScale) || 1)) {
 				if (process.env.VMAPGEN_PILE_TRACE)
 					console.error(`[pile] zone ${zoneMeta.spec.id} band ${t.min}-${t.max} density ${t.density}: cells ${cells.length}, d ${d.toFixed(1)}, by density ${byDensity}, by room ${byRoom}, placing ${count}`);
 				for (let k = count; k > 0; k--) {
