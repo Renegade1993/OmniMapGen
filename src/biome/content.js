@@ -3444,7 +3444,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					// on fe827f3: the prison (26,27) level 0, guard (25,28), exit (24,29) held, then (23,30) and (24,30) filled; traced tile by tile).
 					// The shortest run of free floor outside the ring from the guard's tile to a tile PRISON_PATH_LEN steps out or with 5 free
 					// neighbours (open ground) is held, as stock keeps the path to a placed object. VMAPGEN_PRISON_PATH=0: one tile, as fe827f3.
-					const LEN = process.env.VMAPGEN_PRISON_PATH === '0' ? 1 : 6;
+					const LEN = process.env.VMAPGEN_PRISON_PATH === '0' ? 1 : (Number(process.env.VMAPGEN_PRISON_PATH) || 6);
 					const freeAt = c1 => { const x1 = c1 % W, y1 = (c1 / W) | 0; return x1 >= 1 && y1 >= 1 && x1 < W - 1 && y1 < H - 1 && !inRing.has(c1) && !(blocked[l * W * H + c1] & OCCUPIED) && !heldGuard.has(c1) && floorAt(c1); };
 					const openAt = c1 => { let n = 0; const x1 = c1 % W, y1 = (c1 / W) | 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if ((dx || dy) && freeAt((y1 + dy) * W + x1 + dx)) n++; return n >= 5; };
 					const prev = new Map([[g, -1]]), q = [g], dist = new Map([[g, 0]]);
