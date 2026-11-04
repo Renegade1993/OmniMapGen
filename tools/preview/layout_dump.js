@@ -100,6 +100,8 @@ const portalKey = new Set();
 		if (best) { used.add(best); gpairs.push([g, best]); }
 	}
 	const zk = t => t.l + ':' + M.zoneAt(t.l, t.at[0], t.at[1]);
+	// every gate pair, for maps whose ways between the levels are no template link (the open layout): drawn as numbered pins
+	globalThis.__gatePairs = gpairs.map(([g0, g1]) => [[g0.l, g0.at[0] + 0.5, g0.at[1] + 0.5], [g1.l, g1.at[0] + 0.5, g1.at[1] + 0.5]]);
 	const taken = new Set();
 	for (const n of lanes) {
 		if (n.a[0] === n.b[0] || n.portal) continue;
@@ -137,5 +139,5 @@ const starts = sight.starts(M).map(s => ({ colour: s.colour, l: s.l, x: s.at[0] 
 // every town on the map (K, 2026-11-03: "little castles, colored for player starts, grey for non"); the renderer marks the ones that are starts
 const towns = M.objs.filter(t => t.cls === 'town').map(t => ({ l: t.l, x: t.at[0] + 0.5, y: t.at[1] + 0.5, zone: M.zoneAt(t.l, t.at[0], t.at[1]) }));
 const o = (side && side.options) || {};
-fs.writeFileSync(out, JSON.stringify({ W: M.W, H: M.H, NL: M.NL, template: o.template || null, players: +o.players || starts.length, grid, water, zones: Object.values(zones), lanes, starts, towns, options: o }));
+fs.writeFileSync(out, JSON.stringify({ W: M.W, H: M.H, NL: M.NL, template: o.template || null, players: +o.players || starts.length, grid, water, zones: Object.values(zones), lanes, starts, towns, gatePairs: globalThis.__gatePairs || [], options: o }));
 console.log(JSON.stringify({ out, W: M.W, H: M.H, NL: M.NL, zones: Object.keys(zones).length, lanes: lanes.length, starts: starts.map(s => s.colour + '@' + s.l), towns: towns.length }));
