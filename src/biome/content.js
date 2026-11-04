@@ -3220,7 +3220,12 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// for neutral towns, probably 50%/50% related or 75%/25% related, favoring the biome town's own". A player start's zone takes its town's
 	// dwellings only; a neutral town's zone takes them three times in four and another town's faction the fourth (the lead's pick of 75/25).
 	// Zones without a town keep the faction they had. Always on.
-	const ownShare = zoneMeta ? (zoneMeta.ownerColor ? 1 : (zoneMeta.towns && zoneMeta.towns.length ? 0.75 : 1))
+	// A template start zone with no player in it (Coldshadow's eight starts on a four-player map) is a start zone all the same: stock's
+	// TownPlacer gives it a town type ('no player - randomize town') and TreasurePlacer::addDwellings offers that faction's dwellings only.
+	// It took the neutral town's 75/25 (16 seeds of e7627ac: about 0.66 of its 2.8 dwellings a zone from another faction; the engine's
+	// 56 start zones on 7 maps: 4.14 a zone, every one the zone's own, start_dwell.js).
+	const startSpec = !!(zoneMeta && zoneMeta.spec && /^(playerStart|cpuStart)$/.test(zoneMeta.spec.type));
+	const ownShare = zoneMeta ? (zoneMeta.ownerColor || startSpec ? 1 : (zoneMeta.towns && zoneMeta.towns.length ? 0.75 : 1))
 		: (Number.isFinite(p.dwellOwnShare) ? p.dwellOwnShare : 1);
 	const otherFaction = d => { const f = dwellingFaction(d); return !!f && f !== zf && f !== 'neutral'; };
 	// a dwelling of another town's faction near the level of the one it stands in for
