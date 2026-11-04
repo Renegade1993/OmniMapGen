@@ -197,7 +197,17 @@ const TPL_PILE_SHARE = Number(process.env.VMAPGEN_TPL_PILE_SHARE) || 0.65;
 // the piles a template zone has room for, per 1,000 of its tiles (the room note at pileSim below)
 const TPL_ROOM_RICH = Number(process.env.VMAPGEN_TPL_ROOM_RICH) || 21.5;
 const TPL_ROOM_CHEAP = Number(process.env.VMAPGEN_TPL_ROOM_CHEAP) || 28;
-const TPL_ROOM_CROWD = process.env.VMAPGEN_TPL_ROOM_CROWD !== undefined ? Number(process.env.VMAPGEN_TPL_ROOM_CROWD) : 1;
+// crowding (the note at the landing): 0.4, the lead's pick on 2026-11-04 (Jebus Cross and Headquarters against the engine); off on the templates in
+// TPL_ROOM_CROWD_OFF until their owner says yes (Coldshadow's Fantasy is Opus Map Vision's). VMAPGEN_TPL_ROOM_CROWD sets it for every template (1 off);
+// VMAPGEN_TPL_ROOM_CROWD_OFF a comma list of template names (part of a name will do), "none" for none.
+const TPL_ROOM_CROWD_DEFAULT = 0.4;
+const TPL_ROOM_CROWD_ENV = process.env.VMAPGEN_TPL_ROOM_CROWD !== undefined ? Number(process.env.VMAPGEN_TPL_ROOM_CROWD) : null;
+const TPL_ROOM_CROWD_OFF = (process.env.VMAPGEN_TPL_ROOM_CROWD_OFF || 'coldshadow').toLowerCase().split(',').map(t => t.trim()).filter(t => t && t !== 'none');
+function roomCrowd(templateName) {
+	if (TPL_ROOM_CROWD_ENV !== null && Number.isFinite(TPL_ROOM_CROWD_ENV)) return TPL_ROOM_CROWD_ENV;
+	const n = String(templateName || '').toLowerCase();
+	return n && TPL_ROOM_CROWD_OFF.some(t => n.includes(t)) ? 1 : TPL_ROOM_CROWD_DEFAULT;
+}
 const TPL_ROOM_CROWD_AT = Number(process.env.VMAPGEN_TPL_ROOM_CROWD_AT) || 0.5;
 const TPL_PILE_SHARE_RICH = Number(process.env.VMAPGEN_TPL_PILE_SHARE_RICH) || 0.40;
 const TPL_RICH_MIN = Number(process.env.VMAPGEN_TPL_RICH_MIN) || 10000;
@@ -2768,6 +2778,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const roomOn = process.env.VMAPGEN_TPL_ROOM !== '0' && (process.env.VMAPGEN_TPL_ROOM === 'all' || !/^(playerStart|cpuStart|player)$/.test(zoneMeta.spec.type || ''));
 		let roomLeft = cells.length;
 		const roomCost = b => 1000 / (b.min >= TPL_RICH_MIN ? TPL_ROOM_RICH : TPL_ROOM_CHEAP);
+		const crowdQ = roomCrowd(p.zonePlan && p.zonePlan.templateName);
 		// VMAPGEN_PILE_TRACE: every candidate pile's contents by landing class
 		// (open, guarded, rich), landed or not, for fitting the three shares
 		const tally = process.env.VMAPGEN_PILE_TRACE ? { open: {}, guarded: {}, rich: {} } : null;
@@ -2814,11 +2825,11 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					// TPL_PILE_LAND_DWELLING_LATER of its share (9.7 / 16.8); VMAPGEN_TPL_PILE_LAND_DWELLING_LATER=1 the earlier rule.
 					const dwLater = dwCut ? (Number(process.env.VMAPGEN_TPL_PILE_LAND_DWELLING_LATER) || 0.58) : 1;
 					const landP = holdsDwelling && process.env.VMAPGEN_TPL_PILE_LAND_DWELLING !== 'cut' ? share * dwLater : share * later;
-					// a crowded zone (under TPL_ROOM_CROWD_AT of its room left) fits a pile of n objects with chance TPL_ROOM_CROWD ^ (n - 1): the engine places a
+					// a crowded zone (under TPL_ROOM_CROWD_AT of its room left) fits a pile of n objects with chance crowdQ ^ (n - 1): the engine places a
 					// guarded pile only where every tile of it keeps clear of other objects (TreasurePlacer.cpp createTreasures, minDistance), so a bigger pile
-					// fails more once the zone fills and the single objects still fit (trial, VMAPGEN_TPL_ROOM_CROWD; 1 is off)
-					const crowded = roomOn && TPL_ROOM_CROWD < 1 && roomLeft < cells.length * TPL_ROOM_CROWD_AT;
-					const fits = !roomOn || (roomLeft >= roomCost(band) && (!crowded || rng() < Math.pow(TPL_ROOM_CROWD, pile.objects.length - 1)));   // rng() is drawn either way, so a zone with room is generated as before
+					// fails more once the zone fills and the single objects still fit (roomCrowd: 0.4, off on Coldshadow's Fantasy for now)
+					const crowded = roomOn && crowdQ < 1 && roomLeft < cells.length * TPL_ROOM_CROWD_AT;
+					const fits = !roomOn || (roomLeft >= roomCost(band) && (!crowded || rng() < Math.pow(crowdQ, pile.objects.length - 1)));   // rng() is drawn either way, so a zone with room is generated as before
 					if (rng() < landP && fits) {
 						if (roomOn) roomLeft -= roomCost(band);
 						pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects, followsRich });
