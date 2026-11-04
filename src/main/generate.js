@@ -2620,7 +2620,7 @@ async function generateMap(params) {
 				const keepEnd = new Set((plans[li].objects || []).filter(o => (o.l || 0) === li && /^(randomMonster|monster)/.test(o.type)).map(o => o.y * Wl + o.x));
 				for (const o of plans[li].objects || []) {
 					if ((o.l || 0) !== li || !o.template || !o.template.mask || !/^(town$|randomTown$|subterraneanGate|monolith)/.test(o.type)) continue;
-					for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) { keepEnd.add(vy * Wl + vx); if (vy + 1 < Hl && roadCells.has((vy + 1) * Wl + vx)) keepEnd.add((vy + 1) * Wl + vx); }
+					for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) { keepEnd.add(vy * Wl + vx); for (const [dx, dy] of (o.template.visitableFrom ? require('../biome/content').allowedDirs(o.template) : [[0, 1]])) { const sx = vx + dx, sy = vy + dy; if (sx >= 0 && sy >= 0 && sx < Wl && sy < Hl && roadCells.has(sy * Wl + sx)) keepEnd.add(sy * Wl + sx); } }   // every side the object is entered from (plan.js keepAll)
 				}
 				for (const op of plans[li].openings || []) if (op.kind === 'openRoad') for (const c of op.hole || []) keepEnd.add(c);
 				const lc = require('../biome/roadsplines').breakLoops(roadCells, Wl, Hl, keepEnd, Number(process.env.VMAPGEN_LATE_LOOP || 40), zl ? c => zl[c] : null, true);

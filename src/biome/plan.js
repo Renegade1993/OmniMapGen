@@ -9422,7 +9422,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				const keepAll = new Set(guardTile);
 				for (const o of plans[l].objects) {
 					if ((o.l || 0) !== l || !o.template || !/^(town$|randomTown$|subterraneanGate|monolith)/.test(o.type)) continue;
-					for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) { keepAll.add(vy * W + vx); const below = (vy + 1) * W + vx; if (vy + 1 < H && R.has(below)) keepAll.add(below); }
+					for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) { keepAll.add(vy * W + vx); for (const [dx, dy] of (o.template.visitableFrom ? require('./content').allowedDirs(o.template) : [[0, 1]])) { const sx = vx + dx, sy = vy + dy; if (sx >= 0 && sy >= 0 && sx < W && sy < H && R.has(sy * W + sx)) keepAll.add(sy * W + sx); } }   // the road tiles on every side the object is entered from (visitableFrom), not only the one below: a monolith entered from its west kept only the tile below, and the loop pass took its one legal road (Headquarters 108 one level seed 3, (51,55); K, November 2nd 2026: "the road connects to the monolith's front by running underneath it")
 				}
 				for (const op of plans[l].openings || []) if (op.kind === 'openRoad') for (const c of op.hole || []) keepAll.add(c);
 				const lc = require('./roadsplines').breakLoops(R, W, H, keepAll, Number(process.env.VMAPGEN_LATE_LOOP || 40), c => zl[c]);
@@ -10178,7 +10178,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		const keepLast = new Set(plans[l].objects.filter(o => (o.l || 0) === l && /^(randomMonster|monster)/.test(o.type)).map(o => o.y * W + o.x));
 		for (const o of plans[l].objects) {
 			if ((o.l || 0) !== l || !o.template || !/^(town$|randomTown$|subterraneanGate|monolith)/.test(o.type)) continue;
-			for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) { keepLast.add(vy * W + vx); const below = (vy + 1) * W + vx; if (vy + 1 < H && R.has(below)) keepLast.add(below); }
+			for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) { keepLast.add(vy * W + vx); for (const [dx, dy] of (o.template.visitableFrom ? require('./content').allowedDirs(o.template) : [[0, 1]])) { const sx = vx + dx, sy = vy + dy; if (sx >= 0 && sy >= 0 && sx < W && sy < H && R.has(sy * W + sx)) keepLast.add(sy * W + sx); } }   // as keepAll above
 		}
 		for (const op of plans[l].openings || []) if (op.kind === 'openRoad') for (const c of op.hole || []) keepLast.add(c);
 		const lc = require('./roadsplines').breakLoops(R, W, H, keepLast, Number(process.env.VMAPGEN_LATE_LOOP || 40), zl ? c => zl[c] : null);
