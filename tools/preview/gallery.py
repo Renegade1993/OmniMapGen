@@ -28,7 +28,7 @@ sys.path.insert(0, HERE)
 from layout_render import render  # noqa: E402
 
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-NAMES = {36: "Small", 72: "Medium", 108: "Large", 144: "Extra Large", 180: "Huge", 252: "Giant"}
+NAMES = {36: "Small", 72: "Medium", 108: "Large", 144: "Extra Large", 180: "Huge", 216: "Extra Huge", 252: "Giant"}
 # water layouts: id -> (waterShape stop, label, waterContent, waterCoverage), the lobby's own setup for each (src/biome/water.js WATER_SHAPES)
 WATER = {"lakes": (0, "Lakes", 1, 0.20), "coastal": (1, "Coastal", 1, 0.25), "continental": (2, "Continental", 1, 0.30), "mediterranean": (3, "Mediterranean", 1, 0.30),
          "highland": (4, "Highland", 1, 0.0), "islands": (5, "Islands", 2, 0.45), "archipelago": (6, "Archipelago", 1, 0.30)}
@@ -38,7 +38,7 @@ def F(size, players, levels, seed, water=None):
     return {"size": size, "players": players, "levels": levels, "seed": seed, "water": water}
 
 
-SIZES = (36, 72, 108, 144, 180, 252)
+SIZES = (36, 72, 108, 144, 180, 216, 252)   # every size the lobby offers (RandomMapTab.cpp, stockChoices.js SIZE_ROW)
 
 
 def plan(first, preferred, varied):
@@ -48,21 +48,48 @@ def plan(first, preferred, varied):
     return [dict(preferred(s), preferred=True) for s in order] + [dict(v, preferred=False) for v in varied]
 
 
-# slug: (template name or None for the open layout, [frames]); frame 1 is the preferred setup at the original's smallest size (the still picture)
+CLASSIC_P = {36: 2, 72: 4, 108: 4, 144: 6, 180: 8, 216: 8, 252: 8}   # the open layout's players by size (the lobby's own start)
+TI = json.load(open(os.path.join(REPO, "mod", "template-info.json"), encoding="utf-8"))["templates"]
+
+
+def levers_of(name):
+    """an approximate entry is the open layout with its levers set (mod/template-info.json originalPreferences.levers)"""
+    return dict((TI.get(name, {}).get("originalPreferences") or {}).get("levers") or {})
+
+
+# slug: (name in the caption, template name or None for the open layout, [frames], {lever: value}); frame 1 is the preferred setup at the original's smallest size
+# (the still picture)
 PLANS = {
-    "jebus_cross": ("Jebus Cross", plan(108, lambda s: F(s, 4, 1, 1),   # the original: Large to Extra Large, 2 to 4 players, one level
+    "jebus_cross": ("Jebus Cross", "Jebus Cross", plan(108, lambda s: F(s, 4, 1, 1),   # the original: Large to Extra Large, 2 to 4 players, one level
         [F(36, 2, 2, 2), F(72, 3, 2, 4), F(72, 4, 2, 5), F(108, 2, 1, 7, "coastal"), F(144, 3, 2, 9), F(180, 2, 1, 10, "mediterranean"), F(252, 4, 2, 12),
-         F(108, 3, 1, 13, "lakes")])),
+         F(108, 3, 1, 13, "lakes")]), {}),
+    "coldshadows_fantasy": ("Coldshadow's Fantasy", "Coldshadow's Fantasy", plan(144, lambda s: F(s, 8, 2, 1),   # Extra Large to Giant, two levels, eight players
+        [F(144, 4, 2, 2), F(180, 2, 1, 3), F(252, 6, 2, 4), F(108, 3, 1, 5), F(72, 2, 2, 6), F(144, 5, 1, 7, "lakes"), F(180, 8, 2, 8, "coastal")]), {}),
+    "headquarters": ("Headquarters", "Headquarters", plan(108, lambda s: F(s, 7, 2, 1),   # Large with the underground, 2 to 7 players
+        [F(36, 2, 1, 2), F(72, 4, 2, 3), F(108, 3, 1, 4), F(144, 5, 2, 5, "coastal"), F(180, 6, 1, 6), F(252, 2, 2, 7), F(108, 7, 1, 8, "lakes")]), {}),
+    "golems_aplenty": ("Golems Aplenty", "Golems Aplenty", plan(36, lambda s: F(s, 4, 1 if s < 108 else 2, 1),   # Small to Large with the underground, 2 to 4 players
+        [F(36, 2, 2, 2), F(72, 3, 1, 3, "lakes"), F(108, 2, 1, 4), F(144, 3, 2, 5), F(180, 4, 1, 6, "coastal"), F(252, 2, 2, 7), F(72, 4, 2, 8)]), {}),
+    "classic": ("Classic", None, plan(36, lambda s: F(s, CLASSIC_P[s], 1, 1),
+        [F(36, 2, 2, 2), F(72, 6, 1, 3, "coastal"), F(108, 3, 2, 4), F(144, 8, 1, 5, "islands"), F(180, 5, 2, 6), F(252, 4, 1, 7, "archipelago"),
+         F(72, 2, 1, 8, "continental"), F(108, 4, 1, 9, "mediterranean")]), {}),
+    "mini_nostalgia": ("Mini Nostalgia (approximate)", None, plan(108, lambda s: F(s, 8, 1 if s < 144 else 2, 1),   # Large on one level, Extra Large on two, 8 players
+        [F(36, 2, 1, 2), F(72, 4, 2, 3), F(108, 3, 2, 4, "lakes"), F(144, 6, 1, 5), F(180, 5, 2, 6, "coastal"), F(252, 2, 1, 7)]), levers_of("Mini Nostalgia (approximate)")),
+    "nostalgia": ("Nostalgia (approximate)", None, plan(144, lambda s: F(s, 8, 2, 1),   # Extra Large to Huge, two levels, 8 players
+        [F(36, 2, 1, 2), F(72, 4, 1, 3), F(108, 6, 2, 4, "lakes"), F(144, 3, 1, 5), F(180, 5, 2, 6, "coastal"), F(252, 4, 1, 7)]), levers_of("Nostalgia (approximate)")),
 }
+# the water layouts (template panel, item 18): the open layout with the layout's own water; Highland waits for its fix (item 20, Opus Reviewer 2026-11-04)
+for _id in ("lakes", "coastal", "continental", "mediterranean", "islands", "archipelago"):
+    PLANS["water_" + _id] = (WATER[_id][1], None, plan(72, lambda s, w=_id: F(s, CLASSIC_P[s], 1, 11, w),
+        [F(36, 4, 1, 12, _id), F(72, 2, 2, 13, _id), F(108, 6, 1, 14, _id), F(144, 3, 2, 15, _id), F(180, 4, 1, 16, _id)]), {})
 
 
 def caption(name, f):
     lv = "1 level" if f["levels"] == 1 else "2 levels"
-    w = ", " + WATER[f["water"]][1] + " water" if f["water"] else ""
+    w = ", " + WATER[f["water"]][1] + " water" if f["water"] and WATER[f["water"]][1] != name else ""
     return f"{name}, {NAMES[f['size']]} {f['size']}x{f['size']}: {f['players']} players, {lv}{w}"
 
 
-def work(slug, template, n, f, out, gen, env):
+def work(slug, name, template, levers, n, f, out, gen, env):
     maps = os.path.join(out, "maps")
     base = f"{slug}_{f['size']}_p{f['players']}_L{f['levels']}_s{f['seed']}" + ("_" + f["water"] if f["water"] else "")
     vm = os.path.join(maps, base + ".vmap")
@@ -71,6 +98,9 @@ def work(slug, template, n, f, out, gen, env):
                "--underground", "1" if f["levels"] == 2 else "0", "--seed", str(f["seed"]), "--out", vm, "--declaremods", "1"] + (["--vcmiuserdir", env["VCMI_USER_DIR"]] if env.get("VCMI_USER_DIR") else [])
         if template:
             cmd += ["--template", template]
+        for k, v in levers.items():
+            if not (f["water"] and k.startswith("water")):
+                cmd += ["--bio." + k, str(v)]
         if f["water"]:
             shape, _label, content, coverage = WATER[f["water"]]
             cmd += ["--bio.waterShape", str(shape), "--bio.waterContent", str(content), "--bio.waterCoverage", str(coverage)]
@@ -86,8 +116,8 @@ def work(slug, template, n, f, out, gen, env):
         if r.returncode != 0:
             return n, None, "dump failed " + (r.stderr or r.stdout)[-300:]
     png = os.path.join(out, f"{slug}_{n:02d}.png")
-    info = render(dump, png)
-    return n, {"order": n, "file": os.path.basename(png), **f, "map": os.path.basename(vm), "caption": caption(template or "Classic", f), **info}, None
+    info = render(dump, png, caption(name, f))
+    return n, {"order": n, "file": os.path.basename(png), **f, "map": os.path.basename(vm), "caption": caption(name, f), **info}, None
 
 
 def main():
@@ -106,13 +136,13 @@ def main():
         env["VCMI_USER_DIR"] = os.path.abspath(a.userdir)
     from PIL import Image
     bad = 0
-    for slug, (template, frames_in) in PLANS.items():
-        if a.only and a.only != slug:
+    for slug, (name, template, frames_in, levers) in PLANS.items():
+        if a.only and slug not in a.only.split(",") and not (a.only == "water" and slug.startswith("water_")):
             continue
         t0 = time.time()
         res = {}
         with cf.ThreadPoolExecutor(max_workers=a.workers) as ex:
-            futs = [ex.submit(work, slug, template, n, f, out, os.path.abspath(a.gen), env) for n, f in enumerate(frames_in, 1)]
+            futs = [ex.submit(work, slug, name, template, levers, n, f, out, os.path.abspath(a.gen), env) for n, f in enumerate(frames_in, 1)]
             for fu in cf.as_completed(futs):
                 n, meta, err = fu.result()
                 print(slug, n, err or meta["caption"], f"{time.time() - t0:.0f}s", flush=True)

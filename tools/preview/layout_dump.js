@@ -89,6 +89,27 @@ const portalKey = new Set();
 		if (lane) lane.portal = true; else if (zones[A.join(':')] && zones[B.join(':')]) lanes.push({ a: A, b: B, wide: false, portal: true });
 	}
 }
+// a way between levels is drawn at its real gates (Opus Reviewer, 2026-11-04: squares at the zone centre piled onto the castles and towns): each subterranean gate
+// on the surface paired with the nearest free one below (as startgate.js), and a lane between two levels takes the first unused pair joining its two zones
+{
+	const gates = M.objs.filter(t => t.cls === 'gate'), used = new Set(), gpairs = [];
+	for (const g of gates.filter(g => g.l === 0)) {
+		let best = null, bd = 1e9;
+		for (const h of gates) if (h.l === 1 && !used.has(h)) { const d = Math.hypot(g.at[0] - h.at[0], g.at[1] - h.at[1]); if (d < bd) { bd = d; best = h; } }
+		if (best) { used.add(best); gpairs.push([g, best]); }
+	}
+	const zk = t => t.l + ':' + M.zoneAt(t.l, t.at[0], t.at[1]);
+	const taken = new Set();
+	for (const n of lanes) {
+		if (n.a[0] === n.b[0] || n.portal) continue;
+		const A = n.a.join(':'), B = n.b.join(':');
+		const i = gpairs.findIndex((p, k) => !taken.has(k) && ((zk(p[0]) === A && zk(p[1]) === B) || (zk(p[0]) === B && zk(p[1]) === A)));
+		if (i < 0) continue;
+		taken.add(i);
+		const [g0, g1] = zk(gpairs[i][0]) === A ? gpairs[i] : [gpairs[i][1], gpairs[i][0]];
+		n.ends = [[g0.l, g0.at[0] + 0.5, g0.at[1] + 0.5], [g1.l, g1.at[0] + 0.5, g1.at[1] + 0.5]];
+	}
+}
 const starts = sight.starts(M).map(s => ({ colour: s.colour, l: s.l, x: s.at[0] + 0.5, y: s.at[1] + 0.5, zone: s.zone }));
 // every town on the map (K, 2026-11-03: "little castles, colored for player starts, grey for non"); the renderer marks the ones that are starts
 const towns = M.objs.filter(t => t.cls === 'town').map(t => ({ l: t.l, x: t.at[0] + 0.5, y: t.at[1] + 0.5, zone: M.zoneAt(t.l, t.at[0], t.at[1]) }));

@@ -19,7 +19,8 @@ CW, CH = 564, 282
 BG = (22, 24, 30)
 INK = (10, 10, 12)
 SS = 3
-FILL = {"start": (224, 164, 48), "cpuStart": (224, 164, 48), "treasure": (74, 127, 193), "lowLoot": (150, 190, 228), "junction": (142, 124, 195), "town": (52, 168, 160), "standard": (116, 172, 96)}
+# zone fills: blue is kept for water alone (the lead, 2026-11-04: treasure zones in blue read as sea on the water layouts)
+FILL = {"start": (224, 164, 48), "cpuStart": (224, 164, 48), "treasure": (92, 176, 112), "lowLoot": (92, 176, 112), "junction": (150, 124, 200), "town": (206, 120, 92), "standard": (168, 158, 136)}
 DARKEN = 0.82
 WATER = (16, 44, 88)   # the sea: darker than the Treasure fill's blue so the two are never mistaken
 # player colours as the game draws them; player 1 is red
@@ -30,8 +31,10 @@ NEUTRAL = (236, 236, 228)
 # link colours: bright, far from each other, none of them a zone fill or a player colour
 LANES = [(255, 235, 60), (255, 60, 220), (0, 230, 255), (170, 255, 0), (255, 255, 255), (255, 140, 150), (120, 255, 200), (255, 190, 90), (200, 160, 255)]
 FONTS = ["C:/Windows/Fonts/arialbd.ttf", "C:/Windows/Fonts/segoeuib.ttf", "C:/Windows/Fonts/verdanab.ttf"]
-LEGEND_FONT = 16
+LEGEND_FONT = 17
 ROW_H = 24
+CAPTION_FONT = 14
+CAPTION_H = 19
 
 
 def font(size):
@@ -187,7 +190,8 @@ def legend_rows(items, dc, fl):
     return rows
 
 
-def render(dump_path, out_path):
+def render(dump_path, out_path, caption=None):
+    """caption: one line drawn under the legend (the frame's settings); None draws none"""
     d = json.load(open(dump_path, encoding="utf-8")) if isinstance(dump_path, str) else dump_path
     W, H, NL = d["W"], d["H"], d["NL"]
     zone = {(z["l"], z["z"]): z for z in d["zones"]}
@@ -196,7 +200,7 @@ def render(dump_path, out_path):
     fl = font(LEGEND_FONT)
     items = legend_items(d, zone, lanes)
     rows = legend_rows(items, probe, fl)
-    legend_h = ROW_H * len(rows) + 6
+    legend_h = ROW_H * len(rows) + 6 + (CAPTION_H if caption else 0)
     title_h = 16 if NL == 2 else 0
     P = CH - legend_h - title_h
     PAD = 14   # room round the map so a castle on the edge is not cut
@@ -242,14 +246,17 @@ def render(dump_path, out_path):
                     for e in (p, q):
                         dr.ellipse([e[0] - w / 2, e[1] - w / 2, e[0] + w / 2, e[1] + w / 2], fill=LANES[ci])
             elif pass_ == 1:
-                for z in (a, b):
+                for e, z in enumerate((a, b)):
+                    if lane.get("ends"):   # the real gate (layout_dump.js)
+                        l0, gx, gy = lane["ends"][e]
+                        squares.append((l0, at(l0, gx, gy), ci, lane.get("portal")))
+                        continue
                     k = marks.get((z["l"], z["z"]), 0); marks[(z["l"], z["z"])] = k + 1
-                    squares.append((z, k, ci, lane.get("portal")))
-    for z, k, ci, portal in squares:
-        dr = panels[z["l"]][1]
-        p = at(z["l"], z["cx"], z["cy"])
+                    p = at(z["l"], z["cx"], z["cy"])
+                    squares.append((z["l"], (p[0] + (k % 3 - 1) * 2.6 * 6 * SS, p[1] + (k // 3) * 2.6 * 6 * SS), ci, lane.get("portal")))
+    for lv, (px, py), ci, portal in squares:
+        dr = panels[lv][1]
         h = 6 * SS
-        px, py = p[0] + (k % 3 - 1) * 2.6 * h, p[1] + (k // 3) * 2.6 * h
         if portal:   # a portal between the levels: a diamond in the link's colour
             dr.polygon([(px, py - h - 2 * SS), (px + h + 2 * SS, py), (px, py + h + 2 * SS), (px - h - 2 * SS, py)], fill=INK)
             dr.polygon([(px, py - h), (px + h, py), (px, py + h), (px - h, py)], fill=LANES[ci])
@@ -313,6 +320,9 @@ def render(dump_path, out_path):
                 dc.rectangle([x + 2, y - 8, x + 20, y + 8], fill=tuple(int(c * DARKEN) for c in kind), outline=(14, 16, 20))
             dc.text((x + 26, y), text, font=fl, fill=(235, 235, 235), anchor="lm")
             x += w
+    if caption:
+        fc = font(CAPTION_FONT)
+        dc.text((CW // 2, CH - CAPTION_H // 2 - 1), caption, font=fc, fill=(255, 226, 150), anchor="mm")
     canvas.save(out_path, optimize=True)
     return {"zones": len(zone), "lanes": len(lanes), "portals": sum(1 for l in lanes if l.get("portal")), "starts": len(d["starts"]), "towns": len(d.get("towns", [])),
             "legend": [t for _, t in items]}
