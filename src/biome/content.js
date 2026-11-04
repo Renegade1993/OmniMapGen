@@ -2829,7 +2829,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					// guarded pile only where every tile of it keeps clear of other objects (TreasurePlacer.cpp createTreasures, minDistance), so a bigger pile
 					// fails more once the zone fills and the single objects still fit (roomCrowd: 0.4, off on Coldshadow's Fantasy for now)
 					const crowded = roomOn && crowdQ < 1 && roomLeft < cells.length * TPL_ROOM_CROWD_AT;
-					const fits = !roomOn || (roomLeft >= roomCost(band) && (!crowded || rng() < Math.pow(crowdQ, pile.objects.length - 1)));   // rng() is drawn either way, so a zone with room is generated as before
+					const fits = !roomOn || (roomLeft >= roomCost(band) && (!crowded || rng() < Math.pow(crowdQ, pile.objects.length - 1)));   // the landing rng() below is drawn either way; the crowding draw only in a crowded zone for a pile that fits by room
 					if (rng() < landP && fits) {
 						if (roomOn) roomLeft -= roomCost(band);
 						pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects, followsRich });
