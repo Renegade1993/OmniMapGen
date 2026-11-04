@@ -188,9 +188,10 @@ function kinSwap(objects, groundAt, mineArt) {
 	// an object a hero uses has a visited cell ('A' or 'T'): a building, a guard, a pickup; scenery (rocks, flowers, lakes) has none and is drawn
 	// over freely, as in stock maps
 	const used = q => q.template.mask.some(r => /[AT]/.test(String(r)));
-	const owner = new Map();
-	for (const q of objects) if (q && q.template && q.template.mask) for (const k of cellsOf(q.template.mask, q.x, q.y)) owner.set(`${q.l || 0}:${k}`, q);
-	const coversOther = (o, mask) => { const mine = new Set(cellsOf(o.template.mask, o.x, o.y)); return cellsOf(mask, o.x, o.y).some(k => !mine.has(k) && owner.has(`${o.l || 0}:${k}`) && owner.get(`${o.l || 0}:${k}`) !== o && used(owner.get(`${o.l || 0}:${k}`))); };
+	// every cell any used object's picture covers, with the objects there (several may share a cell: flowers drawn over a treasure pile)
+	const usedAt = new Map();
+	for (const q of objects) if (q && q.template && q.template.mask && used(q)) for (const k of cellsOf(q.template.mask, q.x, q.y)) { const key = `${q.l || 0}:${k}`; if (!usedAt.has(key)) usedAt.set(key, []); usedAt.get(key).push(q); }
+	const coversOther = (o, mask) => { const mine = new Set(cellsOf(o.template.mask, o.x, o.y)); return cellsOf(mask, o.x, o.y).some(k => !mine.has(k) && (usedAt.get(`${o.l || 0}:${k}`) || []).some(q => q !== o)); };
 	for (const o of objects) {
 		if (!o || !o.template || !o.template.animation || /[/]/.test(String(o.template.animation))) continue;
 		const g = groundAt(o), k = g && !CORE[g] ? kinOf(g) : null;
