@@ -197,6 +197,8 @@ const TPL_PILE_SHARE = Number(process.env.VMAPGEN_TPL_PILE_SHARE) || 0.65;
 // the piles a template zone has room for, per 1,000 of its tiles (the room note at pileSim below)
 const TPL_ROOM_RICH = Number(process.env.VMAPGEN_TPL_ROOM_RICH) || 21.5;
 const TPL_ROOM_CHEAP = Number(process.env.VMAPGEN_TPL_ROOM_CHEAP) || 28;
+const TPL_ROOM_CROWD = process.env.VMAPGEN_TPL_ROOM_CROWD !== undefined ? Number(process.env.VMAPGEN_TPL_ROOM_CROWD) : 1;
+const TPL_ROOM_CROWD_AT = Number(process.env.VMAPGEN_TPL_ROOM_CROWD_AT) || 0.5;
 const TPL_PILE_SHARE_RICH = Number(process.env.VMAPGEN_TPL_PILE_SHARE_RICH) || 0.40;
 const TPL_RICH_MIN = Number(process.env.VMAPGEN_TPL_RICH_MIN) || 10000;
 // VMAPGEN_TPL_PILE_MODEL=engine: a template zone's piles built as the engine
@@ -2812,7 +2814,11 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					// TPL_PILE_LAND_DWELLING_LATER of its share (9.7 / 16.8); VMAPGEN_TPL_PILE_LAND_DWELLING_LATER=1 the earlier rule.
 					const dwLater = dwCut ? (Number(process.env.VMAPGEN_TPL_PILE_LAND_DWELLING_LATER) || 0.58) : 1;
 					const landP = holdsDwelling && process.env.VMAPGEN_TPL_PILE_LAND_DWELLING !== 'cut' ? share * dwLater : share * later;
-					const fits = !roomOn || roomLeft >= roomCost(band);   // rng() is drawn either way, so a zone with room is generated as before
+					// a crowded zone (under TPL_ROOM_CROWD_AT of its room left) fits a pile of n objects with chance TPL_ROOM_CROWD ^ (n - 1): the engine places a
+					// guarded pile only where every tile of it keeps clear of other objects (TreasurePlacer.cpp createTreasures, minDistance), so a bigger pile
+					// fails more once the zone fills and the single objects still fit (trial, VMAPGEN_TPL_ROOM_CROWD; 1 is off)
+					const crowded = roomOn && TPL_ROOM_CROWD < 1 && roomLeft < cells.length * TPL_ROOM_CROWD_AT;
+					const fits = !roomOn || (roomLeft >= roomCost(band) && (!crowded || rng() < Math.pow(TPL_ROOM_CROWD, pile.objects.length - 1)));   // rng() is drawn either way, so a zone with room is generated as before
 					if (rng() < landP && fits) {
 						if (roomOn) roomLeft -= roomCost(band);
 						pileSim.landed.push({ value: pile.value, band, guard, objects: pile.objects, followsRich });
