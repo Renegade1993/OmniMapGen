@@ -2620,7 +2620,7 @@ async function generateMap(params) {
 				const keepEnd = new Set((plans[li].objects || []).filter(o => (o.l || 0) === li && /^(randomMonster|monster)/.test(o.type)).map(o => o.y * Wl + o.x));
 				for (const o of plans[li].objects || []) {
 					if ((o.l || 0) !== li || !o.template || !o.template.mask || !/^(town$|randomTown$|subterraneanGate|monolith)/.test(o.type)) continue;
-					for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) { keepEnd.add(vy * Wl + vx); if (vy + 1 < Hl && roadCells.has((vy + 1) * Wl + vx)) keepEnd.add((vy + 1) * Wl + vx); }
+					for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) { keepEnd.add(vy * Wl + vx); for (const [dx, dy] of (o.template.visitableFrom ? require('../biome/content').allowedDirs(o.template) : [[0, 1]])) { const sx = vx + dx, sy = vy + dy; if (sx >= 0 && sy >= 0 && sx < Wl && sy < Hl && roadCells.has(sy * Wl + sx)) keepEnd.add(sy * Wl + sx); } }   // every side the object is entered from (plan.js keepAll)
 				}
 				for (const op of plans[li].openings || []) if (op.kind === 'openRoad') for (const c of op.hole || []) keepEnd.add(c);
 				const lc = require('../biome/roadsplines').breakLoops(roadCells, Wl, Hl, keepEnd, Number(process.env.VMAPGEN_LATE_LOOP || 40), zl ? c => zl[c] : null, true);
@@ -2679,6 +2679,15 @@ async function generateMap(params) {
 					return !hit;
 				});
 				if (gone.length) console.error(`[gen] level ${li}: ${gone.length} scenery piece(s) standing on a road taken off: ${gone.slice(0, 6).join(' ')}`);
+			}
+			// last of the road passes: no road reaches a gate or monolith across a side its template forbids once a legal side has road (gateroad.js)
+			if (roadCells && roadCells.size) {
+				const Wf = lv.width, Hf = lv.height, plf = plans[li], solid = new Uint8Array(Wf * Hf);
+				for (const o of plf.objects || []) if ((o.l || 0) === li && o.template && o.template.mask && !REMOVABLE_TYPES.has(o.type))
+					for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < Wf && fy < Hf) solid[fy * Wf + fx] = 1;
+				const freeF = c => !solid[c] && !(plf.openMask && !plf.openMask[c]) && !(plf.p && plf.p.water && plf.p.water[c]);
+				const fs2 = require('../biome/gateroad').forbiddenSideRoads(plf, Wf, Hf, li, visitableCells, allowedDirs, freeF);
+				if (fs2.cut || fs2.kept) console.error(`[gen] level ${li}: roads onto a gate or monolith across a forbidden side cut back: ${fs2.cut} (${fs2.tiles} tile(s), ${fs2.rerouted} joined again from a side it is entered from, ${fs2.roadless} with no other way in left without a road), left: ${fs2.kept}`);
 			}
 			const roadArt = solveRoadTiles(roadCells, lv.width, lv.height, roadRng);
 
