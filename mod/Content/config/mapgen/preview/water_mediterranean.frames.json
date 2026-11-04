@@ -29,7 +29,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/01",
    "seconds": 3.0,
-   "contentSha256": "b04a7e84dcb7bb764639802a37d087e6467f4c66161944a2a85e92cf2a4cbc50"
+   "contentSha256": "fa484162be5b3f7048a01e3071964d8508d4735ecb42eb294f196e17b2253885"
   },
   {
    "order": 2,
@@ -58,7 +58,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/02",
    "seconds": 3.0,
-   "contentSha256": "dc0ec9c0f6f60088968efd25a32b631b774fc4bfa22f304ab5ac052bfa629397"
+   "contentSha256": "0186b285bf2962be2f4fe82c2e812c726d2a6d463cf0633cc05df2807a9d48e2"
   },
   {
    "order": 3,
@@ -88,7 +88,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/03",
    "seconds": 3.0,
-   "contentSha256": "c3849ab226e7b07874e659df7b036e6683d2db3b23f92019918464c63b51c110"
+   "contentSha256": "582a7e59695e3242913daf51d06becb44e804428aaa5a5a710a3de2fb36ca00b"
   },
   {
    "order": 4,
@@ -118,7 +118,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/04",
    "seconds": 3.0,
-   "contentSha256": "a2971257527a87e595098bdb2568b851c8029012656e6c223e925c9d78ca67dd"
+   "contentSha256": "2290286b78c4ef8243592af69c21505e09ebe41f684fb2730cbedb70cdd02503"
   },
   {
    "order": 5,
@@ -148,7 +148,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/05",
    "seconds": 3.0,
-   "contentSha256": "94f1ab6b92405b1262b53c2ab0f6cb924aa7f4f13886d2fdac42686f4971d075"
+   "contentSha256": "d6dcf39e30b64e83478f566a55bb5c7646b9ec58ab8b89262cebb07663d5b267"
   },
   {
    "order": 6,
@@ -178,7 +178,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/06",
    "seconds": 3.0,
-   "contentSha256": "34266c6b5a2fc895f6e60c4ebbf890a2f885d1484a18b35f69d7194da91b34a2"
+   "contentSha256": "9dfca7fb7086158d8833ad4ebf1126df94037d6d9ebf60ee588835be0cfa50d8"
   },
   {
    "order": 7,
@@ -258,7 +258,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/09",
    "seconds": 3.0,
-   "contentSha256": "79751b0d074f92e0db503b1dab2308a250eb832831e7751304b5cdd87bf7ea51"
+   "contentSha256": "d22fab73c82ad147028127b0d8c95eb76f465e661e745ffbd436321570ea5894"
   },
   {
    "order": 10,
@@ -288,7 +288,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/10",
    "seconds": 3.0,
-   "contentSha256": "d5c996064ed7b9106a2b0a901d8d2b07efbd08e69c3ff6adb7123672024337e1"
+   "contentSha256": "30c214abdab980df9c67e572ddd5e6c39f300f8058eb1feb83de1a712c51f3a1"
   },
   {
    "order": 11,
@@ -318,7 +318,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/11",
    "seconds": 3.0,
-   "contentSha256": "88356fe001ba1606eb22e76e8e71cf7c893b383ccbdbe099ff18279bb4cf95f3"
+   "contentSha256": "eb8998e08ae17f5995860058ae6383695fc6abf8ea5ea3da79f9c429db5d7757"
   },
   {
    "order": 12,
@@ -348,7 +348,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/12",
    "seconds": 3.0,
-   "contentSha256": "73c17e481cb50f9466299e72ee40f05d5e70d9255cc4b81e93cad9e667d24d0b"
+   "contentSha256": "67f011d41e25b29af03486dc73d0ab36aec91ffcf00509f03eb75dab2f17cfdd"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

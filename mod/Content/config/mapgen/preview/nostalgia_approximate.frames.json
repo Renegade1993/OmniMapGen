@@ -29,7 +29,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/01",
    "seconds": 3.0,
-   "contentSha256": "917f8640831ddcdb7a43874c462a85ca5a174ea26a56ba904e265d0be421a29f"
+   "contentSha256": "7b2e09ba25f6430dfa1fbe0d7209fda0ce059d672f61b4ebc55e8a3209396add"
   },
   {
    "order": 2,
@@ -58,7 +58,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/02",
    "seconds": 3.0,
-   "contentSha256": "3b46fbada2e8ff2b1c4aa2b12bda4fb70cb3719253ae5a48b84a00a6b2f5a337"
+   "contentSha256": "d48e11360a5e2b7191597f1b4382dc187c7c77029243aca67ad31e9aac9f3531"
   },
   {
    "order": 3,
@@ -87,7 +87,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/03",
    "seconds": 3.0,
-   "contentSha256": "60c1145ae49c4ba8bf1f4fde6f5a61d1ca375837dbeea69003661b588b055e4c"
+   "contentSha256": "26e703c23c57a4b3c65044ef45d7083b6237dceac1393e175f280127e43de1f2"
   },
   {
    "order": 4,
@@ -116,7 +116,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/04",
    "seconds": 3.0,
-   "contentSha256": "7757dd1ba04926ebc0dd00a1e6238939b050b7273b84b86473ec5bee9b2bfb94"
+   "contentSha256": "2729e968169c6a75371a5393f0573176abb27d9bad56ac817e0c800b89a1a7a6"
   },
   {
    "order": 5,
@@ -144,7 +144,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/05",
    "seconds": 3.0,
-   "contentSha256": "03c04e501b7af31ec65f1a9fad99176dddbe918a3f4dc9c9ce16637079c123ec"
+   "contentSha256": "8dbef017f1c43135123aae77133566e678ff5c8ab61a28e227efe46f71618929"
   },
   {
    "order": 6,
@@ -172,7 +172,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/06",
    "seconds": 3.0,
-   "contentSha256": "0aaf92d8c9f5a784d9451a7982b3069d1d17998b486cd38cb6910cd130d653a9"
+   "contentSha256": "a19e0d8c7ae28d136966885eb86b411807640ff49eb46dace824e3bebaa0ecc3"
   },
   {
    "order": 7,
@@ -201,7 +201,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/07",
    "seconds": 3.0,
-   "contentSha256": "4cf67770b2e840cf2269c474e89a4db8d5c6c7a9253a3950de698c3ece7e8fb7"
+   "contentSha256": "16baf9d6c42a56ce59e22531fd8fa99e3f34799e3d742dc8ff1c263bc7c72ce0"
   },
   {
    "order": 8,
@@ -255,7 +255,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/09",
    "seconds": 3.0,
-   "contentSha256": "417dbc1fa9d85cfb3c13a2f273e86d858a56155f46cd809bb991dd7d72266fb8"
+   "contentSha256": "284e0aa0bf24c3568963cf53612d2f5d08bacfe53e0e443ad874ded2f2ed3efc"
   },
   {
    "order": 10,
@@ -266,7 +266,7 @@
    "seed": 4,
    "water": "lakes",
    "preferred": false,
-   "caption": "Nostalgia (approximate), Large 108x108: 6 players, 2 levels, Lakes water",
+   "caption": "Nostalgia (approximate), Large 108x108: 6 players, 2 levels, starts underground, Lakes water",
    "zones": 16,
    "lanes": 18,
    "portals": 8,
@@ -285,7 +285,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/10",
    "seconds": 3.0,
-   "contentSha256": "6d1e5a9b94748c81bea9c66ec9f7932474f47dc6de77f2687870a92124fb1da3"
+   "contentSha256": "72e159b0f8ed32f5008e6c9d0a7cf6bea066bbc70d11742e41c0a999879a472b"
   },
   {
    "order": 11,
@@ -314,7 +314,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/11",
    "seconds": 3.0,
-   "contentSha256": "80fa52ac021283a29d6a7a72648a94bfdcb40893b4731feb303404a5d74bb147"
+   "contentSha256": "64311462aba7b46f41367e6cb6703ec22ab886e0c0b76926d7c9782f119b580f"
   },
   {
    "order": 12,
@@ -325,7 +325,7 @@
    "seed": 6,
    "water": "coastal",
    "preferred": false,
-   "caption": "Nostalgia (approximate), Huge 180x180: 5 players, 2 levels, Coastal water",
+   "caption": "Nostalgia (approximate), Huge 180x180: 5 players, 2 levels, starts on both levels, Coastal water",
    "zones": 26,
    "lanes": 27,
    "portals": 8,
@@ -344,7 +344,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/12",
    "seconds": 3.0,
-   "contentSha256": "428e05367b50564992070f2031611f531b0fa72dfac18ba70a52b074a4186c1c"
+   "contentSha256": "6253334b8f501555181f943e506bf18b6c7fb5e89005f20aa13be446deccfc55"
   },
   {
    "order": 13,
@@ -373,7 +373,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/13",
    "seconds": 3.0,
-   "contentSha256": "48ed0290700cf76aee91e066b2232ae52af716bb82238c96560edf67ffad2918"
+   "contentSha256": "1b1f67b556e6c6a4665e1a903e18246bb01459dcc59b3571081b065c397bc605"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

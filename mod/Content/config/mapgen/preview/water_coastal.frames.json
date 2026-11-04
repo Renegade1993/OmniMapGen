@@ -28,7 +28,7 @@
    ],
    "path": "mapgen/preview/water_coastal/01",
    "seconds": 3.0,
-   "contentSha256": "cf9765d0c8883c5ccd01e082d0c314adc7cb23b86df509a47c2664be8cbff3e0"
+   "contentSha256": "1a3d35bb835d7860197c71ad7337691561df4d03af5d663678035c5b53814da1"
   },
   {
    "order": 2,
@@ -58,7 +58,7 @@
    ],
    "path": "mapgen/preview/water_coastal/02",
    "seconds": 3.0,
-   "contentSha256": "2c868ecfb2b08ea25ee3c3c98421a9dfbf87d3c080f6c7dc3eb334fc382afa03"
+   "contentSha256": "ecb5096adfc2e34c133e9fa3a63cd8db1b900273b83c76cc1bc8c5790f4e81a5"
   },
   {
    "order": 3,
@@ -88,7 +88,7 @@
    ],
    "path": "mapgen/preview/water_coastal/03",
    "seconds": 3.0,
-   "contentSha256": "b31ec65c31ad2baafb58b3b22717369382000904da1affb1e2c1cb2e418c8e4d"
+   "contentSha256": "e699b051b1c969ba25ff80bc45f211de489b0801b9c62660180bdbaf461b9dd2"
   },
   {
    "order": 4,
@@ -118,7 +118,7 @@
    ],
    "path": "mapgen/preview/water_coastal/04",
    "seconds": 3.0,
-   "contentSha256": "1eff6355eaca7d06220d6cdb59d715145ec5d5ed0de8760fd3273a3cc0abff6d"
+   "contentSha256": "fbaac9730872a3008e6e2e5b3a270a3d780d248340765fd92aacee74a3f81a01"
   },
   {
    "order": 5,
@@ -148,7 +148,7 @@
    ],
    "path": "mapgen/preview/water_coastal/05",
    "seconds": 3.0,
-   "contentSha256": "87e71a4928b6948455fafca8240295f9dd2ada6486801eebd75ad3e2a0510a97"
+   "contentSha256": "cd6ba455e131e4a22212fe295786a5a8d280fdc7c3e1fcaf1e11b48a083c1842"
   },
   {
    "order": 6,
@@ -178,7 +178,7 @@
    ],
    "path": "mapgen/preview/water_coastal/06",
    "seconds": 3.0,
-   "contentSha256": "21ca323d204fa70df69daf3db1464f1078444c801c3abd04010513c3206140de"
+   "contentSha256": "862dd87fba425306b355b7e2837089604b97da367be21cb68edf4693e1007a09"
   },
   {
    "order": 7,
@@ -261,7 +261,7 @@
    ],
    "path": "mapgen/preview/water_coastal/09",
    "seconds": 3.0,
-   "contentSha256": "abd03bc29cbf1fbb89a8859e08375994787a8ff6e31ece0f4f7beb5b5951e406"
+   "contentSha256": "d7b37f19402437893e392510abb42623ea922f04182ce0e7fe5477204132cb87"
   },
   {
    "order": 10,
@@ -291,7 +291,7 @@
    ],
    "path": "mapgen/preview/water_coastal/10",
    "seconds": 3.0,
-   "contentSha256": "d4c9e032046e6d718603fabcf36492a8099f846e009329742e5f9a40ff68b0fb"
+   "contentSha256": "69174a3548cd7d77139298f0fd436ef02c4724c8b76798ad354881530f8a233d"
   },
   {
    "order": 11,
@@ -321,7 +321,7 @@
    ],
    "path": "mapgen/preview/water_coastal/11",
    "seconds": 3.0,
-   "contentSha256": "eba4e4d7e615fb1edaaf3624bf0b864d93d061bc896cdcf5bdc835e7a03d5c92"
+   "contentSha256": "a17e61b04b86949afd4bfea58bfc70801a618fd2e3baa489c61103d4c085008a"
   },
   {
    "order": 12,
@@ -351,7 +351,7 @@
    ],
    "path": "mapgen/preview/water_coastal/12",
    "seconds": 3.0,
-   "contentSha256": "d2fddd76ad7f3ddba099e71d7cdf69b8d9f60ccc2b08aeb5605bf34b462adfb8"
+   "contentSha256": "cfb31dbd07ce303a47a82d44ee56d977a5f803bcabc3e3a248dcadf70f410634"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

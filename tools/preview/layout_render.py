@@ -173,10 +173,11 @@ def town_marks(d):
     return empty, [t for t in towns if key(t) not in used]
 
 
-def spread_castles(items, at, gap, size):
-    """id(item) -> drawing position: castles closer than gap pushed apart in small steps, kept inside the panel"""
-    pos = {id(t): list(at(t["l"], t["x"], t["y"])) for t in items}
-    edge = 14 * SS
+def spread_castles(items, at, gap, square):
+    """id(item) -> drawing position: castles closer than gap pushed apart in small steps, kept inside the map square (lo, hi) (the Reviewer,
+    2026-11-04: corner castles stood outside the map on the big Nostalgia frames; inside, even if they overlap a little)"""
+    lo, hi = square[0] + 11 * SS, square[1] - 11 * SS
+    pos = {id(t): [min(hi, max(lo, c)) for c in at(t["l"], t["x"], t["y"])] for t in items}
     for _ in range(30):
         moved = False
         for i, a in enumerate(items):
@@ -192,8 +193,8 @@ def spread_castles(items, at, gap, size):
                     dx, dy, dist = 1.0, 0.0, 1.0
                 push = (gap - dist) / 2 + 1
                 for q, sgn in ((pa, -1), (pb, 1)):
-                    q[0] = min(size - edge, max(edge, q[0] + sgn * dx / dist * push))
-                    q[1] = min(size - edge, max(edge, q[1] + sgn * dy / dist * push))
+                    q[0] = min(hi, max(lo, q[0] + sgn * dx / dist * push))
+                    q[1] = min(hi, max(lo, q[1] + sgn * dy / dist * push))
                 moved = True
         if not moved:
             break
@@ -315,7 +316,7 @@ def render(dump_path, out_path, caption=None):
             dr.rectangle([px - h, py - h, px + h, py + h], fill=LANES[ci])
     # towns: grey castles for towns no player owns, then the player castles on top, each with the player's number under it
     empty, neutral = town_marks(d)
-    spot = spread_castles(d["starts"] + empty, at, 26 * SS, P * SS)
+    spot = spread_castles(d["starts"] + empty, at, 26 * SS, (PAD * SS, (PAD + MP) * SS))
     for t in neutral:   # a neutral town: a small light dot with a dark ring
         p = at(t["l"], t["x"], t["y"])
         r0 = 4.5 * SS

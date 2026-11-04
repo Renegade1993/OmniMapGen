@@ -29,7 +29,7 @@
    ],
    "path": "mapgen/preview/classic/01",
    "seconds": 3.0,
-   "contentSha256": "93671c5c116d5048f957f32a4434ffb7e80a643ab7f60f2a024049c803687ead"
+   "contentSha256": "bbc295454f0d81c60ef9b0809328d62c1d21a7b4f1f40c705cd0c27b4bebc08f"
   },
   {
    "order": 2,
@@ -58,7 +58,7 @@
    ],
    "path": "mapgen/preview/classic/02",
    "seconds": 3.0,
-   "contentSha256": "2c3428c68b3310f313374773f7db83d7e8c705c67a4b36a6aaa767b103d0ba5e"
+   "contentSha256": "26acbc4a009b9157fe664d6c1e55d690f938e09cd6cff46da435b341b1e18fd3"
   },
   {
    "order": 3,
@@ -87,7 +87,7 @@
    ],
    "path": "mapgen/preview/classic/03",
    "seconds": 3.0,
-   "contentSha256": "095bf54a51d8405ba753fa8e8d01eda74a23d59935dba8682426d369062c22c6"
+   "contentSha256": "c5152a06a65e505fde1b18a8c247a8a9449f579203226dc86347270c9fb5bd36"
   },
   {
    "order": 4,
@@ -116,7 +116,7 @@
    ],
    "path": "mapgen/preview/classic/04",
    "seconds": 3.0,
-   "contentSha256": "239a772a892d626a3f27a1bd5afc36cb3d6114cdec4a302bd58d5ec4b6fc439d"
+   "contentSha256": "04d48908609b66783fe465b7bc728863173f4ce9c997ecd840f4606bb1cd6bbc"
   },
   {
    "order": 5,
@@ -145,7 +145,7 @@
    ],
    "path": "mapgen/preview/classic/05",
    "seconds": 3.0,
-   "contentSha256": "aef56b1fd94ead07165fb508bf5c3503b724e3f813918e30f3e62762933c126d"
+   "contentSha256": "412ab913a6a5d641b9ea418bec4b6215efb8d945b6729797c9c4bb437774fd2b"
   },
   {
    "order": 6,
@@ -199,7 +199,7 @@
    ],
    "path": "mapgen/preview/classic/07",
    "seconds": 3.0,
-   "contentSha256": "2aa92893a0619191c6cbc52f591d88fef2bfe0966888f7c33b9ee8f0a01cc72a"
+   "contentSha256": "415beaa42dcf84683f2c593e5a3912e4969823dfae4ad90040af4239b118825d"
   },
   {
    "order": 8,
@@ -210,7 +210,7 @@
    "seed": 2,
    "water": null,
    "preferred": false,
-   "caption": "Classic, Small 36x36: 2 players, 2 levels",
+   "caption": "Classic, Small 36x36: 2 players, 2 levels, starts underground",
    "zones": 7,
    "lanes": 3,
    "portals": 1,
@@ -227,7 +227,7 @@
    ],
    "path": "mapgen/preview/classic/08",
    "seconds": 3.0,
-   "contentSha256": "b8f5f8e9436ef89132cf0b33511482e0d3b911dadc640626c862ccb21b130cb7"
+   "contentSha256": "4efd6b012924d734a15c6c92084b0c56001f8cd34d421d606bceb1a703097fc9"
   },
   {
    "order": 9,
@@ -268,7 +268,7 @@
    "seed": 4,
    "water": null,
    "preferred": false,
-   "caption": "Classic, Large 108x108: 3 players, 2 levels",
+   "caption": "Classic, Large 108x108: 3 players, 2 levels, starts underground",
    "zones": 47,
    "lanes": 52,
    "portals": 8,
@@ -286,7 +286,7 @@
    ],
    "path": "mapgen/preview/classic/10",
    "seconds": 3.0,
-   "contentSha256": "fc27f7a6d39567f85263895e5cd0ae346779416c1291652171982d577da52227"
+   "contentSha256": "9366c3251c0cc6bbf6e562a012ef7d132d588201e54620dc40d41e2d03160ad8"
   },
   {
    "order": 11,
@@ -326,7 +326,7 @@
    "seed": 6,
    "water": null,
    "preferred": false,
-   "caption": "Classic, Huge 180x180: 5 players, 2 levels",
+   "caption": "Classic, Huge 180x180: 5 players, 2 levels, starts on both levels",
    "zones": 95,
    "lanes": 106,
    "portals": 8,
@@ -344,7 +344,7 @@
    ],
    "path": "mapgen/preview/classic/12",
    "seconds": 3.0,
-   "contentSha256": "7169d60895ff0cf97a33f2be488fc5a6172cbd1e816456e51c7288e472f2d6f9"
+   "contentSha256": "3fe0eeb46d2169ca25a1c0cb361ba9efa1203605197d51d19e785236e454895c"
   },
   {
    "order": 13,
@@ -431,7 +431,7 @@
    ],
    "path": "mapgen/preview/classic/15",
    "seconds": 3.0,
-   "contentSha256": "9604d9d307ae319512cdcc5e5baf195cd541dfa9bc50d8c4f4e53b07b6975900"
+   "contentSha256": "433d801bcbbed457a6342035982b0130d9148a2dea988d1e0c3ff99fc68321af"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

@@ -92,8 +92,9 @@ for _id in ("lakes", "coastal", "continental", "mediterranean", "islands", "arch
         [F(36, 4, 1, 12, _id), F(72, 2, 2, 13, _id), F(108, 6, 1, 14, _id), F(144, 3, 2, 15, _id), F(180, 4, 1, 16, _id)]), {})
 
 
-def caption(name, f):
-    lv = "1 level" if f["levels"] == 1 else "2 levels"
+def caption(name, f, split=False):
+    """split: "both" when the map's starts stand on both levels, "under" when all of them are underground (the Reviewer, 2026-11-04: say so)"""
+    lv = "1 level" if f["levels"] == 1 else "2 levels" + {"both": ", starts on both levels", "under": ", starts underground"}.get(split or "", "")
     w = ", " + WATER[f["water"]][1] + " water" if f["water"] and WATER[f["water"]][1] != name else ""
     return f"{name}, {NAMES[f['size']]} {f['size']}x{f['size']}: {f['players']} players, {lv}{w}"
 
@@ -125,12 +126,15 @@ def work(slug, name, template, levers, n, f, out, gen, env):
         if r.returncode != 0:
             return n, None, "dump failed " + (r.stderr or r.stdout)[-300:]
     # the map's own starts must be the count the caption names (a seat choice passed as a lever once made every Nostalgia frame 4 players)
-    drawn = len(json.load(open(dump, encoding="utf-8"))["starts"])
+    dstarts = json.load(open(dump, encoding="utf-8"))["starts"]
+    drawn = len(dstarts)
+    lvls = {s["l"] for s in dstarts}
+    split = "both" if len(lvls) > 1 else ("under" if lvls == {1} else None)
     if drawn != f["players"]:
         return n, None, f"map has {drawn} starts, caption says {f['players']} players"
     png = os.path.join(out, f"{slug}_{n:02d}.png")
-    info = render(dump, png, caption(name, f))
-    return n, {"order": n, "file": os.path.basename(png), **f, "map": os.path.basename(vm), "caption": caption(name, f), **info}, None
+    info = render(dump, png, caption(name, f, split))
+    return n, {"order": n, "file": os.path.basename(png), **f, "map": os.path.basename(vm), "caption": caption(name, f, split), **info}, None
 
 
 def main():

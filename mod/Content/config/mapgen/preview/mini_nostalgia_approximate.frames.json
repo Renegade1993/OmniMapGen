@@ -29,7 +29,7 @@
    ],
    "path": "mapgen/preview/mini_nostalgia_approximate/01",
    "seconds": 3.0,
-   "contentSha256": "d51b53ebd0ec8dee4c4f6b5c7e4f3f9c2d536acb7b89efcc06ea5ebc922d2262"
+   "contentSha256": "31dd462eed067f8c18178b06da950a3c5a98bfebd8278897622621bdc50e9362"
   },
   {
    "order": 2,
@@ -58,7 +58,7 @@
    ],
    "path": "mapgen/preview/mini_nostalgia_approximate/02",
    "seconds": 3.0,
-   "contentSha256": "822134aff330b096649c2676abcfc38fa17c756044f9abe6de09ba1302bfbb95"
+   "contentSha256": "f07acb2c8917962cc6a06d7973ae7b672daeba8be5ad879582fe50b70087eb5d"
   },
   {
    "order": 3,
@@ -87,7 +87,7 @@
    ],
    "path": "mapgen/preview/mini_nostalgia_approximate/03",
    "seconds": 3.0,
-   "contentSha256": "86c4380d804ebf42b1cd6c175f827bcd618e61513a64f4d3e87f98b194c5d91a"
+   "contentSha256": "9f533d42ec9e67ed014c9ba1684af638b1a19a3ae638d1c7d5adc999f9478311"
   },
   {
    "order": 4,
@@ -116,7 +116,7 @@
    ],
    "path": "mapgen/preview/mini_nostalgia_approximate/04",
    "seconds": 3.0,
-   "contentSha256": "9faa1c665e20f23f995841293b5615006c3bdb9616210138ea9cbd33d533c908"
+   "contentSha256": "0d5331a1c669b1b76f7236cc5fb46ccfc988c04234bbed2b9b25c90525d05dc4"
   },
   {
    "order": 5,
@@ -145,7 +145,7 @@
    ],
    "path": "mapgen/preview/mini_nostalgia_approximate/05",
    "seconds": 3.0,
-   "contentSha256": "7a65c6fa2f8dceac59aef5dc030f73a5839eb85a7c32ca20feeab1dc4c8f1514"
+   "contentSha256": "4659235bdfc70d483b4f272f19fc61c1cea4b67a5ea94750bde80e48c6ac9ac8"
   },
   {
    "order": 6,
@@ -201,7 +201,7 @@
    ],
    "path": "mapgen/preview/mini_nostalgia_approximate/07",
    "seconds": 3.0,
-   "contentSha256": "4b71738367a5581b091bce361e4fca4d56cd38830356b8756499757af24df2cf"
+   "contentSha256": "bcf46c580602d7e6b892af01789d596142c2521c4770ed231464d56d3b85e0da"
   },
   {
    "order": 8,
@@ -256,7 +256,7 @@
    ],
    "path": "mapgen/preview/mini_nostalgia_approximate/09",
    "seconds": 3.0,
-   "contentSha256": "5a3ba0832ac50ce7da2b3a1dd1bdf494100dbdc4e5ae5a598e39128afa0a2c90"
+   "contentSha256": "c944412beb6c0f87e3c7777036953c84332e6e207db15dfa67cd3c1eb7d170e6"
   },
   {
    "order": 10,
@@ -267,7 +267,7 @@
    "seed": 4,
    "water": "lakes",
    "preferred": false,
-   "caption": "Mini Nostalgia (approximate), Large 108x108: 3 players, 2 levels, Lakes water",
+   "caption": "Mini Nostalgia (approximate), Large 108x108: 3 players, 2 levels, starts underground, Lakes water",
    "zones": 34,
    "lanes": 30,
    "portals": 8,
@@ -286,7 +286,7 @@
    ],
    "path": "mapgen/preview/mini_nostalgia_approximate/10",
    "seconds": 3.0,
-   "contentSha256": "84cdbe1dbd7c1fcb6cd193f0f3f11f6eb3dfc3b494f989550c8b9f1b737ce9e7"
+   "contentSha256": "0b1c2f682a44d828c7c13f23cafeb52c17e8dae413d5fb6f7a79c2139f057c10"
   },
   {
    "order": 11,
@@ -315,7 +315,7 @@
    ],
    "path": "mapgen/preview/mini_nostalgia_approximate/11",
    "seconds": 3.0,
-   "contentSha256": "6367179462d1001dbfe90f953dff187216cf833d93cbf3c5bf81c13cbadac854"
+   "contentSha256": "fd46e2e1367e3c1b92ca57dae359a87573c97b1daf41e3e9981a5a2a0722926d"
   },
   {
    "order": 12,
@@ -326,7 +326,7 @@
    "seed": 6,
    "water": "coastal",
    "preferred": false,
-   "caption": "Mini Nostalgia (approximate), Huge 180x180: 5 players, 2 levels, Coastal water",
+   "caption": "Mini Nostalgia (approximate), Huge 180x180: 5 players, 2 levels, starts on both levels, Coastal water",
    "zones": 63,
    "lanes": 63,
    "portals": 8,
@@ -345,7 +345,7 @@
    ],
    "path": "mapgen/preview/mini_nostalgia_approximate/12",
    "seconds": 3.0,
-   "contentSha256": "5f86b34f0676eeed2151b46290b4d5a5501a48c620af1f30e1f2ba58139a0792"
+   "contentSha256": "74647b7bd9a7596edf4fb9e51141f44704dd67c3cd68e9314417e3a84235b9d9"
   },
   {
    "order": 13,
@@ -374,7 +374,7 @@
    ],
    "path": "mapgen/preview/mini_nostalgia_approximate/13",
    "seconds": 3.0,
-   "contentSha256": "e6f59b85e803a3f984af1c44ea4cefe238b0573f31c4220a0f2bb0c4c7030e3e"
+   "contentSha256": "d98248c4d2d1bb570695be3e5239008e1c09834537a8a85ea0b0bef64fa0bda5"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"
