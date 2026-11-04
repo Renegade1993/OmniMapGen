@@ -2680,6 +2680,15 @@ async function generateMap(params) {
 				});
 				if (gone.length) console.error(`[gen] level ${li}: ${gone.length} scenery piece(s) standing on a road taken off: ${gone.slice(0, 6).join(' ')}`);
 			}
+			// last of the road passes: no road reaches a gate or monolith across a side its template forbids once a legal side has road (gateroad.js)
+			if (roadCells && roadCells.size) {
+				const Wf = lv.width, Hf = lv.height, plf = plans[li], solid = new Uint8Array(Wf * Hf);
+				for (const o of plf.objects || []) if ((o.l || 0) === li && o.template && o.template.mask && !REMOVABLE_TYPES.has(o.type))
+					for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < Wf && fy < Hf) solid[fy * Wf + fx] = 1;
+				const freeF = c => !solid[c] && !(plf.openMask && !plf.openMask[c]) && !(plf.p && plf.p.water && plf.p.water[c]);
+				const fs2 = require('../biome/gateroad').forbiddenSideRoads(plf, Wf, Hf, li, visitableCells, allowedDirs, freeF);
+				if (fs2.cut || fs2.kept) console.error(`[gen] level ${li}: roads onto a gate or monolith across a forbidden side cut back: ${fs2.cut} (${fs2.tiles} tile(s), ${fs2.rerouted} joined again from a side it is entered from), left: ${fs2.kept}`);
+			}
 			const roadArt = solveRoadTiles(roadCells, lv.width, lv.height, roadRng);
 
 		// the terrain grid as short codes, which smoothing may adjust

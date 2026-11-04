@@ -1384,4 +1384,78 @@ function sideDoorStubs(plan, W, H, l, visitableCells, allowedDirs) {
 	return out;
 }
 
-module.exports = { roadlessGoals, teleportRoads, closeRoadGaps, trimRoadStubs, lonePieces, joinBareTowns, openTownFronts, roadsPastObjects, thinRoadBlocks, closeDiagonalSteps, roadNubs, sideDoorStubs };
+/**
+ * A gate's or monolith's road that reaches it across a side its template forbids (visitableFrom '-': for a monolith or a gate the row above its
+ * action cell, under its drawn arch) is cut back to the junction it leaves, once the end has road on a side a hero can step in from. K, November 2nd
+ * 2026: "monolith road connection rules need help. the road connects to the monolith's front by running underneath it". Opus Reviewer, 2026-11-04
+ * (roster/REVIEW-1104-monolith-road.md): 8 of 118 ends on 15 maps kept such a road beside a legal one; the engine's maps have none. The run from
+ * the forbidden tile is followed while each tile leads on to one other road tile only, up to MAX_SPUR tiles; the junction it reaches stays, and the
+ * cut stands if the junction still reaches the end along the road. Where the end's legal road joined the network only through that run (Headquarters
+ * 108 one level seed 3: the west road at (51,55) met the column under the arch diagonally), a new run of free floor from a legal side to the
+ * junction's road is laid, four ways, round the end's forbidden tiles (free(c): floor no object blocks); without one the cut is taken back and counted.
+ * Returns { cut, tiles, rerouted, kept }. VMAPGEN_FORBIDDEN_SIDE_ROAD=0 skips it.
+ */
+function forbiddenSideRoads(plan, W, H, l, visitableCells, allowedDirs, free = null) {
+	const out = { cut: 0, tiles: 0, rerouted: 0, kept: 0 };
+	const R = plan.roadCells;
+	if (!R || !R.size || process.env.VMAPGEN_FORBIDDEN_SIDE_ROAD === '0') return out;
+	const MAX_SPUR = 40;
+	const inb = (x, y) => x >= 0 && y >= 0 && x < W && y < H;
+	const nb8 = c => { const x = c % W, y = (c / W) | 0, o = []; for (const [dx, dy] of D8) if (inb(x + dx, y + dy) && R.has((y + dy) * W + x + dx)) o.push((y + dy) * W + x + dx); return o; };
+	const reaches = (from, to) => { const seen = new Set([from]), q = [from]; for (let i = 0; i < q.length; i++) { if (q[i] === to) return true; for (const m of nb8(q[i])) if (!seen.has(m)) { seen.add(m); q.push(m); } } return false; };
+	for (const o of plan.objects || []) {
+		if ((o.l || 0) !== l || !o.template || !o.template.visitableFrom || !TYPES.test(o.type)) continue;
+		const allowed = allowedDirs(o.template);
+		for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) {
+			if (!inb(vx, vy)) continue;
+			const v = vy * W + vx;
+			const isAllowed = (dx, dy) => allowed.some(([ax, ay]) => ax === dx && ay === dy);
+			const legal = allowed.some(([dx, dy]) => inb(vx + dx, vy + dy) && R.has((vy + dy) * W + vx + dx));
+			for (const [dx, dy] of D8) {
+				if (isAllowed(dx, dy) || !inb(vx + dx, vy + dy)) continue;
+				const f = (vy + dy) * W + vx + dx;
+				if (!R.has(f)) continue;
+				if (!legal) { out.kept++; continue; }
+				// the run away from the end: tiles leading on to one other road tile only
+				// the end and its own road on its legal sides are not ways on from the run (the tile under the arch touches the west road diagonally)
+				const spur = [f], inSpur = new Set([v, f, ...allowed.filter(([ax, ay]) => inb(vx + ax, vy + ay) && R.has((vy + ay) * W + vx + ax)).map(([ax, ay]) => (vy + ay) * W + vx + ax)]);
+				let cur = f, junction = -1;
+				while (spur.length <= MAX_SPUR) {
+					const next = nb8(cur).filter(m => !inSpur.has(m));
+					if (next.length === 0) break;                          // a dead end: the whole run goes
+					if (next.length > 1) { junction = cur; spur.pop(); break; }   // cur joins two or more ways: it stays, the run before it goes
+					cur = next[0]; spur.push(cur); inSpur.add(cur);
+				}
+				if (spur.length > MAX_SPUR || !spur.length) { out.kept++; continue; }
+				for (const c of spur) R.delete(c);
+				if (junction >= 0 && !reaches(junction, v)) {
+					// the road the junction belongs to, and a run to it from a tile beside the end on a legal side
+					const net = new Set([junction]), q0 = [junction];
+					for (let i = 0; i < q0.length; i++) for (const m of nb8(q0[i])) if (!net.has(m)) { net.add(m); q0.push(m); }
+					const forb = new Set(D8.filter(([ax, ay]) => !isAllowed(ax, ay) && inb(vx + ax, vy + ay)).map(([ax, ay]) => (vy + ay) * W + vx + ax));
+					const prev = new Map(), q = [];
+					for (const [ax, ay] of allowed) { const c = (vy + ay) * W + vx + ax; if (inb(vx + ax, vy + ay) && !forb.has(c) && (R.has(c) || (free && free(c)))) { prev.set(c, -1); q.push(c); } }
+					let hit = -1;
+					for (let i = 0; i < q.length && hit < 0 && i < 4000; i++) {
+						const c = q[i], x = c % W, y = (c / W) | 0;
+						for (const [ax, ay] of D8.slice(0, 4)) {
+							if (!inb(x + ax, y + ay)) continue;
+							const m = (y + ay) * W + x + ax;
+							if (prev.has(m) || m === v || forb.has(m)) continue;
+							if (net.has(m)) { prev.set(m, c); hit = m; break; }
+							if (!(free && free(m)) && !R.has(m)) continue;
+							prev.set(m, c); q.push(m);
+						}
+					}
+					if (hit < 0) { for (const c of spur) R.add(c); out.kept++; continue; }
+					for (let c = prev.get(hit); c >= 0; c = prev.get(c)) R.add(c);
+					out.rerouted++;
+				}
+				out.cut++; out.tiles += spur.length;
+			}
+		}
+	}
+	return out;
+}
+
+module.exports = { roadlessGoals, teleportRoads, closeRoadGaps, trimRoadStubs, lonePieces, joinBareTowns, openTownFronts, roadsPastObjects, thinRoadBlocks, closeDiagonalSteps, roadNubs, sideDoorStubs, forbiddenSideRoads };
