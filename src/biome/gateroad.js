@@ -1392,9 +1392,8 @@ function sideDoorStubs(plan, W, H, l, visitableCells, allowedDirs) {
  * Each forbidden-side road tile goes. A road piece that then no longer reaches the end and serves nothing (no town, mine, gate or monolith
  * entered from it, MAX_STUB tiles or fewer) was its dangling stub and goes too; a bigger or serving piece is joined to the end again by a run of
  * free floor from a side it is entered from, four ways, round the end's forbidden tiles (free(c): floor no object blocks). Where no such run
- * exists (the end against a wall, its only way in across its own drawn top: Coldshadow 144 seed 1 underground (32,130)), the end's own short
- * piece of road goes instead, so the road stops before the picture and the end has none, as the engine leaves 28% of its monolith ends; an
- * end whose piece also serves another destination keeps it, counted. Returns { cut, tiles, rerouted, roadless, kept }.
+ * exists (the end against a wall, its only way in across its own drawn top: Coldshadow 144 seed 1 underground (32,130)), everything is put
+ * back and counted: the hero walks that way under the picture whatever the road does. Returns { cut, tiles, rerouted, roadless, kept }.
  * VMAPGEN_FORBIDDEN_SIDE_ROAD=0 skips it.
  */
 function forbiddenSideRoads(plan, W, H, l, visitableCells, allowedDirs, free = null) {
@@ -1456,12 +1455,9 @@ function forbiddenSideRoads(plan, W, H, l, visitableCells, allowedDirs, free = n
 						prev.set(m, c); q.push(m);
 					}
 				}
-				if (hit < 0) {
-					// no way in round the drawn top: the end's own short piece goes (it serves nothing else), and the road stops before the picture
-					const servesElse = [...home].some(c => serving.has(c) && c !== v && !sideRoad().includes(c) && !forb.has(c));
-					if (home.size <= MAX_STUB && !servesElse) { for (const c of home) { R.delete(c); removed.push(c); } out.roadless++; break; }
-					ok = false; break;
-				}
+				// no way in round the drawn top: the road stays and is counted (taking the end's road away instead broke Coldshadow 144 seed 1's road
+				// to the middle through its underground monoliths: the start gate fell from 4 of 4 starts to 0); the cure is where the end stands
+				if (hit < 0) { ok = false; break; }
 				for (let c = prev.get(hit); c >= 0; c = prev.get(c)) if (!R.has(c)) { R.add(c); added.push(c); }
 				rerouted = true;
 				home = endPiece();
