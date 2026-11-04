@@ -16,7 +16,7 @@
 				"treasure": 9,
 				"junction": 4
 			},
-			"description": "An eight-player funnel. Every player starts in a large zone with a castle of their own and a short, guarded road to a treasure zone that has a neutral castle. Two such treasure zones meet at a junction, the junctions pair up, and all four open into one rich centre zone.\n\nThe four junction zones are the template's signature. Each lies underground (on a one-level map they gather in the middle of the surface) and holds a neutral dragon dwelling, the Crystal, Azure, Faerie and Rust dragons, behind strong guards. The centre zone has the richest treasure on the map, and every door into it is guarded for 60,000.\n\nThe original has two start zones for human players and six for computer players only, so it takes at most two human players, and one is allowed too. Each human start leaves by a road guarded three times as hard as a computer start does. OmniMapGen lets any number of players be human here, and a map with more players than the template has starts adds extra start zones of its own.",
+			"description": "Up to eight players each start in a large zone with a castle of their own and a short guarded road to a treasure zone with a neutral castle. Treasure zones meet in pairs at four junctions, and the junctions open into one rich centre zone. The junctions lie underground; on a one-level map they gather in the middle of the surface.\n\nWhat makes it different: each junction keeps a neutral dragon dwelling (Crystal, Azure, Faerie and Rust dragons) behind strong guards, and the doors into the centre carry the heaviest guards on the map.\n\nThe original has two human starts and six computer starts, and a human start's road out is guarded much harder. OmniMapGen lets any player be human, and adds start zones when there are more players than the template has.",
 			"original": {
 				"players": "2 to 8",
 				"humans": "At most 2: made for 1 human against up to 7 computer players, or 2 humans against up to 6",
@@ -96,8 +96,6 @@
 					"decorDensity": 1,
 					"rivers": 1,
 					"riverAmount": 1,
-					"teams": 1,
-					"compOnly": 3,
 					"roadDirt": 1,
 					"roadGravel": 1,
 					"roadCobblestone": 1,
@@ -139,7 +137,7 @@
 			"humansMax": 8,
 			"zones": 0,
 			"zonesByKind": {},
-			"description": "Start here if you are new to Heroes or to Dead Man's Boots. This is an ordinary random Heroes map: each player starts in a region of their own with mines close by, the treasure and the neutral towns lie in the regions between, and monsters guard the ways from one region to the next. It takes any size from Small to Giant and 2 to 8 players, on one level or two, and every setting starts at its default.\n\nThis is DMB's own Nostalgia: a random map in the spirit of Horn of the Abyss's Nostalgia, with a wide range of variability drawn from generic and original game and map ideas. It is the layout every other setting starts from, each at its Template value, which for this entry is the setting's own default. Random can pick it.\n\nIt has no template file and no fixed zones. The generator draws the biomes (the zones) of the map from the map size and the number of players. Each player gets a start biome, and the starts together take about half the land; the rest are treasure biomes, which carry the dear loot, and neutral town biomes. Biome size sets how many biomes there are, and Start biome size and Treasure biomes set their shares of the land.\n\nHow the biomes join is the Layout family setting: Mixed (neighbours as the map's cut makes them), Tree (one way between any two biomes), Sparse mesh (a tree with a few loops), Hub (every start joins one central biome), Pairs (the starts joined two by two), Ring (the biomes round the map's edge in a circle), Chain (that circle opened into a line) or Random (one of these, from the seed). Past Mixed, Biome connections opens more borders on top. Portal share turns that share of the links into portal pairs, and Passages with road and Passages without road decide which links carry a road.\n\nMonsters stand in the ways between biomes (Guards at bottlenecks and Bottleneck guard share; a way out of a start always has one). Guard gradient makes the ways near the starts weaker and the farthest ones stronger, and Guards by distance does the same for every kind of guard, the stacks nearest the starts a creature level weaker and the farthest a level stronger. Guards on treasure, mines and dwellings, Monster count, Monster tier and Stack size set the rest.\n\nMines, dwellings, artifacts and loot follow Mines, Creature dwellings, Artifacts and Treasure biomes. Every setting on the other pages applies, and Reset sets each one to its Template value. Mini Nostalgia (approximate) and Nostalgia (approximate) are this layout with its sliders set toward the numbers of HotA's two templates.",
+			"description": "An ordinary random Heroes map, and the place to start if you are new. Each player starts in a region of their own with mines close by. Treasure regions and neutral towns lie between the starts, and monsters guard the ways from one region to the next.\n\nWhat makes it different: it has no fixed layout. The map is drawn fresh from its size and number of players, and every setting on the other pages (how regions join, portals, guards, treasure, water) changes it. Every setting starts at its default, and Reset puts it back. Mini Nostalgia and Nostalgia in this list are this map with the settings turned toward those two templates.",
 			"originalPreferences": {
 				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Classic: every lever at its Template value, which for Classic is the lever's own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. Mod content stays the player's own choice.",
 				"levers": {
@@ -188,8 +186,6 @@
 					"decorDensity": 1,
 					"rivers": 1,
 					"riverAmount": 1,
-					"teams": 1,
-					"compOnly": 3,
 					"roadDirt": 1,
 					"roadGravel": 1,
 					"roadCobblestone": 1,
@@ -232,7 +228,7 @@
 			"humansMax": 8,
 			"zones": 0,
 			"zonesByKind": {},
-			"description": "Random runs one of the templates in this list at random: Classic and every scenario template that takes the map's size, players and levels. The pick is made from the map's seed, so the same seed gives the same template, and the log line 'random: template ...' names it.\n\nAll the other settings read the picked template's own preferences when set to Template, which is what the Reset button sets.",
+			"description": "Random picks one of the templates in this list for you: Classic or any template that takes the map's size, players and levels. The pick comes from the map's seed, so the same seed gives the same template. Every other setting left on Template follows the picked template's own preferences, which is what Reset sets.",
 			"originalPreferences": {
 				"about": "What the Reset button sets for Random: every lever at Template, so each is read from whichever template the seed picks; the values listed are the defaults, which is what Classic uses.",
 				"levers": {
@@ -281,8 +277,6 @@
 					"decorDensity": 1,
 					"rivers": 1,
 					"riverAmount": 1,
-					"teams": 1,
-					"compOnly": 3,
 					"roadDirt": 1,
 					"roadGravel": 1,
 					"roadCobblestone": 1,
@@ -327,7 +321,7 @@
 			"humansMax": 8,
 			"zones": 0,
 			"zonesByKind": {},
-			"description": "APPROXIMATE. Mini Nostalgia is a small, typical Heroes map: 8 start zones and 7 treasure zones joined as a tree, the start zones holding two thirds of the land, guards at every link, ordinary monsters. This entry is not that template. It is the open layout (Classic) with the sliders that exist today set toward its numbers: big start biomes (Start biome size 0.65), about 14 zones at Biome size 400, many links as portals (Portal share 0.6), fewer guards (Monster count 0.3), fewer dear piles (Treasure biomes 0.1, Artifacts 0.002), fewer dwellings (Creature dwellings 0.7), the guard gradient at 1 and the Layout family at Tree. On a 108x108 map of 4 players it measures: zones 14 (the original 15), the start zones' share of the land 0.63 (0.66), links per zone 0.68 (0.65), portals 14 (8.7), guard stacks 12.3 per 1000 tiles (10.6), dear piles 7.0 per 1000 tiles (5.2). It gets closer as junction zones, wide links and a second town in a start zone are added to the generator. Any setting can still be changed.",
+			"description": "A small, typical Heroes map: eight start zones with most of the land, seven treasure zones between them joined as a tree, and a guard on every way.\n\nWhat makes it different: this entry is approximate. It is the Classic map with its settings turned toward Mini Nostalgia (larger start zones, many ways as portals, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
 			"originalPreferences": {
 				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Mini Nostalgia (approximate): the sliders listed below at the values chosen to bring the open layout's numbers toward the original Mini Nostalgia's; every other lever at its own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. This entry is approximate and gets closer as junction zones, wide links and a second town in a start zone are added.",
 				"levers": {
@@ -376,8 +370,6 @@
 					"decorDensity": 1,
 					"rivers": 1,
 					"riverAmount": 1,
-					"teams": 1,
-					"compOnly": 3,
 					"roadDirt": 1,
 					"roadGravel": 1,
 					"roadCobblestone": 1,
@@ -432,7 +424,7 @@
 			"humansMax": 8,
 			"zones": 0,
 			"zonesByKind": {},
-			"description": "APPROXIMATE. Nostalgia is a large, typical Heroes map: 8 start zones and 16 treasure zones joined as a mesh, a third of the land in the start zones, guards at every link, ordinary monsters. This entry is not that template. It is the open layout (Classic) with the sliders that exist today set toward its numbers: Biome size 1500 for about 22 zones, most links as portals (Portal share 0.8), fewer guards (Monster count 0.5), fewer dear piles (Treasure biomes 0.1, Artifacts 0.003), more dwellings (Creature dwellings 1.2), the guard gradient at 1 and the Layout family at Tree. On a 144x144 map of 4 players with two levels it measures: zones 22.5 (the original 24), the start zones' share of the land 0.31 (0.31), links per zone 0.75 (0.45), portals 29 (42.7), guard stacks 14.6 per 1000 tiles (13.6), dear piles 8.5 per 1000 tiles (6.3). The links stay above the original's because the map has 8 monolith channels, which limit how many links can be portal pairs. It gets closer as junction zones, wide links and a second town in a start zone are added to the generator. Any setting can still be changed.",
+			"description": "A large, typical Heroes map on two levels: eight start zones with a third of the land, sixteen treasure zones between them joined as a mesh, and a guard on every way.\n\nWhat makes it different: this entry is approximate. It is the Classic map with its settings turned toward Nostalgia (larger zones, most ways as portals, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
 			"originalPreferences": {
 				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Nostalgia (approximate): the sliders listed below at the values chosen to bring the open layout's numbers toward the original Nostalgia's; every other lever at its own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. This entry is approximate and gets closer as junction zones, wide links and a second town in a start zone are added.",
 				"levers": {
@@ -481,8 +473,6 @@
 					"decorDensity": 1,
 					"rivers": 1,
 					"riverAmount": 1,
-					"teams": 1,
-					"compOnly": 3,
 					"roadDirt": 1,
 					"roadGravel": 1,
 					"roadCobblestone": 1,
@@ -524,6 +514,54 @@
 				]
 			},
 			"oneLine": "Approximate: the open layout set toward Heroes of Might and Magic HD's Nostalgia, a mesh of 24 zones on two levels."
+		},
+		"Jebus Cross": {
+			"originalSizeMin": 108,
+			"originalSizeMax": 144,
+			"originalSizeNames": "Large to Extra Large",
+			"originalLevels": 1,
+			"underground": "One level in the original; with the underground on, the starts stay on the surface and the middle zone goes below, reached through gates",
+			"playersMin": 2,
+			"playersMax": 4,
+			"humansMax": 4,
+			"zones": 5,
+			"zonesByKind": {
+				"start": 4,
+				"treasure": 1
+			},
+			"description": "Up to four players start apart, each in a start zone with a castle, two neutral towns and a full set of mines. One treasure zone fills the middle, with two neutral castles, four gold mines and the best treasure on the map. Each start has a single way into the middle, behind a strong guard, and no way to another start except through the middle.\n\nWhat makes it different: every player has the same road to the same prize. The game is a race to break into the middle first, and the fights after that happen there."
+		},
+		"Headquarters": {
+			"originalSizeMin": 108,
+			"originalSizeMax": 108,
+			"originalSizeNames": "Large, one level or two",
+			"originalLevels": 2,
+			"underground": "One level or two in the original",
+			"playersMin": 2,
+			"playersMax": 7,
+			"humansMax": 7,
+			"zones": 9,
+			"zonesByKind": {
+				"start": 7,
+				"treasure": 2
+			},
+			"description": "Up to seven players each start in a start zone with a castle and one neutral town. Every start has two guarded ways out: one into a large rough-ground treasure zone with two neutral castles (Stronghold or Fortress), one into a smaller sand treasure zone with the rare-resource mines. The two treasure zones also join each other.\n\nWhat makes it different: each start zone belongs to one town type (Rampart, Tower, two Castles, Dungeon, Necropolis, Conflux). A player who leaves the town on Random gets that zone's type, so the map comes ready as seven different factions round two shared prizes."
+		},
+		"Golems Aplenty": {
+			"originalSizeMin": 36,
+			"originalSizeMax": 108,
+			"originalSizeNames": "Small to Large, one level or two",
+			"originalLevels": 2,
+			"underground": "One level or two in the original",
+			"playersMin": 2,
+			"playersMax": 4,
+			"humansMax": 4,
+			"zones": 7,
+			"zonesByKind": {
+				"start": 4,
+				"treasure": 3
+			},
+			"description": "Up to four players start in small zones, each with a castle and a full set of mines but no neutral town. All four open onto one middle zone of dirt and snow with a neutral Tower town and the richest treasure. Two of the starts also have a side treasure zone on Subterranean terrain, which opens into the middle as well.\n\nWhat makes it different: a tight map with light guards on the ways into the middle, so players meet early, and the Tower town in the middle, home of the golems, gives the template its name."
 		}
 	},
 	"waterLayouts": {

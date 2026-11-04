@@ -1,0 +1,12 @@
+{
+ "schemaVersion": 1,
+ "id": "water_archipelago",
+ "caption": "Archipelago, Medium 72x72: 4 players, 1 level",
+ "width": 72,
+ "height": 72,
+ "levels": 1,
+ "players": 4,
+ "water": "archipelago",
+ "contentSha256": "b76f191ddd81e57709f119f9b9a0f7fbc79393cd9d31e2012813d47e7533dea9",
+ "note": "frame 1 of water_archipelago.frames.json (the preferred setup)"
+}

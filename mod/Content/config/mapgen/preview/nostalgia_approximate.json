@@ -1,0 +1,12 @@
+{
+ "schemaVersion": 1,
+ "id": "nostalgia_approximate",
+ "caption": "Nostalgia (approximate), Extra Large 144x144: 8 players, 2 levels",
+ "width": 144,
+ "height": 144,
+ "levels": 2,
+ "players": 8,
+ "water": null,
+ "contentSha256": "3993cf189302742013c918418c43366b883da276d0594842981462eb91b8aa89",
+ "note": "frame 1 of nostalgia_approximate.frames.json (the preferred setup)"
+}
