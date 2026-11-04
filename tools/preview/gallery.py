@@ -136,20 +136,23 @@ def main():
         env["VCMI_USER_DIR"] = os.path.abspath(a.userdir)
     from PIL import Image
     bad = 0
-    for slug, (name, template, frames_in, levers) in PLANS.items():
-        if a.only and slug not in a.only.split(",") and not (a.only == "water" and slug.startswith("water_")):
-            continue
-        t0 = time.time()
-        res = {}
-        with cf.ThreadPoolExecutor(max_workers=a.workers) as ex:
-            futs = [ex.submit(work, slug, name, template, levers, n, f, out, os.path.abspath(a.gen), env) for n, f in enumerate(frames_in, 1)]
-            for fu in cf.as_completed(futs):
-                n, meta, err = fu.result()
-                print(slug, n, err or meta["caption"], f"{time.time() - t0:.0f}s", flush=True)
-                if err:
-                    bad += 1
-                else:
-                    res[n] = meta
+    plans = [(slug, plan) for slug, plan in PLANS.items() if not a.only or slug in a.only.split(",") or (a.only == "water" and slug.startswith("water_"))]
+    # one pool for every set: a set's one slow map (a Giant or Extra Huge two-level run) no longer holds the workers idle
+    t0 = time.time()
+    results = {slug: {} for slug, _ in plans}
+    with cf.ThreadPoolExecutor(max_workers=a.workers) as ex:
+        futs = {ex.submit(work, slug, name, template, levers, n, f, out, os.path.abspath(a.gen), env): slug
+                for slug, (name, template, frames_in, levers) in plans for n, f in enumerate(frames_in, 1)}
+        for fu in cf.as_completed(futs):
+            slug = futs[fu]
+            n, meta, err = fu.result()
+            print(slug, n, err or meta["caption"], f"{time.time() - t0:.0f}s", flush=True)
+            if err:
+                bad += 1
+            else:
+                results[slug][n] = meta
+    for slug, _ in plans:
+        res = results[slug]
         frames = [res[n] for n in sorted(res)]
         if not frames:
             continue
