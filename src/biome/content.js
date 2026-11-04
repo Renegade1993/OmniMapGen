@@ -2018,7 +2018,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// tiles of a town's picture (prison_near.js; the Reviewer's count with a 5x3 footprint agrees), e7627ac 4.6% and prisons early 6.7%.
 	// A prison keeps PRISON_TOWN_GAP tiles off every mask cell of a town on its level, the picture's top rows too. VMAPGEN_PRISON_TOWN_GAP=0 off.
 	const PRISON_TOWN_GAP = process.env.VMAPGEN_PRISON_TOWN_GAP !== undefined ? Number(process.env.VMAPGEN_PRISON_TOWN_GAP) : 2;
-	const townPic = new Set();
+	const townPic = (objectPools.__townPic || (objectPools.__townPic = {}))[l] || (objectPools.__townPic[l] = new Set());
 	if (PRISON_TOWN_GAP > 0) for (const t of towns) if ((t.l || 0) === l) {
 		const m = (OBJECT_TEMPLATES.randomTown && OBJECT_TEMPLATES.randomTown.mask) || ['A'];
 		// a faction's town art is up to 6 by 6 with the picture's top rows above the walls; the random town's mask is 5 by 3, so the box
@@ -2026,6 +2026,12 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const mw = Math.max(6, ...m.map(r => r.length)), mh = Math.max(6, m.length);
 		for (let j = 0; j < mh; j++) for (let i = 0; i < mw; i++) { const cx = t.x - (mw - 1) + i, cy = t.y - (mh - 1) + j; if (cx >= 0 && cy >= 0 && cx < W && cy < H) townPic.add(cy * W + cx); }
 	}
+	// towns laid by the fill itself (a zone's neutral towns) join the set when they land; with prisons early a prison can be there first,
+	// so a town also keeps its picture PRISON_TOWN_GAP tiles off every prison on the level (ours_pt, 16 seeds: 3.0% of prisons within
+	// 1 of a town's picture, all beside towns laid in the fill)
+	const addTownPic = (x, y) => { if (PRISON_TOWN_GAP <= 0) return; for (let j = 0; j < 6; j++) for (let i = 0; i < 6; i++) { const cx = x - 5 + i, cy = y - 5 + j; if (cx >= 0 && cy >= 0 && cx < W && cy < H) townPic.add(cy * W + cx); } };
+	const townNearPrison = (x, y) => PRISON_TOWN_GAP > 0 && prisonsHere.some(([px, py]) => px >= x - 5 - PRISON_TOWN_GAP - 1 && px <= x + PRISON_TOWN_GAP + 1
+		&& py >= y - 5 - PRISON_TOWN_GAP && py <= y + PRISON_TOWN_GAP);
 	const nearTownPic = (tpl, x, y) => {
 		if (!townPic.size) return false;
 		const r = PRISON_TOWN_GAP;
@@ -2289,6 +2295,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			if (zoneMeta && POCKET_LOOT.test(type) && tries < tryBudget * 0.75 && closable(x, y) < 0) { rej('nook'); if (process.env.VMAPGEN_NOOK_TRACE) { const k = 'L' + l + (openMask ? 'cave' : ''); NOOK_T[k] = (NOOK_T[k] || 0) + 1; } continue; }
 			if (type === 'prison' && PRISON_GAP > 0 && nearBuilding(tpl, x, y, PRISON_GAP)) { rej('prisonGap'); continue; }
 			if (type === 'prison' && nearTownPic(tpl, x, y)) { rej('prisonTown'); continue; }
+			if (/^(town|randomTown)$/.test(type) && townNearPrison(x, y)) { rej('townPrison'); continue; }
 			// stock lays a guarded pile at a distance from everything placed, so its guard has a tile by it that covers nothing else: a dear
 			// target keeps 3 tiles from buildings for the first half of its tries (laid beside a bank or a mine, 33 to 46% of them had no such
 			// guard tile and were taken back on seed 11 of K's settings); a prison keeps its own gap (PRISON_GAP), and more refusals lost it
@@ -2410,6 +2417,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			if (exitTile >= 0) { entry.__stockExit = exitTile; blocked[l * W * H + exitTile] |= OCCUPIED; heldReserved.add(exitTile); heldFloor(blocked).add(l * W * H + exitTile); if (connectivity) connectivity.refresh(); }
 			if (connectivity) connectivity.refresh();
 			if (GUARD_CHANCE[type]) guardable.push({ entry, tpl });
+			if (/^(town|randomTown)$/.test(type)) addTownPic(x, y);
 			if (fillStat) fillStat['placed|' + type] = (fillStat['placed|' + type] || 0) + 1;
 			return entry;
 		}
@@ -2429,6 +2437,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		if (!entranceOpen(tpl, x, y, l, W, H, blocked, reachable)) return why('entrance');
 		const walls = blockingCells(tpl, x, y).map(([a, b]) => b * W + a);
 		if (connectivity && !connectivity.accepts(walls)) return why('connectivity');
+		if (/^(town|randomTown)$/.test(type) && townNearPrison(x, y)) return why('prison');
 		const fi = free.indexOf(i);
 		if (fi >= 0) free.splice(fi, 1);
 		const o = typeof opts === 'function' ? opts(x, y) : opts;
@@ -2436,6 +2445,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		out.push(entry);
 		footprintBlock(tpl, x, y, l, W, H, blocked);
 		markApproach(tpl, x, y, l, W, H, blocked); addFront(blocked, l, W, H, type, tpl, x, y);
+		if (/^(town|randomTown)$/.test(type)) addTownPic(x, y);
 		if (connectivity) connectivity.refresh();
 		return entry;
 	};
