@@ -29,7 +29,7 @@
    ],
    "path": "mapgen/preview/water_archipelago/01",
    "seconds": 3.0,
-   "contentSha256": "9b80a5b10f39a8f407ada2b3aa78c9ab286ae92805370da0fe3ff37eb3608e9b"
+   "contentSha256": "b76f191ddd81e57709f119f9b9a0f7fbc79393cd9d31e2012813d47e7533dea9"
   },
   {
    "order": 2,
@@ -58,7 +58,7 @@
    ],
    "path": "mapgen/preview/water_archipelago/02",
    "seconds": 3.0,
-   "contentSha256": "5d29208467eae6e1912500366c4ff951277008c55781c32732be9d745b913348"
+   "contentSha256": "94e9e9d8176daddfbf9dec3979246a48b257e1abb19178bdcb23b2dddc675bd3"
   },
   {
    "order": 3,
@@ -88,7 +88,7 @@
    ],
    "path": "mapgen/preview/water_archipelago/03",
    "seconds": 3.0,
-   "contentSha256": "a5448d12868022ca865bc4b82932a20170a3861605988df54d7d4014f4e16eaa"
+   "contentSha256": "3b2dd4a9a08ead894a1507d40816a8d4fe92afc43d5fd7170f2163fa9a595b05"
   },
   {
    "order": 4,
@@ -118,7 +118,7 @@
    ],
    "path": "mapgen/preview/water_archipelago/04",
    "seconds": 3.0,
-   "contentSha256": "c91b0956466be8302c39f5d884690fed49c92f60d47cb0d12e6524ae0fa39045"
+   "contentSha256": "d0ecc13a55b3fb22d3e54bb9e733755c8aa4e993680f95077e8adff6fe6353d4"
   },
   {
    "order": 5,
@@ -148,7 +148,7 @@
    ],
    "path": "mapgen/preview/water_archipelago/05",
    "seconds": 3.0,
-   "contentSha256": "711e54654ae8acf13712c5408e807697cb2f55955d01ab841b9315c4dc70293e"
+   "contentSha256": "6c6a5b8c96573f364ccef7f673c3514bb8be3a100551e413fabf7ff6e4ecdd28"
   },
   {
    "order": 6,
@@ -178,7 +178,7 @@
    ],
    "path": "mapgen/preview/water_archipelago/06",
    "seconds": 3.0,
-   "contentSha256": "fe85b164435065b5ede4d57cc5e480a060e158a476e6a4fe36588943aecdee49"
+   "contentSha256": "6b18fbc25c24094ef689e620bafe022df72bd8416c58ee0b2237b998a983f6d4"
   },
   {
    "order": 7,
@@ -233,7 +233,7 @@
    ],
    "path": "mapgen/preview/water_archipelago/08",
    "seconds": 3.0,
-   "contentSha256": "3bf4c2d71634b2606b5b16202dda3fc34440c4f9ddda25c86102b0f8c5ef17f4"
+   "contentSha256": "cfbeef84e332a61676484d75f8af94dff3ea12e26429c891413834a6c9f87928"
   },
   {
    "order": 9,
@@ -255,7 +255,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -264,7 +264,7 @@
    ],
    "path": "mapgen/preview/water_archipelago/09",
    "seconds": 3.0,
-   "contentSha256": "725400eb904320d69da92e0119164d6a02f7178be973a7fd30ad93d4527e23a3"
+   "contentSha256": "c45fcf18342b590bd6c070ac5973bf89f8e03d5ca70823f1f00d59958ae99b93"
   },
   {
    "order": 10,
@@ -294,7 +294,7 @@
    ],
    "path": "mapgen/preview/water_archipelago/10",
    "seconds": 3.0,
-   "contentSha256": "69461dfed4744b2793448a3e264740a4fca890cc4bf26c16c9df7dc42d1cdf6f"
+   "contentSha256": "4df25aeba200b33775af1fefcd0384d2a841a31b27d75cc27d99c06b790e20d2"
   },
   {
    "order": 11,
@@ -315,8 +315,7 @@
    "legend": [
     "Player start",
     "Neutral town",
-    "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -325,7 +324,7 @@
    ],
    "path": "mapgen/preview/water_archipelago/11",
    "seconds": 3.0,
-   "contentSha256": "7fb1217d8ff811a7a8381e0b9f9339ad2279bd30f72462fbf779d3d9e1c24755"
+   "contentSha256": "6b2447704b271b47977b2f476eef7df96fc65dc753c1e49d3a9f5fb891a9e619"
   },
   {
    "order": 12,
@@ -355,7 +354,7 @@
    ],
    "path": "mapgen/preview/water_archipelago/12",
    "seconds": 3.0,
-   "contentSha256": "6f28deefe3285f11e12807c2f68e03d87b1f6d3a7dad78e7df1463408cfc0d19"
+   "contentSha256": "8239aa735570a95381d4703f63cc7506bdaac880e6791fb6822b5ef0bddcc074"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

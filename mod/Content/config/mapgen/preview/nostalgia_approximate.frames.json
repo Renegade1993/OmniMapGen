@@ -22,7 +22,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -30,7 +30,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/01",
    "seconds": 3.0,
-   "contentSha256": "7b2e09ba25f6430dfa1fbe0d7209fda0ce059d672f61b4ebc55e8a3209396add"
+   "contentSha256": "3993cf189302742013c918418c43366b883da276d0594842981462eb91b8aa89"
   },
   {
    "order": 2,
@@ -51,8 +51,7 @@
    "legend": [
     "Player start",
     "Neutral town",
-    "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -60,7 +59,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/02",
    "seconds": 3.0,
-   "contentSha256": "d48e11360a5e2b7191597f1b4382dc187c7c77029243aca67ad31e9aac9f3531"
+   "contentSha256": "c40226917c93fb7a756991371b15aa572b1bb1d49967a783521f6f8ba569d36b"
   },
   {
    "order": 3,
@@ -81,8 +80,7 @@
    "legend": [
     "Player start",
     "Neutral town",
-    "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -90,7 +88,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/03",
    "seconds": 3.0,
-   "contentSha256": "26e703c23c57a4b3c65044ef45d7083b6237dceac1393e175f280127e43de1f2"
+   "contentSha256": "9b59325ec99a8b64203193bfccefaf8ad710044b114a1820ebd1f95a6a068e75"
   },
   {
    "order": 4,
@@ -111,8 +109,7 @@
    "legend": [
     "Player start",
     "Neutral town",
-    "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -120,7 +117,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/04",
    "seconds": 3.0,
-   "contentSha256": "2729e968169c6a75371a5393f0573176abb27d9bad56ac817e0c800b89a1a7a6"
+   "contentSha256": "c9bea3f646e042980adf1f657bebf65358c6d83a515a0c6be05fe6452315aa97"
   },
   {
    "order": 5,
@@ -142,14 +139,14 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Open land"
    ],
    "path": "mapgen/preview/nostalgia_approximate/05",
    "seconds": 3.0,
-   "contentSha256": "8dbef017f1c43135123aae77133566e678ff5c8ab61a28e227efe46f71618929"
+   "contentSha256": "51ef7da554922e8c5084f9e5cd37fb32547c2c28714b38c978cc6302a68a2748"
   },
   {
    "order": 6,
@@ -171,14 +168,14 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Open land"
    ],
    "path": "mapgen/preview/nostalgia_approximate/06",
    "seconds": 3.0,
-   "contentSha256": "a19e0d8c7ae28d136966885eb86b411807640ff49eb46dace824e3bebaa0ecc3"
+   "contentSha256": "2d7c47afca87432f226c2bc4d64d64ff8334f04bfd1f2dcb09e5e198fc13adb2"
   },
   {
    "order": 7,
@@ -200,7 +197,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -208,7 +205,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/07",
    "seconds": 3.0,
-   "contentSha256": "16baf9d6c42a56ce59e22531fd8fa99e3f34799e3d742dc8ff1c263bc7c72ce0"
+   "contentSha256": "525b503aae6957989f49dc6a9b40569262caedbb8d59c806f6be5ae3f1a825e0"
   },
   {
    "order": 8,
@@ -228,14 +225,14 @@
    "towns": 2,
    "legend": [
     "Player start",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Open land"
    ],
    "path": "mapgen/preview/nostalgia_approximate/08",
    "seconds": 3.0,
-   "contentSha256": "ae6ad6cd02dac4a3e71f20ab72b1553ee9d119b7118647095529d4e73701ed49"
+   "contentSha256": "36a1b8248473cfd58d8716ab96c9d4ed2ec32a96981f1ac387f5dbd79f0fc556"
   },
   {
    "order": 9,
@@ -257,14 +254,14 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Open land"
    ],
    "path": "mapgen/preview/nostalgia_approximate/09",
    "seconds": 3.0,
-   "contentSha256": "284e0aa0bf24c3568963cf53612d2f5d08bacfe53e0e443ad874ded2f2ed3efc"
+   "contentSha256": "b3008f30918b53b4b16c4e0a3da0f8d17696debd2fe68fc65ef73b4bcbff0c88"
   },
   {
    "order": 10,
@@ -286,7 +283,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -295,7 +292,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/10",
    "seconds": 3.0,
-   "contentSha256": "72e159b0f8ed32f5008e6c9d0a7cf6bea066bbc70d11742e41c0a999879a472b"
+   "contentSha256": "5d02c8832c8416757fd0fae5274c890e9de0bfb5cade826f4f8e95a419c9ed7f"
   },
   {
    "order": 11,
@@ -317,7 +314,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -325,7 +322,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/11",
    "seconds": 3.0,
-   "contentSha256": "64311462aba7b46f41367e6cb6703ec22ab886e0c0b76926d7c9782f119b580f"
+   "contentSha256": "4536eda0b7b4b7b1e18a71361f3e94576a88c3a1b21c34510a0eab4f6d418aae"
   },
   {
    "order": 12,
@@ -347,7 +344,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -356,7 +353,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/12",
    "seconds": 3.0,
-   "contentSha256": "6253334b8f501555181f943e506bf18b6c7fb5e89005f20aa13be446deccfc55"
+   "contentSha256": "47e2ca905711b0bb1959acb7edba861caeb164942f8dae39cf167a89f34b1a06"
   },
   {
    "order": 13,
@@ -378,7 +375,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -386,7 +383,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/13",
    "seconds": 3.0,
-   "contentSha256": "1b1f67b556e6c6a4665e1a903e18246bb01459dcc59b3571081b065c397bc605"
+   "contentSha256": "f0b493db67db35118f8e5b50a7cb5fe7e27780d31c469a75b54985763171007d"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

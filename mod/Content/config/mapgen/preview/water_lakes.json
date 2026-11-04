@@ -7,6 +7,6 @@
  "levels": 1,
  "players": 4,
  "water": "lakes",
- "contentSha256": "1bd219b3d0578d82045b21f0bcd6ed0a25689b2eab081cc6c9684e1900eadc6f",
+ "contentSha256": "c15c7d128bbc589c30e8d81761ae6bddd841006840ddaf9a4cfcab5e42e92219",
  "note": "frame 1 of water_lakes.frames.json (the preferred setup)"
 }

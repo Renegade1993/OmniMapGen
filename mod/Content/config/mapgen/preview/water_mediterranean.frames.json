@@ -30,7 +30,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/01",
    "seconds": 3.0,
-   "contentSha256": "fa484162be5b3f7048a01e3071964d8508d4735ecb42eb294f196e17b2253885"
+   "contentSha256": "f6e618f0b55516ae145e820ca31c33fb1fed3a1e1d1cae46a31d408651d2f2e5"
   },
   {
    "order": 2,
@@ -60,7 +60,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/02",
    "seconds": 3.0,
-   "contentSha256": "0186b285bf2962be2f4fe82c2e812c726d2a6d463cf0633cc05df2807a9d48e2"
+   "contentSha256": "fc2da3a90e65ef6728f62be5415b11e046221ae54cb2e49d12858ef58bd7ee1a"
   },
   {
    "order": 3,
@@ -82,7 +82,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -91,7 +91,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/03",
    "seconds": 3.0,
-   "contentSha256": "582a7e59695e3242913daf51d06becb44e804428aaa5a5a710a3de2fb36ca00b"
+   "contentSha256": "4b5200156fc9c8df270408227d1b64845b1b6a002bd97d9392478bd1f6358508"
   },
   {
    "order": 4,
@@ -113,7 +113,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -122,7 +122,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/04",
    "seconds": 3.0,
-   "contentSha256": "2290286b78c4ef8243592af69c21505e09ebe41f684fb2730cbedb70cdd02503"
+   "contentSha256": "1dd398bbe0647be3897c67980bc604dd53e02a5745744de92865105e402af186"
   },
   {
    "order": 5,
@@ -144,7 +144,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -153,7 +153,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/05",
    "seconds": 3.0,
-   "contentSha256": "d6dcf39e30b64e83478f566a55bb5c7646b9ec58ab8b89262cebb07663d5b267"
+   "contentSha256": "c3b454480396c68a1194b10ce94835c73a4a7e4a8c683c066f8657cc65593be8"
   },
   {
    "order": 6,
@@ -175,7 +175,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -184,7 +184,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/06",
    "seconds": 3.0,
-   "contentSha256": "9dfca7fb7086158d8833ad4ebf1126df94037d6d9ebf60ee588835be0cfa50d8"
+   "contentSha256": "1099d97bbcbbc051c987c57860fc712d88d905fdc88da51708f43d47afd3acd1"
   },
   {
    "order": 7,
@@ -258,7 +258,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -267,7 +267,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/09",
    "seconds": 3.0,
-   "contentSha256": "d22fab73c82ad147028127b0d8c95eb76f465e661e745ffbd436321570ea5894"
+   "contentSha256": "928889aa7dd0cd68e13f13f1e69d1e97b0c5b82444036a87c3742e35b5118b81"
   },
   {
    "order": 10,
@@ -289,7 +289,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -298,7 +298,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/10",
    "seconds": 3.0,
-   "contentSha256": "30c214abdab980df9c67e572ddd5e6c39f300f8058eb1feb83de1a712c51f3a1"
+   "contentSha256": "9e89da7d5a93e4119734e1b74e5dcc5d392590a06c51be0bcf8b47402db2df9a"
   },
   {
    "order": 11,
@@ -319,8 +319,7 @@
    "legend": [
     "Player start",
     "Neutral town",
-    "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -329,7 +328,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/11",
    "seconds": 3.0,
-   "contentSha256": "eb8998e08ae17f5995860058ae6383695fc6abf8ea5ea3da79f9c429db5d7757"
+   "contentSha256": "99d2cf6b46f8b857526c539463dbdc1b98166e62c5b8919bd94494cc187b6c30"
   },
   {
    "order": 12,
@@ -351,7 +350,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Town zone",
@@ -360,7 +359,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/12",
    "seconds": 3.0,
-   "contentSha256": "67f011d41e25b29af03486dc73d0ab36aec91ffcf00509f03eb75dab2f17cfdd"
+   "contentSha256": "36d45fbfd0f595890764072258a952a1e3984b13b887d6a99fefee4847c0978c"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

@@ -27,7 +27,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/01",
    "seconds": 3.0,
-   "contentSha256": "cd1679c88a8cd22b95e1b440743869a845cbe6c35b0c74e78227d4b074dac5a5"
+   "contentSha256": "7a598c6dd3f21f5c7ef4acefc6abe70089fe2870474ddf753750f058c998e184"
   },
   {
    "order": 2,
@@ -55,7 +55,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/02",
    "seconds": 3.0,
-   "contentSha256": "aa8b5db3960dba72f8d679cb29d7afc43737b4702552f5fd21f3adaf70f391e3"
+   "contentSha256": "5356dcdd001a691e8d4916c0b5cbbf45ed048ea9db93a0fd9bddd781409de376"
   },
   {
    "order": 3,
@@ -83,7 +83,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/03",
    "seconds": 3.0,
-   "contentSha256": "988c84d5079628c6817fcb7c1fbcbdd375a1d54694944b24b16a602e275172c2"
+   "contentSha256": "5f8b25f3ab16409318112c0d53830dab73f8c534ce58cb43565f1ba797dbff85"
   },
   {
    "order": 4,
@@ -111,7 +111,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/04",
    "seconds": 3.0,
-   "contentSha256": "89a3d07dc4399418d3c005107dacb0e04e04a43d8bd0c4a88629ca50b32204ed"
+   "contentSha256": "616ebcf135b45126254c9f1ea6bfdd86b5789245b36587dd0323f80b01c1873f"
   },
   {
    "order": 5,
@@ -139,7 +139,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/05",
    "seconds": 3.0,
-   "contentSha256": "6addee1862918e3d6b327941c5c6deaffb109b5554452bf6c2cc615a0e35353f"
+   "contentSha256": "ba088640695d66ad8c6f55d8cc098cb77bd9dabcee36af7a67f20a3cbc64e264"
   },
   {
    "order": 6,
@@ -167,7 +167,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/06",
    "seconds": 3.0,
-   "contentSha256": "63c018db4bffd990d5e66eb09967cb914b2982f0559f0e5ae35af87912d6413d"
+   "contentSha256": "e6361ff4a28a8f1a5aa07861c681989ad2e6a19b959654aec11e951898020702"
   },
   {
    "order": 7,
@@ -194,7 +194,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/07",
    "seconds": 3.0,
-   "contentSha256": "5e9506f226f63558afea028977fcb3bcc7611b9ce6288479a79212c4f7b93cb6"
+   "contentSha256": "5a2122f43dcb1aa2388dab91237d36e8f860c30a99a15fb15b8b388714ea0eac"
   },
   {
    "order": 8,
@@ -217,14 +217,14 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Way between levels",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/golems_aplenty/08",
    "seconds": 3.0,
-   "contentSha256": "152d5b905c343a70eadefd655b263048ce41eee972ecb90885232d6c610ef46e"
+   "contentSha256": "4d96f06f6f2058a8e839ba9f4b8be4fdf00b995c5d8d39ab00b8c70273ddefd4"
   },
   {
    "order": 9,
@@ -253,7 +253,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/09",
    "seconds": 3.0,
-   "contentSha256": "57f3b88614804b61815b62946bc07aeab8f76f713733a03ff2fb27bb7f817dd5"
+   "contentSha256": "264da026a60ebec70f1464b0f117be3e6e82bc57c412d3adbbbfa5a193a6c519"
   },
   {
    "order": 10,
@@ -281,7 +281,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/10",
    "seconds": 3.0,
-   "contentSha256": "a3475176023035b0cb3cca15c522429033efa282d10d981d7f0e6c241b16a60c"
+   "contentSha256": "8794eb1e86763e2845dad57e195d420975873d908eb14137e2dc23c655232070"
   },
   {
    "order": 11,
@@ -310,7 +310,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/11",
    "seconds": 3.0,
-   "contentSha256": "363235bd15ea3ceccd496a958ccc567817d90593ddb84ad711663835c2e50125"
+   "contentSha256": "6038d4c256761ea24a7a29f0b6f0091adc0b0c720c37089f62a4b900a781e17b"
   },
   {
    "order": 12,
@@ -332,14 +332,14 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Water"
    ],
    "path": "mapgen/preview/golems_aplenty/12",
    "seconds": 3.0,
-   "contentSha256": "69b4376992eb5c2a61b000d5a9f28e2e661c1d3218e639d6e0ab836c63a55e67"
+   "contentSha256": "566f5733342d7afd250a19d2a6a5398efd6930ea8a4dd33abce4b9d11aa89284"
   },
   {
    "order": 13,
@@ -368,7 +368,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/13",
    "seconds": 3.0,
-   "contentSha256": "6812ba151a7c755d02376cec098d33199a06c6e77840d73736ac4f9b17015a99"
+   "contentSha256": "0ab631712e03331f34e0d176592e4e92109323b8a03a0b0a8504894b56ec1f2e"
   },
   {
    "order": 14,
@@ -396,7 +396,7 @@
    ],
    "path": "mapgen/preview/golems_aplenty/14",
    "seconds": 3.0,
-   "contentSha256": "2320cd0ba59549de1f1da508dc844c350af5bd11331a2e94d97000f0869ac9dd"
+   "contentSha256": "0bc7bd84b2f23cdde555209682cfd11260e96eb2c0f3a281e197f2e46910c8a9"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

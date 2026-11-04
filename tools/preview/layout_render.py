@@ -7,7 +7,8 @@ DMB Dev, 2026-11-03 (K, 2026-11-02: player starts labelled, portal lanes colour 
 symbology, like start positions (little castles, colored for player starts, grey for non)"; spec table roster\\SPEC-MapGenDev-previews-1104.md).
 
 564x282, always, so the lobby panel (282 wide, 141 high box) halves it exactly. One look for every template: zone fills by role (treasure zones that touch
-in different greens), a dark line where two zones meet, a short bar across the border where a passage joins two zones, a diamond at each end of a portal pair
+in different greens), a dark line where two zones meet, a short neutral bar across the border where a passage joins two zones (left out on a map of more than 30), a disc in the pair's colour with
+the pair's number at each end of a portal pair
 and a square at each gate between the levels (each link its own colour, both ends of one link the same, links that share a zone different), a castle on every
 start (the player's own colour with the player's number; grey for a start with no player), a small dot on every neutral town, castles pushed apart where
 they would overlap, a legend that names exactly what the picture shows, and the caption under it. No game art. Opus Reviewer's rollout review, 2026-11-04:
@@ -208,10 +209,10 @@ def legend_items(d, zone, lanes):
         items.append(("grey", "Empty start"))
     if neutral:
         items.append(("dot", "Neutral town"))
-    if any(l.get("border") for l in lanes):
+    if any(l.get("border") for l in lanes) and sum(1 for q in lanes if q.get("border")) <= 30:
         items.append(("lane", "Passage"))
     if any(l.get("portal") for l in lanes):
-        items.append(("diamond", "Portal pair (same colour)"))
+        items.append(("pin", "Portal pair (same number)"))
     if any(zone[tuple(l["a"])]["l"] != zone[tuple(l["b"])]["l"] and not l.get("portal") for l in lanes):
         items.append(("square", "Way between levels"))
     roles = {z["role"] for z in d["zones"]}
@@ -283,31 +284,38 @@ def render(dump_path, out_path, caption=None):
         p = at(z["l"], z["cx"], z["cy"])
         return (p[0] + (k % 3 - 1) * 2.6 * 6 * SS, p[1] + (k // 3) * 2.6 * 6 * SS)
     marksym = []
+    pnum = 0
     for lane, ci in zip(lanes, cols):
         a, b = zone[tuple(lane["a"])], zone[tuple(lane["b"])]
         if lane.get("portal"):
             ends = lane.get("portalEnds") or [None, None]
+            pnum += 1
             for e, z in enumerate((a, b)):
                 pos = (ends[e][0], at(ends[e][0], ends[e][1], ends[e][2])) if ends[e] else (z["l"], centre_spot(z))
-                marksym.append(("diamond", pos[0], pos[1], ci))
+                marksym.append(("pin", pos[0], pos[1], ci, pnum))
         elif a["l"] != b["l"]:
             for e, z in enumerate((a, b)):
                 pos = (lane["ends"][e][0], at(lane["ends"][e][0], lane["ends"][e][1], lane["ends"][e][2])) if lane.get("ends") else (z["l"], centre_spot(z))
                 marksym.append(("square", pos[0], pos[1], ci))
-        elif lane.get("border"):
+        elif lane.get("border") and sum(1 for q in lanes if q.get("border")) <= 30:   # on a map of more than 30 passages the zone borders already show them
             l0, bx, by, dx, dy = lane["border"]
             marksym.append(("bar", l0, at(l0, bx, by), ci, (dx, dy), lane["wide"]))
     for m in marksym:
         kind, lv, (px, py), ci = m[0], m[1], m[2], m[3]
         dr = panels[lv][1]
         h = 6 * SS
-        if kind == "bar":
+        if kind == "bar":   # a thin neutral bar: bars never cross, so no colour is needed to tell them apart (K item 31 readability, the Reviewer's pass)
             (dx, dy), wide = m[4], m[5]
-            half = 9 * SS   # across the border: half the bar in each zone
-            wb = (6 if wide else 4) * SS
+            half = 7 * SS
+            wb = (4 if wide else 3) * SS
             p0, p1 = (px - dx * half, py - dy * half), (px + dx * half, py + dy * half)
-            dr.line([p0, p1], fill=INK, width=wb + 3 * SS)
-            dr.line([p0, p1], fill=LANES[ci], width=wb)
+            dr.line([p0, p1], fill=INK, width=wb + 2 * SS)
+            dr.line([p0, p1], fill=(250, 240, 210), width=wb)
+        elif kind == "pin":   # a portal end: a disc in the pair's colour with the pair's number, the same at both ends (item 2 colour, item 31 readability)
+            r = 6.5 * SS
+            dr.ellipse([px - r - 1.5 * SS, py - r - 1.5 * SS, px + r + 1.5 * SS, py + r + 1.5 * SS], fill=INK)
+            dr.ellipse([px - r, py - r, px + r, py + r], fill=LANES[ci])
+            dr.text((px, py), str(m[4]), font=font(int(9 * SS)), fill=INK, anchor="mm")
         elif kind == "diamond":
             dr.polygon([(px, py - h - 2 * SS), (px + h + 2 * SS, py), (px, py + h + 2 * SS), (px - h - 2 * SS, py)], fill=INK)
             dr.polygon([(px, py - h), (px + h, py), (px, py + h), (px - h, py)], fill=LANES[ci])
@@ -319,7 +327,7 @@ def render(dump_path, out_path, caption=None):
     spot = spread_castles(d["starts"] + empty, at, 26 * SS, (PAD * SS, (PAD + MP) * SS))
     for t in neutral:   # a neutral town: a small light dot with a dark ring
         p = at(t["l"], t["x"], t["y"])
-        r0 = 4.5 * SS
+        r0 = 3.2 * SS
         panels[t["l"]][1].ellipse([p[0] - r0 - 1.5 * SS, p[1] - r0 - 1.5 * SS, p[0] + r0 + 1.5 * SS, p[1] + r0 + 1.5 * SS], fill=INK)
         panels[t["l"]][1].ellipse([p[0] - r0, p[1] - r0, p[0] + r0, p[1] + r0], fill=NEUTRAL)
     for t in empty:   # a start position with no player: the start castle in grey, no number
@@ -357,8 +365,10 @@ def render(dump_path, out_path, caption=None):
             elif kind == "dot":
                 dc.ellipse([x + 4, y - 7, x + 18, y + 7], fill=INK); dc.ellipse([x + 6, y - 5, x + 16, y + 5], fill=NEUTRAL)
             elif kind == "lane":
-                dc.line([(x + 4, y), (x + 18, y)], fill=INK, width=8)
-                dc.line([(x + 4, y), (x + 18, y)], fill=LANES[2], width=5)
+                dc.line([(x + 5, y), (x + 17, y)], fill=INK, width=6)
+                dc.line([(x + 5, y), (x + 17, y)], fill=(250, 240, 210), width=4)
+            elif kind == "pin":
+                dc.ellipse([x + 3, y - 9, x + 21, y + 9], fill=INK); dc.ellipse([x + 5, y - 7, x + 19, y + 7], fill=LANES[0]); dc.text((x + 12, y), "1", font=font(11), fill=INK, anchor="mm")
             elif kind == "portal":
                 dashed(dc, (x, y), (x + 20, y), INK, 7, 6, 3)
                 dashed(dc, (x, y), (x + 20, y), LANES[0], 4, 6, 3)

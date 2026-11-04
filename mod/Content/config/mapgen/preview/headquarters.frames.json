@@ -22,13 +22,13 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/01",
    "seconds": 3.0,
-   "contentSha256": "428a70da6ff66533fc8c22c7713a7eea76681bd1270ae2a20f2a3b6528f3fec4"
+   "contentSha256": "b0a9682d9da85729e0b6f1a42bdf8375959038aa4bfd47ad64aeeb235aab17a0"
   },
   {
    "order": 2,
@@ -50,13 +50,13 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/02",
    "seconds": 3.0,
-   "contentSha256": "3369d16e45cf31174daba47c4d734087b45f3c8f71b9c5cbb2c308af52d84c1b"
+   "contentSha256": "9b2b0455f82e44cf546805c98dd6a5b2fc31e5adac627a7343860e06783ff3dd"
   },
   {
    "order": 3,
@@ -78,13 +78,13 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/03",
    "seconds": 3.0,
-   "contentSha256": "612d0f4b53d54e188035fe1d0290a94ad619cba218b5d36d2b9a29df3f38c1dc"
+   "contentSha256": "bbb5b39d3736f01c571c52c5ae8d3034b3a5885376e759ccedb47bbcc00a67b0"
   },
   {
    "order": 4,
@@ -106,13 +106,13 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/04",
    "seconds": 3.0,
-   "contentSha256": "118eeac4e3bccc4c0ded4287e260f0e9a78513ee4b8c7dc6c2f7c703fe0019d4"
+   "contentSha256": "37474cac04c500cf66a43b33e38547cc2832715bbc387004cb43eb141e62f4c4"
   },
   {
    "order": 5,
@@ -134,13 +134,13 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/05",
    "seconds": 3.0,
-   "contentSha256": "d5cee2b5a582941d6643da252e32af6c3fab1413b055739d3fa85017ad6031b1"
+   "contentSha256": "52bf044b907d4cdee83299a48822e0d30125bbe2b000823a2d9ad9fb06b52c19"
   },
   {
    "order": 6,
@@ -166,7 +166,7 @@
    ],
    "path": "mapgen/preview/headquarters/06",
    "seconds": 3.0,
-   "contentSha256": "b08e029f431b2afe91009905a02ce6207e3f8826cfdf1ccda298f91a561686e6"
+   "contentSha256": "076c52f9bd82dd00f209a16acfef8eead5758f322b67d47e800c6602a3057e01"
   },
   {
    "order": 7,
@@ -188,13 +188,13 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/07",
    "seconds": 3.0,
-   "contentSha256": "6ae5d576498f53c5cd2bf8052d4babebe75390a4d31a15b763ab1c969510f630"
+   "contentSha256": "072c08b6c7c4d4fe207dc0d19c9b5a93a13f8c3289bdc4259cd0753072cdb199"
   },
   {
    "order": 8,
@@ -217,13 +217,13 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/08",
    "seconds": 3.0,
-   "contentSha256": "533748ffe6eb0dc3f296b7180c2682f43922f648af7d51dc829f5ba581d32043"
+   "contentSha256": "3ea636a9e4f2bd64d153adc9e1136f42a32e59f2c62d0dafe7b1774c1d373df8"
   },
   {
    "order": 9,
@@ -246,14 +246,14 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Way between levels",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/09",
    "seconds": 3.0,
-   "contentSha256": "6c1130a8b331a697a6dbe00290cd2ffe876cf8835718cc9f0e177ee9c79f0ab0"
+   "contentSha256": "9204fc6c6e5961fbd7a395d602d95731545cf507154626c03ea417810569b1c3"
   },
   {
    "order": 10,
@@ -276,13 +276,13 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/10",
    "seconds": 3.0,
-   "contentSha256": "136bac0465bbecc1e85cfe84a86a9f0215eba8516ffaf152c542588332f9fd56"
+   "contentSha256": "dcfdb8234c42cce9f23763891b696234d0d8afc6de05c1244950f5e61b908b9d"
   },
   {
    "order": 11,
@@ -305,7 +305,7 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Way between levels",
     "Start zone",
     "Treasure zone",
@@ -313,7 +313,7 @@
    ],
    "path": "mapgen/preview/headquarters/11",
    "seconds": 3.0,
-   "contentSha256": "a24c40b34439fdded54dc5def9dcd3d8945531efc3f6924f325c87e365cb7a2e"
+   "contentSha256": "2be337cfd3698c627f6a920e919ffccc48e897bc528d14d6a1413437a4c86710"
   },
   {
    "order": 12,
@@ -336,13 +336,13 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/12",
    "seconds": 3.0,
-   "contentSha256": "02ca658e8609bd5431cb0a2cc6b73712bf89466fd2a9c9ba391975db8509d3ad"
+   "contentSha256": "5157ac0b97bb66f1af4af40db7996ebdd6ddbaabc80b21915f274a453327a5a6"
   },
   {
    "order": 13,
@@ -365,14 +365,14 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Way between levels",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/13",
    "seconds": 3.0,
-   "contentSha256": "05568c028e6d6233ff70cc405bdc71eea5a01579f56fb1dec2a69c73c655384e"
+   "contentSha256": "c30dd18a48fd89ea4ab511ae404709876b8ae6c1292da9cb30c23abcf42347a7"
   },
   {
    "order": 14,
@@ -394,14 +394,14 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Water"
    ],
    "path": "mapgen/preview/headquarters/14",
    "seconds": 3.0,
-   "contentSha256": "caa71171903ff700234b449f3fd0e38fc19a82fb36bcca02c70a1d56a7b952f9"
+   "contentSha256": "015463832fcbb767ebd9f42a64ee8d1ba5484af0a5dcd7fe1ef0168929127f2c"
   },
   {
    "order": 15,
@@ -423,14 +423,14 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same colour)",
+    "Portal pair (same number)",
     "Way between levels",
     "Start zone",
     "Treasure zone"
    ],
    "path": "mapgen/preview/headquarters/15",
    "seconds": 3.0,
-   "contentSha256": "8b3fbf970d7d9523e7b29b53f9a9c1a7ace2c7a1f4a9bdb9b1b7131672f8f747"
+   "contentSha256": "5bb1746d39d9b245ec4314f9eb20317f32a67e7657ec14309ef0a0cbb34ecc34"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"
