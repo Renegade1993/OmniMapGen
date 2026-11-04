@@ -1,0 +1,12 @@
+{
+ "schemaVersion": 1,
+ "id": "water_lakes",
+ "caption": "Lakes, Medium 72x72: 4 players, 1 level",
+ "width": 72,
+ "height": 72,
+ "levels": 1,
+ "players": 4,
+ "water": "lakes",
+ "contentSha256": "29f3b0fa473b8e78b71fb213c9accf7fd26f84b6f0921ac919b32ec95e178378",
+ "note": "frame 1 of water_lakes.frames.json (the preferred setup)"
+}

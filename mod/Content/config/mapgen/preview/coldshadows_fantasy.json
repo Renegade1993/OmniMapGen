@@ -1,35 +1,12 @@
 {
  "schemaVersion": 1,
  "id": "coldshadows_fantasy",
- "caption": "Coldshadow's Fantasy, 144x144, two levels, 4 players",
- "contentSha256": "c91d4c3dbd23a06b20aef560de2f5013e585b72447f9ebe8f9883b24e445ea86",
- "template": "Coldshadow's Fantasy",
- "layout": "template",
+ "caption": "Coldshadow's Fantasy, Extra Large 144x144: 8 players, 2 levels",
  "width": 144,
  "height": 144,
  "levels": 2,
- "players": 4,
- "seed": "1",
- "zones": 21,
- "links": 22,
- "starts": 4,
- "panel": [
-  432,
-  432
- ],
- "image": [
-  872,
-  432
- ],
- "palette": {
-  "start": "#e0a430",
-  "cpuStart": "#f0cd82",
-  "treasure": "#4a7fc1",
-  "lowLoot": "#96bee4",
-  "junction": "#8e7cc3",
-  "town": "#34a8a0",
-  "standard": "#74ac60",
-  "outside": "#202228"
- },
- "note": "drawn from a generated map of these settings by tools/layout_preview.js: zones by role, links, starts; no game art"
+ "players": 8,
+ "water": null,
+ "contentSha256": "6f348c2d728993239881fc5f98298638ba59fa39d3d769ead5e84fd1432a72fb",
+ "note": "frame 1 of coldshadows_fantasy.frames.json (the preferred setup)"
 }

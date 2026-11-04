@@ -1,0 +1,12 @@
+{
+ "schemaVersion": 1,
+ "id": "water_coastal",
+ "caption": "Coastal, Medium 72x72: 4 players, 1 level",
+ "width": 72,
+ "height": 72,
+ "levels": 1,
+ "players": 4,
+ "water": "coastal",
+ "contentSha256": "876072d1fb02a7606e6305e79b54f9203d0b2a33c111cbde8029465e6801e98b",
+ "note": "frame 1 of water_coastal.frames.json (the preferred setup)"
+}

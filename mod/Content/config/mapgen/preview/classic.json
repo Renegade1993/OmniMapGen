@@ -1,0 +1,12 @@
+{
+ "schemaVersion": 1,
+ "id": "classic",
+ "caption": "Classic, Small 36x36: 2 players, 1 level",
+ "width": 36,
+ "height": 36,
+ "levels": 1,
+ "players": 2,
+ "water": null,
+ "contentSha256": "c1c9423679a7d64edd633adf13f104bd2d1e6c4620ff9e4b80a6dc0e29f5d35f",
+ "note": "frame 1 of classic.frames.json (the preferred setup)"
+}

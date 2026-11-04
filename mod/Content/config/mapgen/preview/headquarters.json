@@ -1,35 +1,12 @@
 {
  "schemaVersion": 1,
  "id": "headquarters",
- "caption": "Headquarters, 108x108, one level, 4 players",
- "contentSha256": "bcdb29abc360d427cea593433f70cb5ada16104481319c5492db10383d14666b",
- "template": "Headquarters",
- "layout": "template",
+ "caption": "Headquarters, Large 108x108: 7 players, 2 levels",
  "width": 108,
  "height": 108,
- "levels": 1,
- "players": 4,
- "seed": "1",
- "zones": 9,
- "links": 15,
- "starts": 4,
- "panel": [
-  432,
-  432
- ],
- "image": [
-  432,
-  432
- ],
- "palette": {
-  "start": "#e0a430",
-  "cpuStart": "#f0cd82",
-  "treasure": "#4a7fc1",
-  "lowLoot": "#96bee4",
-  "junction": "#8e7cc3",
-  "town": "#34a8a0",
-  "standard": "#74ac60",
-  "outside": "#202228"
- },
- "note": "drawn from a generated map of these settings by tools/layout_preview.js: zones by role, links, starts; no game art"
+ "levels": 2,
+ "players": 7,
+ "water": null,
+ "contentSha256": "eb90ad55d945a65004bb0afdffb08ccdfca4196baae4d80313e93ff2c2525d2b",
+ "note": "frame 1 of headquarters.frames.json (the preferred setup)"
 }

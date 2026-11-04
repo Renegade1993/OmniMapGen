@@ -1,0 +1,12 @@
+{
+ "schemaVersion": 1,
+ "id": "water_islands",
+ "caption": "Islands, Medium 72x72: 4 players, 1 level",
+ "width": 72,
+ "height": 72,
+ "levels": 1,
+ "players": 4,
+ "water": "islands",
+ "contentSha256": "f69b2b5a90c1e6a3e44e92b4c334e7c30d631e61dc5f9cccecd5e55e66dc2fc9",
+ "note": "frame 1 of water_islands.frames.json (the preferred setup)"
+}

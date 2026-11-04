@@ -1,0 +1,12 @@
+{
+ "schemaVersion": 1,
+ "id": "water_mediterranean",
+ "caption": "Mediterranean, Medium 72x72: 4 players, 1 level",
+ "width": 72,
+ "height": 72,
+ "levels": 1,
+ "players": 4,
+ "water": "mediterranean",
+ "contentSha256": "83f4e16975dc43488b3df73300f2a0540d8fd95cdb3deffcb12e690ab533a0c7",
+ "note": "frame 1 of water_mediterranean.frames.json (the preferred setup)"
+}

@@ -1,0 +1,12 @@
+{
+ "schemaVersion": 1,
+ "id": "water_continental",
+ "caption": "Continental, Medium 72x72: 4 players, 1 level",
+ "width": 72,
+ "height": 72,
+ "levels": 1,
+ "players": 4,
+ "water": "continental",
+ "contentSha256": "f7a2a0600d2aabd8a6e20e705276454caa3094c9bea092fe921ff9e083fd0394",
+ "note": "frame 1 of water_continental.frames.json (the preferred setup)"
+}

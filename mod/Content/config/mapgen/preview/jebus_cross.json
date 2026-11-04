@@ -1,35 +1,12 @@
 {
  "schemaVersion": 1,
  "id": "jebus_cross",
- "caption": "Jebus Cross, 108x108, one level, 4 players",
- "contentSha256": "7ce5aea5223548318580677fa526e6b0695fd85b09192b2bb384d765f5fe85b9",
- "template": "Jebus Cross",
- "layout": "template",
+ "caption": "Jebus Cross, Large 108x108: 4 players, 1 level",
  "width": 108,
  "height": 108,
  "levels": 1,
  "players": 4,
- "seed": "1",
- "zones": 5,
- "links": 4,
- "starts": 4,
- "panel": [
-  432,
-  432
- ],
- "image": [
-  432,
-  432
- ],
- "palette": {
-  "start": "#e0a430",
-  "cpuStart": "#f0cd82",
-  "treasure": "#4a7fc1",
-  "lowLoot": "#96bee4",
-  "junction": "#8e7cc3",
-  "town": "#34a8a0",
-  "standard": "#74ac60",
-  "outside": "#202228"
- },
- "note": "drawn from a generated map of these settings by tools/layout_preview.js: zones by role, links, starts; no game art"
+ "water": null,
+ "contentSha256": "aa7729244d1cfbd12afab863c46e2db7e010722d0d72d0332a6bc4e067531387",
+ "note": "frame 1 of jebus_cross.frames.json (the preferred setup)"
 }
