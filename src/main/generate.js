@@ -2665,6 +2665,21 @@ async function generateMap(params) {
 				const q = oneExitEnds(plans, Wm, Hm, blk, xorshift(((params.seed || 1) ^ 0x1e40 ^ li) >>> 0), { level: li, roads: true });
 				if (q.ends) console.error(`[gen] level ${li}: monolith ends ${q.ends}, ways in closed ${q.sealed} (road tiles ${q.roadsCut}, ${q.detours || 0} with the road stepped round), second stacks taken off ${q.removed}, stacks moved onto the way in ${q.moved}, ends left with a second way ${q.left}`);
 			}
+			// Scenery with a blocking tile on a road goes (minimal playable spec S4, K: roads never under an object; Diamond seeds 3 and 6:
+			// underground rocks and dungeon homes on a road tile, the engine's family none). The road was laid there, so taking the piece
+			// off opens nothing the road did not. Template maps only, never Coldshadow (VMAPGEN_ROAD_DIAG_ELBOW_SKIP). VMAPGEN_ROAD_SCENERY_DROP=0 off.
+			const zpS4 = plans[0] && plans[0].p && plans[0].p.zonePlan;
+			if (roadCells && roadCells.size && zpS4 && process.env.VMAPGEN_ROAD_SCENERY_DROP !== '0'
+				&& !(process.env.VMAPGEN_ROAD_DIAG_ELBOW_SKIP || 'coldshadow').toLowerCase().split(',').some(t => t.trim() && String(zpS4.templateName || '').toLowerCase().includes(t.trim()))) {
+				const Wl = lv.width, Hl = lv.height, gone = [];
+				plans[li].objects = (plans[li].objects || []).filter(o => {
+					if ((o.l || 0) !== li || !o.template || !o.template.mask || REMOVABLE_TYPES.has(o.type) || visitableCells(o.template, o.x, o.y).length) return true;
+					const hit = blockingCells(o.template, o.x, o.y).some(([x, y]) => x >= 0 && y >= 0 && x < Wl && y < Hl && roadCells.has(y * Wl + x));
+					if (hit) gone.push(`${o.type}(${o.x},${o.y})`);
+					return !hit;
+				});
+				if (gone.length) console.error(`[gen] level ${li}: ${gone.length} scenery piece(s) standing on a road taken off: ${gone.slice(0, 6).join(' ')}`);
+			}
 			const roadArt = solveRoadTiles(roadCells, lv.width, lv.height, roadRng);
 
 		// the terrain grid as short codes, which smoothing may adjust
