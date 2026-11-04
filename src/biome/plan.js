@@ -272,9 +272,9 @@ function objectEntry(type, x, y, l, tpl, subtype = 'object', opts) {
 	return entry;
 }
 
-// The gate and door front rules are for maps 72 wide or more, like the fill's front guard (content.js FRONT_RULE_MIN): on a 36x36 two-level map they moved what lies in a
-// start's ground. VMAPGEN_GATE_STRAIGHT=0 turns them off everywhere.
-const gateStraightOff = (W, H) => process.env.VMAPGEN_GATE_STRAIGHT === '0' || Math.min(W, H) < Number(process.env.VMAPGEN_FRONT_RULE_MIN || 72);
+// The gate and door front rules apply at every size, like the fill's front guard (content.js FRONT_RULE_MIN, its note says why the 72 cutoff went).
+// VMAPGEN_GATE_STRAIGHT=0 turns them off everywhere.
+const gateStraightOff = (W, H) => process.env.VMAPGEN_GATE_STRAIGHT === '0' || Math.min(W, H) < Number(process.env.VMAPGEN_FRONT_RULE_MIN || 0);
 /**
  * Whether one of an entrance's straight fronts (a side its template permits, not a corner) is free on level l. A gate's own tiles flank its
  * entrance, so with its straight front taken a hero and its road reach it at a corner only: pw_013 (108x108, seven players, seed 1013), the

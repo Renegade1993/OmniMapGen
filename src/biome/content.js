@@ -1164,10 +1164,12 @@ function entrancesOf(blocked) {
  * beside the level 1 monolith at (2,1), the town's top row under both). VMAPGEN_FRONT_GUARD=0 off.
  */
 const FRONTS = new WeakMap();
-// The front rules (a town, gate or monolith keeps a straight way out, and the fill refuses what would take the last one) are for maps 72 wide or more: on a 36x36 two-level
-// map they moved what lies in a start's ground (K's seed 1099575901 on Coldshadow's Fantasy: blue's take with no fight fell from 0.96 of red's to 0.30, seed 22 to 0.22; the
-// measure is MapGen Dev's start-take probe, October 21st). VMAPGEN_FRONT_RULE_MIN sets the smallest side they apply to; VMAPGEN_FRONT_GUARD=0 turns them off everywhere.
-const FRONT_RULE_MIN = Number(process.env.VMAPGEN_FRONT_RULE_MIN || 72);
+// The front rules (a town, gate or monolith keeps a straight way out, and the fill refuses what would take the last one) apply at every size (K: no clamps, every template at
+// every size; the lead, 2026-11-04). They were for maps 72 wide or more from October 21st, when they moved what lay in a 36x36 start's ground; on 0.3.28 that cutoff no
+// longer buys fairness: Coldshadow's Fantasy 36x36 two levels two players, 42 seeds, start take with no fight under 0.8 of the other start's on 14 seeds with the rules off
+// and 15 with them on (MapGen Dev's take probe, test/start-take-even.test.js's measure); small-map start fairness is its own defect. VMAPGEN_FRONT_RULE_MIN sets a smallest
+// side again; VMAPGEN_FRONT_GUARD=0 turns them off everywhere.
+const FRONT_RULE_MIN = Number(process.env.VMAPGEN_FRONT_RULE_MIN || 0);
 const frontGuardOff = (W, H) => process.env.VMAPGEN_FRONT_GUARD === '0' || Math.min(W, H) < FRONT_RULE_MIN;
 const FRONT_KINDS = /^(town|randomTown|monolith|subterraneanGate)/;
 // a front counts as open when a straight walk from it reaches this many tiles: a pocket that size has room for a road's turn
