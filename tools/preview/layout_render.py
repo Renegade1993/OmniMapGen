@@ -151,11 +151,11 @@ def legend_items(d, zone, lanes):
     empty, neutral = town_marks(d)
     items = [("castle", "Player start")]
     if empty:
-        items.append(("grey", "Start with no player"))
+        items.append(("grey", "Empty start"))
     if neutral:
         items.append(("dot", "Neutral town"))
     if any(not l.get("portal") for l in lanes if zone[tuple(l["a"])]["l"] == zone[tuple(l["b"])]["l"]):
-        items.append(("lane", "Way between zones"))
+        items.append(("lane", "Passage"))
     if any(l.get("portal") for l in lanes):
         items.append(("portal", "Portal"))
     if any(zone[tuple(l["a"])]["l"] != zone[tuple(l["b"])]["l"] and not l.get("portal") for l in lanes):
