@@ -386,6 +386,56 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null, stan
 					missed.length = 0;
 					missed.push(...still);
 				}
+				// An end its zone's open ground does not reach, cut off by a few tiles of the zone's own wall band (a diagonal step a
+				// four-way road cannot follow, or a strip of the zone behind a thin wall): those tiles are held clear, so no wall object
+				// goes there, and the road is routed through. Only this zone's own wall, never a tile touching another zone, at most 12 (VMAPGEN_ROAD_DIAG_ELBOW_MAX)
+				// a road end. The cave pass above opens rock only where the zone has a cave mask; a template map on
+				// the surface had none, and a start town's road ended inside its zone (Golems Aplenty seeds 1 2 4 5, Jebus Cross 4,
+				// minimal playable spec S1, November 3rd 2026). Template maps only, never Coldshadow (VMAPGEN_ROAD_DIAG_ELBOW_SKIP names the templates
+				// left as they are, default coldshadow); the free layouts have their own wall retry. VMAPGEN_ROAD_DIAG_ELBOW=0 skips it.
+				if (missed.length && process.env.VMAPGEN_ROAD_DIAG_ELBOW !== '0' && plan.p && plan.p.zonePlan && !(process.env.VMAPGEN_ROAD_DIAG_ELBOW_SKIP || 'coldshadow').toLowerCase().split(',').some(t => t && String(plan.p.zonePlan.templateName || '').toLowerCase().includes(t.trim()))) {
+					const still = [], WALL_MAX = Number(process.env.VMAPGEN_ROAD_DIAG_ELBOW_MAX || 12);
+					const ownWall = c => zone[c] === z && !(blocked[base + c] & OCCUPIED) && !inZone(c) && (() => { const x = c % W, y = (c / W) | 0; if (x < 1 || y < 1 || x >= W - 1 || y >= H - 1) return false; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) if (zone[(y + dy) * W + x + dx] !== z) return false; return true; })();
+					const goal = new Set(tree); if (townNode) for (const c of met(townNode)) if (inZone(c)) goal.add(c);
+					for (const e of missed) {
+						const st0 = cellOf(e).filter(c => inZone(c));
+						const region = new Set(st0), q0 = [...st0];
+						for (let i = 0; i < q0.length; i++) { const c = q0[i], x = c % W, y = (c / W) | 0; for (const [dx, dy] of DIRS4) { const m = (y + dy) * W + x + dx; if (x + dx < 0 || y + dy < 0 || x + dx >= W || y + dy >= H || region.has(m) || !inZone(m)) continue; region.add(m); q0.push(m); } }
+						const targets = new Set([...goal].filter(c => !region.has(c)));
+						if (!st0.length || !targets.size) { still.push(e); continue; }
+						// 0-1 search, four-way steps: open ground costs 0, a tile of the zone's own wall band costs 1 (a diagonal step's corner is one)
+						const dist = new Map(), prev = new Map(), elbow = new Map(), dq = [];
+						for (const c of st0) { dist.set(c, 0); dq.push(c); }
+						let hit = -1;
+						while (dq.length) {
+							let bi = 0; for (let i = 1; i < dq.length; i++) if (dist.get(dq[i]) < dist.get(dq[bi])) bi = i;
+							const c = dq.splice(bi, 1)[0], dc = dist.get(c);
+							if (targets.has(c)) { hit = c; break; }
+							if (dc > WALL_MAX) break;
+							const x = c % W, y = (c / W) | 0;
+							for (const [dx, dy] of DIRS4) {
+								const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+								const m = ny * W + nx; const wl = !inZone(m) && ownWall(m); if (!inZone(m) && !wl) continue;
+								const w = wl ? 1 : 0, el = wl ? m : -1;
+								if (dist.has(m) && dist.get(m) <= dc + w) continue;
+								dist.set(m, dc + w); prev.set(m, c); if (el >= 0) elbow.set(m, el); else elbow.delete(m); dq.push(m);
+							}
+						}
+						if (process.env.VMAPGEN_ROAD_TRACE) console.error(`[roads] level ${l}: zone ${z}: wall-band join from (${st0[0] % W},${(st0[0] / W) | 0}): region ${region.size}, targets ${targets.size}, ${hit < 0 ? 'none within ' + WALL_MAX : 'hit at cost ' + dist.get(hit)}`);
+						if (hit < 0 || dist.get(hit) === 0 || dist.get(hit) > WALL_MAX) { still.push(e); continue; }
+						const opened = [];
+						for (let c = hit; prev.has(c); c = prev.get(c)) if (elbow.has(c)) opened.push(elbow.get(c));
+						for (const c of opened) blocked[base + c] |= RESERVED;
+						let p = null;
+						for (const st of st0) { p = require('./roadsplines').routeEdge(st, targets, { W, H, open: inZone, cost }); if (p) break; }
+						if (!p) { for (const c of opened) blocked[base + c] &= ~RESERVED; still.push(e); continue; }
+						p.forEach(c => { tree.add(c); laid.add(c); goal.add(c); });
+						if (townNode) for (const g of townGates.get(townNode) || []) { const gx = g % W, gy = (g / W) | 0; if (DIRS4.some(([dx, dy]) => laid.has((gy + dy) * W + gx + dx))) laid.add(g); }
+						console.error(`[gen] level ${l}: zone ${z}: road end at (${st0[0] % W},${(st0[0] / W) | 0}) joined through ${opened.length} tile(s) of its own wall band held clear (${opened.map(c => (c % W) + ',' + ((c / W) | 0)).join(' ')})`);
+					}
+					missed.length = 0;
+					missed.push(...still);
+				}
 				if (process.env.VMAPGEN_ROAD_TRACE) for (const e of missed) { const s0 = Array.isArray(e) ? e[0] : e, sx = s0 % W, sy = (s0 / W) | 0; for (let y = sy - 42; y <= sy + 3; y++) { let ln = String(y).padStart(4); for (let x = sx - 30; x <= sx + 6; x++) { const c = y * W + x; ln += (x < 0 || y < 0 || x >= W || y >= H) ? " " : c === s0 ? "E" : tree.has(c) ? '#' : !floor(c) ? (zone[c] === z ? 'r' : '.') : inZone(c) ? 'o' : 'x'; } console.error(ln); } }
 				for (const e of missed) { const e0 = Array.isArray(e) ? e[0] : e; const n = list.find(q => met(q).includes(e0)); failed++; failedNodes.push({ z, cells: n || (Array.isArray(e) ? e : [e]) }); }
 				zonesRoaded++; continue;
