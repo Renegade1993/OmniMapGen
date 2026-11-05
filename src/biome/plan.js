@@ -12449,7 +12449,10 @@ function startPrimaryGuards(pl, l, W, H, blocked, rng) {
 				// and no moved guard's ring over the ways of another of these objects above that object's cap
 				const avoid = new Map();
 				for (const p of near14) if (p !== o && pl.objects.includes(p)) for (const c of waysAll(p)) avoid.set(c, Math.min(capOf(p), avoid.has(c) ? avoid.get(c) : Infinity));
-				for (const keepN of [200, W <= 48 ? 8 : 50]) {
+				// a stack that also guards a creature dwelling stays where it is: the pile or mine moves instead, below (K item 10; VMAPGEN_START_CAP_DWELL=0 off)
+				const dwellGuard = process.env.VMAPGEN_START_CAP_DWELL !== '0'
+					&& g0.some(g => pl.objects.some(q => q !== g && (q.l || 0) === l && q.template && /^(creatureGenerator|randomDwelling)/.test(q.type) && near1(g, q)));
+				if (!dwellGuard) for (const keepN of [200, W <= 48 ? 8 : 50]) {
 					guardsOffDoorsteps(pl, l, W, H, blocked, [...waysAll(o), ...townWays, ...calmNear.slice(0, keepN)], { keep: true, spread: true, avoid, tier: tierOf });
 					if (!over(o).length) break;
 				}
