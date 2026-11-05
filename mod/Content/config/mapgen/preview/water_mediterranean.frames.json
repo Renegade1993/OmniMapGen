@@ -12,9 +12,9 @@
    "water": "mediterranean",
    "preferred": true,
    "caption": "Mediterranean, Medium 72x72: 4 players, 1 level",
-   "drawHash": "d9be56acdcb5552131cca208c3df18fcaf9844baeaa6604bd5ec1f088c7d5968",
+   "drawHash": "3053a5d83730940b30ae971c7c9891e43e8d8ca667014162b5ca8cf8a451bbce",
    "zones": 9,
-   "lanes": 2,
+   "lanes": 3,
    "portals": 0,
    "starts": 4,
    "towns": 5,
@@ -30,7 +30,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/01",
    "seconds": 3.0,
-   "contentSha256": "f6e618f0b55516ae145e820ca31c33fb1fed3a1e1d1cae46a31d408651d2f2e5"
+   "contentSha256": "55c682fd280eea3327d5c053828ddb9a782275b57e69e616c5243a6407f187ea"
   },
   {
    "order": 2,
@@ -248,7 +248,7 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Medium 72x72: 2 players, 2 levels",
-   "drawHash": "db57b4d6e54b70441eb52ad9044c9d6ec18c150357698abf3ed3979153e98f60",
+   "drawHash": "d21ab1f49e4a6cefb8225ba9ee5a99b13ad2a5f280664e5144918cac362491e5",
    "zones": 20,
    "lanes": 15,
    "portals": 5,
@@ -267,7 +267,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/09",
    "seconds": 3.0,
-   "contentSha256": "928889aa7dd0cd68e13f13f1e69d1e97b0c5b82444036a87c3742e35b5118b81"
+   "contentSha256": "986ca5b71cbad4c0731591d34cbd3d4293d8c0909fc74e99ab4e4406026ed547"
   },
   {
    "order": 10,
@@ -310,7 +310,7 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Extra Large 144x144: 3 players, 2 levels",
-   "drawHash": "fe7776ae4250a0ac3b7e1100684eb404004d62b3368892d4e9b11e903946490c",
+   "drawHash": "e2d9d9970e51dddba5a4d383f1b9a653e8391268a587203b4e716862ef3acdba",
    "zones": 70,
    "lanes": 91,
    "portals": 7,
@@ -328,7 +328,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/11",
    "seconds": 3.0,
-   "contentSha256": "99d2cf6b46f8b857526c539463dbdc1b98166e62c5b8919bd94494cc187b6c30"
+   "contentSha256": "1baf49d690aba2433ea39e61376dda84ff3992cb073e86039431ee9508594ced"
   },
   {
    "order": 12,
@@ -340,7 +340,7 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Huge 180x180: 4 players, 1 level",
-   "drawHash": "2289a4a18327fa4a5d03573bc6b0db01d49b50cb25b458112b47d4a67238aaad",
+   "drawHash": "08d15adc6294b794820ee881689b7cf3d53847fca3649278677b30560ddb519b",
    "zones": 30,
    "lanes": 15,
    "portals": 1,
@@ -359,7 +359,7 @@
    ],
    "path": "mapgen/preview/water_mediterranean/12",
    "seconds": 3.0,
-   "contentSha256": "36d45fbfd0f595890764072258a952a1e3984b13b887d6a99fefee4847c0978c"
+   "contentSha256": "9e491227e5d85c21471bd0f243480640a0b171988b75f00c0e86ce54f78adfad"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

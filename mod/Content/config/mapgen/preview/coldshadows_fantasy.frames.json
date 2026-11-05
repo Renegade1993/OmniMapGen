@@ -12,7 +12,7 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Extra Large 144x144: 8 players, 2 levels",
-   "drawHash": "f775926c8f5c9fd4dcd88294cddc3e1315b0083cbac3357f6b3d1213ca163986",
+   "drawHash": "b48c71b0d77178fa272478aa3bf9032676e4e9e11314066bdf1d23cc2cd0ac6e",
    "zones": 21,
    "lanes": 22,
    "portals": 1,
@@ -30,7 +30,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/01",
    "seconds": 3.0,
-   "contentSha256": "768be6526e4e4b384bc6dc7d2b76f8775dd211864d06d123113cf4c6d7ee2335"
+   "contentSha256": "0c7f6b4fc4f4ed8dfe422129bf1c3b5801049909b4637f22ddfbb762bfa1e1fe"
   },
   {
    "order": 2,
@@ -42,7 +42,7 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Huge 180x180: 8 players, 2 levels",
-   "drawHash": "00e25b21f34b1e57dc8b179907cb6e0ff51e42a8533ab078dbc9f551aa66e365",
+   "drawHash": "499f219950a9132ea8a4c0199dd67c05ce8c444c6107d86de33e62ad5879bdd8",
    "zones": 21,
    "lanes": 22,
    "portals": 1,
@@ -60,7 +60,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/02",
    "seconds": 3.0,
-   "contentSha256": "e287cf223cca0c50d2215e9d357db1a22b9f2c50b62a19891f777baf6f60cfda"
+   "contentSha256": "b5aacc94dfa4dc42b70ca39c651c2c7843a0e41de334b2bbad6523e6b380b8af"
   },
   {
    "order": 3,
@@ -72,7 +72,7 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Extra Huge 216x216: 8 players, 2 levels",
-   "drawHash": "5680bd93a7f45389ba99f2725dda054f985da82e01c94537d458a3ae124f9345",
+   "drawHash": "8d2e046c7e1ae083c8c0c2612c5e467971c148583525c4576d966991d22e6637",
    "zones": 21,
    "lanes": 22,
    "portals": 1,
@@ -90,7 +90,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/03",
    "seconds": 3.0,
-   "contentSha256": "d3a3d75c804e7edda839261506405cd77e6a133e651af66e0ec319e61586d014"
+   "contentSha256": "2f3883b69d667ad58b5519bccf89766bb7a9e372c3d6f3b3f09615e7efa84028"
   },
   {
    "order": 4,
@@ -102,7 +102,7 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Giant 252x252: 8 players, 2 levels",
-   "drawHash": "c46a58be3d7ddbb5a4ff0300f0222a2646fa92af0e207fcaa42019c1fb67fa2e",
+   "drawHash": "33c9161d95533d408136fe1c0670731f676eb2b7b715255d29d6a2a3dcccb1fa",
    "zones": 21,
    "lanes": 22,
    "portals": 1,
@@ -120,7 +120,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/04",
    "seconds": 3.0,
-   "contentSha256": "3441c376551bfb11f2d817d731e98534012f28874dbf385d7ef9e2ff347f82a1"
+   "contentSha256": "d161c34e3e5aadcf67b93296f51656558c6f18722c0ef86c9f9a5ad15a93aca3"
   },
   {
    "order": 5,
@@ -132,7 +132,7 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Small 36x36: 8 players, 2 levels",
-   "drawHash": "a10e9012912d7269f9a1dd777784b426dfd7e0f6d62f409f6f0256777e9a9f20",
+   "drawHash": "7f2baf494b4904757e5c59115d95c830fb61e6a63082e85fd5b6634a0d1965c4",
    "zones": 10,
    "lanes": 4,
    "portals": 3,
@@ -149,7 +149,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/05",
    "seconds": 3.0,
-   "contentSha256": "8962b2f68ac911c8a7ee595218366fb93b00bb2b4f944fec88b69814ef1b4b7a"
+   "contentSha256": "85b4981c07c40dbbef026b21829aadbcd878d22758a9fb661b76563e616579c4"
   },
   {
    "order": 6,
@@ -161,7 +161,7 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Medium 72x72: 8 players, 2 levels",
-   "drawHash": "5e408867296fb18591ab5ad76924a5ab8cf7e60204be50dd3f169490efa3a4b3",
+   "drawHash": "985faf7ca6dddb3d23bfbc5ce2f472243a12b39fe174c193cf754bb52cb2d26c",
    "zones": 21,
    "lanes": 22,
    "portals": 1,
@@ -179,7 +179,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/06",
    "seconds": 3.0,
-   "contentSha256": "c6ab23fdfff5c083d2eee70a7ea20326c08bf3f55f6f79ae45d8466090a4f826"
+   "contentSha256": "09c23b649f8197ad8ab27073059ee4f7843ab95ff601eeca24e641477e1a3768"
   },
   {
    "order": 7,
@@ -221,7 +221,7 @@
    "water": null,
    "preferred": false,
    "caption": "Coldshadow's Fantasy, Extra Large 144x144: 4 players, 2 levels",
-   "drawHash": "2c7ae160c9b87ebe169292d834e80c67498ccb7da9f4c57e02927face97d4a41",
+   "drawHash": "a16f1e79ae58ded7986cc1b9cb13c1d84b2e7d97f7416fe42b2b91657864ec68",
    "zones": 21,
    "lanes": 22,
    "portals": 2,
@@ -240,7 +240,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/08",
    "seconds": 3.0,
-   "contentSha256": "1d6ad41ffa46e9411762283cba29b6ef360f728e30f40a1baa5ed7e5d8d1e71c"
+   "contentSha256": "eb45d3f39129009791411f48896c9837c312a1ebe41559cd06a7b0ec45a77b30"
   },
   {
    "order": 9,
@@ -252,7 +252,7 @@
    "water": null,
    "preferred": false,
    "caption": "Coldshadow's Fantasy, Huge 180x180: 2 players, 1 level",
-   "drawHash": "2b91fd4882f5fa7556ec0ac9a4bc8a1c64a17d158f55009ebf7a22c2cf212ad6",
+   "drawHash": "acbfc109bd27d968de9926cc4167b8917d95ac300f7f00783d6ee9e9cc6d3227",
    "zones": 21,
    "lanes": 22,
    "portals": 7,
@@ -270,7 +270,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/09",
    "seconds": 3.0,
-   "contentSha256": "09097c83f2825df96892d1d998258047ab353e5be1b3b1e3d2c9112a78c10135"
+   "contentSha256": "b6905ce4920afaa651b5844c49a68a277dfb07030d2d3bf8d306e53e1a3c9d71"
   },
   {
    "order": 10,
@@ -343,7 +343,7 @@
    "water": null,
    "preferred": false,
    "caption": "Coldshadow's Fantasy, Medium 72x72: 2 players, 2 levels",
-   "drawHash": "be0ea9b47f363a087c283bdb69f0dfb87c12eedd24bd87ac86bd69f38ae0f443",
+   "drawHash": "c3dfac9f9f60c638023465ad7c457e736848481988dd4f47c7ce9e589f38f166",
    "zones": 21,
    "lanes": 22,
    "portals": 5,
@@ -362,7 +362,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/12",
    "seconds": 3.0,
-   "contentSha256": "fa946bb281b0ed92dd08a125a3b182ae38dff53f1bf5914b2c394e3ac15fd795"
+   "contentSha256": "458969da92f7e715fb6d60284537f8dcb17517ece3c66d24d89965b5dd5b5238"
   },
   {
    "order": 13,
@@ -374,7 +374,7 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Coldshadow's Fantasy, Extra Large 144x144: 5 players, 1 level, Lakes water",
-   "drawHash": "9c35d836627af885ba81481ac8bfbfa61051014a2d1726c3c14da9414b10469c",
+   "drawHash": "527a68c834b000fee1a653433e82bce29340fdbe34819a4e64f4debb2d8cfdac",
    "zones": 21,
    "lanes": 22,
    "portals": 4,
@@ -393,7 +393,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/13",
    "seconds": 3.0,
-   "contentSha256": "7c0f0ad4881f3c763f04a28d04b2b915a72a1636934fae43fcbb543c9540fb54"
+   "contentSha256": "5639a8d4be2ea529a8262ed5d0a0074aad71bb8e2c87cf3a70d97309ddbacd53"
   },
   {
    "order": 14,
@@ -405,7 +405,7 @@
    "water": "coastal",
    "preferred": false,
    "caption": "Coldshadow's Fantasy, Huge 180x180: 8 players, 2 levels, Coastal water",
-   "drawHash": "9b2044e5144402f2f736d5fdd4efa3f8f9a9ca6e160659a66ea272f6635ba061",
+   "drawHash": "7138145aa5eba3fa9c467e445be4326b439f419304489e43024b87ee08ad9ce6",
    "zones": 21,
    "lanes": 22,
    "portals": 1,
@@ -424,7 +424,7 @@
    ],
    "path": "mapgen/preview/coldshadows_fantasy/14",
    "seconds": 3.0,
-   "contentSha256": "ee7d6a4d06da2bc1ed9061dbd74c22f47257a560d781ff264819c2f1bb331a1a"
+   "contentSha256": "d9545a91895f99855155249451b951fe8c6e1f544fda355a88b7fe4adf388aa1"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

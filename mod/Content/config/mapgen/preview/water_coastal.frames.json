@@ -12,9 +12,9 @@
    "water": "coastal",
    "preferred": true,
    "caption": "Coastal, Medium 72x72: 4 players, 1 level",
-   "drawHash": "f8769743ecfa770a95de1c5db96e1706230d4ec7920156dd963b6bf4b447c713",
+   "drawHash": "3b27ca070838a277b2943dc16b91180bbb19c5af689a34e4ce965002c6a765bf",
    "zones": 8,
-   "lanes": 3,
+   "lanes": 4,
    "portals": 1,
    "starts": 4,
    "towns": 4,
@@ -29,7 +29,7 @@
    ],
    "path": "mapgen/preview/water_coastal/01",
    "seconds": 3.0,
-   "contentSha256": "3141f4c43698aaeb0b2e1df4e53a8d5953c4372a36c2595341a0ab90b3b22ad5"
+   "contentSha256": "6fb36b6406124923ca6c637251ef93971c632677dd99846b489c8388801af628"
   },
   {
    "order": 2,
@@ -165,9 +165,9 @@
    "water": "coastal",
    "preferred": true,
    "caption": "Coastal, Giant 252x252: 8 players, 1 level",
-   "drawHash": "b9b36e00e9733af0735a7567686e1bb2f6783a9e7110401ba7030be5d7f19655",
+   "drawHash": "f8f1a85feb77a32a055c895a0b97bbd7b0d051842847d319cad2895316d193d6",
    "zones": 57,
-   "lanes": 35,
+   "lanes": 37,
    "portals": 1,
    "starts": 8,
    "towns": 20,
@@ -183,7 +183,7 @@
    ],
    "path": "mapgen/preview/water_coastal/06",
    "seconds": 3.0,
-   "contentSha256": "aa9092e76d6b325da026f2607ac7e8da2db3806a510eca6066b1653fb76c9910"
+   "contentSha256": "90c2830603080921a4eb6f8b32b75812bff5623130a54d6a13ba66507d95c095"
   },
   {
    "order": 7,
@@ -250,7 +250,7 @@
    "water": "coastal",
    "preferred": false,
    "caption": "Coastal, Medium 72x72: 2 players, 2 levels",
-   "drawHash": "a18f182d2130ff1677562f7783e349ab85f34a20486ee15838312de70f547282",
+   "drawHash": "150d2893bb6d5ab8b6f89e9b461ba5e2adb2a8b9b9e9d8fc76ace35ee0e144d2",
    "zones": 19,
    "lanes": 17,
    "portals": 7,
@@ -269,7 +269,7 @@
    ],
    "path": "mapgen/preview/water_coastal/09",
    "seconds": 3.0,
-   "contentSha256": "d87a58aa711b7652360136bbedb302eac246cafb3305c1b4940c61d3933176ea"
+   "contentSha256": "d3ff1614b4e56d7488c8ec592fe02950033c59cb8239c057b6a935f9adf404b6"
   },
   {
    "order": 10,
@@ -312,9 +312,9 @@
    "water": "coastal",
    "preferred": false,
    "caption": "Coastal, Extra Large 144x144: 3 players, 2 levels",
-   "drawHash": "96168a2827a93d943a3bf38266917d389cf5979b429a5e871267f4ced4928ee1",
+   "drawHash": "58b539458b9ce5201c3aae3a7faccd48303bb6ba4debe93dfc66e6441051445e",
    "zones": 70,
-   "lanes": 91,
+   "lanes": 92,
    "portals": 8,
    "starts": 3,
    "towns": 15,
@@ -330,7 +330,7 @@
    ],
    "path": "mapgen/preview/water_coastal/11",
    "seconds": 3.0,
-   "contentSha256": "c5810bcfbf76a2da40a63c99b4117fc740d3d9d6e52834c8f33a6f4d07758298"
+   "contentSha256": "3f0bf8e737eebb5195682b86926367468a1162f6ba69403b5d17cbbc976f92fd"
   },
   {
    "order": 12,
