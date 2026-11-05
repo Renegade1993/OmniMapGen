@@ -2858,7 +2858,8 @@ async function generateMap(params) {
 		if (process.env.VMAPGEN_MOD_GROUND_KIN !== '0') {
 			const here = objects.filter(o => (o.l || 0) === li);
 			const groundAt = o => { const v = o.template && o.template.mask ? visitableCells(o.template, o.x, o.y)[0] : null; const [x, y] = v || [o.x, o.y]; return x >= 0 && y >= 0 && x < lv.width && y < lv.height ? shortAt(x, y) : null; };
-			const n = require('../biome/terrainArt').kinSwap(here, groundAt, (sub, k) => { try { return require('../biome/economy').mineTemplate(sub, k); } catch (e) { return null; } });
+			const freeTile = (x, y) => { if (x < 0 || y < 0 || x >= lv.width || y >= lv.height) return false; const c = y * lv.width + x; return terrainOf(shortAt(x, y)).passable && !(water && water[c]) && !(openMask && !openMask[c]) && !roadCells.has(c); };
+			const n = require('../biome/terrainArt').kinSwap(here, groundAt, (sub, k) => { try { return require('../biome/economy').mineTemplate(sub, k); } catch (e) { return null; } }, freeTile);
 			if (n) console.error(`[gen] level ${li}: ${n} object(s) on mod grounds given their kin ground's art`);
 		}
 		phase('rivers');
