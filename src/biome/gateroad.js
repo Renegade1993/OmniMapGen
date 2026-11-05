@@ -1424,7 +1424,9 @@ function forbiddenSideRoads(plan, W, H, l, visitableCells, allowedDirs, free = n
 			const sideRoad = () => allowed.filter(([dx, dy]) => inb(vx + dx, vy + dy) && R.has((vy + dy) * W + vx + dx)).map(([dx, dy]) => (vy + dy) * W + vx + dx);
 			if (!sideRoad().length) { for (const [dx, dy] of D8) if (!isAllowed(dx, dy) && inb(vx + dx, vy + dy) && R.has((vy + dy) * W + vx + dx)) out.kept++; continue; }
 			const forb = new Set(D8.filter(([dx, dy]) => !isAllowed(dx, dy) && inb(vx + dx, vy + dy)).map(([dx, dy]) => (vy + dy) * W + vx + dx));
-			const onForb = [...forb].filter(c => R.has(c));
+			// another place's doorway (a town's or a mine's visit or entry tile) stays: it is that place's road, not one under the statue
+			const isDoor = c => process.env.VMAPGEN_FORBID_CUT_DOOR !== '0' && serving.has(c) && c !== v;
+			const onForb = [...forb].filter(c => R.has(c) && !isDoor(c));
 			if (!onForb.length) continue;
 			const removed = [], added = [];
 			const undo = () => { for (const c of removed) R.add(c); for (const c of added) R.delete(c); };
