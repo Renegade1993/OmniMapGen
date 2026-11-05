@@ -1462,6 +1462,26 @@ function forbiddenSideRoads(plan, W, H, l, visitableCells, allowedDirs, free = n
 				rerouted = true;
 				home = endPiece();
 			}
+			// no corner-only step left by the cut: joined through a free side tile that is not a forbidden one, or the cut is undone
+			if (ok && process.env.VMAPGEN_FORBID_CUT_CORNER !== '0') {
+				const near = new Set();
+				for (const f of removed) { const fx = f % W, fy = (f / W) | 0; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (inb(fx + dx, fy + dy)) near.add((fy + dy) * W + fx + dx); }
+				for (const a of near) {
+					if (!ok || !R.has(a)) continue;
+					const ax = a % W, ay = (a / W) | 0;
+					for (const [dx, dy] of [[1, 1], [1, -1]]) {
+						if (!inb(ax + dx, ay + dy)) continue;
+						const bb = (ay + dy) * W + ax + dx;
+						if (!R.has(bb)) continue;
+						const s1 = ay * W + ax + dx, s2 = (ay + dy) * W + ax;
+						if (R.has(s1) || R.has(s2)) continue;
+						const pick = [s1, s2].find(c => !forb.has(c) && c !== v && free && free(c));
+						if (pick === undefined) { ok = false; break; }
+						R.add(pick); added.push(pick);
+					}
+				}
+				if (!ok) out.cornerKept = (out.cornerKept || 0) + 1;
+			}
 			if (!ok) { undo(); out.kept += onForb.length; continue; }
 			if (!R.has(v) && !sideRoad().length) { out.cut++; out.tiles += removed.length; continue; }
 			out.cut++; out.tiles += removed.length; if (rerouted) out.rerouted++;
