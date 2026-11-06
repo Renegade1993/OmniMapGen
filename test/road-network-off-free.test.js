@@ -27,9 +27,11 @@ const roads = (seed, on) => {
 	return n;
 };
 
-test('free layout: Build Road Network Off has less road than On on each of three seeds', { timeout: 280000 }, () => {
+test('free layout: Build Road Network Off has no road tile at all, On has road, on each of three seeds', { timeout: 280000 }, () => {
+	// K 2026-11-05: "roads being off should mean no visual roads and no road bonuses" (the road type is 'none', as stock's three toggles all off give)
 	for (const seed of [1, 2, 3]) {
 		const off = roads(seed, false), on = roads(seed, true);
-		assert.ok(off < on, `seed ${seed}: ${off} road tiles with Off, ${on} with On`);
+		assert.strictEqual(off, 0, `seed ${seed}: ${off} road tiles with Off`);
+		assert.ok(on > 0, `seed ${seed}: ${on} road tiles with On`);
 	}
 });

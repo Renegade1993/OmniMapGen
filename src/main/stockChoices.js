@@ -134,14 +134,17 @@ function applyMonsterStrength(biomes, roll) {
 /**
  * The road type from stock's three toggles (roadDirt, roadGravel,
  * roadCobblestone; one never set counts as on, stock's default): the best type
- * left on, as the engine's RoadPlacer falls back from cobblestone, or 'none'.
- * undefined when none of the three was given, so the Road type lever decides.
+ * left on, as the engine's RoadPlacer falls back from cobblestone, or 'none'; 'none' too when Build Road Network is Off.
+ * undefined when none of the three was given and the network is not Off, so the Road type lever decides.
  * With the toggles given, the Road type lever still picks among the types they allow: the window sends all three toggles with every map,
  * so taking the best allowed type alone left Road type doing nothing in the game (2026-10-16; MapGen Dev's lever test set Road type
  * without the toggles). A type the toggles forbid falls back to the best one allowed. Road type's default, cobblestone, gives what
  * the toggles alone gave. VMAPGEN_ROAD_TYPE_PICK=0 is the old rule.
  */
 function roadFromToggles(biomes) {
+	// Build Road Network Off is "no roads at all" (K 2026-11-05: "roads being off should mean no visual roads and no road bonuses"): the same 'none'
+	// that stock's three toggles all off give, so the two controls agree. The plan's own roads stay as open ground, so nothing else moves.
+	if (biomes.roadNetwork !== undefined && Number(biomes.roadNetwork) < 0.5) return 'none';
 	const on = ['roadDirt', 'roadGravel', 'roadCobblestone'].map(k => biomes[k]);
 	if (on.every(v => v === undefined)) return undefined;
 	const allowed = i => on[i] === undefined || on[i] >= 0.5;

@@ -31,6 +31,14 @@ test('Road type picks among the types the toggles allow (the window sends all th
 	assert.strictEqual(r(0, 0, 0, 0), 'none', 'all off: no roads, whatever is chosen');
 });
 
+test('Build Road Network Off is no roads at all, the same as stock\'s three toggles all off (K 2026-11-05)', () => {
+	assert.strictEqual(stock.roadFromToggles({ roadNetwork: 0 }), 'none', 'Off: no road type, no road tile drawn');
+	assert.strictEqual(stock.roadFromToggles({ roadNetwork: 0, roadType: 2, roadDirt: 1, roadGravel: 1, roadCobblestone: 1 }), 'none', 'Off wins over the toggles and Road type');
+	assert.strictEqual(stock.roadFromToggles({ roadNetwork: 1 }), undefined, 'On leaves the Road type lever to decide, as before');
+	assert.strictEqual(stock.roadFromToggles({ roadNetwork: 1, roadDirt: 1, roadGravel: 1, roadCobblestone: 1 }), 'pc', 'On with the toggles: as before');
+	assert.strictEqual(stock.roadFromToggles({}), undefined, 'the lever never given: as before');
+});
+
 test('the player split: human or computer players plus computer only players', () => {
 	const roll = stock.roller(1);
 	assert.deepStrictEqual(stock.playerCounts({ players: 4, humans: 2, compOnly: 4 }, roll), { nPlayers: 6, humans: 2 },

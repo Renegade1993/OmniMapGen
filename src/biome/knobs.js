@@ -98,10 +98,10 @@ const KNOBS = [
 		help: 'How often a passage has a road through it, set against Passages without road: equal settings give half of each. On a template the default is the template\'s own roads; with more road weight, passages without one gain a road, with less some lose theirs, a start\'s excepted.',
 		min: 0, max: 1, step: 0.05 },
 	{ key: 'roadNetwork', page: 'borders', label: 'Build Road Network',
-		help: 'Roads linking every town. Off leaves only the roads through the passages. On a template Off takes away the roads to its mines and to its neutral towns (about a sixth of the road); its passages, gates, portals and the players\' towns keep theirs.',
+		help: 'Roads linking every town. Off means no roads on the map at all: none to see and no road bonus for moving, while the ground between places stays open to walk. Road type then does nothing.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']] },
 	{ key: 'roadType', page: 'borders', label: 'Road type',
-		help: 'What the roads are paved with. Moving along cobblestone costs half what open grass does, gravel 65% and dirt 75%. Real random maps pave nearly every road with cobblestone.',
+		help: 'What the roads are paved with. Moving along cobblestone costs half what open grass does, gravel 65% and dirt 75%. Real random maps pave nearly every road with cobblestone. Does nothing while Build Road Network is Off.',
 		min: 0, max: 2, step: 1, stops: [[0, 'Dirt'], [1, 'Gravel'], [2, 'Cobblestone']], default: 2 },
 
 	// ---- treasure
