@@ -1,24 +1,63 @@
 # OmniMapGen
 
-OmniMapGen makes random maps for Heroes of Might and Magic III. It runs inside [Dead Man's Boots (DMB)](https://github.com/DeadMansBoots/Dead-Mans-Boots): in a game's lobby you open the Random Map window, switch it to Omni Map Gen, choose a layout and your settings, and the map is made when you press Begin. It works in single-player, hotseat and multiplayer lobbies, where the host chooses and the other players see the settings. It also runs on its own from the command line.
+OmniMapGen makes random maps for Heroes of Might and Magic III inside Dead Man's Boots (DMB): choose it in the Random Map tab of New Game and the map is made when you press Begin. About sixty settings on eight pages set the size, players, levels, water, treasure, guards and roads, and the towns, creatures and dwellings of the mods you have turned on appear on its maps.
 
-It builds maps with the mods you have turned on, placing their towns, creatures, dwellings and creature banks the way the game's own generator would, and its settings reach further into the map than the game's own random map window: terrain, borders, treasure, monsters, underground, scenery and water.
+It offers eight templates: Coldshadow's Fantasy, Classic, Jebus Cross, Golems Aplenty, Headquarters, Nostalgia, Mini Nostalgia, and Random, which picks one for you. The current version is 0.3.31; what is not finished is listed under "Known problems and in construction" below.
+
+## Known problems and in construction
+
+Built is approximate: how much of the feature exists and has been seen working in a real game.
+
+Templates:
+
+| Template | Status | Built |
+|---|---|---|
+| Coldshadow's Fantasy | Partly built | 80% |
+| Random (picks a template for you) | Working | 80% |
+| Classic (the open layout) | Partly built | 70% |
+| Jebus Cross | In construction | 50% |
+| Golems Aplenty | In construction | 50% |
+| Headquarters | In construction | 40% |
+| Nostalgia (approximate) | In construction | 40% |
+| Mini Nostalgia (approximate) | In construction | 40% |
+
+Features:
+
+| Feature | Status | Built |
+|---|---|---|
+| Towns, creatures and dwellings of the mods you have turned on | Working | 80% |
+| About sixty settings on eight pages, in the lobby | Working | 80% |
+| Map sizes, player counts, one or two levels | Working | 80% |
+| Obelisks and the Grail as a setting | Working | 70% |
+| Start zones: ways out, fair walks, mines in reach | Partly built | 70% |
+| Roads, including Road Network Off | Partly built | 70% |
+| Guards in front of treasure, mines and dwellings | Partly built | 60% |
+| Treasure: piles, chests, artifacts, and keeping it out from under pictures | Partly built | 60% |
+| Water layouts: lakes, coast, continents, Mediterranean, Highland, islands, archipelago | Partly built | 60% |
+| Underground levels, portals and gates | Partly built | 60% |
+| Template previews in the lobby | In construction | 50% |
+| Rivers and streams meeting the sea | Known problem | 40% |
+
+What goes wrong today, in plain terms: on small Coldshadow's Fantasy maps one start can be poorer than the other. About 4 in 100 gold mines on Classic maps can still be walked up to unguarded. Streams meet the beach badly. The middle zone of Jebus Cross has been reported as far too rich. Highland crossings are too narrow and too alike. Some large two-level maps take several minutes to make. On a few small maps a guard can stand where no hero can walk to it. With Guards at portals turned off, a portal can still have a monster standing beside it. On a few maps two neighbouring zones can still be walked between at one spot with no guard or wall.
 
 ## Installing it in the game
 
-OmniMapGen is a random map generator add-on for Dead Man's Boots' map generator framework. It needs
-Dead Man's Boots (DMB) at its addon API level 4. Install and enable it from DMB's launcher like any other
-mod; the launcher also turns on the VCMI Extras submod (extendedLobby) whose lobby art the tab
-draws with. Or unzip `omnimapgen.zip` from the latest release into the `Mods` folder of your
-game's user folder and enable it in the launcher. The mod carries its own Node runtime; nothing
-else needs installing.
+OmniMapGen is a mod for Dead Man's Boots. Install and enable it from the launcher like any other mod, or unzip `omnimapgen.zip` from the latest release into the `Mods` folder of DMB's user
+folder and enable it there. It needs a current Dead Man's Boots beta. The launcher also turns on the VCMI Extras mod, whose lobby art the Random Map tab uses. The mod carries its own Node
+runtime; nothing else needs installing.
 
-In a game's lobby, the gold arrows at the top of the Random Map window switch between VCMI's own
+In a game's lobby, the gold arrows at the top of the Random Map window switch between the game's own
 random map and Omni Map Gen. In Omni Map Gen, eight page buttons open the settings: Map
 (template, size, players, teams, mod content), Biomes, Borders, Treasure, Monsters, Underground,
 Scenery and Water; every setting's help says what it does. Press Begin and the game makes the map
 from those settings and every player's town and colour, as its own random map does. Reset puts
 the settings back to their defaults, and your own presets save and load beside it.
+
+## For developers
+
+The rest of this page is for people who build or test the generator.
+
+### Building the mod from this repository
 
 To build the mod from this repository and play it straight away: `node tools/make_mod.js
 --install --trust-unlisted`. It builds the mod into `dist/` (the official Node runtime is
@@ -31,7 +70,7 @@ own is pinned by no catalog: `--trust-unlisted` turns on DMB's developer switch 
 ships (the game's own look, the map made at Begin, DMB's addon API 4) into
 `dist-classic-atbegin-api4/`.
 
-## Running it from the command line
+### Running it from the command line
 
 Node 24 or newer; no packages are needed.
 
@@ -46,7 +85,7 @@ install and user folder, or set `VCMI_ROOT` and `VCMI_USER_DIR`.
 The installed mod's `generator` folder holds the same program: `generate.cmd` runs it on the
 bundled Node.
 
-## Tests
+### Tests
 
     node --test "test/*.test.js"
 
@@ -61,7 +100,7 @@ file and says so:
 `VMAPGEN_TEST_USER_DIR` names a user folder with mods; by default none is read, so the suite gives the same maps on any
 machine. Run no generation while the suite runs: its timeouts are tight (a 144x144 test took 90 s under load).
 
-### Playtest checks (the grid)
+#### Playtest checks (the grid)
 
     node tools/harness/playtest_checks.js <map.vmap or folder> [--only name,name]
     node tools/harness/k_cases.js [--seeds 3] [--nomods]
@@ -71,7 +110,7 @@ reach, guard clusters, dragon dwellings in the middle of a one-level water map, 
 come from the engine maps. k_cases.js regenerates K's four playtest maps from their recorded options with this checkout (his own seed gives his
 map again) and prints the checks for his map and for the new ones. A fix has landed when the checks his words name pass on every seed.
 
-## Layout
+### Layout
 
 | Folder | What is in it |
 |---|---|
@@ -85,7 +124,7 @@ map again) and prints the checks for his map and for the new ones. A fix has lan
 | `mod` | the mod as it installs, less the generator's code and Node: `mod.json`, the tab's pages and texts (`Content/config`, written by `tools/gen_vcmi_ui.js`), three templates of its own, `generator/generate.cmd` |
 | `tools` | packages the mod (`make_mod.js`); builds the tab's configs from the generator's settings; a settings fuzzer; an extractor for the game's own object templates |
 
-## Release names
+### Release names
 
 Each release is named after a land of Heroes III, the lighter ones of the good factions first and the darker ones for the later, elite versions:
 
