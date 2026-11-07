@@ -146,3 +146,16 @@ test('a roll the rule does not touch is the 0.3.30 roll: only a draw whose figur
 	assert.ok(off.includes('wide'), 'the unrestricted roll draws the wide creature somewhere');
 	for (let i = 0; i < on.length; i++) { if (off[i] !== 'wide') assert.strictEqual(on[i], off[i], 'draw ' + i); else assert.notStrictEqual(on[i], 'wide'); }
 });
+
+test('feetTile: the tile under the middle of the last opaque row, one formula for the figure test and the late pile placer', () => {
+	const pics = require('../src/biome/pictures');
+	// a 64x64 sprite drawn bottom-right on its anchor tile: the last opaque row 60 and the pixels 40 to 50 on it: the feet at tile (anchor x, anchor y) when the middle is in the last tile
+	const px = new Uint8Array(64 * 64);
+	for (let i = 40; i <= 50; i++) px[60 * 64 + i] = 9;
+	const s = { fullW: 64, fullH: 64, w: 64, h: 64, left: 0, top: 0, px };
+	assert.deepStrictEqual(pics.feetTile(s, 10, 10), [10, 10], 'a figure on its own tile');
+	// the same pixels of a sprite in a frame 64 wider to the left stand one tile west of the anchor
+	const wide = { fullW: 128, fullH: 64, w: 64, h: 64, left: 0, top: 0, px };
+	assert.deepStrictEqual(pics.feetTile(wide, 10, 10), [8, 10], 'a figure two tiles west when the box sits at the left of a wider frame');
+	assert.strictEqual(pics.feetTile({ fullW: 32, fullH: 32, w: 2, h: 2, left: 0, top: 0, px: new Uint8Array(4) }, 5, 5), null, 'no opaque pixel, no figure');
+});

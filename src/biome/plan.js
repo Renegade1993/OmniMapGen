@@ -1258,6 +1258,23 @@ function displacePickups(plans, W, H, blocked, opts = {}) {
 			}
 			return own ? hid / own : 0;
 		};
+		// the tiles the concrete stacks' figures stand on, when that is not the tile a stack blocks (B1, K item 25: the guard's figure on free land): a pile is not put on one, and a
+		// stack does not step so that its figure lands on a pile or on ground that is not free. VMAPGEN_GUARD_FIGURE=0 off.
+		const aTile = m => { const mk = m.template.mask; for (let i = 0; i < mk.length; i++) { const j = mk[i].indexOf('A'); if (j >= 0) return [m.x - (mk[i].length - 1 - j), m.y - (mk.length - 1 - i)]; } return [m.x, m.y]; };
+		const figureOf = (m, ax, ay) => {
+			if (process.env.VMAPGEN_GUARD_FIGURE === '0' || /^randomMonster/.test(m.type)) return null;
+			let s;
+			try { s = pics.spriteOf(m.template.animation, roots) || pics.spriteOfInZip(m.template.animation, roots); } catch (e) { s = null; }
+			return s ? pics.feetTile(s, ax, ay) : null;
+		};
+		const figureTiles = () => {
+			const out = new Set();
+			for (const m of mons) {
+				const f = figureOf(m, m.x, m.y), a = aTile(m);
+				if (f && (f[0] !== a[0] || f[1] !== a[1]) && f[0] >= 0 && f[1] >= 0 && f[0] < W && f[1] < H) out.add(f[1] * W + f[0]);
+			}
+			return out;
+		};
 		const watchers = c => stand.map((s, i) => (Math.abs(s % W - c % W) <= 1 && Math.abs(((s / W) | 0) - ((c / W) | 0)) <= 1 ? i : -1)).filter(i => i >= 0).join(',');
 		// every object's ways in (the tiles it is visited from), kept free
 		const door = new Set();
@@ -1283,6 +1300,9 @@ function displacePickups(plans, W, H, blocked, opts = {}) {
 				if (!wards.every(q => { const ways = []; for (const [vx, vy] of visitableCells(q.template, q.x, q.y)) for (const [ddx, ddy] of allowedDirs(q.template)) ways.push((vy + ddy) * W + vx + ddx);
 					return ways.every(a => !near1(a, s0) || near1(a, t) || !(free(a) || a === s0) || stand.some((s2, j) => j !== i && near1(s2, a))); })) continue;
 				const ax = tx + dx0, ay = ty + dy0;
+				// its figure there on free ground and on no pile (a figure off the tile it blocks is where a hero is shown to attack it)
+				const fg = figureOf(m, ax, ay);
+				if (fg && (fg[0] !== tx || fg[1] !== ty)) { const fc = fg[1] * W + fg[0]; if (fg[0] < 0 || fg[1] < 0 || fg[0] >= W || fg[1] >= H || !free(fc) || picks().some(q => q.y * W + q.x === fc)) continue; }
 				// its picture there over no pile
 				const pm = new Map(); for (const [x, y, rows] of pix(ax, ay)) if (x >= 0 && y >= 0 && x < W && y < H) pm.set(y * W + x, rows);
 				if (picks().some(q => { let own = 0, hid = 0; for (const [ddx, ddy, rows] of artPix(q.template)) { const u = pm.get((q.y + ddy) * W + q.x + ddx); for (let k = 0; k < 32; k++) { own += pop(rows[k]); if (u) hid += pop((rows[k] & u[k]) >>> 0); } } return own && hid / own >= share; })) continue;
@@ -1302,7 +1322,7 @@ function displacePickups(plans, W, H, blocked, opts = {}) {
 			const p = o.y * W + o.x;
 			if (under(o.template, p) < share) continue;
 			r.seen++;
-			const w = watchers(p), cand = [];
+			const w = watchers(p), cand = [], figs = figureTiles();
 			// a dear pile goes nowhere a flyer could take it from that it could not before: a tile beside it a hero stands on outside every
 			// stack's ring (the suite's 24 small seeds: dear piles open 101 -> 121 of 731 when the piles moved off ground the earlier passes closed)
 			const dear = /^(randomArtifact|artifact|pandoraBox|spellScroll|prison)/.test(o.type);
@@ -1310,7 +1330,7 @@ function displacePickups(plans, W, H, blocked, opts = {}) {
 			const wasOpen = dear && openAt(p, -1);
 			for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
 				const x = o.x + dx, y = o.y + dy, c = y * W + x;
-				const why = (!dx && !dy) || x < 0 || y < 0 || x >= W || y >= H ? '' : !free(c) ? 'taken' : door.has(c) ? 'door' : (pl.roadCells && pl.roadCells.has(c)) ? 'road'
+				const why = (!dx && !dy) || x < 0 || y < 0 || x >= W || y >= H ? '' : !free(c) ? 'taken' : figs.has(c) ? 'figure' : door.has(c) ? 'door' : (pl.roadCells && pl.roadCells.has(c)) ? 'road'
 					: !w.split(',').filter(Boolean).every(i => watchers(c).split(',').includes(i)) ? 'watch' : under(o.template, c) >= share ? 'picture'
 					: dear && !wasOpen && openAt(c, p) ? 'open' : 'ok';
 				if (why) tally[why] = (tally[why] || 0) + 1;

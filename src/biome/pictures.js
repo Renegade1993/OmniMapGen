@@ -243,6 +243,24 @@ function spriteOfInZip(animation, roots, exactOnly = false) {
 	return s;
 }
 
+/**
+ * The tile a creature's figure stands on when its sprite is anchored at (ax, ay): the tile under the middle of the last opaque row, the way the client draws it (K item 25,
+ * "The guard standing in the water"). [x, y], or null when the sprite has no opaque pixel. One formula for the guard figure test (guardCreatures.js) and the late pile placer
+ * (plan.js displacePickups).
+ */
+function feetTile(s, ax, ay) {
+	if (!s.__feet) {
+		let maxY = -1;
+		for (let j = 0; j < s.h; j++) for (let i = 0; i < s.w; i++) if (s.px[j * s.w + i] > 7) maxY = j;
+		let a = Infinity, b = -1;
+		if (maxY >= 0) for (let i = 0; i < s.w; i++) if (s.px[maxY * s.w + i] > 7) { if (i < a) a = i; b = i; }
+		s.__feet = { maxY, mid: (a + b) / 2 };
+	}
+	if (s.__feet.maxY < 0) return null;
+	const [OX, OY] = origin(ax, ay, s);
+	return [Math.floor((OX + s.__feet.mid) / 32), Math.floor((OY + s.__feet.maxY) / 32)];
+}
+
 /** Where a sprite's box starts in map pixels for an object anchored at (x, y). */
 const origin = (x, y, s) => [(x + 1) * 32 - s.fullW + s.left, (y + 1) * 32 - s.fullH + s.top];
 
@@ -283,4 +301,4 @@ function drawnBefore(a, b) {
  * install has none (the suite's test install: setting its user folder would load that folder's mods into every test). */
 const spriteRoots = () => [process.env.VCMI_USER_DIR, process.env.VCMI_ROOT, process.env.VMAPGEN_SPRITE_ROOT].filter(Boolean);
 
-module.exports = { decodeDef, spriteOf, spriteOfInZip, coverage, origin, pop, drawnBefore, spriteRoots, modIndex, zipIndex, modOrder, pickCopy };
+module.exports = { decodeDef, spriteOf, spriteOfInZip, coverage, origin, feetTile, pop, drawnBefore, spriteRoots, modIndex, zipIndex, modOrder, pickCopy };

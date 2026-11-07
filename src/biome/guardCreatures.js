@@ -247,15 +247,9 @@ function figureTest(figure) {
 			const s = pics.spriteOf(k, rts) || pics.spriteOfInZip(k, rts);
 			if (!s) t.unread++;
 			else {
-				let maxY = -1;
-				for (let j = 0; j < s.h; j++) for (let i = 0; i < s.w; i++) if (s.px[j * s.w + i] > 7) maxY = j;
-				if (maxY >= 0) {
-					let a = Infinity, b = -1;
-					for (let i = 0; i < s.w; i++) if (s.px[maxY * s.w + i] > 7) { if (i < a) a = i; b = i; }
-					// the anchor stands at (100 + shift) when the 'A' tile is (100, 100); tiles are 32 px
-					const [OX, OY] = pics.origin(100 + look.shift.dx, 100 + look.shift.dy, s);
-					v = { dx: Math.floor((OX + (a + b) / 2) / 32) - 100, dy: Math.floor((OY + maxY) / 32) - 100 };
-				}
+				// the anchor stands at (100 + shift) when the 'A' tile is (100, 100); tiles are 32 px
+				const f = pics.feetTile(s, 100 + look.shift.dx, 100 + look.shift.dy);
+				if (f) v = { dx: f[0] - 100, dy: f[1] - 100 };
 			}
 		}
 		memo.set(k, v);
