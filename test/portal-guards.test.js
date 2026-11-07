@@ -22,27 +22,26 @@ function ends(tag, extra) {
 	{ encoding: 'utf8', timeout: 150000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
 	assert.strictEqual(r.status, 0, r.stderr.slice(-600));
 	const M = sight.load(out);
-	let n = 0, g = 0, door = 0;
+	let n = 0, g = 0, open = 0;
 	for (const o of M.objs) {
 		if (!/^monolith/.test(o.type)) continue;
 		n++;
 		const cells = [...M.approach(o), ...o.entr.map(([x, y]) => M.idx(o.l, x, y))];
 		if (M.monsters.some(q => q.l === o.l && cells.some(i => Math.max(Math.abs(q.at[0] - (i % M.W)), Math.abs(q.at[1] - (Math.floor(i / M.W) % M.H))) <= 1))) g++;
-		// a stack against the monolith's own tile or its entrance: the door itself (a stack two tiles off that guards a pile beside the door is not)
-		if (M.monsters.some(q => q.l === o.l && o.entr.some(([x, y]) => Math.max(Math.abs(q.at[0] - x), Math.abs(q.at[1] - y)) <= 1))) door++;
+		if (sight.openAccess(M, o)) open++;
 	}
 	for (const f of [out, out + '.zones.json', out.replace(/\.vmap$/, '.zonedump.json')]) fs.rmSync(f, { force: true });
-	return { n, g, door };
+	return { n, g, open };
 }
 
 test('Guards at portals: Off leaves no monolith end guarded, On and Template guard every end of a Coldshadow map', { timeout: 280000 }, () => {
 	const off = ends('off', ['--bio.guardPortals', '0']), on = ends('on', ['--bio.guardPortals', '1']), tpl = ends('tpl', []);
 	assert.ok(off.n >= 2, 'the map has portals');
-	// 2026-11-07 (the suite's debt; the same on 0.3.28, 0.3.29 and 0.3.30): the 'guarded' count takes any stack within a tile of any approach tile, which on
-	// this map (seed 2) counts the guard of a Pandora's box standing on an approach tile of the monolith at (42,23): the stack is at (44,22), two tiles from
-	// the monolith, and a hero enters it from other sides without a fight. K's words are 'no guards in front of portals': Off now means no stack against
-	// the door (the monolith's own tile and entrance). On and Template keep the wide count, where a stack beside any approach tile is a guard.
-	assert.strictEqual(off.door, 0, `Off: ${off.door} of ${off.n} doors have a stack against them (${off.g} with one beside an approach tile)`);
+	// 2026-11-07 (the suite's debt; the same on 0.3.28, 0.3.29 and 0.3.30; the Opus Reviewer: test the rule, not a radius): the old line counted any stack within a
+	// tile of any approach tile, which on this map (seed 2) takes the guard of a Pandora's box that stands on an approach tile of the monolith at (42,23): the stack is at
+	// (44,22), two tiles off, and a hero enters the monolith from other sides without a fight. K's words are 'no guards in front of portals': Off means every portal end can
+	// be entered with no fight, an approach tile of it in free ground (outside every guard's ring) of more than a pocket (sight.openAccess). On and Template keep the wide count.
+	assert.strictEqual(off.open, off.n, `Off: ${off.open} of ${off.n} monolith ends can be entered with no fight (${off.g} have a stack beside an approach tile)`);
 	assert.strictEqual(on.g, on.n, `On: ${on.g} of ${on.n} ends guarded`);
 	assert.strictEqual(tpl.g, tpl.n, `Template: ${tpl.g} of ${tpl.n} ends guarded`);
 });

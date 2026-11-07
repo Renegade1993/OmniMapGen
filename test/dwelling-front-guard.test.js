@@ -34,13 +34,8 @@ const OPTS = {
 // A rate over seeds 20 to 29 since 2026-10-18 (the lead: never re-pin a lucky seed): over seeds 20 to 25 the fronts stood open 4 of 37 on
 // 305b6a6 and 8 of 42 with the building-pinch rule, while seed 23 alone read 0 and 1; over seeds 20 to 29, 4 of 67 (6.0%) on 305b6a6. Bar: the
 // playable gate's own limit, 20% (approach-open).
-// 2026-11-07 (the suite's debt): the sample floor was 5 dwellings a seed (50 over ten), and the dwellings of these ten seeds fell with the
-// generator (55 on 0.3.28, 47 on 0.3.29 and 0.3.30, which failed the floor at 'dwellings 47' with the rate at 17.0%, under the bar). Seeds 30 to 49
-// of the same settings give 126 dwellings and 16.7% open (6.3 a seed against 4.7 here), so the count is the draw's, not a fault. The rate is
-// now read over twenty seeds (20 to 39) and the floor is 4 a seed, which the sample only needs to be more than a handful of dwellings.
-// The bar stays 20%.
-const SEEDS = Array.from({ length: 20 }, (_, i) => 20 + i);
-test('K settings 108x108 two players free layout, seeds 20 to 39: dwelling fronts open under 20%, the playable gate limit', { timeout: 1200000 }, t => {
+const SEEDS = [20, 21, 22, 23, 24, 25, 26, 27, 28, 29];
+test('K settings 108x108 two players free layout, seeds 20 to 29: dwelling fronts open under 20%, the playable gate limit', { timeout: 1200000 }, t => {
 	let open = 0, dwellings = 0;
 	for (const seed of SEEDS) {
 		const out = path.join(testTmp(), `vmapgen_dwfront_${process.pid}_${seed}.vmap`);
@@ -56,6 +51,6 @@ test('K settings 108x108 two players free layout, seeds 20 to 39: dwelling front
 		}
 	}
 	t.diagnostic(`dwelling fronts open ${open} of ${dwellings} (${(100 * open / dwellings).toFixed(1)}%)`);
-	assert.ok(dwellings >= 4 * SEEDS.length, `dwellings ${dwellings}`);
+	assert.ok(dwellings >= 5 * SEEDS.length, `dwellings ${dwellings}`);
 	assert.ok(open / dwellings < 0.2, `dwelling fronts open ${open} of ${dwellings} (${(100 * open / dwellings).toFixed(1)}%), bar 20%`);
 });

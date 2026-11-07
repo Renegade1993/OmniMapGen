@@ -45,14 +45,8 @@ for (const seed of [1, 2])
 	test(`48x48 four players seed ${seed}: guards stronger with distance from the starts, step by step, the stacks and their mean level kept`, { timeout: 900000 }, () => {
 		const none = gen(seed, null), z = gen(seed, 0), h = gen(seed, 0.5), one = gen(seed, 1);
 		assert.strictEqual(z.objects, none.objects, 'at 0 the map is as it was');
-		// 2026-11-07 (the suite's debt; the same failure on 0.3.28, 0.3.29 and 0.3.30): a stack moves a level at 0.5 only where round(0.5 x 2.4 x (rank - 0.5))
-		// reaches 1, which is a rank under 0.08 or over 0.92, and on seed 1 (26 stacks) the nearest are level 1 and cannot weaken, so the far ones stay too
-		// (guardDistance.js, the net undone) and 0.5 leaves the map as at 0 ('0 of 26 stacks' in the log; 5 of 26 at 1). So 0.5 makes another map where a
-		// stack can move (seed 2) and never goes against the knob where it cannot (seed 1): the correlation never falls from 0 to 0.5 to 1.
-		assert.ok(one.objects !== h.objects && one.objects !== z.objects, 'at 1 the map changes');
-		if (seed === 2) assert.ok(h.objects !== z.objects, 'each value makes another map');
-		assert.ok(z.rho <= h.rho && h.rho <= one.rho && one.rho - z.rho >= 0.1, `Spearman ${z.rho.toFixed(2)}, ${h.rho.toFixed(2)}, ${one.rho.toFixed(2)}`);
-		if (seed === 2) assert.ok(z.rho < h.rho && h.rho < one.rho, `Spearman rises step by step: ${z.rho.toFixed(2)}, ${h.rho.toFixed(2)}, ${one.rho.toFixed(2)}`);
+		assert.ok(h.objects !== z.objects && one.objects !== h.objects, 'each value makes another map');
+		assert.ok(z.rho < h.rho && h.rho < one.rho && one.rho - z.rho >= 0.1, `Spearman ${z.rho.toFixed(2)}, ${h.rho.toFixed(2)}, ${one.rho.toFixed(2)}`);
 		assert.ok(one.gap - z.gap >= 0.5, `far quarter over near: ${z.gap.toFixed(2)} at 0, ${one.gap.toFixed(2)} at 1`);
 		assert.ok(z.n === h.n && h.n === one.n, `stacks ${z.n} ${h.n} ${one.n}`);
 		assert.ok(Math.abs(one.mean - z.mean) < 0.1, `mean level ${z.mean.toFixed(2)} at 0, ${one.mean.toFixed(2)} at 1`);
