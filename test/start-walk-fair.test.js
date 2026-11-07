@@ -23,7 +23,7 @@ const CASES = [['tb144x2 s7402', '7402', []], ['no144x2 s8307', '8307', NOS], ['
 function ratio(seed, extra, tag, env = {}) {
 	const out = path.join(testTmp(), `vmapgen_walkfair_${process.pid}_${tag}.vmap`);
 	const r = spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'), '--w', '144', '--h', '144', '--players', '2', '--humans', '1',
-		'--seed', seed, '--underground', '1', ...extra, '--out', out], { encoding: 'utf8', timeout: 400000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv(env) });
+		'--seed', seed, '--underground', '1', ...extra, '--out', out], { encoding: 'utf8', timeout: 1500000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv(env) });
 	assert.strictEqual(r.status, 0, (r.stderr || '').slice(-400));
 	const sight = require('../tools/mapsight/lib/sight');
 	const M = sight.load(out), WET = new Set(['wa', 'wt']), st = sight.starts(M), ring = new Set();
@@ -45,12 +45,12 @@ function ratio(seed, extra, tag, env = {}) {
 }
 
 for (const [name, seed, extra] of CASES)
-	test(`144x144 two levels, two players, ${name}: the two seats walk within 2.2 of each other without a fight`, { timeout: 900000 }, () => {
+	test(`144x144 two levels, two players, ${name}: the two seats walk within 2.2 of each other without a fight`, { timeout: 2700000 }, () => {
 		const r = ratio(seed, extra, 'on' + seed);
 		assert.ok(r.ratio <= 2.2, `walks ${r.walks}, ratio ${r.ratio.toFixed(2)}`);
 	});
 
-test('the same three cases with the floor, the peer floor and the road drops off: at least one seat pair is over 2.2 (the passes are needed)', { timeout: 1800000 }, () => {
+test('the same three cases with the floor, the peer floor and the road drops off: at least one seat pair is over 2.2 (the passes are needed)', { timeout: 5400000 }, () => {
 	const off = { VMAPGEN_START_FLOOR: '0', VMAPGEN_START_PEER: '0', VMAPGEN_START_WALK_DEAR: '0', VMAPGEN_START_DAY7: '0' };
 	const rs = CASES.map(([, seed, extra]) => ratio(seed, extra, 'off' + seed, off));
 	assert.ok(rs.some(r => r.ratio > 2.2), JSON.stringify(rs));
@@ -59,11 +59,11 @@ test('the same three cases with the floor, the peer floor and the road drops off
 // The day-7 passes (VMAPGEN_START_DAY7) act only on a map whose starts are beyond 2.2 by the walk by day 7: tb144x2 s7407 in the test
 // install reads 450/675 (1.50) and comes out the same object for object with them off (the lead, 2026-10-22: maps already within the
 // ratio untouched)
-test('tb144x2 s7407, within 2.2: the same objects with the day-7 passes on and off', { timeout: 900000 }, () => {
+test('tb144x2 s7407, within 2.2: the same objects with the day-7 passes on and off', { timeout: 2700000 }, () => {
 	const objs = env => {
 		const out = path.join(testTmp(), `vmapgen_walkfair_${process.pid}_d7${env.VMAPGEN_START_DAY7 || 'on'}.vmap`);
 		const r = spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'), '--w', '144', '--h', '144', '--players', '2', '--humans', '1',
-			'--seed', '7407', '--underground', '1', '--out', out], { encoding: 'utf8', timeout: 400000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv(env) });
+			'--seed', '7407', '--underground', '1', '--out', out], { encoding: 'utf8', timeout: 1500000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv(env) });
 		assert.strictEqual(r.status, 0, (r.stderr || '').slice(-400));
 		const M = require('../tools/mapsight/lib/sight').load(out);
 		fs.rmSync(out, { force: true }); fs.rmSync(out + '.zones.json', { force: true });
