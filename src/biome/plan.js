@@ -6210,9 +6210,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		// townless zone left with one road that way loses it. The roads then go
 		// down here with the rest, before anything is built. The town net used
 		// to be routed after the fill, around whatever stood there (K: "broken
-		// up by things placed around them"). Road network Off keeps only the
-		// passages' own roads.
-		if (!tplZones && p.roadNetwork !== 0) {
+		// up by things placed around them"). Build Road Network Off does not
+		// change the plan (K, 2026-11-05: "no visual roads and no road bonuses";
+		// the Opus Reviewer, 2026-11-06): only the road type is 'none', so the
+		// roads are not written and the map is On's map.
+		if (!tplZones) {
 			const holding = new Set(roadTowns.map(t => zone[t.y * W + t.x]));
 			const doors = openings.filter(o => o.kind === 'openRoad' || o.kind === 'openNoRoad');
 			const parent = new Map(), town = new Map();
@@ -9264,8 +9266,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			here.push(...mines);
 		}
 		const before = plans[l].roadCells.size;
-		// roadNetwork 0 (player lever): no town-linking net; roads cut through
-		// zone openings (openPathRoad) stay
+		// (Build Road Network Off does not reach the plan: the road type is 'none' and the plan is On's)
 		// With roads first, a template's roads are the engine's alone: towns
 		// joined through the links that carry a road (CRoadRandomizer), and a
 		// link without one, or a portal, leaves the towns it parts unjoined by
@@ -9294,7 +9295,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			plans[l].roadFailed = plans[l].roadFailed.filter(f => f.cells.some(c => built.has(c)));
 		}
 		const added = (roadsFirst ? joinFailed(plans[l].roadFailed, plans[l].roadCells, plans[l].zone, W, H, blocked, l) : 0)
-			+ (p.roadNetwork === 0 || (templateRoads && towns.filter(t => (t.l || 0) === l && t.gates).length > 1) ? 0
+			+ ((templateRoads && towns.filter(t => (t.l || 0) === l && t.gates).length > 1) ? 0
 				: buildRoadNetwork(here, plans[l].roadCells, W, H, blocked, l));
 		const orphans = pruneOrphanRoads(plans[l].roadCells, W, H);
 		const pruneLate = process.env.VMAPGEN_ROAD_PRUNE_LATE !== '0';
@@ -10122,10 +10123,9 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			}
 			if (cut) console.error(`[gen] level ${l}: road spline edges to link ends never built taken back, ${cut} tile(s)`);
 		}
-	// With Build Road Network Off no net stands for a gate's road to join, and a run of up to 150 tiles to the nearest road piece put more road on the
-	// map than with the network On (72x72 free, two players, seed 2: 360 tiles Off against 348 On): then a gate or monolith joins a road within 60 tiles,
-	// the walk the mapsight teleport check allows (30 left gates off road on pw_008, pw_025 and pw_047 of the 98-case grid)
-	const teleReach = Number(params.roadNetwork) === 0 ? 60 : 150;
+	// A gate or monolith joins a road within 150 tiles. (Before 2026-11-06 Build Road Network Off cut this to 60 and dropped the mines' joins and
+	// the town net; Off now only writes no road, so the plan is On's.)
+	const teleReach = 150;
 	// The last road pass: the road on the visiting tile of every gate and monolith (gateroad.js; VMAPGEN_TELEPORT_ROADS=0 skips it)
 	if (process.env.VMAPGEN_TELEPORT_ROADS !== '0' && process.env.VMAPGEN_ROAD_SPLINES !== '0')
 		for (let l = 0; l < levels; l++) {
@@ -10134,11 +10134,8 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		}
 	// The engine's mines stand on a road 19 to 35% of the time (tier-1 subset: road_mine_at engine 0.19, ours 0.02; its roads run to the
 	// mines of a zone with fewer than two road nodes); a mine here joins the road net within 30 tiles with that chance, over free floor
-	// Build Road Network Off on a template: the mines get no road of their own (the passages' roads, the gates' and monoliths', and the towns' doors stay)
-	// and on a free layout the same (the lead, 2026-10-14, from MapGen Dev's lever test: Off left the portal and gate roads, the mines' and the
-	// bare towns' joins, and kept 93% of the road; 72x72 seeds 1-3 had 328/292/321 road tiles with Off against 279/441/400 with On)
-	const roadsOff = Number(params.roadNetwork) === 0;
-	if (process.env.VMAPGEN_ROAD_SPLINES !== '0' && !roadsOff)
+	const roadsOff = false;
+	if (process.env.VMAPGEN_ROAD_SPLINES !== '0')
 		for (let l = 0; l < levels; l++) {
 			const r = require('./gateroad').teleportRoads(plans[l], W, H, l, blocked, OCCUPIED, visitableCells, blockingCells,
 				{ types: /^(mine|abandonedMine)$/, reach: 30, chance: 0.2, overGuards: false, rng: xorshift(((params.seed || 1) ^ 0x31ae5) + l * 7919 >>> 0) });
