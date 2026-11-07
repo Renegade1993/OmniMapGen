@@ -34,6 +34,12 @@ const OPTS = {
 // A rate over seeds 20 to 29 since 2026-10-18 (the lead: never re-pin a lucky seed): over seeds 20 to 25 the fronts stood open 4 of 37 on
 // 305b6a6 and 8 of 42 with the building-pinch rule, while seed 23 alone read 0 and 1; over seeds 20 to 29, 4 of 67 (6.0%) on 305b6a6. Bar: the
 // playable gate's own limit, 20% (approach-open).
+// The sample floor follows 3119d31 (2026-11-07, the Opus Reviewer's ruling 10:02, after his question of 08:39: which 0.3.29 change cut the dwellings of these seeds from 55 to 47).
+// Bisect of the 27 first-parent commits v0.3.28 to v0.3.29: 3119d31, in the run of prison commits that K's words of 2026-09-30 asked for ("Lots of instances of prisons being placed
+// directly in front of other adventurers"). Of the prison switches only VMAPGEN_PRISON_HOLD=0 (a prison is laid with its guard's tile and exit held until the fill ends) gives the
+// dwellings back (early, prefilter, path: no change). On seeds 20 to 49 of these settings, 0.3.29: hold on 173 dwellings (32 in start zones), hold off 185 (37), 0.3.28 187. Stock
+// (98 engine maps) has 0.42 dwellings a start zone (0.33 at 108x108); ours 0.75 on 0.3.28, 0.53 with the hold, 0.62 without: the hold moves start zones toward stock. So the floor is
+// 4 a seed. The seeds stay as they were, and the bar stays 20%.
 const SEEDS = [20, 21, 22, 23, 24, 25, 26, 27, 28, 29];
 test('K settings 108x108 two players free layout, seeds 20 to 29: dwelling fronts open under 20%, the playable gate limit', { timeout: 1200000 }, t => {
 	let open = 0, dwellings = 0;
@@ -51,6 +57,6 @@ test('K settings 108x108 two players free layout, seeds 20 to 29: dwelling front
 		}
 	}
 	t.diagnostic(`dwelling fronts open ${open} of ${dwellings} (${(100 * open / dwellings).toFixed(1)}%)`);
-	assert.ok(dwellings >= 5 * SEEDS.length, `dwellings ${dwellings}`);
+	assert.ok(dwellings >= 4 * SEEDS.length, `dwellings ${dwellings}`);
 	assert.ok(open / dwellings < 0.2, `dwelling fronts open ${open} of ${dwellings} (${(100 * open / dwellings).toFixed(1)}%), bar 20%`);
 });
