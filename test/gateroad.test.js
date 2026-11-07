@@ -111,7 +111,9 @@ test('one connected road is not touched', () => {
 });
 
 test('mines join the road net by chance: chance 0 touches nothing, chance 1 runs the road onto the visiting tile', () => {
-	const mine = { type: 'mine', l: 0, x: 8, y: 8, template: {} };
+	// 2026-11-07 (the suite's debt; the failure since 2026-10-31, commit b7b05db "Roads keep out from under buildings"): a mine's road is cut from under its own roof (K, 2026-10-31: "a illegal route of a
+	// road under a alchemists lab to reach it's front door"), which reads the mine's mask, so the made-up mine has one: a single visited cell, no roof
+	const mine = { type: 'mine', l: 0, x: 8, y: 8, template: { mask: ['A'] } };
 	const opts = chance => ({ types: /^(mine|abandonedMine)$/, reach: 30, chance, rng: () => 0.5 });
 	const none = level([mine], [[2, 8], [1, 8]]);
 	teleportRoads(none.plan, W, H, 0, none.blocked, OCC, visit, undefined, opts(0));

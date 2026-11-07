@@ -34,19 +34,22 @@ test('starts the template treats alike keep the CLI order', () => {
 	assert.deepStrictEqual(orderStarts(star, [1, 2], CORNERS.slice(0, 2)), [0, 1]);
 });
 
-test('Golem Foundry at 72x72 for four realizes every link as land', { timeout: 300000 }, () => {
+// Rewritten 2026-11-07 (the suite's debt; the failure since 0.3.15): Golem Foundry is DMB's own template and is in no test install ('template "Golem Foundry" not found'), so the
+// run never reached the plan. The case is the generator's own golem template, Golems Aplenty, at the same size and players: four starts ringed through eight links, every one
+// realized as land.
+test('Golems Aplenty at 72x72 for four realizes every link as land (Golem Foundry, a DMB template, is in no test install)', { timeout: 300000 }, () => {
 	const { spawnSync } = require('child_process');
 	const path = require('path');
 	const { genEnv, testTmp } = require('./_vcmi');
 	for (const seed of ['1', '2']) {
 		const r = spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'),
 			'--w', '72', '--h', '72', '--players', '4', '--seed', seed, '--declaremods', '0',
-			'--template', 'Golem Foundry', '--out', path.join(testTmp(), 'golem_foundry_plan.vmap')],
+			'--template', 'Golems Aplenty', '--out', path.join(testTmp(), 'golems_aplenty_plan.vmap')],
 		{ encoding: 'utf8', timeout: 240000, cwd: path.join(__dirname, '..'), windowsHide: true,
 			env: genEnv({ VMAPGEN_PLAN_ONLY: '1' }) });
 		assert.strictEqual(r.status, 0, r.stderr.slice(-600));
 		const plan = JSON.parse(r.stdout.split('\n').find(l => l.startsWith('{"plan"'))).plan[0];
-		assert.strictEqual(plan.links, 12);
+		assert.strictEqual(plan.links, 8);
 		assert.strictEqual(plan.unfulfilled, 0, `seed ${seed}: ${plan.unfulfilled} links fell back to portals`);
 	}
 });
