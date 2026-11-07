@@ -1,6 +1,5 @@
 {
-	"_about" : "Per-template generator settings, keyed by the template's name as in approved-templates.json; a template not listed takes every default. Outside generator/, so editing it needs no re-pinning. Keys: declipArt (default true): false keeps a template's pickups where they land when another object's picture is drawn over them (plan.js, declip.js declipPictures). Coldshadow's Fantasy keeps them: its objects are part of what K accepted (the lead, 2026-10-18).",
+	"_about" : "Per-template generator settings, keyed by the template's name as in approved-templates.json; a template not listed takes every default. Outside generator/, so editing it needs no re-pinning. Keys: declipArt (default true): false keeps a template's pickups where they land when another object's picture is drawn over them (plan.js, declip.js declipPictures). Coldshadow's Fantasy keeps them: its objects are part of what K accepted (the lead, 2026-10-18). Coldshadow's Fantasy had declipArt false from 2026-10-18 (its pickups on K's accepted seeds did not move) and lost it on 2026-11-07 (the lead: K's 10-18 words cover every map).",
 	"templates" : {
-		"Coldshadow's Fantasy" : { "declipArt" : false }
 	}
 }

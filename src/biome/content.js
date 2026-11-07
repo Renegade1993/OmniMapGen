@@ -1626,7 +1626,7 @@ function artStacks(tpl, x, y, l, W, H, blocked) {
  * pickup, a campfire, a treasure pile, the random-monster stand-in) is refused where the art of a building anchored south of it covers a quarter or more of its own
  * picture and the stock order shows it (under a tenth hidden: R2b must hide nothing stock showed); a building is refused where its art would cover a quarter or more of
  * a placed pickup's or stack's picture the same way. Judged by the pixels, as artStacks. Off with VMAPGEN_TALL_ART=0, and for a template whose settings say
- * declipArt false (Coldshadow's Fantasy: its pickups on K's accepted seeds do not move, the lead 2026-10-18; planMap calls setTallArt).
+ * declipArt false (a template whose settings say so keeps its pickups where they land; none does since 2026-11-07, when Coldshadow's Fantasy lost the opt-out; planMap calls setTallArt).
  */
 let tallOff = false;
 const TALL_STAT = { loot: 0, building: 0 };

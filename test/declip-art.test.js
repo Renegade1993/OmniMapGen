@@ -59,3 +59,27 @@ test('a crystal with no free tile beside it stays; a sprite that cannot be read 
 	const plan2 = { objects: [entry('mine', 6, 6, CAVERN), entry('resource', 5, 5, CRYSTAL)], openMask: new Uint8Array(W * H).fill(1) };
 	assert.deepStrictEqual(declipPictures(plan2, W, H, 0, blockedOf(plan2), blockingCells, footprintCells, []), { moved: 0, left: 0 });
 });
+
+test('a crystal with no clear tile within two moves 3 or 4 tiles by a way of free tiles; VMAPGEN_DECLIP_WIDE=0 keeps two (left-widen row 2)', { skip: !readable && 'sprites not in the suite install' }, () => {
+	const build = () => {
+		const cavern = entry('mine', 6, 6, CAVERN);
+		const hidden = entry('resource', 5, 5, CRYSTAL);
+		// every tile within two of the crystal is shut but a road corridor west of it (4,5) and (3,5), which no pickup is moved onto but a hero crosses
+		const openMask = new Uint8Array(W * H).fill(1);
+		for (let y = 3; y <= 7; y++) for (let x = 3; x <= 7; x++) openMask[y * W + x] = 0;
+		openMask[5 * W + 5] = 1; openMask[5 * W + 4] = 1; openMask[5 * W + 3] = 1;
+		const plan = { objects: [cavern, hidden], openMask, roadCells: new Set([5 * W + 4, 5 * W + 3]) };
+		return { plan, hidden, blocked: blockedOf(plan) };
+	};
+	const wide = build();
+	const r = declipPictures(wide.plan, W, H, 0, wide.blocked, blockingCells, footprintCells, ROOTS);
+	assert.strictEqual(r.moved, 1, JSON.stringify(r));
+	const far = Math.max(Math.abs(wide.hidden.x - 5), Math.abs(wide.hidden.y - 5));
+	assert.ok(far >= 3 && far <= 4, `moved ${far} tiles to (${wide.hidden.x},${wide.hidden.y})`);
+	process.env.VMAPGEN_DECLIP_WIDE = '0';
+	try {
+		const narrow = build();
+		assert.deepStrictEqual(declipPictures(narrow.plan, W, H, 0, narrow.blocked, blockingCells, footprintCells, ROOTS), { moved: 0, left: 1 });
+		assert.deepStrictEqual([narrow.hidden.x, narrow.hidden.y], [5, 5]);
+	} finally { delete process.env.VMAPGEN_DECLIP_WIDE; }
+});

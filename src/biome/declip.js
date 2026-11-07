@@ -115,8 +115,10 @@ function declipPictures(plan, W, H, l, blocked, blockingCells, footprintCells, r
 	const pics = require('./pictures');
 	const base = l * W * H;
 	const objs = plan.objects.filter(o => (o.l || 0) === l && o.template && o.template.mask);
+	if (process.env.VMAPGEN_DECLIP_TRACE) console.error('[declip-objs] L' + l + ' ' + plan.objects.filter(o => (o.l || 0) === l).map(o => o.type + ':' + o.x + ',' + o.y).join(';'));
 	const order = new Map(plan.objects.map((o, k) => [o, k]));
 	const monsters = objs.filter(o => MON.test(o.type));
+	if (process.env.VMAPGEN_DECLIP_TRACE) for (const o of plan.objects) if ((o.l || 0) === l && PICKUP.test(o.type) && !(o.template && o.template.mask)) console.error('[declip-notpl] ' + o.type + ':' + (o.subtype || '') + ' ' + o.x + ',' + o.y + ' L' + l + ' template ' + (o.template ? 'no mask' : 'none'));
 	const inMap = ([x, y]) => x >= 0 && y >= 0 && x < W && y < H;
 	const zOf = o => o.template.zIndex || prio(o.template.animation) || 0;
 	// every object but the pickups, with its pixels by tile and what the draw order needs
@@ -161,16 +163,20 @@ function declipPictures(plan, W, H, l, blocked, blockingCells, footprintCells, r
 	const one = o => { const b = blockingCells(o.template, o.x, o.y); return b.length === 1 && b[0][0] === o.x && b[0][1] === o.y; };
 	const ringOf = c => monsters.filter(m => Math.max(Math.abs(m.x - (c % W)), Math.abs(m.y - ((c / W) | 0))) <= 1);
 	const walk = c => !(blocked[base + c] & OCCUPIED) && (!plan.openMask || plan.openMask[c]) && !(plan.p && plan.p.water && plan.p.water[c]);
+	// out to four tiles (left-widen row 2; VMAPGEN_DECLIP_WIDE=0 keeps two), nearest first
+	const REACH = process.env.VMAPGEN_DECLIP_WIDE === '0' ? 2 : 4;
 	const NEAR = [];
-	for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) if (dx || dy) NEAR.push([dx, dy]);
+	for (let dy = -REACH; dy <= REACH; dy++) for (let dx = -REACH; dx <= REACH; dx++) if (dx || dy) NEAR.push([dx, dy]);
 	NEAR.sort((a, b) => Math.max(Math.abs(a[0]), Math.abs(a[1])) - Math.max(Math.abs(b[0]), Math.abs(b[1])) || (a[0] * a[0] + a[1] * a[1]) - (b[0] * b[0] + b[1] * b[1]));
 	const fought = require('./lootswap').fightMap(plan.objects, W, H, l, blocked, OCCUPIED, o => MON.test(o.type) || PICKUP.test(o.type), blockingCells);
 	for (const p of objs) {
-		if (!PICKUP.test(p.type) || p.__walled || !one(p)) continue;
+		if (!PICKUP.test(p.type)) continue;
+		if (p.__walled || !one(p)) { if (process.env.VMAPGEN_DECLIP_TRACE) console.error('[declip-skip] ' + p.type + ':' + (p.subtype || '') + ' ' + p.x + ',' + p.y + ' L' + l + ' ' + (p.__walled ? 'walled' : 'not one tile')); continue; }
 		const s = pics.spriteOf(p.template.animation, roots);
-		if (!s) continue;
+		if (!s) { if (process.env.VMAPGEN_DECLIP_TRACE) console.error('[declip-nospr] ' + p.type + ':' + (p.subtype || '') + ' ' + p.x + ',' + p.y + ' L' + l + ' ' + p.template.animation); continue; }
 		// stock: half hidden or more (0.3.30); R2b, the order the engine is to ship: a quarter or more where stock shows it (under a tenth hidden), so R2b hides nothing stock showed
 		const h0 = hidden(p, s, p.x, p.y);
+		if (process.env.VMAPGEN_DECLIP_TRACE) console.error('[declip-h] ' + p.type + ':' + (p.subtype || '') + ' ' + p.x + ',' + p.y + ' L' + l + ' ' + h0[0].toFixed(3) + ' ' + h0[1].toFixed(3));
 		const newly = R2B && h0[1] >= 0.25 && h0[0] < 0.10;
 		if (h0[0] < 0.5 && !newly) continue;
 		if (newly) out.r2b = (out.r2b || 0) + 1;
@@ -183,12 +189,21 @@ function declipPictures(plan, W, H, l, blocked, blockingCells, footprintCells, r
 			if (plan.zone && plan.zone[c] !== plan.zone[c0]) continue;
 			const ring = ringOf(c);
 			if (!guards.every(g => ring.includes(g))) continue;
-			// two tiles off: a free tile beside both, which the hero crosses
-			if (Math.max(Math.abs(dx), Math.abs(dy)) === 2) {
+			// two or more tiles off: a way the hero crosses, free tiles from a neighbour of the pickup to a neighbour of the new tile (for two off, one free tile beside both)
+			if (Math.max(Math.abs(dx), Math.abs(dy)) >= 2) {
 				let via = false;
+				const seen = new Set(), q = [];
 				for (let vy = -1; vy <= 1; vy++) for (let vx = -1; vx <= 1; vx++) {
 					const nx = p.x + vx, ny = p.y + vy;
-					if ((vx || vy) && Math.abs(nx - x) <= 1 && Math.abs(ny - y) <= 1 && inMap([nx, ny]) && walk(ny * W + nx)) via = true;
+					if ((vx || vy) && inMap([nx, ny]) && walk(ny * W + nx)) { seen.add(ny * W + nx); q.push([nx, ny]); }
+				}
+				for (let h = 0; h < q.length && !via; h++) {
+					const [cx, cy] = q[h];
+					if (Math.abs(cx - x) <= 1 && Math.abs(cy - y) <= 1) { via = true; break; }
+					for (let vy = -1; vy <= 1; vy++) for (let vx = -1; vx <= 1; vx++) {
+						const nx = cx + vx, ny = cy + vy, k = ny * W + nx;
+						if ((vx || vy) && inMap([nx, ny]) && !seen.has(k) && Math.abs(nx - p.x) <= REACH && Math.abs(ny - p.y) <= REACH && walk(k)) { seen.add(k); q.push([nx, ny]); }
+					}
 				}
 				if (!via) continue;
 			}
@@ -197,6 +212,7 @@ function declipPictures(plan, W, H, l, blocked, blockingCells, footprintCells, r
 			blocked[base + c0] &= ~OCCUPIED;
 			blocked[base + c] |= OCCUPIED;
 			solid.delete(c0); solid.add(c);
+			if (process.env.VMAPGEN_DECLIP_TRACE) console.error('[declip-move] ' + p.type + ':' + (p.subtype || '') + ' ' + p.x + ',' + p.y + ' -> ' + x + ',' + y + ' L' + l + ' ' + Math.max(Math.abs(dx), Math.abs(dy)) + ' off');
 			p.x = x; p.y = y;
 			out.moved++; done = true; if (newly) out.r2bMoved = (out.r2bMoved || 0) + 1;
 			break;
