@@ -341,19 +341,33 @@ function decorOnlyAt(pl, l, W, H) {
  * piece from a link end's exit spot, so the sitings do not count it as open there (1905ca5's grid: pw_030 L0 monolith6 (28,17) and pw_080
  * monolith6 (23,16) stood over a mountain on a zone line, their guards left at the side). VMAPGEN_EXIT_LINE=0 off.
  */
+const DECOR_LINE = new WeakMap();
 function decorOnZoneLine(pl, l, W, H, zone, c) {
 	if (process.env.VMAPGEN_EXIT_LINE === '0' || !zone) return false;
-	const cx = c % W, cy = (c / W) | 0;
-	for (const o of pl.objects) {
-		if ((o.l || 0) !== l || !o.template || !o.template.mask) continue;
-		const cells = blockingCells(o.template, o.x, o.y);
-		if (!cells.some(([a, b]) => a === cx && b === cy)) continue;
-		for (const [a, b] of cells) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-			const u = a + dx, v = b + dy;
-			if (u >= 0 && v >= 0 && u < W && v < H && a >= 0 && b >= 0 && a < W && b < H && zone[v * W + u] >= 0 && zone[v * W + u] !== zone[b * W + a]) return true;
+	// one map per object set: cell -> a piece covering it touches another zone. The set is the same while the objects array, its length, the zone array and the sum of the
+	// objects' places are (the scan of every object on each call took 109 of 389 s on seed 8307 of start-walk-fair)
+	let sig = 0;
+	for (const o of pl.objects) sig = (sig + (o.x | 0) * 8191 + (o.y | 0) * 131 + ((o.l || 0) + 1)) % 1000000007;
+	let e = DECOR_LINE.get(pl);
+	if (!e || e.arr !== pl.objects || e.len !== pl.objects.length || e.zone !== zone || e.l !== l || e.sig !== sig || e.W !== W) {
+		const map = new Map();
+		for (const o of pl.objects) {
+			if ((o.l || 0) !== l || !o.template || !o.template.mask) continue;
+			const cells = blockingCells(o.template, o.x, o.y);
+			let touches = false;
+			for (const [a, b] of cells) {
+				if (touches) break;
+				for (let dy = -1; dy <= 1 && !touches; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const u = a + dx, v = b + dy;
+					if (u >= 0 && v >= 0 && u < W && v < H && a >= 0 && b >= 0 && a < W && b < H && zone[v * W + u] >= 0 && zone[v * W + u] !== zone[b * W + a]) { touches = true; break; }
+				}
+			}
+			for (const [a, b] of cells) if (a >= 0 && b >= 0 && a < W && b < H) { const k = b * W + a; if (touches || !map.has(k)) map.set(k, map.get(k) || touches); }
 		}
+		e = { arr: pl.objects, len: pl.objects.length, zone, l, sig, W, map };
+		DECOR_LINE.set(pl, e);
 	}
-	return false;
+	return e.map.get(c) === true;
 }
 
 /**
@@ -11078,10 +11092,11 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		}
 		const ringed = c => [...monsterAt].some(m => Math.max(Math.abs(m % W - c % W), Math.abs(((m / W) | 0) - ((c / W) | 0))) <= 1);
 		if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[gold] (${o.x},${o.y}) L${l}: front free ${frontFree.length}, outside a ring ${frontFree.filter(c => !ringed(c)).length}`);
-		// a guard's ring covers 3 of the front's tiles at most, and the tile before the door can be a road a guard may not stand on: rounds, each guard on a tile whose ring covers
-		// some of the front still outside every ring (the body is not re-indented, to keep the change small)
+		// One guard for the mine (K, 2026-11-01: "areas like these where two guards guard one open space are undesired"): the tile whose ring covers most of the front; what it
+		// cannot cover is closed with a blocker by the approach closing that runs after this pass, never with a second stack. The loop runs once, again only after a pickup was
+		// moved out to make room for the guard (the body is not re-indented, to keep the change small).
 		let roomMade = false;
-		for (let round = 0; round < 3; round++) {
+		for (let round = 0; round < 1; round++) {
 		if (!frontFree.some(c => !ringed(c))) break;
 		const zc = pl.zone ? pl.zone[vis[0][1] * W + vis[0][0]] : 0;
 		// a tile before the entrance first, then any within 2 of it (behind the resources laid beside the mine), then a reserved tile that is no road
@@ -11115,14 +11130,16 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		const coverN = c => need.filter(f => Math.max(Math.abs(f % W - c % W), Math.abs(((f / W) | 0) - ((c / W) | 0))) <= 1).length;
 		const besideStack = c => { const x = c % W, y = (c / W) | 0; for (const m of monsterAt) if (m !== c && Math.max(Math.abs(m % W - x), Math.abs(((m / W) | 0) - y)) <= 1) return true; return false; };
 		const most = list => { let best, bn = 0; for (const c of list) { const n = coverN(c); if (n > bn) { best = c; bn = n; } } return best; };
-		// no tile for a guard: the piles laid before the entrance took every one. The nearest 1x1 pickup of no worth (a resource, a campfire, a chest) beside an open front tile moves to a
-		// free tile of the zone 3 to 8 tiles off, and the round runs again.
+		// no tile for a guard, or one that covers only part of the open front: the piles laid before the entrance took the others. The 1x1 pickup of no worth (a resource, a campfire,
+		// a chest) on or beside an open front tile whose tile covers most of it moves to a free tile of the zone 3 to 8 tiles off, and the round runs again.
 		const makeRoom = () => {
 			let pick = null, pd = Infinity;
 			for (const q of pl.objects) {
 				if ((q.l || 0) !== l || !/^(resource|randomResource|campfire|treasureChest)/.test(q.type) || !q.template || !q.template.mask || blockingCells(q.template, q.x, q.y).length !== 1) continue;
 				const d = Math.min(...need.map(f => Math.max(Math.abs(f % W - q.x), Math.abs(((f / W) | 0) - q.y))));
-				if (d <= 1 && d < pd) { pick = q; pd = d; }
+				// the pile whose tile covers the most of the open front first (on the access tile, as the stock guard stands), then the nearest
+				const score = d * 10 - coverN(q.y * W + q.x);
+				if (d <= 1 && score < pd) { pick = q; pd = score; }
 			}
 			if (!pick) return false;
 			let to = -1, td = Infinity;
@@ -11150,7 +11167,7 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 			else if (spot === undefined) { spot = most(cands.filter(c => !besideStack(c))); if (spot !== undefined) out.goldRelaxed = (out.goldRelaxed || 0) + 1; }
 		}
 		if (spot === undefined && round === 0 && stockOk.length) spot = stockOk[0];
-		if (spot === undefined && !roomMade && makeRoom()) { roomMade = true; round--; continue; }
+		if ((spot === undefined || coverN(spot) < need.length) && !roomMade && makeRoom()) { roomMade = true; round--; continue; }
 		if (spot === undefined) {
 			if (round === 0) { if (cands.length) out.goldStock = (out.goldStock || 0) + 1; else out.goldLeft = (out.goldLeft || 0) + 1; }
 			if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[gold] (${o.x},${o.y}) round ${round}: no guard, ${cands.length} tiles, ${stockOk.length} at the stock gap, ${need.length} front tiles open (${need.map(c => `(${c % W},${(c / W) | 0}) road ${roads.has(c)} start way ${byStartRoad(c)} taken ${!!(blocked[base + c] & OCCUPIED)}`).join('; ')})`);
@@ -12655,16 +12672,19 @@ function evenStartTakes(plans, W, H, blocked, rng) {
 		const ground = [];
 		for (let c = 0; c < N; c++)
 			if (e.dist[c] >= 2 && e.dist[c] <= 16 && !e.ring[c] && !road.has(c) && !(blocked[base + c] & (OCCUPIED | RESERVED))) ground.push(c);
+		const refused = {};
+		const no = why => { refused[why] = (refused[why] || 0) + 1; return false; };
 		const fitsHere = (tpl, x, y) => {
 			const walls = blockingCells(tpl, x, y);
-			if (walls.some(([fx, fy]) => fx < 1 || fy < 1 || fx >= W - 1 || fy >= H - 1)) return false;
+			if (walls.some(([fx, fy]) => fx < 1 || fy < 1 || fx >= W - 1 || fy >= H - 1)) return no('edge');
 			const cells = walls.map(([fx, fy]) => fy * W + fx);
-			if (cells.some(c => e.ring[c] || road.has(c) || e.dist[c] < 0 || (blocked[base + c] & (OCCUPIED | RESERVED)))) return false;
+			if (cells.some(c => e.ring[c] || road.has(c) || e.dist[c] < 0 || (blocked[base + c] & (OCCUPIED | RESERVED)))) return no('ground');
 			const own = new Set(cells);
-			if (!approachCells(tpl, x, y, l, W, H, blocked).some(c => !own.has(c) && e.dist[c] >= 0 && !e.ring[c])) return false;
-			if (!entranceOpen(tpl, x, y, l, W, H, blocked, connectivity.reachable)) return false;
-			if (!connectivity.accepts(cells) || weldsMasses(cells, blocked, l, W, H, 1)) return false;
-			return townWayOut4(l, W, H, blocked, e.t, own);
+			if (!approachCells(tpl, x, y, l, W, H, blocked).some(c => !own.has(c) && e.dist[c] >= 0 && !e.ring[c])) return no('approach');
+			if (!entranceOpen(tpl, x, y, l, W, H, blocked, connectivity.reachable)) return no('entrance');
+			if (!connectivity.accepts(cells)) return no('connectivity');
+			if (weldsMasses(cells, blocked, l, W, H, 1)) return no('welds');
+			return townWayOut4(l, W, H, blocked, e.t, own) || no('townWay');
 		};
 		const put = (type, tpl, x, y, subtype, v) => {
 			const o = objectEntry(type, x, y, l, tpl, subtype);
@@ -12716,12 +12736,15 @@ function evenStartTakes(plans, W, H, blocked, rng) {
 			// (K's six cases after 3614fba: large-p2 and small-ug)
 			const [type, v] = (roomy && e.piles < rich.piles) || gap < 1500 ? ['randomResource', 750] : ['treasureChest', 1500];
 			const tpl = type.startsWith('randomArtifact') ? OBJECT_TEMPLATES.randomArtifact : type === 'treasureChest' ? chestTemplate() : pileTemplate('randomResource');
-			if (!footprintFits(tpl, x, y, l, W, H, blocked, true) || pictureOnShadow(tpl, x, y, l, W, H, blocked) || !fitsHere(tpl, x, y)) continue;
+			if (!footprintFits(tpl, x, y, l, W, H, blocked, true)) { no('footprint'); continue; }
+				if (pictureOnShadow(tpl, x, y, l, W, H, blocked)) { no('shadow'); continue; }
+				if (!fitsHere(tpl, x, y)) continue;
 			put(type, tpl, x, y, type.startsWith('randomArtifact') ? 'object' : type, v);
 			placed++;
 			if (type === 'randomResource') e.piles++;
 			added.push(type.replace('randomArtifact', 'artifact '));
 		}
+		if (process.env.VMAPGEN_TAKE_TRACE) console.error(`[take] ${e.t.options.owner}: ground ${ground.length} tiles, pool left ${pool.length}, refused ${JSON.stringify(refused)}, footprint/shadow refusals counted in tries; placed ${added.length}`);
 		lines.push(`${e.t.options.owner} ${before} to ${e.value} (richest ${rich.t.options.owner} ${rich.value})${added.length ? ': ' + added.join(', ') : ''}`);
 	}
 	return lines.length ? lines.join('; ') : null;
