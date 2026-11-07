@@ -2365,7 +2365,7 @@ async function generateMap(params) {
 		console.error(`[gen] concrete guards: ${c.placed} written as their creature, `
 			+ `${c.kept} kept as placeholders (no template the map can use)`
 			+ (c.swapped || c.coveredLeft ? `; ${c.swapped} written as another creature of their level, their own picture under a crater drawn after them, ${c.coveredLeft} with no such creature` : '')
-			+ (c.figSwapped || c.figLeft ? `; ${c.figSwapped} written as another creature of their level and faction, the figure of the first on water, rock or another object's tile, ${c.figLeft} with no such creature` : '')
+			+ (c.figSwapped || c.figLeft ? `; ${c.figSwapped} written as another creature of their level, own faction first, the figure of the first off free land, ${c.figLeft} with no such creature` : '')
 			+ (c.figUnread ? `; ${c.figUnread} creature picture(s) not found, not judged` : ''));
 	}
 	// The free layout's guards, and any placeholder a template zone's rule

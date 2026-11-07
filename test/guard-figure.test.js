@@ -118,3 +118,16 @@ test('a creature whose figure was read is written before one whose sprite no arc
 	assert.strictEqual(r.figSwapped, 1);
 	assert.strictEqual(g.subtype, 'near');
 });
+
+test('a figure more than one tile from the tile it blocks fails the rule by itself (Death Valley\'s Bone Hook and Flayer stand 7 tiles west)', () => {
+	OFFSETS['far.def'] = { dx: -7, dy: 0 };
+	try {
+		const r0 = reg();
+		r0.set('far', { id: 'far', name: 'far', scope: 'mod', level: 6, aiValue: 2000, advMin: 4, advMax: 7, faction: 'a', map: 'far.def', mapMask: ['VVV', 'VAV'] });
+		const g = guard();
+		// the tile 7 west is free land: only the distance fails it
+		const r = concretizeGuards([g], new Map([[g, 'far']]), { registry: r0, h3: null, useMods: true, W: 180, H: 180, figure: figure(() => true) });
+		assert.strictEqual(r.figSwapped, 1);
+		assert.notStrictEqual(g.subtype, 'far');
+	} finally { delete OFFSETS['far.def']; }
+});

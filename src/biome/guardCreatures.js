@@ -268,6 +268,9 @@ function figureTest(figure) {
 		if (!look) return true;
 		const v = offsetOf(look);
 		if (!v || (!v.dx && !v.dy)) return true;
+		// a figure more than one tile from the tile it blocks (Death Valley's Bone Hook and Flayer: a 64x81 figure in a 450x400 frame, 7 tiles west) is not
+		// standing where a hero attacks it from: it fails by itself (the Opus Reviewer, 2026-11-06)
+		if (Math.abs(v.dx) > 1 || Math.abs(v.dy) > 1) return false;
 		return figure.legal(o.x + v.dx, o.y + v.dy, o.l || 0, o);
 	};
 	return t;
