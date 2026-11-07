@@ -1,21 +1,8 @@
 # OmniMapGen
 
-A random map generator for [VCMI](https://vcmi.eu), the open-source Heroes of Might and Magic III
-engine. It writes `.vmap` files the game loads directly. Dead Man's Boots (DMB), a VCMI fork, runs it
-from its MapGen tab; it also runs on its own from the command line.
+OmniMapGen makes random maps for Heroes of Might and Magic III. It runs inside [Dead Man's Boots (DMB)](https://github.com/DeadMansBoots/Dead-Mans-Boots): in a game's lobby you open the Random Map window, switch it to Omni Map Gen, choose a layout and your settings, and the map is made when you press Begin. It works in single-player, hotseat and multiplayer lobbies, where the host chooses and the other players see the settings. It also runs on its own from the command line.
 
-It reads the game's configuration and every active mod from the VCMI install it is given, the way
-the engine loads them (submods at any depth, and each mod's patches to the objects it names), so mod
-towns, creatures, dwellings, banks and spells reach the maps as the engine would place them. It
-generates two ways:
-
-- Free layout: terrain by wave function collapse over parallel chunks, zones sized and classed from
-  the player's settings, content placed by the engine's own value and guard rules.
-- Template: any RMG template the install offers (the engine's, HotA's, a mod's), with its zones,
-  links, towns, mines, treasure bands and guards followed the engine's way.
-
-Its output is measured against maps VCMI's own generator made with the same templates, sizes and
-mods: towns, mines, guards by level, treasure, creature banks and dwellings per map.
+It builds maps with the mods you have turned on, placing their towns, creatures, dwellings and creature banks the way the game's own generator would, and its settings reach further into the map than the game's own random map window: terrain, borders, treasure, monsters, underground, scenery and water.
 
 ## Installing it in the game
 
