@@ -89,7 +89,8 @@ function spriteOf(animation, roots) {
 	if (modFirst) buf = fromMods();
 	if (!buf) try { buf = findResource(roots.filter(Boolean), 'Sprites', LODS, base + '.def'); } catch (e) { buf = null; }
 	if (!buf && !modFirst) buf = fromMods();
-	const s = buf ? decodeDef(buf) : null;
+	// a mod that ships its sprites in a content.zip (HotA Bulwark, Pavilion, Preserve: 44 of the 310 creatures, and their art) is read there too; VMAPGEN_SPRITE_ZIPS=0 reads loose files only, as 0.3.30 did
+	const s = buf ? decodeDef(buf) : (process.env.VMAPGEN_SPRITE_ZIPS === '0' ? null : spriteOfInZip(animation, roots));
 	cache.set(key, s);
 	return s;
 }
@@ -101,7 +102,7 @@ const zipDefsByDir = new Map();
 function zipIndex(userDir) {
 	const mods = userDir ? path.join(userDir, 'Mods') : null;
 	if (zipDefsByDir.has(mods)) return zipDefsByDir.get(mods);
-	const out = new Map();
+	const out = new Map(), base = new Map();
 	const readTail = file => {
 		let fd;
 		try {
@@ -118,8 +119,12 @@ function zipIndex(userDir) {
 			for (let i = 0; i < count && off + 46 <= cdSize; i++) {
 				const nl = cd.readUInt16LE(off + 28), xl = cd.readUInt16LE(off + 30), cl = cd.readUInt16LE(off + 32);
 				const name = cd.toString('utf8', off + 46, off + 46 + nl).toLowerCase();
-				if (name.endsWith('.def') && !out.has(name))
-					out.set(name, { zip: file, method: cd.readUInt16LE(off + 10), csize: cd.readUInt32LE(off + 20), lhoff: cd.readUInt32LE(off + 42) });
+				if (name.endsWith('.def') && !out.has(name)) {
+					const e = { zip: file, method: cd.readUInt16LE(off + 10), csize: cd.readUInt32LE(off + 20), lhoff: cd.readUInt32LE(off + 42) };
+					out.set(name, e);
+					const b = name.slice(name.lastIndexOf('/') + 1);
+					if (!base.has(b)) base.set(b, e);
+				}
 				off += 46 + nl + xl + cl;
 			}
 		} catch (e) { /* an unreadable zip adds nothing */ } finally { if (fd !== undefined) try { fs.closeSync(fd); } catch (e) { /* closed */ } }
@@ -134,8 +139,9 @@ function zipIndex(userDir) {
 		}
 	};
 	if (mods && fs.existsSync(mods)) walk(mods, 0);
-	zipDefsByDir.set(mods, out);
-	return out;
+	const idx = { full: out, base };
+	zipDefsByDir.set(mods, idx);
+	return idx;
 }
 
 /** An animation's first frame from a mod's content.zip ('creatures/AVWSHAMN' is entry 'sprites/creatures/avwshamn.def'), or null. For the figure test
@@ -147,7 +153,9 @@ function spriteOfInZip(animation, roots) {
 	if (zipSprites.has(key)) return zipSprites.get(key);
 	let s = null;
 	for (const r of roots.filter(Boolean)) {
-		const e = zipIndex(r).get(name);
+		const zi = zipIndex(r);
+		// a path names the mod's own file; a bare name takes the first zipped file of that name, as spriteOf takes the first loose one
+		const e = zi.full.get(name) || (name.slice('sprites/'.length).includes('/') ? null : zi.base.get(name.slice(name.lastIndexOf('/') + 1)));
 		if (!e) continue;
 		try {
 			const fd = fs.openSync(e.zip, 'r');
