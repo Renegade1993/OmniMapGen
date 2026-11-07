@@ -73,25 +73,32 @@ test("Coldshadow's Fantasy 36x36 two players: Layout family is ignored by the te
 test('Hub on a made-up cut: starts that do not touch the hub get portal pairs, walk out over land, and ensureConnected opens nothing', () => {
 	const { familyConnections, ensureConnected } = require('../src/biome/biomes');
 	const rng = (s => () => (s = (s * 16807) % 2147483647) / 2147483647)(7);
-	const seeds = [{ x: 0, y: 0, player: 1 }, { x: 10, y: 0, player: 2 }, { x: 5, y: 5 }, { x: 5, y: 0 }];
+	// 2026-11-07 (the suite's debt; broken by 760c0c7 on 0.3.27): the start-exit pass turns a portal link between biomes joined by a walk under SHORTCUT tiles, at least
+	// 24, into a land link (K, 2026-11-02, the game he and Meg abandoned: a monolith pair that only moves a hero round where he can already walk). On the cut of 10 by 10
+	// every walk is shorter than that, so no pair survived. The made-up cut is ten times as wide (100 by 100), where a portal is a shortcut again.
+	const seeds = [{ x: 0, y: 0, player: 1 }, { x: 100, y: 0, player: 2 }, { x: 50, y: 50 }, { x: 50, y: 0 }];
 	const edge = (a, b, n) => ({ a, b, borderCells: new Array(n).fill(0) });
 	const edges = [edge(0, 3, 6), edge(1, 3, 5), edge(2, 3, 9)];
 	const p = { interconnectivity: 0, interconnectPortal: 0 }, pairs = [];
-	const out = familyConnections(3, edges, 4, p, rng, { seeds, W: 10, H: 10, pairs });
+	const out = familyConnections(3, edges, 4, p, rng, { seeds, W: 100, H: 100, pairs });
 	assert.deepStrictEqual(pairs, [[0, 2], [1, 2]], 'both starts linked to the hub (zone 2, nearest the middle) by portal pairs');
 	assert.ok(/^open/.test(out.get(3)) && /^open/.test(out.get(1 * 100000 + 3)), 'each start walks out over land');
 	assert.strictEqual(ensureConnected(edges, new Map(out), 4, p, rng, pairs), 0, 'the pairs count as joined');
-	assert.strictEqual(ensureConnected(edges, new Map(out), 4, p, rng, []), 1, 'without them it opens a border behind the hub');
+	// since 760c0c7 every start also has a land road to the middle (the hub's biome 2 by way of biome 3), so without the pairs ensureConnected needs no border either; the
+	// pairs are the shortcut a portal is meant to be (the walk is far over the SHORTCUT length)
+	assert.strictEqual(out.get(200003), 'openRoad', 'the start-exit pass opened the hub\'s border with biome 3 as a road');
+	assert.strictEqual(ensureConnected(edges, new Map(out), 4, p, rng, []), 0, 'the land road already joins the hub, with or without the pairs');
 });
 
 test('Pairs on a made-up cut: the nearest starts paired, a pair with no shared border a portal pair, no other two starts meet', () => {
 	const { familyConnections } = require('../src/biome/biomes');
 	const rng = (s => () => (s = (s * 16807) % 2147483647) / 2147483647)(3);
-	const seeds = [{ x: 0, y: 0, player: 1 }, { x: 1, y: 0, player: 2 }, { x: 10, y: 10, player: 3 }, { x: 11, y: 10, player: 4 }, { x: 5, y: 5 }];
+	// ten times the cut it was (the start-exit pass keeps a portal pair only where the walk is at least SHORTCUT tiles; see the Hub test above)
+	const seeds = [{ x: 0, y: 0, player: 1 }, { x: 10, y: 0, player: 2 }, { x: 100, y: 100, player: 3 }, { x: 110, y: 100, player: 4 }, { x: 50, y: 50 }];
 	const edge = (a, b, n) => ({ a, b, borderCells: new Array(n).fill(0) });
 	const edges = [edge(0, 4, 5), edge(1, 4, 5), edge(2, 4, 5), edge(3, 4, 5), edge(0, 2, 40)];
 	const pairs = [];
-	const out = familyConnections(4, edges, 5, { interconnectivity: 1, interconnectPortal: 0 }, rng, { seeds, W: 12, H: 12, pairs });
+	const out = familyConnections(4, edges, 5, { interconnectivity: 1, interconnectPortal: 0 }, rng, { seeds, W: 120, H: 120, pairs });
 	assert.deepStrictEqual(pairs, [[0, 1], [2, 3]]);
 	assert.strictEqual(out.get(2), 'blocked', 'the widest border, between starts of two pairs, stays shut even at Biome connections 1');
 	for (const s of [0, 1, 2, 3]) assert.ok(/^open/.test(out.get(s * 100000 + 4)), `start ${s} walks out to zone 4`);
@@ -158,7 +165,17 @@ test('Ring and Chain on a made-up cut: the rim biomes in a circle, Chain one lin
 		assert.deepStrictEqual(pairs, []);
 		assert.strictEqual(missing.length, family === 5 ? 0 : 1, `family ${family} seed ${s}: rim links ${ring}`);
 		if (family === 6) for (const z of [rim[missing[0]], rim[(missing[0] + 1) % 8]]) assert.ok(!seeds[z].player, `Chain left out a link at start ${z}`);
-		assert.strictEqual([0, 1, 2, 3, 5, 6, 7, 8].filter(z => open(out, z, 4)).length, 1, 'the inner biome hangs by one link');
+		// 2026-11-07 (the suite's debt; 760c0c7): the start-exit pass gives every start a land road to the middle (K, 2026-11-02: "it seems like there is only one way in and
+		// out of each start"), so the Ring's inner biome still hangs by one link, and the Chain, whose gap cuts a start from the hanging link, may take one more road in for
+		// that start: at most one link a start, and every start reaches the inner biome by land without passing the other start's biome.
+		const into = [0, 1, 2, 3, 5, 6, 7, 8].filter(z => open(out, z, 4));
+		assert.ok(family === 5 ? into.length === 1 : into.length >= 1 && into.length <= 2, `family ${family} seed ${s}: the inner biome has ${into.length} links`);
+		const land = (a, b) => open(out, a, b);
+		for (const st of [0, 8]) {
+			const other = st === 0 ? 8 : 0, seen = new Set([st]), q = [st];
+			for (let h = 0; h < q.length; h++) for (let z = 0; z < 9; z++) if (z !== other && !seen.has(z) && land(q[h], z)) { seen.add(z); q.push(z); }
+			assert.ok(seen.has(4), `family ${family} seed ${s}: start ${st} reaches the inner biome by land`);
+		}
 	}
 });
 
