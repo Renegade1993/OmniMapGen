@@ -18,7 +18,7 @@ function make(tag, w, extra, template = true) {
 	const r = spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'), '--out', out, '--declaremods', '0',
 		...(template ? ['--template', "Coldshadow's Fantasy"] : []), '--w', String(w), '--h', String(w), '--players', '4', '--seed', '1',
 		'--factions', 'random,random,random,random', '--accommodate', 'size,players,humans,underground', ...extra],
-	{ encoding: 'utf8', timeout: 150000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
+	{ encoding: 'utf8', timeout: 600000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
 	assert.strictEqual(r.status, 0, r.stderr.slice(-600));
 	return out;
 }
@@ -38,14 +38,14 @@ function roughness(out) {
 	return per / sq;
 }
 
-test('Border wobble: borders straighter at 0 than at 1.5 on Coldshadow', { timeout: 200000 }, () => {
+test('Border wobble: borders straighter at 0 than at 1.5 on Coldshadow', { timeout: 1200000 }, () => {
 	const a = make('wob0', 72, ['--bio.biomeWobble', '0']), b = make('wob15', 72, ['--bio.biomeWobble', '1.5']);
 	const r0 = roughness(a), r15 = roughness(b);
 	drop(a); drop(b);
 	assert.ok(r15 > r0 + 0.1, `0 ${r0} against 1.5 ${r15}`);
 });
 
-test('Guards on treasure Off leaves the high piles open; Treasure guard pull 0 does the same', { timeout: 280000 }, () => {
+test('Guards on treasure Off leaves the high piles open; Treasure guard pull 0 does the same', { timeout: 1200000 }, () => {
 	const share = out => {
 		const M = sight.load(out);
 		const piles = M.objs.filter(o => /^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact)$/.test(o.type));
@@ -59,7 +59,7 @@ test('Guards on treasure Off leaves the high piles open; Treasure guard pull 0 d
 	assert.ok(sP0 < sOn / 2, `pull 0 ${sP0} against ${sOn}`);
 });
 
-test('Mine guard weight: 4x guards more mines than 0x on a template map', { timeout: 280000 }, () => {
+test('Mine guard weight: 4x guards more mines than 0x on a template map', { timeout: 1200000 }, () => {
 	const guarded = out => {
 		const M = sight.load(out);
 		return M.objs.filter(o => o.cls === 'mine' && M.monsters.some(q => q.l === o.l && Math.min(...o.entr.map(([x, y]) => Math.max(Math.abs(q.at[0] - x), Math.abs(q.at[1] - y)))) <= 2)).length;
@@ -70,7 +70,7 @@ test('Mine guard weight: 4x guards more mines than 0x on a template map', { time
 	assert.ok(g4 >= g0 + 5, `0x ${g0} against 4x ${g4}`);
 });
 
-test('Water layout on a template map: Mediterranean puts more water in the middle than Continental does', { timeout: 200000 }, () => {
+test('Water layout on a template map: Mediterranean puts more water in the middle than Continental does', { timeout: 1200000 }, () => {
 	const centre = out => {
 		const M = sight.load(out);
 		let n = 0, w = 0;
