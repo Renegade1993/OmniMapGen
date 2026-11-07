@@ -218,12 +218,68 @@ function coverTest(objects) {
 }
 
 /**
+ * Where a creature's FIGURE stands against the tile it blocks (K, 2026-11-02, "SEVERE FAILURE": a Diamond Golem drawn in the water beside a
+ * monolith on snow, seed 1320854187, the golem blocking (59,72) on land). The client draws a creature's picture with its bottom right on the
+ * anchor tile and the creature blocks the mask's 'A' tile; for most HotA-styled creatures (mask ["VVV","VAV"]) the picture's feet land on the
+ * 'A' tile, but a narrow sprite (a 64 or 32 wide one, e.g. RFGCA-L5U 64x48) puts them one tile east or west of it. Counted on K's 48 maps
+ * (13,722 stacks): -1 for 281, 0 for 11,074, +1 for 294; the blocked tile never stands on water, the figure did 16 times, on rock 16, and on
+ * another object's blocked tile 289. Neither the mask (it is what the game writes: 368 of 368 corpus kinds) nor the shift (it keeps the blocked
+ * tile where the planner checked it) is wrong, so a guard is written as a creature whose figure tile is land and free (this test), as the crater
+ * test does for a picture under a crater.
+ *
+ * The figure test of a run: figure = { legal(x, y, l, self), roots, offsetOf(look) (optional, the sprite reader's answer; tests give their
+ * own) }. legal says whether a creature's feet may stand on tile (x, y) of level l: on the map, not water, not rock, not another object's
+ * blocked tile (self is the stack itself). The offset of a look is read from its sprite the way pictures.js places it; a sprite the archives
+ * and mods do not hold is not judged (counted in .unread). VMAPGEN_GUARD_FIGURE=0 never refuses a look.
+ */
+function figureTest(figure) {
+	const off = !figure || typeof figure.legal !== 'function' || process.env.VMAPGEN_GUARD_FIGURE === '0';
+	const memo = new Map();
+	const t = { unread: 0, ok: null };
+	const offsetOf = look => {
+		const k = look.tpl && look.tpl.animation;
+		if (memo.has(k)) return memo.get(k);
+		let v = null;
+		if (typeof figure.offsetOf === 'function') v = figure.offsetOf(look);
+		else {
+			const pics = require('./pictures'), rts = figure.roots || pics.spriteRoots();
+			// a mod that ships its sprites in a content.zip (HotA's Bulwark, Pavilion, Preserve: 44 of 310 creatures a guard can be) is read there
+			const s = pics.spriteOf(k, rts) || pics.spriteOfInZip(k, rts);
+			if (!s) t.unread++;
+			else {
+				let maxY = -1;
+				for (let j = 0; j < s.h; j++) for (let i = 0; i < s.w; i++) if (s.px[j * s.w + i] > 7) maxY = j;
+				if (maxY >= 0) {
+					let a = Infinity, b = -1;
+					for (let i = 0; i < s.w; i++) if (s.px[maxY * s.w + i] > 7) { if (i < a) a = i; b = i; }
+					// the anchor stands at (100 + shift) when the 'A' tile is (100, 100); tiles are 32 px
+					const [OX, OY] = pics.origin(100 + look.shift.dx, 100 + look.shift.dy, s);
+					v = { dx: Math.floor((OX + (a + b) / 2) / 32) - 100, dy: Math.floor((OY + maxY) / 32) - 100 };
+				}
+			}
+		}
+		memo.set(k, v);
+		return v;
+	};
+	// o is a placeholder not yet written: its tile is the 'A' tile the creature will block
+	// whether the look's figure was read (a sprite none of the archives, mods or zips hold is not): the swaps and rolls prefer a creature that was
+	t.known = off ? () => true : look => !!look && offsetOf(look) !== null;
+	t.ok = off ? () => true : (o, look) => {
+		if (!look) return true;
+		const v = offsetOf(look);
+		if (!v || (!v.dx && !v.dy)) return true;
+		return figure.legal(o.x + v.dx, o.y + v.dy, o.l || 0, o);
+	};
+	return t;
+}
+
+/**
  * Write each guard in `picked` (object -> creature id from engineGuard) as
  * that creature, in place, on a W x H map. A guard whose creature has no
  * writable template stays a placeholder of its level, as before. Returns
- * {placed, kept, mods}.
+ * {placed, kept, mods, swapped, coveredLeft, figSwapped, figLeft}.
  */
-function concretizeGuards(objects, picked, { registry, h3, useMods, W = Infinity, H = Infinity, poolAt = null }) {
+function concretizeGuards(objects, picked, { registry, h3, useMods, W = Infinity, H = Infinity, poolAt = null, figure = null }) {
 	const holders = nameHolders(registry);
 	const looks = new Map();
 	const lookOf = id => {
@@ -231,33 +287,43 @@ function concretizeGuards(objects, picked, { registry, h3, useMods, W = Infinity
 		return looks.get(id);
 	};
 	const covered = coverTest(objects);
+	const fig = figureTest(figure), figOk = fig.ok;
 	const mods = new Set();
-	let placed = 0, kept = 0, swapped = 0, coveredLeft = 0;
+	let placed = 0, kept = 0, swapped = 0, coveredLeft = 0, figSwapped = 0, figLeft = 0;
 	for (const o of objects) {
 		const id = picked.get(o);
 		if (!id || !PLACEHOLDER.test(o.type)) continue;
 		lookOf(id);
 		let look = looks.get(id), rec = registry.get(id), amount = o.options && o.options.amount;
 		if (!look || !anchorFits(o, look.shift, W, H)) { kept++; continue; }
-		// a picture a crater drawn after it would cover: another creature of its level whose picture is clear, of its faction where one is (HotA
-		// restyles a whole faction three wide, so mostly another's), nearest in value, at the same strength
-		if (covered(o, look)) {
+		// a picture a crater drawn after it would cover, or a figure that would stand in the water, on rock or on another object's blocked tile:
+		// another creature of its level whose picture is clear, of its faction where one is (HotA restyles a whole faction three wide, so mostly
+		// another's), nearest in value, at the same strength
+		const underCrater = covered(o, look), badFigure = !figOk(o, look);
+		if (underCrater || badFigure) {
 			// from the creatures the guard's zone allows when the caller says (poolAt: the zone's guard pool), else every creature
 			const allowed = poolAt ? new Set(poolAt(o).map(c => c.id)) : null;
-			const alt = [...registry.values()].filter(c => c !== rec && !c.special && !c.noRandom && c.level === rec.level && c.aiValue > 0 && (!allowed || allowed.has(c.id)))
-				.map(c => ({ c, look: lookOf(c.id) })).filter(a => a.look && anchorFits(o, a.look.shift, W, H) && !covered(o, a.look));
+			const pool = [...registry.values()].filter(c => c !== rec && !c.special && !c.noRandom && c.level === rec.level && c.aiValue > 0 && (!allowed || allowed.has(c.id)))
+				.map(c => ({ c, look: lookOf(c.id) })).filter(a => a.look && anchorFits(o, a.look.shift, W, H));
+			let alt = pool.filter(a => !covered(o, a.look) && figOk(o, a.look));
+			// no look clear of both: a figure out of the water outranks a picture under a crater
+			if (!alt.length && badFigure) alt = pool.filter(a => figOk(o, a.look));
+			// a creature whose figure was read is judged; one that was not stays a last resort
+			if (alt.some(a => fig.known(a.look))) alt = alt.filter(a => fig.known(a.look));
 			const own = alt.filter(a => a.c.faction === rec.faction);
 			if (alt.length) {
 				const a = (own.length ? own : alt).reduce((x, y) => (Math.abs(y.c.aiValue - rec.aiValue) < Math.abs(x.c.aiValue - rec.aiValue) ? y : x));
 				if (amount && rec.aiValue > 0) amount = Math.max(1, Math.round(amount * rec.aiValue / a.c.aiValue));
-				rec = a.c; look = a.look; swapped++;
-			} else coveredLeft++;
+				rec = a.c; look = a.look;
+				if (badFigure) figSwapped++; else swapped++;
+			} else if (badFigure) figLeft++;
+			else coveredLeft++;
 		}
 		becomeCreature(o, rec.name, look, amount);
 		for (const m of look.mods) mods.add(m);
 		placed++;
 	}
-	return { placed, kept, mods, swapped, coveredLeft };
+	return { placed, kept, mods, swapped, coveredLeft, figSwapped, figLeft, figUnread: fig.unread };
 }
 
 /**
@@ -270,7 +336,7 @@ function concretizeGuards(objects, picked, { registry, h3, useMods, W = Infinity
  * stays as placed. A level with no creature the map can draw keeps its
  * placeholders.
  */
-function rollPlaceholders(objects, picked, { registry, h3, useMods, W = Infinity, H = Infinity, rng }) {
+function rollPlaceholders(objects, picked, { registry, h3, useMods, W = Infinity, H = Infinity, rng, figure = null }) {
 	const holders = nameHolders(registry);
 	const looks = new Map();
 	const lookOf = id => {
@@ -278,6 +344,7 @@ function rollPlaceholders(objects, picked, { registry, h3, useMods, W = Infinity
 		return looks.get(id);
 	};
 	const covered = coverTest(objects);
+	const fig = figureTest(figure), figOk = fig.ok;
 	// per level, the creatures the roll can land on whose art the map can use
 	const byLevel = new Map();
 	for (const c of registry.values()) {
@@ -286,22 +353,27 @@ function rollPlaceholders(objects, picked, { registry, h3, useMods, W = Infinity
 		byLevel.get(c.level).push(c.id);
 	}
 	const mods = new Set();
-	let placed = 0, kept = 0;
+	let placed = 0, kept = 0, figRestricted = 0, figLeft = 0;
 	for (const o of objects) {
 		const m = PLACEHOLDER.exec(o.type);
 		if (!m || (picked && picked.has(o))) continue;
 		const fit = (byLevel.get(Number(m[1])) || []).filter(id => anchorFits(o, lookOf(id).shift, W, H));
-		// a look an object drawn after the stack would cover only when every look of the level is covered (coverTest)
-		const clear = fit.filter(id => !covered(o, lookOf(id)));
-		const ids = clear.length ? clear : fit;
+		// a look an object drawn after the stack would cover only when every look of the level is covered (coverTest); a look whose figure
+		// would stand in the water, on rock or on another object's blocked tile only when every look of the level does (figureTest)
+		const fitFig = fit.filter(id => figOk(o, lookOf(id)));
+		const clear = fitFig.filter(id => !covered(o, lookOf(id)));
+		let ids = clear.length ? clear : fitFig.length ? fitFig : fit;
+		if (fitFig.length && ids.some(id => fig.known(lookOf(id)))) ids = ids.filter(id => fig.known(lookOf(id)));
 		if (!ids.length) { kept++; continue; }
+		if (fitFig.length < fit.length) figRestricted++;
+		if (fit.length && !fitFig.length) figLeft++;
 		const id = ids[(rng() * ids.length) | 0];
 		const look = lookOf(id);
 		becomeCreature(o, registry.get(id).name, look, o.options && o.options.amount);
 		for (const mod of look.mods) mods.add(mod);
 		placed++;
 	}
-	return { placed, kept, mods };
+	return { placed, kept, mods, figRestricted, figLeft, figUnread: fig.unread };
 }
 
 /**
@@ -404,17 +476,22 @@ function themePool(themeName, { creatures = new Map(), h3 = new Map(), useMods =
  * were swapped, how many there were, and the mods the swapped ones need
  * declared.
  */
-function applyGuardTheme(objects, { pool, share = 1, rng, W = Infinity, H = Infinity }) {
+function applyGuardTheme(objects, { pool, share = 1, rng, W = Infinity, H = Infinity, figure = null }) {
 	const strength = levelStrengths();
 	const mods = new Set();
-	let themed = 0, placeholders = 0;
-	// a look a crater drawn after the stack would cover only when every look that fits is covered (coverTest), as rollPlaceholders
+	let themed = 0, placeholders = 0, figLeft = 0;
+	// a look a crater drawn after the stack would cover only when every look that fits is covered (coverTest), as rollPlaceholders; a look
+	// whose figure would stand in the water, on rock or on another object's blocked tile likewise (figureTest)
 	const covered = coverTest(objects);
+	const ft = figureTest(figure), figOk = ft.ok;
 	const nearest = (level, o) => {
 		for (const gap of [0, 1]) {
 			const hits = pool.filter(c => Math.abs(c.level - level) === gap && anchorFits(o, c.shift, W, H));
-			const clear = hits.filter(c => !covered(o, c));
-			const ids = clear.length ? clear : hits;
+			const fitFig = hits.filter(c => figOk(o, c));
+			const clear = fitFig.filter(c => !covered(o, c));
+			let ids = clear.length ? clear : fitFig.length ? fitFig : hits;
+			if (fitFig.length && ids.some(c => ft.known(c))) ids = ids.filter(c => ft.known(c));
+			if (hits.length && !fitFig.length) figLeft++;
 			if (ids.length) return ids[(rng() * ids.length) | 0];
 		}
 		return null;
@@ -446,9 +523,9 @@ function applyGuardTheme(objects, { pool, share = 1, rng, W = Infinity, H = Infi
 		for (const mod of c.mods) mods.add(mod);
 		themed++;
 	}
-	return { themed, placeholders, mods };
+	return { themed, placeholders, mods, figLeft };
 }
 
 module.exports = { themeNames, themePool, applyGuardTheme, concretizeGuards, rollPlaceholders, creatureRegistry,
 	guardPool, creatureLook, footprintShift, levelStrengths, themeMatcher, themeDwellingPool,
-	themeBankPool };
+	themeBankPool, figureTest };

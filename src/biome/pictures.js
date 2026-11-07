@@ -94,6 +94,77 @@ function spriteOf(animation, roots) {
 	return s;
 }
 
+// The .def files inside every mod's content.zip, by lowercase entry name: Map('sprites/<path>.def' -> { zip, csize, method, lhoff }). Only the zip's
+// central directory is read (the last bytes of the file), never the archive, so indexing the 70 zips of an install takes a moment. Used by
+// spriteOfInZip alone: spriteOf keeps judging the loose files it always has, so no pass that reads pictures (declip) changes with it.
+const zipDefsByDir = new Map();
+function zipIndex(userDir) {
+	const mods = userDir ? path.join(userDir, 'Mods') : null;
+	if (zipDefsByDir.has(mods)) return zipDefsByDir.get(mods);
+	const out = new Map();
+	const readTail = file => {
+		let fd;
+		try {
+			fd = fs.openSync(file, 'r');
+			const size = fs.fstatSync(fd).size, n = Math.min(size, 65557), tail = Buffer.alloc(n);
+			fs.readSync(fd, tail, 0, n, size - n);
+			let eocd = -1;
+			for (let i = n - 22; i >= 0; i--) if (tail.readUInt32LE(i) === 0x06054b50) { eocd = i; break; }
+			if (eocd < 0) return;
+			const count = tail.readUInt16LE(eocd + 10), cdSize = tail.readUInt32LE(eocd + 12), cdOff = tail.readUInt32LE(eocd + 16);
+			const cd = Buffer.alloc(cdSize);
+			fs.readSync(fd, cd, 0, cdSize, cdOff);
+			let off = 0;
+			for (let i = 0; i < count && off + 46 <= cdSize; i++) {
+				const nl = cd.readUInt16LE(off + 28), xl = cd.readUInt16LE(off + 30), cl = cd.readUInt16LE(off + 32);
+				const name = cd.toString('utf8', off + 46, off + 46 + nl).toLowerCase();
+				if (name.endsWith('.def') && !out.has(name))
+					out.set(name, { zip: file, method: cd.readUInt16LE(off + 10), csize: cd.readUInt32LE(off + 20), lhoff: cd.readUInt32LE(off + 42) });
+				off += 46 + nl + xl + cl;
+			}
+		} catch (e) { /* an unreadable zip adds nothing */ } finally { if (fd !== undefined) try { fs.closeSync(fd); } catch (e) { /* closed */ } }
+	};
+	const walk = (d, depth) => {
+		let list = [];
+		try { list = fs.readdirSync(d, { withFileTypes: true }); } catch (e) { return; }
+		for (const e of list) {
+			const p = path.join(d, e.name);
+			if (e.isDirectory() && depth < 9) walk(p, depth + 1);
+			else if (/^content\.zip$/i.test(e.name)) readTail(p);
+		}
+	};
+	if (mods && fs.existsSync(mods)) walk(mods, 0);
+	zipDefsByDir.set(mods, out);
+	return out;
+}
+
+/** An animation's first frame from a mod's content.zip ('creatures/AVWSHAMN' is entry 'sprites/creatures/avwshamn.def'), or null. For the figure test
+ * (guardCreatures.js figureTest) only; spriteOf does not look in zips. */
+const zipSprites = new Map();
+function spriteOfInZip(animation, roots) {
+	const name = 'sprites/' + String(animation || '').replace(/\\/g, '/').replace(/\.def$/i, '').toLowerCase() + '.def';
+	const key = roots.filter(Boolean).join('|') + '|' + name;
+	if (zipSprites.has(key)) return zipSprites.get(key);
+	let s = null;
+	for (const r of roots.filter(Boolean)) {
+		const e = zipIndex(r).get(name);
+		if (!e) continue;
+		try {
+			const fd = fs.openSync(e.zip, 'r');
+			try {
+				const head = Buffer.alloc(30);
+				fs.readSync(fd, head, 0, 30, e.lhoff);
+				const start = e.lhoff + 30 + head.readUInt16LE(26) + head.readUInt16LE(28), raw = Buffer.alloc(e.csize);
+				fs.readSync(fd, raw, 0, e.csize, start);
+				s = decodeDef(e.method === 8 ? require('zlib').inflateRawSync(raw) : raw);
+			} finally { fs.closeSync(fd); }
+		} catch (err) { s = null; }
+		if (s) break;
+	}
+	zipSprites.set(key, s);
+	return s;
+}
+
 /** Where a sprite's box starts in map pixels for an object anchored at (x, y). */
 const origin = (x, y, s) => [(x + 1) * 32 - s.fullW + s.left, (y + 1) * 32 - s.fullH + s.top];
 
@@ -134,4 +205,4 @@ function drawnBefore(a, b) {
  * install has none (the suite's test install: setting its user folder would load that folder's mods into every test). */
 const spriteRoots = () => [process.env.VCMI_USER_DIR, process.env.VCMI_ROOT, process.env.VMAPGEN_SPRITE_ROOT].filter(Boolean);
 
-module.exports = { decodeDef, spriteOf, coverage, origin, pop, drawnBefore, spriteRoots };
+module.exports = { decodeDef, spriteOf, spriteOfInZip, coverage, origin, pop, drawnBefore, spriteRoots };

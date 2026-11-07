@@ -2317,6 +2317,29 @@ async function generateMap(params) {
 	const rollRest = concreteGuards && guardMods && process.env.VMAPGEN_CONCRETE_FREE !== '0';
 	const h3 = (params.guardTheme || picked.size || rollRest)
 		? h3MonsterTemplates([roots.userDir, roots.installDir]) : null;
+	// Where a creature's figure may stand (guardCreatures.js figureTest; K, 2026-11-02, item 25 "SEVERE FAILURE": a golem drawn in the water
+	// beside a monolith): on the map, not on water or rock, not on another object's blocked tile. Built once from the objects as they are
+	// here; a guard that becomes a creature blocks the same tile as its placeholder did.
+	const figure = (() => {
+		const Wf = params.mapW, Hf = params.mapH, held = new Map();
+		for (const q of objects) {
+			if (!q.template || !Array.isArray(q.template.mask)) continue;
+			for (const [x, y] of blockingCells(q.template, q.x, q.y)) {
+				const k = (q.l || 0) * Wf * Hf + y * Wf + x;
+				if (held.has(k)) held.get(k).push(q); else held.set(k, [q]);
+			}
+		}
+		const legal = (x, y, l, self) => {
+			if (x < 0 || y < 0 || x >= Wf || y >= Hf) return false;
+			const c = y * Wf + x;
+			if (l === 0 && waterPlan && waterPlan.mask && waterPlan.mask[c]) return false;
+			const om = plans[l] && plans[l].openMask;
+			if (om && !om[c]) return false;
+			const here = held.get(l * Wf * Hf + c);
+			return !here || here.every(q => q === self);
+		};
+		return { legal, roots: require('../biome/pictures').spriteRoots().length ? undefined : [roots.userDir, roots.installDir].filter(Boolean) };
+	})();
 	// Themed guards (--guardtheme): a share of the guard placeholders become
 	// creatures of one family, each standing for the strength it replaced.
 	// The theme is the player's explicit choice, so it goes first and the
@@ -2325,7 +2348,7 @@ async function generateMap(params) {
 		const pool = themePool(params.guardTheme, { creatures: assetIndex.creatures, useMods, h3 });
 		const share = Number.isFinite(params.guardThemeShare) ? params.guardThemeShare : 1;
 		const t = applyGuardTheme(objects, { pool, share, W: params.mapW, H: params.mapH,
-			rng: xorshift((params.seed || 1) + 5353) });
+			rng: xorshift((params.seed || 1) + 5353), figure });
 		for (const mod of t.mods) usedMods.add(mod);
 		console.error(`[gen] guard theme ${params.guardTheme}: ${t.themed} of `
 			+ `${t.placeholders} guards from ${pool.length} creatures `
@@ -2337,11 +2360,13 @@ async function generateMap(params) {
 		const all = guardPool(registry), zgp = require('../biome/content').zoneGuardPool;
 		const poolAt = o => { const pl = plans[o.l || 0], meta = pl && pl.zone && pl.zoneMeta && pl.zoneMeta[pl.zone[o.y * params.mapW + o.x]]; return meta && meta.spec ? zgp(all, meta.spec) : all; };
 		const c = concretizeGuards(objects, picked, { registry, h3, useMods: guardMods,
-			W: params.mapW, H: params.mapH, poolAt });
+			W: params.mapW, H: params.mapH, poolAt, figure });
 		for (const mod of c.mods) usedMods.add(mod);
 		console.error(`[gen] concrete guards: ${c.placed} written as their creature, `
 			+ `${c.kept} kept as placeholders (no template the map can use)`
-			+ (c.swapped || c.coveredLeft ? `; ${c.swapped} written as another creature of their level, their own picture under a crater drawn after them, ${c.coveredLeft} with no such creature` : ''));
+			+ (c.swapped || c.coveredLeft ? `; ${c.swapped} written as another creature of their level, their own picture under a crater drawn after them, ${c.coveredLeft} with no such creature` : '')
+			+ (c.figSwapped || c.figLeft ? `; ${c.figSwapped} written as another creature of their level and faction, the figure of the first on water, rock or another object's tile, ${c.figLeft} with no such creature` : '')
+			+ (c.figUnread ? `; ${c.figUnread} creature picture(s) not found, not judged` : ''));
 	}
 	// The free layout's guards, and any placeholder a template zone's rule
 	// left, as the creature the game rolls for a placeholder at load
@@ -2352,11 +2377,13 @@ async function generateMap(params) {
 	// mod creatures). VMAPGEN_CONCRETE_FREE=0 leaves them placeholders.
 	if (rollRest) {
 		const r = rollPlaceholders(objects, picked, { registry, h3, useMods: guardMods,
-			W: params.mapW, H: params.mapH, rng: xorshift((params.seed || 1) + 7717) });
+			W: params.mapW, H: params.mapH, rng: xorshift((params.seed || 1) + 7717), figure });
 		for (const mod of r.mods) usedMods.add(mod);
 		if (r.placed || r.kept)
 			console.error(`[gen] guards rolled as the game rolls a placeholder: ${r.placed}, `
-				+ `${r.kept} kept as placeholders (no creature of their level the map can use)`);
+				+ `${r.kept} kept as placeholders (no creature of their level the map can use)`
+				+ (r.figRestricted ? `; ${r.figRestricted} rolled among the creatures whose figure stands on free land, ${r.figLeft} with none` : '')
+				+ (r.figUnread ? `; ${r.figUnread} creature picture(s) not found, not judged` : ''));
 	}
 
 	// VMAPGEN_ZONE_DUMP=<file>: each level's zone per cell, its border walls and
