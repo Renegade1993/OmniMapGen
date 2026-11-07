@@ -12,9 +12,9 @@
    "water": "lakes",
    "preferred": true,
    "caption": "Lakes, Medium 72x72: 4 players, 1 level",
-   "drawHash": "1eb989ba9334074409d3836dbd8927dc1be1e91209c053834c2f44ed90b83529",
+   "drawHash": "1c830ba3a00d49a0c81405763479690bc2bcaf51a22126367afdc121ed295171",
    "zones": 9,
-   "lanes": 4,
+   "lanes": 3,
    "portals": 0,
    "starts": 4,
    "towns": 5,
@@ -30,7 +30,7 @@
    ],
    "path": "mapgen/preview/water_lakes/01",
    "seconds": 3.0,
-   "contentSha256": "b049c92b795aaa2a39b1bf17ae67a6b13a74c5a0c4b7509e4eb13062420a71d4"
+   "contentSha256": "c15c7d128bbc589c30e8d81761ae6bddd841006840ddaf9a4cfcab5e42e92219"
   },
   {
    "order": 2,
@@ -166,9 +166,9 @@
    "water": "lakes",
    "preferred": true,
    "caption": "Lakes, Giant 252x252: 8 players, 1 level",
-   "drawHash": "b12e2dedc9db91a9233769d3cd9b2929f6496f696074dbfc1122a27672a3ad0e",
+   "drawHash": "8f31c72b2b9bf0c21c2f804f9fab17cfa4372b1b4e7cdd775db9ce1a34fa0e6a",
    "zones": 57,
-   "lanes": 27,
+   "lanes": 28,
    "portals": 0,
    "starts": 8,
    "towns": 21,
@@ -184,7 +184,7 @@
    ],
    "path": "mapgen/preview/water_lakes/06",
    "seconds": 3.0,
-   "contentSha256": "b82287ccb33164f3936ba1092a086fc101cef922991a763f894be05ac4893183"
+   "contentSha256": "6703f3ce638dd7a25274b97543c12c361ffd97fadb5e6c390bb7b30e818dee42"
   },
   {
    "order": 7,
@@ -312,7 +312,7 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Extra Large 144x144: 3 players, 2 levels",
-   "drawHash": "a1333736d6c19d9a235ff1eefa42da0e35752fbe1e06174f1eaede860e50e4e3",
+   "drawHash": "11a932b19b886258c2ef8f289da11acf9206f0afd4b1aa69bf2b7a04bfae27eb",
    "zones": 74,
    "lanes": 91,
    "portals": 8,

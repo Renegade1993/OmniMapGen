@@ -228,7 +228,7 @@
 			"humansMax": 8,
 			"zones": 0,
 			"zonesByKind": {},
-			"description": "Random picks one of the templates in this list for you: Classic or any template that takes the map's size, players and levels. The pick comes from the map's seed, so the same seed gives the same template. Every other setting left on Template follows the picked template's own preferences, which is what Reset sets.",
+			"description": "Random picks one of the templates in this list for you: Classic or any template that takes the map's size, players and levels. The pick comes from the map's seed, so the same seed gives the same template. Any setting you leave on \"Template\" follows the template it picks; Reset puts every setting back on \"Template\".",
 			"originalPreferences": {
 				"about": "What the Reset button sets for Random: every lever at Template, so each is read from whichever template the seed picks; the values listed are the defaults, which is what Classic uses.",
 				"levers": {
@@ -321,7 +321,7 @@
 			"humansMax": 8,
 			"zones": 0,
 			"zonesByKind": {},
-			"description": "A small, typical Heroes map: eight start zones with most of the land, seven treasure zones between them joined as a tree, and a guard on every way.\n\nWhat makes it different: this entry is approximate. It is the Classic map with its settings turned toward Mini Nostalgia (larger start zones, many ways as portals, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
+			"description": "A small, typical Heroes map: eight start zones with most of the land, seven treasure zones between them linked in a branching chain, and a guard on every way.\n\nWhat makes it different: this entry is approximate. It is the Classic map with its settings turned toward Mini Nostalgia (larger start zones, many of the links between zones are portals, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
 			"originalPreferences": {
 				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Mini Nostalgia (approximate): the sliders listed below at the values chosen to bring the open layout's numbers toward the original Mini Nostalgia's; every other lever at its own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. This entry is approximate and gets closer as junction zones, wide links and a second town in a start zone are added.",
 				"levers": {
@@ -424,7 +424,7 @@
 			"humansMax": 8,
 			"zones": 0,
 			"zonesByKind": {},
-			"description": "A large, typical Heroes map on two levels: eight start zones with a third of the land, sixteen treasure zones between them joined as a mesh, and a guard on every way.\n\nWhat makes it different: this entry is approximate. It is the Classic map with its settings turned toward Nostalgia (larger zones, most ways as portals, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
+			"description": "A large, typical Heroes map on two levels: eight start zones with a third of the land, sixteen treasure zones between them linked in a web, and a guard on every way.\n\nWhat makes it different: this entry is approximate. It is the Classic map with its settings turned toward Nostalgia (larger zones, most of the links between zones are portals, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
 			"originalPreferences": {
 				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Nostalgia (approximate): the sliders listed below at the values chosen to bring the open layout's numbers toward the original Nostalgia's; every other lever at its own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. This entry is approximate and gets closer as junction zones, wide links and a second town in a start zone are added.",
 				"levers": {
@@ -529,7 +529,7 @@
 				"start": 4,
 				"treasure": 1
 			},
-			"description": "Up to four players start apart, each in a start zone with a castle, two neutral towns and a full set of mines. One treasure zone fills the middle, with two neutral castles, four gold mines and the best treasure on the map. Each start has a single way into the middle, behind a strong guard, and no way to another start except through the middle.\n\nWhat makes it different: every player has the same road to the same prize. The game is a race to break into the middle first, and the fights after that happen there."
+			"description": "Up to four players start apart, each in a start zone with a castle, two neutral towns and a full set of mines. One treasure zone fills the middle, with two neutral castles, four gold mines and the best treasure on the map. Each start has a single way into the middle, behind a strong guard, and no way to another start except through the middle.\n\nWhat makes it different: every player has the same road to the same prize. The game is a race to break into the middle first, and the fights after that happen there.\n\nIn construction: the middle zone carries far too much treasure."
 		},
 		"Headquarters": {
 			"originalSizeMin": 108,
@@ -545,7 +545,7 @@
 				"start": 7,
 				"treasure": 2
 			},
-			"description": "Up to seven players each start in a start zone with a castle and one neutral town. Every start has two guarded ways out: one into a large rough-ground treasure zone with two neutral castles (Stronghold or Fortress), one into a smaller sand treasure zone with the rare-resource mines. The two treasure zones also join each other.\n\nWhat makes it different: each start zone belongs to one town type (Rampart, Tower, two Castles, Dungeon, Necropolis, Conflux). A player who leaves the town on Random gets that zone's type, so the map comes ready as seven different factions round two shared prizes."
+			"description": "Up to seven players each start in a start zone with a castle and one neutral town. Every start has two guarded ways out: one into a large rough-ground treasure zone with two neutral castles (Stronghold or Fortress), one into a smaller sand treasure zone with the rare-resource mines. The two treasure zones also join each other.\n\nWhat makes it different: each start zone belongs to one town type (Rampart, Tower, two Castles, Dungeon, Necropolis, Conflux). A player who leaves the town on Random gets that zone's type, so the map comes ready as seven different factions round two shared prizes.\n\nIn construction: an approximate version, not yet playtested."
 		},
 		"Golems Aplenty": {
 			"originalSizeMin": 36,
@@ -561,7 +561,7 @@
 				"start": 4,
 				"treasure": 3
 			},
-			"description": "Up to four players start in small zones, each with a castle and a full set of mines but no neutral town. All four open onto one middle zone of dirt and snow with a neutral Tower town and the richest treasure. Two of the starts also have a side treasure zone on Subterranean terrain, which opens into the middle as well.\n\nWhat makes it different: a tight map with light guards on the ways into the middle, so players meet early, and the Tower town in the middle, home of the golems, gives the template its name."
+			"description": "Up to four players start in small zones, each with a castle and a full set of mines but no neutral town. All four open onto one middle zone of dirt and snow with a neutral Tower town and the richest treasure. Two of the starts also have a side treasure zone on Subterranean terrain, which opens into the middle as well.\n\nWhat makes it different: a tight map with light guards on the ways into the middle, so players meet early, and the Tower town in the middle, home of the golems, gives the template its name.\n\nIn construction: not yet playtested."
 		}
 	},
 	"waterLayouts": {

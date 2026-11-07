@@ -67,7 +67,7 @@ test('both entries set Layout family to Tree (Opus Map Vision, 2026-10-21: 0.68 
 		assert.strictEqual(info[n].originalPreferences.levers.layoutFamily, tree, `${n} sets Layout family to Tree`);
 		assert.ok(info[n].originalPreferences.tunedSliders.includes('layoutFamily'), `${n} lists Layout family among its tuned sliders`);
 		// the text says how the zones join in plain words, not by the slider's name (K's description rule; the slider is asserted above)
-		assert.match(info[n].description, /joined as an? (tree|mesh)/, `${n}: the text says how the zones join`);
+		assert.match(info[n].description, /(joined as an? (tree|mesh)|linked in (a branching chain|a web))/, `${n}: the text says how the zones join`);   // "tree" and "mesh" became "a branching chain" and "a web" in the 2026-11-07 description comb (the casual reader has not met either word)
 		assert.ok(!/Layout family/.test(info[n].description), `${n}: the text names no slider`);
 	}
 });

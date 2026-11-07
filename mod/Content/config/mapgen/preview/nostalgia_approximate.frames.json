@@ -12,7 +12,7 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Extra Large 144x144: 8 players, 2 levels",
-   "drawHash": "a8fd10f48b2955f5aa4c175b7b661b484161aaf4188c283f347abd9ec25ff75c",
+   "drawHash": "9472648dab7127ac99490f21b798f17df4bcbc2c22e2c513d38e070131e8b29d",
    "zones": 29,
    "lanes": 27,
    "portals": 8,
@@ -30,7 +30,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/01",
    "seconds": 3.0,
-   "contentSha256": "4dc0d1c8c726b1789a02f97ce0d084771d5074e980c6247f41695b401ca1b3cc"
+   "contentSha256": "b59e298c3129a9efa8a37a433b58430e44c981fdafc9034ec5c2379c36bc86a4"
   },
   {
    "order": 2,
@@ -42,9 +42,9 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Huge 180x180: 8 players, 2 levels",
-   "drawHash": "7f2a7ef53960bb497c298dde93ce46480f3c017113c0c1ea19c245fb18a9a3c6",
+   "drawHash": "a1afa177ab80e4d9678d91400c30b20f93cc92bb38107094ab6705c4d27a3e97",
    "zones": 41,
-   "lanes": 40,
+   "lanes": 39,
    "portals": 8,
    "starts": 8,
    "towns": 21,
@@ -59,7 +59,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/02",
    "seconds": 3.0,
-   "contentSha256": "c741e7e01a712c9c25ed1dad4060d14fd432a25689b36d0ab2e01de4a6086987"
+   "contentSha256": "b8102720ef318be6279d86452c1b4c611e530172bd7ccd1df3fffb95188bb3ac"
   },
   {
    "order": 3,
@@ -71,9 +71,9 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Extra Huge 216x216: 8 players, 2 levels",
-   "drawHash": "0644a98a00aa96fa700c49f6fcdfc6978ed040ea1679a9edbb96582a9bb7253e",
+   "drawHash": "4c96caee9e1c5fa6dc8433e9153e17311e343fa23cca5fa6ca090beb01d60a7e",
    "zones": 55,
-   "lanes": 51,
+   "lanes": 50,
    "portals": 8,
    "starts": 8,
    "towns": 31,
@@ -88,7 +88,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/03",
    "seconds": 3.0,
-   "contentSha256": "1ae90a18aeadaf43febdedfb934093acb57370a1f8dcca34ddb3c17c18d797c1"
+   "contentSha256": "5b42f9c45e91108b7f442ec1922c90890cb68107064d0c9a81977d9a5f0a0bd8"
   },
   {
    "order": 4,
@@ -100,7 +100,7 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Giant 252x252: 8 players, 2 levels",
-   "drawHash": "0291f053828dfa6b540fa49c44886f4750a60aa28f21fafc8d5e8469d19708c6",
+   "drawHash": "8561d8c5c675a7c80266c2537f1eec97ca05d334e8a97f78bd2a38f82f798164",
    "zones": 71,
    "lanes": 67,
    "portals": 8,
@@ -117,7 +117,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/04",
    "seconds": 3.0,
-   "contentSha256": "231dafbc2955e5b04e68810fed0dbc0e5c02141c93fabcf19d6d6930a02ab450"
+   "contentSha256": "c65c4af68e9d46dd08819b50848157e2425d665a50012b284516f125141bb5b6"
   },
   {
    "order": 5,
@@ -187,9 +187,9 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Large 108x108: 8 players, 2 levels",
-   "drawHash": "0715c111ed48b80b7f602668e6731edcdbd136edd740005eb04b737862f4efbe",
+   "drawHash": "0f496c0681dde19627cc05b9036889d2146ce1cd8868650dc741a201288193a2",
    "zones": 20,
-   "lanes": 16,
+   "lanes": 15,
    "portals": 8,
    "starts": 8,
    "towns": 18,
@@ -205,7 +205,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/07",
    "seconds": 3.0,
-   "contentSha256": "9f6e9db9e93c1ebaa99b348386d8198b746f452a2e573f1395365bcc0bb6ba46"
+   "contentSha256": "5ef1ca78a58aab3dc727a388192ca6adef6082397cac028516732f944e165b70"
   },
   {
    "order": 8,
@@ -304,7 +304,7 @@
    "water": null,
    "preferred": false,
    "caption": "Nostalgia (approximate), Extra Large 144x144: 3 players, 1 level",
-   "drawHash": "73109304e2221aca4548e6ba43cdd93c5ae438beb7ddc48ed2d2ebf9a68e753f",
+   "drawHash": "f7924eb1703bc8f7d0d1ad91fef42517b80786b54ce8ec69f60b758c6d433f4a",
    "zones": 10,
    "lanes": 6,
    "portals": 4,
@@ -334,7 +334,7 @@
    "water": "coastal",
    "preferred": false,
    "caption": "Nostalgia (approximate), Huge 180x180: 5 players, 2 levels, starts on both levels, Coastal water",
-   "drawHash": "3b567ce255e9e387956eedac20d2fa5f4978af5446d7f5e6266b5e0ef04382a4",
+   "drawHash": "8a8ff60204ef02bf3c1a8c8bc9718716988b557b175be572b7f05c48e3ab5865",
    "zones": 26,
    "lanes": 27,
    "portals": 8,
@@ -353,7 +353,7 @@
    ],
    "path": "mapgen/preview/nostalgia_approximate/12",
    "seconds": 3.0,
-   "contentSha256": "aa7632a356a729406f3aaead7169c1919eda0a60eef1c6a36df25058c449579a"
+   "contentSha256": "1d3f69621f1c041969c5bf6eac2f78489d02af0c5eb7dc63bd75f82dfd1630c5"
   },
   {
    "order": 13,
