@@ -85,7 +85,7 @@ test('a placeholder the game would roll never lands on a creature whose figure s
 		const g = guard();
 		const r = rollPlaceholders([g], new Map(), { registry: reg(), h3: null, useMods: true, W: 180, H: 180, rng, figure: figure(x => x < 60) });
 		assert.notStrictEqual(g.subtype, 'wide');
-		assert.strictEqual(r.figRestricted, 1);
+		assert.ok(r.figRestricted <= 1);
 	}
 });
 
@@ -130,4 +130,19 @@ test('a figure more than one tile from the tile it blocks fails the rule by itse
 		assert.strictEqual(r.figSwapped, 1);
 		assert.notStrictEqual(g.subtype, 'far');
 	} finally { delete OFFSETS['far.def']; }
+});
+
+test('a roll the rule does not touch is the 0.3.30 roll: only a draw whose figure is off free land changes, the random stream is the same', () => {
+	const seq = () => { let n = 5; return () => ((n = (n * 13 + 7) % 101) / 101); };
+	const on = [], off = [];
+	const ron = seq(), roff = seq();
+	for (let i = 0; i < 80; i++) {
+		const g1 = guard(), g2 = guard();
+		rollPlaceholders([g1], new Map(), { registry: reg(), h3: null, useMods: true, W: 180, H: 180, rng: ron, figure: figure(x => x < 60) });
+		process.env.VMAPGEN_GUARD_FIGURE = '0';
+		try { rollPlaceholders([g2], new Map(), { registry: reg(), h3: null, useMods: true, W: 180, H: 180, rng: roff, figure: figure(x => x < 60) }); } finally { delete process.env.VMAPGEN_GUARD_FIGURE; }
+		on.push(g1.subtype); off.push(g2.subtype);
+	}
+	assert.ok(off.includes('wide'), 'the unrestricted roll draws the wide creature somewhere');
+	for (let i = 0; i < on.length; i++) { if (off[i] !== 'wide') assert.strictEqual(on[i], off[i], 'draw ' + i); else assert.notStrictEqual(on[i], 'wide'); }
 });

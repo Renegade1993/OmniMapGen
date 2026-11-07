@@ -361,16 +361,21 @@ function rollPlaceholders(objects, picked, { registry, h3, useMods, W = Infinity
 		const m = PLACEHOLDER.exec(o.type);
 		if (!m || (picked && picked.has(o))) continue;
 		const fit = (byLevel.get(Number(m[1])) || []).filter(id => anchorFits(o, lookOf(id).shift, W, H));
-		// a look an object drawn after the stack would cover only when every look of the level is covered (coverTest); a look whose figure
-		// would stand in the water, on rock or on another object's blocked tile only when every look of the level does (figureTest)
-		const fitFig = fit.filter(id => figOk(o, lookOf(id)));
-		const clear = fitFig.filter(id => !covered(o, lookOf(id)));
-		let ids = clear.length ? clear : fitFig.length ? fitFig : fit;
-		if (fitFig.length && ids.some(id => fig.known(lookOf(id)))) ids = ids.filter(id => fig.known(lookOf(id)));
-		if (!ids.length) { kept++; continue; }
-		if (fitFig.length < fit.length) figRestricted++;
-		if (fit.length && !fitFig.length) figLeft++;
-		const id = ids[(rng() * ids.length) | 0];
+		// the draw is the 0.3.30 one (a look a crater drawn after the stack would cover only when every look of the level is covered), and it stands unless its figure is
+		// off free land (figureTest): then the same random number picks again among the creatures whose figure stands on free land, one whose figure was read first,
+		// so a stack changes only where the rule demands it and the random stream is untouched
+		const clear0 = fit.filter(id => !covered(o, lookOf(id)));
+		const base = clear0.length ? clear0 : fit;
+		if (!base.length) { kept++; continue; }
+		const u = rng();
+		let id = base[(u * base.length) | 0];
+		if (!figOk(o, lookOf(id))) {
+			const legal = fit.filter(c => figOk(o, lookOf(c)));
+			let ids = legal.filter(c => !covered(o, lookOf(c)));
+			if (!ids.length) ids = legal;
+			if (ids.some(c => fig.known(lookOf(c)))) ids = ids.filter(c => fig.known(lookOf(c)));
+			if (ids.length) { id = ids[(u * ids.length) | 0]; figRestricted++; } else figLeft++;
+		}
 		const look = lookOf(id);
 		becomeCreature(o, registry.get(id).name, look, o.options && o.options.amount);
 		for (const mod of look.mods) mods.add(mod);
@@ -490,12 +495,18 @@ function applyGuardTheme(objects, { pool, share = 1, rng, W = Infinity, H = Infi
 	const nearest = (level, o) => {
 		for (const gap of [0, 1]) {
 			const hits = pool.filter(c => Math.abs(c.level - level) === gap && anchorFits(o, c.shift, W, H));
-			const fitFig = hits.filter(c => figOk(o, c));
-			const clear = fitFig.filter(c => !covered(o, c));
-			let ids = clear.length ? clear : fitFig.length ? fitFig : hits;
-			if (fitFig.length && ids.some(c => ft.known(c))) ids = ids.filter(c => ft.known(c));
-			if (hits.length && !fitFig.length) figLeft++;
-			if (ids.length) return ids[(rng() * ids.length) | 0];
+			const clear = hits.filter(c => !covered(o, c));
+			const base = clear.length ? clear : hits;
+			if (!base.length) continue;
+			const u = rng(), first = base[(u * base.length) | 0];
+			if (figOk(o, first)) return first;
+			// its figure is off free land: the same number picks again among the creatures whose figure stands on free land (one whose figure was read first)
+			const legal = hits.filter(c => figOk(o, c));
+			let ids = legal.filter(c => !covered(o, c));
+			if (!ids.length) ids = legal;
+			if (ids.some(c => ft.known(c))) ids = ids.filter(c => ft.known(c));
+			if (!ids.length) { figLeft++; return first; }
+			return ids[(u * ids.length) | 0];
 		}
 		return null;
 	};
