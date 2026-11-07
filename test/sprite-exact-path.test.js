@@ -66,3 +66,45 @@ test('a bare name is read as before', () => {
 		assert.ok(s && s.fullW === 32);
 	} finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
+
+// the game's file system: the active mods in load order, the later mod wins, and in one mod the loose Content folder over its content.zip ([Content.zip, Content/], the later loader wins)
+function stored(files) {   // a zip of stored (method 0) entries: { 'sprites/x.def': Buffer }
+	const parts = [], cd = [];
+	let off = 0;
+	for (const [name, data] of Object.entries(files)) {
+		const nb = Buffer.from(name), h = Buffer.alloc(30);
+		h.writeUInt32LE(0x04034b50, 0); h.writeUInt16LE(20, 4); h.writeUInt32LE(data.length, 18); h.writeUInt32LE(data.length, 22); h.writeUInt16LE(nb.length, 26);
+		parts.push(h, nb, data);
+		const c = Buffer.alloc(46);
+		c.writeUInt32LE(0x02014b50, 0); c.writeUInt16LE(20, 4); c.writeUInt16LE(20, 6); c.writeUInt32LE(data.length, 20); c.writeUInt32LE(data.length, 24); c.writeUInt16LE(nb.length, 28); c.writeUInt32LE(off, 42);
+		cd.push(c, nb);
+		off += 30 + nb.length + data.length;
+	}
+	const cdBuf = Buffer.concat(cd), e = Buffer.alloc(22);
+	e.writeUInt32LE(0x06054b50, 0); e.writeUInt16LE(Object.keys(files).length, 8); e.writeUInt16LE(Object.keys(files).length, 10); e.writeUInt32LE(cdBuf.length, 12); e.writeUInt32LE(off, 16);
+	return Buffer.concat([...parts, cdBuf, e]);
+}
+
+test('the later mod wins, a mod\'s loose file beats its own zip, and a path twelve folders deep is found', () => {
+	const root = fs.mkdtempSync(path.join(testTmp(), 'sprites-order-'));
+	try {
+		const mod = (id, depends, files, zip) => {
+			const dir = path.join(root, 'Mods', id);
+			fs.mkdirSync(dir, { recursive: true });
+			fs.writeFileSync(path.join(dir, 'mod.json'), JSON.stringify({ name: id, description: id, version: '1.0', modType: 'Content', depends }));
+			for (const [rel, buf] of Object.entries(files)) { const f = path.join(dir, 'Content', 'Sprites', ...rel.split('/')); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, buf); }
+			if (zip) fs.writeFileSync(path.join(dir, 'Content.zip'), stored(zip));
+		};
+		const deep = 'a/b/c/d/e/f/g/h/i/j/k/Deep';
+		mod('early', [], { 'x/Thing.def': def(32, 32, 32, 32, 0, 0), [deep + '.def']: def(48, 48, 48, 48, 0, 0) });
+		mod('late', ['early'], { 'x/Thing.def': def(64, 64, 64, 64, 0, 0) });
+		mod('zipped', ['early'], { 'y/Both.def': def(40, 40, 40, 40, 0, 0) }, { 'sprites/y/both.def': def(80, 80, 80, 80, 0, 0), 'sprites/y/onlyzip.def': def(56, 56, 56, 56, 0, 0), 'sprites/y/onlyzip2.def': def(57, 57, 57, 57, 0, 0) });
+		assert.strictEqual(pics.spriteOf('x/Thing', [root]).fullW, 64, 'the later mod\'s copy');
+		assert.strictEqual(pics.spriteOf('y/Both', [root]).fullW, 40, 'the loose file of a mod over its zip');
+		assert.strictEqual(pics.spriteOf('y/OnlyZip', [root]).fullW, 56, 'a file only in the zip');
+		assert.strictEqual(pics.spriteOf(deep, [root]).fullW, 48, 'a path twelve folders deep');
+		const was = process.env.VMAPGEN_SPRITE_ZIPS;
+		process.env.VMAPGEN_SPRITE_ZIPS = '0';
+		try { assert.strictEqual(pics.spriteOf('y/OnlyZip2', [root]), null, 'VMAPGEN_SPRITE_ZIPS=0 reads loose files only (a name not read before: the cache is per name)'); } finally { if (was === undefined) delete process.env.VMAPGEN_SPRITE_ZIPS; else process.env.VMAPGEN_SPRITE_ZIPS = was; }
+	} finally { fs.rmSync(root, { recursive: true, force: true }); }
+});

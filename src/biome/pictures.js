@@ -12,22 +12,29 @@ const LODS = ['H3ab_spr.lod', 'h3abp_sp.lod', 'H3sprite.lod', 'HotA.lod'];
 
 // the loose .def files under every mod's Sprites folder, by lowercase file name
 const modDefsByDir = new Map();
+// a mod's id from the folder that holds its Content: .../Mods/hota/Mods/bulwark -> 'hota.bulwark' (modCrawler.js gives submods the same ids)
+const modIdOf = dir => dir.replace(/\\/g, '/').split(/\/mods\//i).slice(1).map(q => q.split('/')[0].toLowerCase()).join('.');
 function modIndex(userDir) {
 	const mods = userDir ? path.join(userDir, 'Mods') : null;
 	if (modDefsByDir.has(mods)) return modDefsByDir.get(mods);
 	const out = new Map();
-	// out.exact: the file at each path under a mod's Content/Sprites folder ('deathvalley/map/flayer'), the way the game's file system names it; the first mod found keeps a path
+	// out.exact: every file at a path under a mod's Content/Sprites folder ('deathvalley/map/flayer', a bare name for a file at the Sprites root), the way the game's file system names it,
+	// as { file, mod } in the order found
 	const exact = new Map();
 	const walk = (d, depth) => {
 		let list = [];
 		try { list = fs.readdirSync(d, { withFileTypes: true }); } catch (e) { return; }
 		for (const e of list) {
 			const p = path.join(d, e.name);
-			if (e.isDirectory() && depth < 9) walk(p, depth + 1);
+			if (e.isDirectory() && depth < 16) walk(p, depth + 1);
 			else if (/\.def$/i.test(e.name)) {
 				if (!out.has(e.name.toLowerCase())) out.set(e.name.toLowerCase(), p);
 				const lp = p.replace(/\\/g, '/'), at = lp.toLowerCase().lastIndexOf('/content/sprites/');
-				if (at >= 0) { const key = lp.slice(at + 17).toLowerCase().replace(/\.def$/, ''); if (!exact.has(key)) exact.set(key, p); }
+				if (at >= 0) {
+					const key = lp.slice(at + 17).toLowerCase().replace(/\.def$/, '');
+					if (!exact.has(key)) exact.set(key, []);
+					exact.get(key).push({ file: p, mod: modIdOf(lp.slice(0, at)) });
+				}
 			}
 		}
 	};
@@ -35,6 +42,37 @@ function modIndex(userDir) {
 	out.exact = exact;
 	modDefsByDir.set(mods, out);
 	return out;
+}
+
+// The active mods in load order, lowest first, as the generator resolves them (modCrawler.js): Map(mod id -> position), or null when the roots hold no readable mods. The roots are the
+// user folder first (its config/modSettings.json says which mods are active) and the install, as spriteRoots() gives them.
+const orderCache = new Map();
+function modOrder(roots) {
+	const rs = roots.filter(Boolean), key = rs.join('|');
+	if (orderCache.has(key)) return orderCache.get(key);
+	let order = null;
+	try {
+		const mc = require('../parser/modCrawler');
+		const userDir = rs.find(r => fs.existsSync(path.join(r, 'config', 'modSettings.json'))) || rs[0];
+		const mods = mc.crawlMods({ userDir, installDir: rs.find(r => r !== userDir) });
+		order = new Map(mc.resolveLoadOrder(mods, mc.loadActivationState(userDir)).map((m, i) => [m.__id, i]));
+		if (!order.size) order = null;
+	} catch (e) { order = null; }
+	orderCache.set(key, order);
+	return order;
+}
+// the copy the client reads among candidates { mod, zipped, ... }: only active mods, the later mod, and in one mod its loose file over its zip (the file system is [Content.zip, Content/], the
+// later loader wins; CModHandler.cpp genDefaultFS); null when no active mod has one
+function pickCopy(cands, roots) {
+	if (!cands.length) return null;
+	const order = cands.length > 1 || process.env.VMAPGEN_SPRITE_ACTIVE !== '0' ? modOrder(roots) : null;
+	let best = null, bi = -1;
+	for (const c of cands) {
+		if (order && !order.has(c.mod)) continue;
+		const rank = (order ? order.get(c.mod) : 0) * 2 + (c.zipped ? 0 : 1);
+		if (rank > bi) { bi = rank; best = c; }
+	}
+	return best;
 }
 
 /** The first frame of a DEF: its full size, its box inside it, its palette indices, and the palette. Null when it cannot be read. */
@@ -86,23 +124,36 @@ function spriteOf(animation, roots) {
 	const base = String(animation || '').replace(/\\/g, '/').split('/').pop().replace(/\.def$/i, '').toLowerCase();
 	if (!base) return null;
 	// the cache key is the whole path for a path animation: two defs of one bare name in different folders are two pictures
-	const hasFolder = String(animation || '').replace(/\\/g, '/').includes('/');
-	const key = roots.filter(Boolean).join('|') + '|' + (hasFolder ? String(animation).replace(/\\/g, '/').replace(/\.def$/i, '').toLowerCase() + '|path' : base);
+	const full = String(animation).replace(/\\/g, '/').replace(/\.def$/i, '').toLowerCase();
+	const hasFolder = full.includes('/');
+	const key = roots.filter(Boolean).join('|') + '|' + (hasFolder ? full + '|path' : base);
 	if (cache.has(key)) return cache.get(key);
 	let buf = null;
+	// A sprite is the file the game's file system gives the path: the active mods in load order (a mod's Content/Sprites/<path>.def, or the same path in its content.zip; the later mod
+	// wins, in one mod the loose file over its zip), then the base game's archives. A path ('deathvalley/map/Flayer') names one file; the bare file name 'Flayer.def' also names the
+	// battle def (450x400) in another folder of the same mod, which the search by bare name found first: 463 of the 4,961 sprite paths of K's mods answered with another file's picture
+	// (the Flayer and Bone Hook 'seven tiles off' of the guard figure census, the cathedral map creatures, the Death Valley towns, scenery of the plateau, terrace and highland sets), and
+	// a bare name read the original archive's picture where a mod overrides it (HotA's patch of AVMcrsn0, the crystal cavern). What no mod and no archive holds still falls through to the
+	// old search by bare name. VMAPGEN_SPRITE_EXACT=0 keeps the old order only; VMAPGEN_SPRITE_ZIPS=0 reads loose files only.
+	if (process.env.VMAPGEN_SPRITE_EXACT !== '0') {
+		const cands = [];
+		for (const r of roots.filter(Boolean)) {
+			for (const c of modIndex(r).exact.get(full) || []) cands.push({ ...c, zipped: false });
+			if (process.env.VMAPGEN_SPRITE_ZIPS !== '0') for (const c of zipIndex(r).full.get('sprites/' + full + '.def') || []) cands.push({ ...c, zipped: true });
+		}
+		const pick = pickCopy(cands, roots);
+		if (pick) {
+			let s = null;
+			try { s = decodeDef(pick.zipped ? readZipEntry(pick) : fs.readFileSync(pick.file)); } catch (e) { s = null; }
+			if (s) { cache.set(key, s); return s; }
+		}
+	}
 	// an animation named by a path ('hota/dungeon/adventureMap/creatures/AvWMino') is a mod's file: the game never reads it from the original
 	// archives, which contain a different picture under the same bare name (the H3 minotaur, drawn a tile right of the HotA one). A user folder
 	// with the game's Data gave the archive's picture first (K's own folder; the kenv copy has no Data). Mods first for a path.
-	const modFirst = String(animation || '').replace(/\\/g, '/').includes('/');
+	const modFirst = hasFolder;
 	const fromMods = () => { for (const r of roots.filter(Boolean)) { const f = modIndex(r).get(base + '.def'); if (f) return fs.readFileSync(f); } return null; };
-	// a path ('deathvalley/map/Flayer') names one file, at exactly that path under a mod's Sprites (loose, or in its content.zip): the bare file name 'Flayer.def' also names the
-	// battle def (450x400) in another folder of the same mod, which the search by bare name found first, and 463 of the 4,961 sprite paths of K's mods answered with another
-	// file's picture (the Flayer and Bone Hook 'seven tiles off' of the guard figure census, the cathedral map creatures, the Death Valley towns, scenery of the plateau, terrace
-	// and HotA highland sets). The file that is not there falls through to the search by bare name as before. VMAPGEN_SPRITE_EXACT=0 keeps the old search only.
-	const exactKey = modFirst && process.env.VMAPGEN_SPRITE_EXACT !== '0' ? String(animation).replace(/\\/g, '/').replace(/\.def$/i, '').toLowerCase() : null;
-	if (exactKey) { for (const r of roots.filter(Boolean)) { const f = modIndex(r).exact.get(exactKey); if (f) { buf = fs.readFileSync(f); break; } } }
-	if (!buf && exactKey && process.env.VMAPGEN_SPRITE_ZIPS !== '0') { const z = spriteOfInZip(animation, roots, true); if (z) { cache.set(key, z); return z; } }
-	if (!buf && modFirst) buf = fromMods();
+	if (modFirst) buf = fromMods();
 	if (!buf) try { buf = findResource(roots.filter(Boolean), 'Sprites', LODS, base + '.def'); } catch (e) { buf = null; }
 	if (!buf && !modFirst) buf = fromMods();
 	// a mod that ships its sprites in a content.zip (HotA Bulwark, Pavilion, Preserve: 44 of the 310 creatures, and their art) is read there too; VMAPGEN_SPRITE_ZIPS=0 reads loose files only, as 0.3.30 did
@@ -111,9 +162,8 @@ function spriteOf(animation, roots) {
 	return s;
 }
 
-// The .def files inside every mod's content.zip, by lowercase entry name: Map('sprites/<path>.def' -> { zip, csize, method, lhoff }). Only the zip's
-// central directory is read (the last bytes of the file), never the archive, so indexing the 70 zips of an install takes a moment. Used by
-// spriteOfInZip alone: spriteOf keeps judging the loose files it always has, so no pass that reads pictures (declip) changes with it.
+// The .def files inside every mod's content.zip, by lowercase entry name: Map('sprites/<path>.def' -> [{ zip, csize, method, lhoff, mod }]). Only the zip's
+// central directory is read (the last bytes of the file), never the archive, so indexing the 70 zips of an install takes a moment.
 const zipDefsByDir = new Map();
 function zipIndex(userDir) {
 	const mods = userDir ? path.join(userDir, 'Mods') : null;
@@ -122,6 +172,7 @@ function zipIndex(userDir) {
 	const readTail = file => {
 		let fd;
 		try {
+			const mod = modIdOf(path.dirname(file));
 			fd = fs.openSync(file, 'r');
 			const size = fs.fstatSync(fd).size, n = Math.min(size, 65557), tail = Buffer.alloc(n);
 			fs.readSync(fd, tail, 0, n, size - n);
@@ -135,9 +186,10 @@ function zipIndex(userDir) {
 			for (let i = 0; i < count && off + 46 <= cdSize; i++) {
 				const nl = cd.readUInt16LE(off + 28), xl = cd.readUInt16LE(off + 30), cl = cd.readUInt16LE(off + 32);
 				const name = cd.toString('utf8', off + 46, off + 46 + nl).toLowerCase();
-				if (name.endsWith('.def') && !out.has(name)) {
-					const e = { zip: file, method: cd.readUInt16LE(off + 10), csize: cd.readUInt32LE(off + 20), lhoff: cd.readUInt32LE(off + 42) };
-					out.set(name, e);
+				if (name.endsWith('.def')) {
+					const e = { zip: file, method: cd.readUInt16LE(off + 10), csize: cd.readUInt32LE(off + 20), lhoff: cd.readUInt32LE(off + 42), mod };
+					if (!out.has(name)) out.set(name, []);
+					out.get(name).push(e);
 					const b = name.slice(name.lastIndexOf('/') + 1);
 					if (!base.has(b)) base.set(b, e);
 				}
@@ -150,7 +202,7 @@ function zipIndex(userDir) {
 		try { list = fs.readdirSync(d, { withFileTypes: true }); } catch (e) { return; }
 		for (const e of list) {
 			const p = path.join(d, e.name);
-			if (e.isDirectory() && depth < 9) walk(p, depth + 1);
+			if (e.isDirectory() && depth < 16) walk(p, depth + 1);
 			else if (/^content\.zip$/i.test(e.name)) readTail(p);
 		}
 	};
@@ -160,31 +212,33 @@ function zipIndex(userDir) {
 	return idx;
 }
 
-/** An animation's first frame from a mod's content.zip ('creatures/AVWSHAMN' is entry 'sprites/creatures/avwshamn.def'), or null. For the figure test
- * (guardCreatures.js figureTest) only; spriteOf does not look in zips. */
+// the bytes of one zipped file (an entry of zipIndex)
+function readZipEntry(e) {
+	const fd = fs.openSync(e.zip, 'r');
+	try {
+		const head = Buffer.alloc(30);
+		fs.readSync(fd, head, 0, 30, e.lhoff);
+		const start = e.lhoff + 30 + head.readUInt16LE(26) + head.readUInt16LE(28), raw = Buffer.alloc(e.csize);
+		fs.readSync(fd, raw, 0, e.csize, start);
+		return e.method === 8 ? require('zlib').inflateRawSync(raw) : raw;
+	} finally { fs.closeSync(fd); }
+}
+
+/** An animation's first frame from a mod's content.zip ('creatures/AVWSHAMN' is entry 'sprites/creatures/avwshamn.def'), or null. spriteOf reads zips itself (unless
+ * VMAPGEN_SPRITE_ZIPS=0); this one reads them whatever that says, for the figure test (guardCreatures.js figureTest). */
 const zipSprites = new Map();
 function spriteOfInZip(animation, roots, exactOnly = false) {
 	const name = 'sprites/' + String(animation || '').replace(/\\/g, '/').replace(/\.def$/i, '').toLowerCase() + '.def';
 	const key = roots.filter(Boolean).join('|') + '|' + name + (exactOnly ? '|x' : '');
 	if (zipSprites.has(key)) return zipSprites.get(key);
 	let s = null;
-	for (const r of roots.filter(Boolean)) {
-		const zi = zipIndex(r);
-		// a path names the mod's own file; a bare name takes the first zipped file of that name, as spriteOf takes the first loose one
-		const e = zi.full.get(name) || (exactOnly || name.slice('sprites/'.length).includes('/') ? null : zi.base.get(name.slice(name.lastIndexOf('/') + 1)));
-		if (!e) continue;
-		try {
-			const fd = fs.openSync(e.zip, 'r');
-			try {
-				const head = Buffer.alloc(30);
-				fs.readSync(fd, head, 0, 30, e.lhoff);
-				const start = e.lhoff + 30 + head.readUInt16LE(26) + head.readUInt16LE(28), raw = Buffer.alloc(e.csize);
-				fs.readSync(fd, raw, 0, e.csize, start);
-				s = decodeDef(e.method === 8 ? require('zlib').inflateRawSync(raw) : raw);
-			} finally { fs.closeSync(fd); }
-		} catch (err) { s = null; }
-		if (s) break;
-	}
+	const cands = [];
+	for (const r of roots.filter(Boolean)) for (const c of zipIndex(r).full.get(name) || []) cands.push({ ...c, zipped: true });
+	const pick = pickCopy(cands, roots);
+	let e = pick;
+	// a bare name no mod holds at the Sprites root takes the first zipped file of that name, as spriteOf takes the first loose one
+	if (!e && !exactOnly && !name.slice('sprites/'.length).includes('/')) for (const r of roots.filter(Boolean)) { e = zipIndex(r).base.get(name.slice(name.lastIndexOf('/') + 1)); if (e) break; }
+	if (e) { try { s = decodeDef(readZipEntry(e)); } catch (err) { s = null; } }
 	zipSprites.set(key, s);
 	return s;
 }
@@ -229,4 +283,4 @@ function drawnBefore(a, b) {
  * install has none (the suite's test install: setting its user folder would load that folder's mods into every test). */
 const spriteRoots = () => [process.env.VCMI_USER_DIR, process.env.VCMI_ROOT, process.env.VMAPGEN_SPRITE_ROOT].filter(Boolean);
 
-module.exports = { decodeDef, spriteOf, spriteOfInZip, coverage, origin, pop, drawnBefore, spriteRoots };
+module.exports = { decodeDef, spriteOf, spriteOfInZip, coverage, origin, pop, drawnBefore, spriteRoots, modIndex, zipIndex, modOrder, pickCopy };
