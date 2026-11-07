@@ -10205,7 +10205,13 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	if (th.thinned) console.error(`[gen] level ${l}: road tiles taken out of 2x2 blocks: ${th.thinned}`);
 	// and no step that touches at a corner only (the game draws both tiles as dead ends there: a gap in the road; gateroad.js closeDiagonalSteps)
 	if (process.env.VMAPGEN_ROAD_DIAG !== '0') {
-		const dg = require('./gateroad').closeDiagonalSteps(plans[l], W, H, l, blocked, OCCUPIED, blockingCells, { clearScenery, visitableCells, isDecor: diagIsDecor });
+		// the front tiles of this level's gold mines: a blocker there is what keeps the mine closed to a walker, and the corner pass does not clear it
+		const protect = new Set();
+		for (const o of plans[l].objects) {
+			if ((o.l || 0) !== l || o.type !== 'mine' || o.subtype !== 'goldMine' || !o.template || !o.template.mask) continue;
+			for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) for (const [dx, dy] of allowedDirs(o.template)) { const x = vx + dx, y = vy + dy; if (x >= 0 && y >= 0 && x < W && y < H) protect.add(y * W + x); }
+		}
+		const dg = require('./gateroad').closeDiagonalSteps(plans[l], W, H, l, blocked, OCCUPIED, blockingCells, { clearScenery, visitableCells, isDecor: diagIsDecor, protect });
 		if (dg.closed || dg.left) console.error(`[gen] level ${l}: road steps that met at a corner only: ${dg.closed} joined by a tile beside them (${dg.cleared} scenery piece(s) cleared), ${dg.left} left${dg.offVisit ? `, ${dg.offVisit} taken off a building's visiting tile` : ''}`);
 	}
 	// and no road piece that serves one place only (gateroad.js lonePieces)
@@ -11132,14 +11138,14 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		const most = list => { let best, bn = 0; for (const c of list) { const n = coverN(c); if (n > bn) { best = c; bn = n; } } return best; };
 		// no tile for a guard, or one that covers only part of the open front: the piles laid before the entrance took the others. The 1x1 pickup of no worth (a resource, a campfire,
 		// a chest) on or beside an open front tile whose tile covers most of it moves to a free tile of the zone 3 to 8 tiles off, and the round runs again.
-		const makeRoom = () => {
+		const makeRoom = onlyOn => {
 			let pick = null, pd = Infinity;
 			for (const q of pl.objects) {
 				if ((q.l || 0) !== l || !/^(resource|randomResource|campfire|treasureChest)/.test(q.type) || !q.template || !q.template.mask || blockingCells(q.template, q.x, q.y).length !== 1) continue;
 				const d = Math.min(...need.map(f => Math.max(Math.abs(f % W - q.x), Math.abs(((f / W) | 0) - q.y))));
 				// the pile whose tile covers the most of the open front first (on the access tile, as the stock guard stands), then the nearest
 				const score = d * 10 - coverN(q.y * W + q.x);
-				if (d <= 1 && score < pd) { pick = q; pd = score; }
+				if (onlyOn ? d === 0 : d <= 1) if (score < pd) { pick = q; pd = score; }
 			}
 			if (!pick) return false;
 			let to = -1, td = Infinity;
@@ -11159,6 +11165,14 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 			out.goldMoved = (out.goldMoved || 0) + 1;
 			return true;
 		};
+		// a stack already rings part of the front (its own, or another pile's): that stack is the mine's guard and no second stack is posted (K, 2026-11-01); a pickup of no worth on an
+		// uncovered front tile moves out, so the approach closing can close the tile with a blocker
+		if (frontFree.some(c => ringed(c))) {
+			out.goldBlockers = (out.goldBlockers || 0) + 1;
+			for (let k = 0; k < 3 && makeRoom(true); k++) { /* one pickup a time */ }
+			if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[gold] (${o.x},${o.y}) a stack already rings part of the front: no second guard`);
+			break;
+		}
 		let spot = most(stockOk);
 		// at the stock gap the tile covering most; one at gap 2 only when it covers all that is open and the tiles at the gap do not (one guard, not two)
 		if (spot === undefined || coverN(spot) < need.length) {
@@ -11971,6 +11985,7 @@ const diagIsDecor = o => (DECOR_TYPES_SET.has(o.type) || (o.template && (require
 function clearScenery(pl, l, W, H, blocked, spot) {
 	const gone = spot.gone, base = l * W * H;
 	if (!gone.size) return 0;
+	if (process.env.VMAPGEN_WATCH) { const [wx, wy] = process.env.VMAPGEN_WATCH.split(',').map(Number); for (const o of gone) if (Math.abs(o.x - wx) <= 1 && Math.abs(o.y - wy) <= 1) console.error(`[watch] clearScenery L${l} takes ${o.type} (${o.x},${o.y}) from ${new Error().stack.split(String.fromCharCode(10)).slice(2, 5).map(q => q.trim()).join(' < ')}`); }
 	const keep = new Set();
 	for (const o of pl.objects) if ((o.l || 0) === l && o.template && !gone.has(o)) for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) keep.add(fy * W + fx);
 	for (const o of gone) for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) { const c = fy * W + fx; if (fx >= 0 && fy >= 0 && fx < W && fy < H && !keep.has(c)) blocked[base + c] &= ~OCCUPIED; }

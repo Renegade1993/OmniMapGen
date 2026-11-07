@@ -198,8 +198,10 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 	const why = out.why = {};
 	const trial = [];    // the blockers laid since it was last emptied, so a guard taken away can be put back
 	let lastNo = '';
-	const no = k => { why[k] = (why[k] || 0) + 1; lastNo = k; return false; };
+	let blockFor = null;
+	const no = k => { why[k] = (why[k] || 0) + 1; lastNo = k; if (process.env.VMAPGEN_GOLD_TRACE && blockFor) console.error(`[goldblock] mine (${blockFor[0].x},${blockFor[0].y}) tile (${blockFor[1] % W},${(blockFor[1] / W) | 0}) not closed: ${k}`); return false; };
 	const block = (c, o) => {
+		blockFor = process.env.VMAPGEN_GOLD_TRACE && o.type === 'mine' && o.subtype === 'goldMine' ? [o, c] : null;
 		if (!isFree(c)) return no('taken');
 		if (blocked[base + c] & RESERVED) return no('reserved');
 		if (roads.has(c)) return no('road');
@@ -891,7 +893,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 	if (process.env.VMAPGEN_GOLD_TRACE) for (const [o, a] of appOf) {
 		if ((o.l || 0) !== l || o.type !== 'mine' || o.subtype !== 'goldMine') continue;
 		const open = a.filter(t => isFree(t) && !ring.has(t));
-		console.error(`[goldend] mine (${o.x},${o.y}) approach ${a.length} tiles ${a.map(t => (t % W) + ',' + ((t / W) | 0) + (isFree(t) ? '' : 'x') + (ring.has(t) ? 'r' : '')).join(' ')}; open ${open.length}`);
+		console.error(`[goldend] mine (${o.x},${o.y}) approach ${a.length} tiles ${a.map(t => (t % W) + ',' + ((t / W) | 0) + (isFree(t) ? '' : 'x:' + ((pl.objects.find(q => (q.l || 0) === l && q.template && q.template.mask && blockingCells(q.template, q.x, q.y).some(([fx, fy]) => at(fx, fy) === t)) || {}).type || '?')) + (ring.has(t) ? 'r' : '')).join(' ')}; open ${open.length}`);
 	}
 	return out;
 }

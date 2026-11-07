@@ -1208,7 +1208,9 @@ function closeDiagonalSteps(plan, W, H, l, blocked, OCCUPIED, blockingCells, d =
 				}
 				if (pick === undefined) {
 					// (the last call takes a tile that makes a 2x2 patch here too, as above)
-					const t = [s1, s2].find(t => noBlock(t) && sceneryOn(t)) ?? (d.allowBlock && process.env.VMAPGEN_ROAD_DIAG_BLOCK !== '0' ? [s1, s2].find(t => sceneryOn(t)) : undefined);
+					// not the blocker on a gold mine's front tile (plan.js d.protect): clearing it left the mine open to a walker again
+					const prot = q => !!(d.protect && d.protect.has(q));
+					const t = [s1, s2].find(t => noBlock(t) && sceneryOn(t) && !prot(t)) ?? (d.allowBlock && process.env.VMAPGEN_ROAD_DIAG_BLOCK !== '0' ? [s1, s2].find(t => sceneryOn(t) && !prot(t)) : undefined);
 					if (t === undefined) {
 						// a link round: the road on the step's one side reaches the road on its other side over at most 5 free tiles (side to side), and the
 						// step's own tile then goes when the road stays in one piece without it. The Reviewer's pass 115, Coldshadow 108 Mediterranean seed 9:
