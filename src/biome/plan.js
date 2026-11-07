@@ -11078,7 +11078,11 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		}
 		const ringed = c => [...monsterAt].some(m => Math.max(Math.abs(m % W - c % W), Math.abs(((m / W) | 0) - ((c / W) | 0))) <= 1);
 		if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[gold] (${o.x},${o.y}) L${l}: front free ${frontFree.length}, outside a ring ${frontFree.filter(c => !ringed(c)).length}`);
-		if (!frontFree.some(c => !ringed(c))) continue;
+		// a guard's ring covers 3 of the front's tiles at most, and the tile before the door can be a road a guard may not stand on: rounds, each guard on a tile whose ring covers
+		// some of the front still outside every ring (the body is not re-indented, to keep the change small)
+		let roomMade = false;
+		for (let round = 0; round < 3; round++) {
+		if (!frontFree.some(c => !ringed(c))) break;
 		const zc = pl.zone ? pl.zone[vis[0][1] * W + vis[0][0]] : 0;
 		// a tile before the entrance first, then any within 2 of it (behind the resources laid beside the mine), then a reserved tile that is no road
 		const cands = [], rank = new Map();
@@ -11105,9 +11109,53 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		// settings stood by a gold mine, 2 tiles from a fill guard: the crowding was only a ranking penalty); with no such tile the mine keeps
 		// the stack near it. VMAPGEN_STOCK_GUARDS=0 off.
 		const stockOk = process.env.VMAPGEN_STOCK_GUARDS === '0' ? cands : cands.filter(c => !tightAt(c));
-		if (!stockOk.length && cands.length) { out.goldStock = (out.goldStock || 0) + 1; continue; }
-		const spot = stockOk.length ? stockOk[0] : -1;
-		if (spot < 0) { out.goldLeft = (out.goldLeft || 0) + 1; continue; }
+		// the front still open: a tile whose ring covers some of it first (K, 2026-10-08: every way into a gold mine guarded); the stock gap yields from 3 to 2 (never beside
+		// another stack) when no tile at the gap covers any, and only then the old fallback, a guard near the mine for a flyer, on the first round
+		const need = frontFree.filter(f => !ringed(f));
+		const coverN = c => need.filter(f => Math.max(Math.abs(f % W - c % W), Math.abs(((f / W) | 0) - ((c / W) | 0))) <= 1).length;
+		const besideStack = c => { const x = c % W, y = (c / W) | 0; for (const m of monsterAt) if (m !== c && Math.max(Math.abs(m % W - x), Math.abs(((m / W) | 0) - y)) <= 1) return true; return false; };
+		const most = list => { let best, bn = 0; for (const c of list) { const n = coverN(c); if (n > bn) { best = c; bn = n; } } return best; };
+		// no tile for a guard: the piles laid before the entrance took every one. The nearest 1x1 pickup of no worth (a resource, a campfire, a chest) beside an open front tile moves to a
+		// free tile of the zone 3 to 8 tiles off, and the round runs again.
+		const makeRoom = () => {
+			let pick = null, pd = Infinity;
+			for (const q of pl.objects) {
+				if ((q.l || 0) !== l || !/^(resource|randomResource|campfire|treasureChest)/.test(q.type) || !q.template || !q.template.mask || blockingCells(q.template, q.x, q.y).length !== 1) continue;
+				const d = Math.min(...need.map(f => Math.max(Math.abs(f % W - q.x), Math.abs(((f / W) | 0) - q.y))));
+				if (d <= 1 && d < pd) { pick = q; pd = d; }
+			}
+			if (!pick) return false;
+			let to = -1, td = Infinity;
+			for (let dy = -8; dy <= 8; dy++) for (let dx = -8; dx <= 8; dx++) {
+				const x = pick.x + dx, y = pick.y + dy, c = y * W + x, dd = Math.max(Math.abs(dx), Math.abs(dy));
+				if (dd < 3 || x < 1 || y < 1 || x >= W - 1 || y >= H - 1 || (blocked[base + c] & (OCCUPIED | RESERVED)) || roads.has(c)) continue;
+				if (pl.openMask && !pl.openMask[c]) continue;
+				if (pl.p && pl.p.water && pl.p.water[c]) continue;
+				if (pl.zone && pl.zone[c] !== zc) continue;
+				if (!footprintFits(pick.template, x, y, l, W, H, blocked, true)) continue;
+				if (dd < td) { td = dd; to = c; }
+			}
+			if (to < 0) return false;
+			for (const [fx, fy] of blockingCells(pick.template, pick.x, pick.y)) blocked[base + fy * W + fx] &= ~OCCUPIED;
+			pick.x = to % W; pick.y = (to / W) | 0;
+			footprintBlock(pick.template, pick.x, pick.y, l, W, H, blocked);
+			out.goldMoved = (out.goldMoved || 0) + 1;
+			return true;
+		};
+		let spot = most(stockOk);
+		// at the stock gap the tile covering most; one at gap 2 only when it covers all that is open and the tiles at the gap do not (one guard, not two)
+		if (spot === undefined || coverN(spot) < need.length) {
+			const all = cands.find(c => coverN(c) === need.length && !besideStack(c));
+			if (all !== undefined) { spot = all; out.goldRelaxed = (out.goldRelaxed || 0) + 1; }
+			else if (spot === undefined) { spot = most(cands.filter(c => !besideStack(c))); if (spot !== undefined) out.goldRelaxed = (out.goldRelaxed || 0) + 1; }
+		}
+		if (spot === undefined && round === 0 && stockOk.length) spot = stockOk[0];
+		if (spot === undefined && !roomMade && makeRoom()) { roomMade = true; round--; continue; }
+		if (spot === undefined) {
+			if (round === 0) { if (cands.length) out.goldStock = (out.goldStock || 0) + 1; else out.goldLeft = (out.goldLeft || 0) + 1; }
+			if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[gold] (${o.x},${o.y}) round ${round}: no guard, ${cands.length} tiles, ${stockOk.length} at the stock gap, ${need.length} front tiles open (${need.map(c => `(${c % W},${(c / W) | 0}) road ${roads.has(c)} start way ${byStartRoad(c)} taken ${!!(blocked[base + c] & OCCUPIED)}`).join('; ')})`);
+			break;
+		}
 		const sized = lootGuardEntry(pl, l, W, o, p, rng, spot, tpl);
 		// no creature of the zone's pool fits the strength: the nearest concrete guard of the zone lends its creature and level, as for a dear pile
 		let ge = sized;
@@ -11125,6 +11173,8 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		}
 		pl.objects.push(ge); footprintBlock(tpl, spot % W, (spot / W) | 0, l, W, H, blocked); monsterAt.add(spot);
 		out.gold = (out.gold || 0) + 1;
+		if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[gold] (${o.x},${o.y}) guard at (${spot % W},${(spot / W) | 0}); front ${frontFree.map(c => `(${c % W},${(c / W) | 0})`).join('')}; still outside a ring ${frontFree.filter(c => !ringed(c)).length}; tiles ${cands.length}, stock ok ${stockOk.length}`);
+		}
 	}
 	// a creature dwelling with no monster on or beside its footprint gets one on a free tile beside its entrance, as a dear pile does
 	// (DMB Dev's picture pass: the crystal cavern at (54,26), 72x72 one level four players seed 1, guard 3 tiles off)
@@ -13337,8 +13387,9 @@ function guardsOffDoorsteps(pl, l, W, H, blocked, extra = null, opts = null) {
 		}
 		return false;
 	};
+	// a stack standing on a way in is a way in too (a gold mine whose only free front tile held its guard: moved off, the mine stood open, 72x72 two levels seed 1, (56,48))
 	const lootAt = new Set();
-	for (const o of pl.objects) if ((o.l || 0) === l && o.template && o.template.mask && /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|prison|seaChest|flotsam)/.test(o.type))
+	for (const o of pl.objects) if ((o.l || 0) === l && o.template && o.template.mask && /^(resource|randomResource|treasureChest|campfire|randomArtifact|artifact|spellScroll|pandoraBox|prison|seaChest|flotsam|monster|randomMonster)/.test(o.type))
 		for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < W && fy < H) lootAt.add(fy * W + fx);
 	const waysWithLoot = o => {
 		const own = new Set(blockingCells(o.template, o.x, o.y).map(([a, b]) => b * W + a)), w = [];
