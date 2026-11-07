@@ -54,10 +54,23 @@ function townPieces(file) {
 	return ids.size;
 }
 
+const DIG_ARGS = seed => ['--w', '108', '--h', '108', '--players', '4', '--humans', '4', '--seed', seed,
+	'--bio.interconnectivity', '0.35', '--bio.interconnectPortal', '0', '--bio.openPathNoRoad', '0.5', '--bio.openPathRoad', '0.5',
+	'--bio.borderSolidity', '0.7', '--bio.compOnly', '0'];
+
+// K's own seed: every start in one walkable piece (the rule, K 2026-10-10). Rewritten 2026-11-07 (the suite's debt): this seed no longer needs the border dig (the zone cut it
+// drew changed with the generator), so its log no longer says "dug out through them", and that line was asserted here with the rule.
 test('108x108, four players, Biome connections 0.35, no portals, seed 670084743: all four starts are in one walkable piece', { timeout: 300000 }, () => {
-	const { r, out } = generate(['--w', '108', '--h', '108', '--players', '4', '--humans', '4', '--seed', '670084743',
-		'--bio.interconnectivity', '0.35', '--bio.interconnectPortal', '0', '--bio.openPathNoRoad', '0.5', '--bio.openPathRoad', '0.5',
-		'--bio.borderSolidity', '0.7', '--bio.compOnly', '0']);
+	const { r, out } = generate(DIG_ARGS('670084743'));
+	assert.strictEqual(r.status, 0, r.stderr.slice(-600));
+	assert.strictEqual(townPieces(out), 1, 'red, blue, tan and green walk to each other');
+	fs.rmSync(out, { force: true });
+});
+
+// The dig itself needs a map that shuts a start in. Of the twelve seeds 670084743 to 670084754 of these settings one does on the generator of 0.3.30, 670084753 (found by scanning
+// the twelve, .tmp\m1107\dig_scan.js, 2026-11-07), so the dig's case is that seed: the start is dug out, the hole has a guard, and the four starts are in one piece.
+test('108x108, four players, Biome connections 0.35, no portals, seed 670084753: a start shut in is dug out, the hole is guarded, and all four starts are in one piece', { timeout: 300000 }, () => {
+	const { r, out } = generate(DIG_ARGS('670084753'));
 	assert.strictEqual(r.status, 0, r.stderr.slice(-600));
 	assert.strictEqual(townPieces(out), 1, 'red, blue, tan and green walk to each other');
 	assert.ok(/dug out through them/.test(r.stderr), 'this seed needs the border dig');
