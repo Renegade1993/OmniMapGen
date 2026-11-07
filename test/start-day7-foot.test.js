@@ -56,8 +56,27 @@ function gen(opt, tag, env = {}) {
 	const r = spawnSync(process.execPath, args, { encoding: 'utf8', timeout: 600000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv(env), maxBuffer: 1 << 26 });
 	assert.strictEqual(r.status, 0, (r.stderr || '').slice(-400));
 	const M = require('../tools/mapsight/lib/sight').load(out);
+	const pairs = noFightPairs(M);
 	fs.rmSync(out, { force: true }); fs.rmSync(out + '.zones.json', { force: true });
-	return { objs: M.objs.map(o => `${o.cls}:${o.type}/${o.sub || ''}@${o.l},${o.at[0]},${o.at[1]}`).sort(), log: r.stderr || '' };
+	return { objs: M.objs.map(o => `${o.cls}:${o.type}/${o.sub || ''}@${o.l},${o.at[0]},${o.at[1]}`).sort(), log: r.stderr || '', pairs };
+}
+// the (start, other player's start zone) pairs a hero of the start walks into with no fight: the start's free region (passable, outside every guard's ring,
+// 8-connected: tools/mapsight/lib/sight.js buildRegions) holds a tile of the other start's zone
+function noFightPairs(M) {
+	const sight = require('../tools/mapsight/lib/sight');
+	const st = sight.starts(M).filter(s => s.zone !== undefined && s.zone !== null);
+	const owner = new Map(st.map(s => [s.zone, s.colour]));
+	const pairs = new Set();
+	for (const s of st) {
+		const mine = new Set(s.regions);
+		if (!mine.size) continue;
+		for (let l = 0; l < M.NL; l++) for (let y = 0; y < M.H; y++) for (let x = 0; x < M.W; x++) {
+			if (!mine.has(M.region[M.idx(l, x, y)])) continue;
+			const z = M.zoneAt(l, x, y);
+			if (owner.has(z) && owner.get(z) !== s.colour) pairs.add(`${s.colour}>${owner.get(z)}`);
+		}
+	}
+	return [...pairs].sort();
 }
 // the trace's starts: owner -> { walk, foot, sail, island }
 function trace(log) {
@@ -108,11 +127,15 @@ test('pw_095_72p6uf: the surface starts are island starts measured sailing; the 
 	assert.deepStrictEqual(on.objs, off.objs);
 });
 
-// a pass that would let a lifted start walk into another player's start zone with no fight is undone (the Opus Reviewer on f4c26fc;
-// with K's mods pw_091's pass moved the stack at (41,1) and blue walked into orange's start zone at (38,1); in the test install it is teal
-// into tan's)
-test('pw_091_108p6f: a pass that opens a way into another player\'s start zone is undone and leaves the map as with the passes off', { timeout: 1500000 }, () => {
+// The rule (the Opus Reviewer, October 22nd, K-DECISIONS-1022 section 2): the day-7 floor never adds a no-fight way into another player's start zone
+// (the Reviewer on f4c26fc; with K's mods pw_091's pass moved the stack at (41,1) and blue walked into orange's start zone at (38,1)). Rewritten 2026-11-07
+// (the suite's debt, the Reviewer's ruling of the same day): the test used to assert the log line of the undo for that reason, which only the pass in K's
+// install reaches; on 0.3.28 to 0.3.30 in the test install this map's pass is undone because no start it lifted walks further (red 1340 to 1340), and none of
+// the 40 seeds 1091 to 1130 of these settings undoes for the start-zone reason there. So the rule is asserted directly: the (start, other start's zone) pairs
+// a hero reaches with no fight with the floor on are the pairs with the floor off, or fewer. The pass does not fire in the test install (it is undone), so
+// the objects are equal too, which is asserted as a second line.
+test('pw_091_108p6f: the day-7 floor adds no no-fight way into another start\'s zone, and an undone pass leaves the map as with the passes off', { timeout: 1500000 }, () => {
 	const on = gen(PW091, 'on', { VMAPGEN_FLOOR_TRACE: '1' }), off = gen(PW091, 'off', { VMAPGEN_START_DAY7: '0' });
-	assert.match(on.log, /the pass undone, \w+ would reach \w+'s start zone with no fight/);
+	assert.ok(on.pairs.every(p => off.pairs.includes(p)), `no-fight ways into another start's zone: ${JSON.stringify(on.pairs)} with the floor on, ${JSON.stringify(off.pairs)} off`);
 	assert.deepStrictEqual(on.objs, off.objs);
 });

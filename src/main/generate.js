@@ -24,7 +24,9 @@ const { themePool, applyGuardTheme, concretizeGuards, rollPlaceholders, creature
 	themeBankPool, levelStrengths } = require('../biome/guardCreatures');
 const { evenStarts } = require('./startFairness');
 const { DWELLING_POOL, CORE_BANKS, bankRate, chestTemplate, registerTerrainBarriers, clearTerrainBarriers } = require('../biome/economy');
-const TEMPLATE_THEMES = require('../biome/templateThemes.json');
+// VMAPGEN_TEMPLATE_THEMES names a JSON file of the same shape to use instead (the suite pairs a template its install has with a theme: DMB's own
+// Golem Foundry, the one templateThemes.json names, is in neither test install)
+const TEMPLATE_THEMES = process.env.VMAPGEN_TEMPLATE_THEMES ? JSON.parse(fs.readFileSync(process.env.VMAPGEN_TEMPLATE_THEMES, 'utf8')) : require('../biome/templateThemes.json');
 const { h3ArtifactTemplates, h3MonsterTemplates, h3CreatureTraits, h3TerrainRows, h3ObjectTemplates } = require('../parser/h3data');
 const { phase, resetPhases } = require('./phases');
 const { giveArtifactsTheirArt } = require('./artifactArt');

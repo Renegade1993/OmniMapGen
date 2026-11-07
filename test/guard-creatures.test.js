@@ -381,19 +381,28 @@ test('a theme\'s banks are those its family guards or pays out, read from "rewar
 	fs.rmSync(dir, { recursive: true, force: true });
 });
 
+// Rewritten 2026-11-07 (the suite's debt; the failure since 0.3.15): the template templateThemes.json names, DMB's Golem Foundry, is in no test install
+// ('template "Golem Foundry" not found'), so the run never reached the theme. The registry is the shipped one (its pairing is asserted below) and the
+// run reads a pairing file of the same shape (VMAPGEN_TEMPLATE_THEMES) that gives Golems Aplenty, a template of the generator's own, the same theme.
 test('a template that brings a theme gets it when none is asked for', { timeout: 240000 }, () => {
 	const { spawnSync } = require('child_process');
 	const THEMES = require('../src/biome/templateThemes.json');
 	assert.strictEqual(THEMES['Golem Foundry'].theme, 'golems');
+	const pairing = path.join(testTmp(), `vmapgen_template_themes_${process.pid}.json`);
+	fs.writeFileSync(pairing, JSON.stringify({ 'Golems Aplenty': { theme: 'golems' } }));
+	const vm = path.join(testTmp(), `vmapgen_golem_theme_${process.pid}.vmap`);
 	const run = extra => spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'),
-		'--w', '72', '--h', '72', '--players', '4', '--humans', '1', '--seed', '3', '--template', 'Golem Foundry',
-		'--out', path.join(testTmp(), 'vmapgen_golem_foundry.vmap'), '--declaremods', '0', ...extra],
-	{ encoding: 'utf8', timeout: 200000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
-	const r = run([]);
-	assert.strictEqual(r.status, 0, r.stderr.slice(-600));
-	assert.match(r.stderr, /template brings theme golems/);
-	assert.match(r.stderr, /guard theme golems:/);
-	fs.rmSync(path.join(testTmp(), 'vmapgen_golem_foundry.vmap'), { force: true });
+		'--w', '72', '--h', '72', '--players', '4', '--humans', '1', '--seed', '3', '--template', 'Golems Aplenty',
+		'--out', vm, '--declaremods', '0', ...extra],
+	{ encoding: 'utf8', timeout: 200000, cwd: path.join(__dirname, '..'), windowsHide: true, env: { ...genEnv(), VMAPGEN_TEMPLATE_THEMES: pairing } });
+	try {
+		const r = run([]);
+		assert.strictEqual(r.status, 0, r.stderr.slice(-600));
+		assert.match(r.stderr, /template brings theme golems/);
+		assert.match(r.stderr, /guard theme golems:/);
+	} finally {
+		for (const f of [pairing, vm, vm + '.zones.json']) fs.rmSync(f, { force: true });
+	}
 });
 
 test('a placeholder no rule picked becomes a creature the game itself would roll for it', () => {
