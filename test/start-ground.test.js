@@ -61,17 +61,25 @@ test('every start of a 48x48 eight-player map walks 8 tiles or more without a fi
 // seeds must box a start in. Seed 30 stopped doing so with the building-pinch rule (its smallest walk 11 tiles) though the passes are as needed as
 // before. Base: seeds 5, 6, 8, 12, 14 and 16 of the 16 box a start in without the passes, on 305b6a6 and with the rule alike (8 of 40 when the
 // seeds were found). Bar: at least 2 of the 16.
+// Rewritten 2026-11-07 (the suite's debt; the failure since the start-exit pass of 760c0c7, 0.3.27): seeds 1 to 16 with the three old passes off (walk, caps, warp guard) give
+// smallest walks of 17 to 48 tiles and none boxes a start in: the start-exit pass (K, 2026-11-02, "it seems like there is only one way in and out of each start") and the later start
+// rules keep them out of the box. With the start exit off too (VMAPGEN_START_EXIT=0) seed 14 boxes a start in again (3 tiles; .tmp\m1107\sg_scan.js). So the old walk is the one with
+// all four off, and the bar is 1 of the 16 (it was 2: 8 of 40 seeds when the seeds were found); with the start exit on, the same seed 14 keeps its walk.
 const OFF_SEEDS = Array.from({ length: 16 }, (_, i) => i + 1);
-test('VMAPGEN_START_WALK=0 and VMAPGEN_START_CAPS=0 give the old walk: without the passes at least 2 of seeds 1 to 16 box a start in', { timeout: 900000 }, t => {
+test('VMAPGEN_START_WALK=0, VMAPGEN_START_CAPS=0 and VMAPGEN_START_EXIT=0 give the old walk: without the passes at least 1 of seeds 1 to 16 boxes a start in, and with the start exit on it does not', { timeout: 900000 }, t => {
 	const boxed = [];
 	for (const seed of OFF_SEEDS) {
 		// and the start warp guard off (biomes.js, 2026-10-16): it keeps some of these starts out of the box before the passes run (seed 12's
 		// smallest walk 15 tiles with it), so the old walk needs it off too
-		const { r, out } = generate(args(seed), 'off' + seed, { VMAPGEN_START_WALK: '0', VMAPGEN_START_CAPS: '0', VMAPGEN_START_WARP_GUARD: '0' });
+		const { r, out } = generate(args(seed), 'off' + seed, { VMAPGEN_START_WALK: '0', VMAPGEN_START_CAPS: '0', VMAPGEN_START_WARP_GUARD: '0', VMAPGEN_START_EXIT: '0' });
 		assert.strictEqual(r.status, 0, r.stderr.slice(-400));
 		const { out: starts } = walks(out);
 		if (starts.some(s => s.tiles < 8)) boxed.push(seed);
 	}
 	t.diagnostic(`seeds that box a start in without the passes: ${boxed.join(', ')}`);
-	assert.ok(boxed.length >= 2, `seeds that box a start in without the passes: ${boxed.join(', ') || 'none'}, bar 2 of ${OFF_SEEDS.length}`);
+	assert.ok(boxed.length >= 1, `seeds that box a start in without the passes: ${boxed.join(', ') || 'none'}, bar 1 of ${OFF_SEEDS.length}`);
+	// the start exit alone keeps the box shut: the first seed that boxed, with only the three old passes off
+	const { r, out } = generate(args(boxed[0]), 'exit' + boxed[0], { VMAPGEN_START_WALK: '0', VMAPGEN_START_CAPS: '0', VMAPGEN_START_WARP_GUARD: '0' });
+	assert.strictEqual(r.status, 0, r.stderr.slice(-400));
+	for (const st of walks(out).out) assert.ok(st.tiles >= 8, `seed ${boxed[0]} with the start exit on: start (${st.at}) walks ${st.tiles} tiles`);
 });
