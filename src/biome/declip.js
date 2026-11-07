@@ -111,6 +111,7 @@ function declipMonsters(plan, W, H, l, blocked, blockingCells, footprintCells) {
  */
 function declipPictures(plan, W, H, l, blocked, blockingCells, footprintCells, roots = [], prio = () => 0) {
 	const out = { moved: 0, left: 0 };
+	const R2B = process.env.VMAPGEN_DECLIP_R2 !== '0';
 	const pics = require('./pictures');
 	const base = l * W * H;
 	const objs = plan.objects.filter(o => (o.l || 0) === l && o.template && o.template.mask);
@@ -124,20 +125,23 @@ function declipPictures(plan, W, H, l, blocked, blockingCells, footprintCells, r
 		if (PICKUP.test(o.type) || zOf(o)) continue;
 		const s = pics.spriteOf(o.template.animation, roots);
 		if (!s) continue;
-		const d = { o, cov: pics.coverage(o.x, o.y, s), x: o.x, y: o.y, z: 0, k: order.get(o), hero: o.type === 'hero',
+		const d = { o, cov: pics.coverage(o.x, o.y, s), x: o.x, y: o.y, z: 0, k: order.get(o), hero: o.type === 'hero', cls: o.type === 'hero' ? 3 : (!MON.test(o.type) && !o.template.mask.some(r => /[AT]/.test(r))) ? 0 : 1,
 			cells: new Set(blockingCells(o.template, o.x, o.y).map(([a, b]) => a + ',' + b)) };
 		for (const t of d.cov.keys()) { if (!byTile.has(t)) byTile.set(t, []); byTile.get(t).push(d); }
 	}
 	// the share of pickup p's picture that objects drawn after it cover when it stands at (x, y)
 	const hidden = (p, s, x, y) => {
-		const me = { x, y, z: 0, k: order.get(p), hero: false, cells: new Set([x + ',' + y]) };
-		let own = 0, under = 0;
+		const me = { x, y, z: 0, k: order.get(p), hero: false, cells: new Set([x + ',' + y]), cls: 1 };
+		let own = 0, under = 0, under2 = 0;
 		for (const [t, rows] of pics.coverage(x, y, s)) {
-			const u = new Uint32Array(32);
-			for (const d of byTile.get(t) || []) if (pics.drawnBefore(me, d)) { const r = d.cov.get(t); for (let i = 0; i < 32; i++) u[i] |= r[i]; }
-			for (let i = 0; i < 32; i++) { own += pics.pop(rows[i]); under += pics.pop((rows[i] & u[i]) >>> 0); }
+			const u = new Uint32Array(32), u2 = new Uint32Array(32);
+			for (const d of byTile.get(t) || []) {
+				if (pics.drawnBefore(me, d)) { const r = d.cov.get(t); for (let i = 0; i < 32; i++) u[i] |= r[i]; }
+				if (R2B && pics.drawnBeforeR2b(me, d)) { const r = d.cov.get(t); for (let i = 0; i < 32; i++) u2[i] |= r[i]; }
+			}
+			for (let i = 0; i < 32; i++) { own += pics.pop(rows[i]); under += pics.pop((rows[i] & u[i]) >>> 0); under2 += pics.pop((rows[i] & u2[i]) >>> 0); }
 		}
-		return own ? under / own : 0;
+		return own ? [under / own, under2 / own] : [0, 0];
 	};
 	const solid = new Set();
 	for (const o of objs) for (const [a, b] of blockingCells(o.template, o.x, o.y)) if (inMap([a, b])) solid.add(b * W + a);
@@ -164,7 +168,12 @@ function declipPictures(plan, W, H, l, blocked, blockingCells, footprintCells, r
 	for (const p of objs) {
 		if (!PICKUP.test(p.type) || p.__walled || !one(p)) continue;
 		const s = pics.spriteOf(p.template.animation, roots);
-		if (!s || hidden(p, s, p.x, p.y) < 0.5) continue;
+		if (!s) continue;
+		// stock: half hidden or more (0.3.30); R2b, the order the engine is to ship: a quarter or more where stock shows it (under a tenth hidden), so R2b hides nothing stock showed
+		const h0 = hidden(p, s, p.x, p.y);
+		const newly = R2B && h0[1] >= 0.25 && h0[0] < 0.10;
+		if (h0[0] < 0.5 && !newly) continue;
+		if (newly) out.r2b = (out.r2b || 0) + 1;
 		const c0 = p.y * W + p.x, guards = ringOf(c0);
 		let done = false;
 		for (const [dx, dy] of NEAR) {
@@ -183,15 +192,16 @@ function declipPictures(plan, W, H, l, blocked, blockingCells, footprintCells, r
 				}
 				if (!via) continue;
 			}
-			if (hidden(p, s, x, y) >= 0.25) continue;
+			const h1 = hidden(p, s, x, y);
+			if (h1[0] >= 0.25 || h1[1] >= 0.25) continue;
 			blocked[base + c0] &= ~OCCUPIED;
 			blocked[base + c] |= OCCUPIED;
 			solid.delete(c0); solid.add(c);
 			p.x = x; p.y = y;
-			out.moved++; done = true;
+			out.moved++; done = true; if (newly) out.r2bMoved = (out.r2bMoved || 0) + 1;
 			break;
 		}
-		if (!done) out.left++;
+		if (!done) { out.left++; if (process.env.VMAPGEN_DECLIP_TRACE) console.error('[declip-left] ' + p.type + ' ' + p.x + ',' + p.y + ' L' + l); }
 	}
 	return out;
 }

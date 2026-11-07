@@ -1580,7 +1580,8 @@ function bodyCells(tpl, x, y) {
 const popRows = rows => { let n = 0; for (let i = 0; i < 32; i++) { let v = rows[i] >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); n += (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; } return n; };
 const popAnd = (a, b) => { const r = new Uint32Array(32); for (let i = 0; i < 32; i++) r[i] = (a[i] & b[i]) >>> 0; return popRows(r); };
 function artStacks(tpl, x, y, l, W, H, blocked) {
-	if (process.env.VMAPGEN_ART_STACK === '0' || !isBuilding(tpl)) return false;
+	if (process.env.VMAPGEN_ART_STACK === '0') return false;
+	if (!isBuilding(tpl)) return tallOn() && isLoot(tpl) ? lootUnderBuilding(tpl, x, y, l, W, H, blocked) : false;
 	const reg = ART_STACK.get(blocked);
 	if (!reg) return false;
 	const base = l * W * H;
@@ -1615,13 +1616,101 @@ function artStacks(tpl, x, y, l, W, H, blocked) {
 		if (ownAll && ownAllUnder >= ownAll * whole) return true;
 		for (const [id, n] of overOldAll) if (reg.allPx && n >= (reg.allPx.get(id) || Infinity) * whole) return true;
 	}
+	return tallOn() && buildingOverLoot(tpl, x, y, l, W, H, blocked);
+}
+/**
+ * Loot under a building's art, and a building over loot (hidden-by-R2b, spec scope N; the Opus Reviewer 2026-11-07, K item 39: "still have some incorrect layering of
+ * creatures, buildings, and blocker decorations", and "The further down/toward the player's view, the higher the display priority"). The engine is to draw the object
+ * anchored further south over the one anchored north of it (R2b, pictures.js drawnBeforeR2b), so a pickup or a stack on the drawn-but-walkable cells above a Dragon Utopia
+ * or a Statue of the Goddess is half hidden under it: 37 of the 38 objects R2b newly hides on K's 48 maps, 4 of 4 on 30 fresh maps. A pickup or a stack (the art of a
+ * pickup, a campfire, a treasure pile, the random-monster stand-in) is refused where the art of a building anchored south of it covers a quarter or more of its own
+ * picture and the stock order shows it (under a tenth hidden: R2b must hide nothing stock showed); a building is refused where its art would cover a quarter or more of
+ * a placed pickup's or stack's picture the same way. Judged by the pixels, as artStacks. Off with VMAPGEN_TALL_ART=0, and for a template whose settings say
+ * declipArt false (Coldshadow's Fantasy: its pickups on K's accepted seeds do not move, the lead 2026-10-18; planMap calls setTallArt).
+ */
+let tallOff = false;
+const TALL_STAT = { loot: 0, building: 0 };
+function setTallArt(on) { tallOff = !on; TALL_STAT.loot = 0; TALL_STAT.building = 0; }
+const tallOn = () => !tallOff && process.env.VMAPGEN_TALL_ART !== '0';
+function isLoot(tpl) {
+	if (!tpl || !tpl.mask || !tpl.animation || !tpl.mask.some(r => /[AT]/.test(r))) return false;
+	return /^(avwm(rnd|on)|avt|ava|adcfr|avxcf|treasurepile|spellstones|lostwagon)/i.test(String(tpl.animation).replace(/^.*[\/]/, ''));
+}
+function lootMark(reg, tpl, x, y, l, W, H) {
+	if (!reg.lootPix) { reg.lootPix = new Map(); reg.lootPx = new Map(); reg.lootInfo = new Map(); }
+	const base = l * W * H, id = ++artStackId;
+	let px = 0;
+	for (const [dx, dy, rows] of artPix(tpl)) {
+		const fx = x + dx, fy = y + dy;
+		if (fx < 0 || fy < 0 || fx >= W || fy >= H) continue;
+		px += popRows(rows);
+		const c = base + fy * W + fx;
+		if (!reg.lootPix.has(c)) reg.lootPix.set(c, []);
+		reg.lootPix.get(c).push({ id, y, rows });
+	}
+	reg.lootPx.set(id, px);
+	reg.lootInfo.set(id, { x, y, cells: new Set(blockingCells(tpl, x, y).map(([a, b]) => a + ',' + b)) });
+}
+// whether the stock order draws entry e (a registered building) after the loot at (x, y), the loot's blocking cells being `cells`
+function stockOver(e, reg, x, y, cells) {
+	const info = reg.cells && reg.cells.get(e.id);
+	if (!info) return true;   // not known: judged as drawn over, the stricter reading
+	const pics = require('./pictures');
+	return pics.drawnBefore({ x, y, z: 0, k: Infinity, hero: false, cells }, { x: info.x, y: info.y, z: 0, k: 0, hero: false, cells: info.cells });
+}
+function lootUnderBuilding(tpl, x, y, l, W, H, blocked) {
+	const reg = ART_STACK.get(blocked);
+	if (!reg) return false;
+	const base = l * W * H, cells = new Set(blockingCells(tpl, x, y).map(([a, b]) => a + ',' + b));
+	let own = 0, hid = 0, hidStock = 0;
+	for (const [dx, dy, rows] of artPix(tpl)) {
+		const fx = x + dx, fy = y + dy;
+		if (fx < 0 || fy < 0 || fx >= W || fy >= H) continue;
+		own += popRows(rows);
+		const there = reg.pix.get(base + fy * W + fx);
+		if (!there) continue;
+		const u = new Uint32Array(32), us = new Uint32Array(32);
+		for (const e of there) {
+			if (e.y <= y) continue;   // anchored south of the loot only: the rows are what R2b decides, a tie on the same row is the file order's
+			for (let i = 0; i < 32; i++) u[i] |= e.rows[i];
+			if (stockOver(e, reg, x, y, cells)) for (let i = 0; i < 32; i++) us[i] |= e.rows[i];
+		}
+		hid += popAnd(rows, u); hidStock += popAnd(rows, us);
+	}
+	if (own && hid >= own / 4 && hidStock < own / 10) { TALL_STAT.loot++; return true; }
 	return false;
 }
+function buildingOverLoot(tpl, x, y, l, W, H, blocked) {
+	const reg = ART_STACK.get(blocked);
+	if (!reg || !reg.lootPix) return false;
+	const base = l * W * H, cells = new Set(blockingCells(tpl, x, y).map(([a, b]) => a + ',' + b));
+	const over = new Map();
+	for (const [dx, dy, rows] of artPix(tpl)) {
+		const fx = x + dx, fy = y + dy;
+		if (fx < 0 || fy < 0 || fx >= W || fy >= H) continue;
+		const there = reg.lootPix.get(base + fy * W + fx);
+		if (!there) continue;
+		for (const e of there) if (e.y < y) over.set(e.id, (over.get(e.id) || 0) + popAnd(rows, e.rows));
+	}
+	for (const [id, n] of over) {
+		const own = reg.lootPx.get(id) || Infinity, info = reg.lootInfo.get(id);
+		if (n < own / 4 || !info) continue;
+		// the stock order shows the loot when it draws this building before it: the loot's cells against the candidate's
+		if (require('./pictures').drawnBefore({ x, y, z: 0, k: Infinity, hero: false, cells }, { x: info.x, y: info.y, z: 0, k: 0, hero: false, cells: info.cells })) { TALL_STAT.building++; return true; }
+	}
+	return false;
+}
+function tallStat() { return { ...TALL_STAT }; }
+
 function artStackMark(tpl, x, y, l, W, H, blocked) {
-	if (process.env.VMAPGEN_ART_STACK === '0' || !isBuilding(tpl)) return;
+	if (process.env.VMAPGEN_ART_STACK === '0') return;
+	const bld = isBuilding(tpl);
+	if (!bld && !(tallOn() && isLoot(tpl))) return;
 	let reg = ART_STACK.get(blocked);
 	if (!reg) { reg = { pix: new Map(), bodyPx: new Map(), allPx: new Map() }; ART_STACK.set(blocked, reg); }
+	if (!bld) { lootMark(reg, tpl, x, y, l, W, H); return; }
 	const base = l * W * H, id = ++artStackId;
+	if (tallOn()) { if (!reg.cells) reg.cells = new Map(); reg.cells.set(id, { x, y, cells: new Set(blockingCells(tpl, x, y).map(([a, b]) => a + ',' + b)) }); }
 	const body = new Set(bodyCells(tpl, x, y).map(([fx, fy]) => base + fy * W + fx));
 	let px = 0, all = 0;
 	for (const [dx, dy, rows] of artPix(tpl)) {
@@ -1648,6 +1737,14 @@ function artStackDrop(blocked, id) {
 	}
 	reg.bodyPx.delete(id);
 	if (reg.allPx) reg.allPx.delete(id);
+	if (reg.cells) reg.cells.delete(id);
+	if (reg.lootPix) {
+		for (const [c, list] of reg.lootPix) {
+			const keep = list.filter(e => e.id !== id);
+			if (keep.length !== list.length) { if (keep.length) reg.lootPix.set(c, keep); else reg.lootPix.delete(c); }
+		}
+		reg.lootPx.delete(id); reg.lootInfo.delete(id);
+	}
 }
 
 /**
@@ -5540,7 +5637,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 
 module.exports = {
 	prisonGuarded,
-	isBuilding, artPix, roamStats, artStackLastId, artStackDrop,
+	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, setTallArt, tallStat,
 	GUARD_GAP, fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	footprintCells, blockingCells, footprintFits, footprintBlock, visitableCells,
 	entranceOpen, pictureOnShadow, markShadow, shadowAt, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED, protectFronts,

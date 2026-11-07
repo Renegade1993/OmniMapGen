@@ -8245,6 +8245,8 @@ function balanceStarts(plan, W, H, blocked, playerStarts, rng) {
 function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	tileIdsByShort, numTiles, objectPools, terrainInfo }) {
 	const p = { ...BIOME_DEFAULTS, ...params };
+	// the hidden-by-R2b placement test (content.js artStacks): off for a template whose settings say declipArt false, as declipPictures below is
+	require('./content').setTallArt(!(params.zonePlan && params.zonePlan.templateSettings && params.zonePlan.templateSettings.declipArt === false));
 	p.linkGuardScale = linkGuardScale(p, W, H);
 	p.tplAreaShare = tplAreaShare(p, W, H);     // the gate and monolith guards below (guardEnd)
 	p.levelsTotal = levels;
@@ -10565,8 +10567,10 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		const prio = a => prioMap.get(String(a || '').replace(/\\/g, '/').toLowerCase()) || 0;
 		for (let l = 0; l < levels; l++) {
 			const r = require('./declip').declipPictures(plans[l], W, H, l, blocked, blockingCells, require('./content').footprintCells, roots, prio);
-			if (r.moved || r.left) console.error(`[gen] level ${l}: ${r.moved} pickup(s) half hidden under another object's picture moved clear, ${r.left} with no clear tile left`);
+			if (r.moved || r.left) console.error(`[gen] level ${l}: ${r.moved} pickup(s) half hidden under another object's picture moved clear, ${r.left} with no clear tile left` + (r.r2b ? `; of them ${r.r2b} newly hidden by the south-first order (R2b), ${r.r2bMoved || 0} moved` : ''));
 		}
+		const ts = require('./content').tallStat();
+		if (ts.loot || ts.building) console.error(`[gen] art over loot (the south-first order): ${ts.loot} pickup or stack tile(s) refused under a building's art, ${ts.building} building tile(s) refused over loot`);
 	}
 	// No guard a hero cannot reach, last: the sweep above runs before the start mines placed late, the scenery retile, the cave steps and
 	// the road passes, and any of them can close the way to a guard after it (K, 2026-10-18 via the lead: "there were still guards there like

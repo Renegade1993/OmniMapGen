@@ -297,8 +297,22 @@ function drawnBefore(a, b) {
 	return a.k < b.k;
 }
 
+/**
+ * R2b, the draw order the engine is to ship (the Opus Reviewer, 2026-11-07, from K's words "The further down/toward the player's view, the higher the display priority" and
+ * "buildings overriding decorations" on a tie; measured on K's 48 maps, the 98 engine maps and 159 converted originals): a draw priority first as stock, then the lower anchor
+ * row first (further south later), then on the same row a decoration (cls 0) before everything else (cls 1, a stack included) and a hero (cls 3) last, then file order. The
+ * blocked-tile rule of the stock comparator is dropped. a, b: { x, y, z, k, cls } as drawnBefore, with cls 0 decoration, 1 object or stack, 3 hero.
+ */
+function drawnBeforeR2b(a, b) {
+	if (a.z || b.z) return a.z !== b.z ? a.z > b.z : a.k < b.k;
+	if (a.y !== b.y) return a.y < b.y;
+	const ca = a.cls == null ? 1 : a.cls, cb = b.cls == null ? 1 : b.cls;
+	if (ca !== cb) return ca < cb;
+	return a.k < b.k;
+}
+
 /** Where sprites are read: the generator's user folder and install, and VMAPGEN_SPRITE_ROOT, a folder holding the game's Data for a run whose
  * install has none (the suite's test install: setting its user folder would load that folder's mods into every test). */
 const spriteRoots = () => [process.env.VCMI_USER_DIR, process.env.VCMI_ROOT, process.env.VMAPGEN_SPRITE_ROOT].filter(Boolean);
 
-module.exports = { decodeDef, spriteOf, spriteOfInZip, coverage, origin, feetTile, pop, drawnBefore, spriteRoots, modIndex, zipIndex, modOrder, pickCopy };
+module.exports = { decodeDef, spriteOf, spriteOfInZip, coverage, origin, feetTile, pop, drawnBefore, drawnBeforeR2b, spriteRoots, modIndex, zipIndex, modOrder, pickCopy };
