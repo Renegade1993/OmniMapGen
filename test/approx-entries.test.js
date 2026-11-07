@@ -27,7 +27,10 @@ test('the two approximate entries are approved open-layout entries that say they
 		const e = info[n];
 		assert.ok(e, `${n} has an entry`);
 		assert.strictEqual(e.openLayout, true, `${n} is an open layout: the generator drops --template for it`);
-		assert.match(e.description, /^APPROXIMATE\./, `${n}: the lobby text says so first`);
+		// 2026-11-07 (the suite's debt): K, 2026-11-03: "focused general information provision, with a 'what makes it different' subtext": the text opens with what the map is
+		// and says it is approximate in its second paragraph, after the label 'What makes it different:' (it opened with 'APPROXIMATE.' and a slider guide before)
+		assert.match(e.description.split('\n\n')[1] || '', /^What makes it different: this entry is approximate\./, `${n}: the lobby text says so in its "what makes it different" paragraph`);
+		assert.ok(!/^APPROXIMATE\./.test(e.description), `${n}: the text opens with what the map is`);
 		assert.match(e.oneLine, /^Approximate:/);
 		assert.strictEqual(e.originalPreferences.approximate, true);
 	}
@@ -63,6 +66,8 @@ test('both entries set Layout family to Tree (Opus Map Vision, 2026-10-21: 0.68 
 	for (const n of NAMES) {
 		assert.strictEqual(info[n].originalPreferences.levers.layoutFamily, tree, `${n} sets Layout family to Tree`);
 		assert.ok(info[n].originalPreferences.tunedSliders.includes('layoutFamily'), `${n} lists Layout family among its tuned sliders`);
-		assert.match(info[n].description, /Layout family at Tree/, `${n}: the text names the Layout family`);
+		// the text says how the zones join in plain words, not by the slider's name (K's description rule; the slider is asserted above)
+		assert.match(info[n].description, /joined as an? (tree|mesh)/, `${n}: the text says how the zones join`);
+		assert.ok(!/Layout family/.test(info[n].description), `${n}: the text names no slider`);
 	}
 });

@@ -29,24 +29,24 @@ test('the lobby label is read from the name file', () => {
 	assert.match(src, /noneShort'\] = JSON\.parse\(fs\.readFileSync\(path\.join\(ROOT, 'mod\/open-template-name\.json'\)/, 'noneShort is not read from open-template-name.json');
 });
 
-test('the description opens for a newcomer, then says it is DMB\'s Nostalgia, in plain prose', () => {
+// Rewritten 2026-11-07 (the suite's debt): K, 2026-11-03: "focused general information provision, with a 'what makes it different' subtext focus" (roster
+// SPEC-MapGenDev-descriptions-1104.md): paragraph 1 says what the map is, for a newcomer, in plain words; paragraph 2 opens 'What makes it different:'. The old opening
+// ('Start here if you are new to Heroes or to Dead Man's Boots.') and the sentence about DMB's own Nostalgia in the description are gone; the one-line text keeps DMB's Nostalgia.
+test('the description opens with what the map is for a newcomer, then says what makes it different, in plain prose', () => {
 	const paras = entry.description.split('\n\n');
-	assert.match(paras[0], /^Start here if you are new to Heroes or to Dead Man's Boots\./);
+	assert.match(paras[0], /if you are new/);
 	assert.ok(paras[0].length < 520, 'the opening is a short plain paragraph');
-	assert.match(entry.description, /DMB's own Nostalgia/);
+	assert.match(paras[1] || '', /^What makes it different:/);
 	assert.ok(!/—/.test(entry.description + entry.oneLine), 'no em dash');
 	assert.match(entry.oneLine, /DMB's own Nostalgia/);
 });
 
-test('every setting the description names is a setting with that label, and every Layout family stop is named', () => {
-	const labels = new Set(KNOBS.map(k => k.label));
-	const named = ['Biome size', 'Start biome size', 'Treasure biomes', 'Layout family', 'Biome connections', 'Portal share', 'Passages with road', 'Passages without road', 'Guards at bottlenecks',
-		'Bottleneck guard share', 'Guard gradient', 'Guards by distance', 'Guards on treasure', 'Monster count', 'Monster tier', 'Stack size', 'Mines', 'Creature dwellings', 'Artifacts'];
-	for (const n of named) {
-		assert.ok(labels.has(n), `"${n}" is not a setting's label in knobs.js`);
-		assert.ok(entry.description.includes(n), `the description does not name ${n}`);
-	}
+// Rewritten 2026-11-07 (the suite's debt): the description no longer carries a slider guide (it ran to 451 words; K's rule leaves slider names, values and measurements out):
+// it is a short text of 70 to 140 words that names no setting by its label, and the settings it points to by what they do are real pages of the lobby.
+test('the description is a short plain text and names no setting by its label', () => {
+	const words = entry.description.split(/\s+/).length;
+	assert.ok(words >= 70 && words <= 140, `the description is ${words} words`);
+	for (const k of KNOBS.filter(q => q.label.split(' ').length >= 2)) assert.ok(!entry.description.includes(k.label), `the description names the setting ${k.label}`);
 	const fam = KNOBS.find(k => k.key === 'layoutFamily');
-	for (const [, label] of fam.stops) assert.ok(entry.description.includes(label), `the description does not name the Layout family stop ${label}`);
-	assert.strictEqual(fam.stops.length, 8, 'a Layout family stop was added or removed: the description (paragraph on how the biomes join) must follow');
+	assert.ok(fam && fam.stops.length === 8, 'a Layout family stop was added or removed');
 });

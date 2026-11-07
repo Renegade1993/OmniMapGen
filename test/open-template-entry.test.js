@@ -28,9 +28,13 @@ test('the open layout is the entry named in open-template-name.json, and it is a
 
 test('the open entry carries a Template value for every lever', () => {
 	const levers = open[0][1].originalPreferences.levers;
-	for (const k of KNOBS) assert.ok(k.key in levers, `no Template value for ${k.key}`);
-	assert.strictEqual(Object.keys(levers).length, KNOBS.length);
-	for (const k of KNOBS) assert.strictEqual(levers[k.key], k.default, `${k.key} is not at its default`);
+	// 2026-11-07 (the suite's debt): bb472fc took the seat choices (teams, compOnly: who plays and in which team) out of the preference levers, so the entry carries
+	// every lever but those two
+	const SEAT = ['teams', 'compOnly'];
+	for (const k of KNOBS.filter(q => !SEAT.includes(q.key))) assert.ok(k.key in levers, `no Template value for ${k.key}`);
+	for (const k of SEAT) assert.ok(!(k in levers), `${k} is a seat choice and has no Template value`);
+	assert.strictEqual(Object.keys(levers).length, KNOBS.length - SEAT.length);
+	for (const k of KNOBS.filter(q => !SEAT.includes(q.key))) assert.strictEqual(levers[k.key], k.default, `${k.key} is not at its default`);
 });
 
 test('isOpenLayoutName matches the entry name, ignoring case and punctuation, and nothing else', () => {

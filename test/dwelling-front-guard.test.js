@@ -34,6 +34,11 @@ const OPTS = {
 // A rate over seeds 20 to 29 since 2026-10-18 (the lead: never re-pin a lucky seed): over seeds 20 to 25 the fronts stood open 4 of 37 on
 // 305b6a6 and 8 of 42 with the building-pinch rule, while seed 23 alone read 0 and 1; over seeds 20 to 29, 4 of 67 (6.0%) on 305b6a6. Bar: the
 // playable gate's own limit, 20% (approach-open).
+// The sample floor follows 0.3.29 (2026-11-07, the Opus Reviewer's question: which change cut the dwellings of these seeds from 55 to 47): a bisect of the 27 first-parent commits
+// v0.3.28 to v0.3.29 on four of the seeds (38, 44, 35, 33: 29 dwellings, 21 after) names 3119d31 (the guard's way out of a prison is held with its tile) in the run of prison commits
+// that K's words of 2026-09-30 asked for ("Lots of instances of prisons being placed directly in front of other adventurers"; 72992cc: prisons early on by default). With the
+// prison changes off on v0.3.29 (VMAPGEN_PRISON_EARLY, _HOLD, _PREFILTER, _OPEN_MIN = 0) the four seeds give 26 dwellings: prisons laid early take room the dwellings had. So
+// the floor is 4 a seed. The seeds stay as they were, and the bar stays 20%.
 const SEEDS = [20, 21, 22, 23, 24, 25, 26, 27, 28, 29];
 test('K settings 108x108 two players free layout, seeds 20 to 29: dwelling fronts open under 20%, the playable gate limit', { timeout: 1200000 }, t => {
 	let open = 0, dwellings = 0;
@@ -51,6 +56,6 @@ test('K settings 108x108 two players free layout, seeds 20 to 29: dwelling front
 		}
 	}
 	t.diagnostic(`dwelling fronts open ${open} of ${dwellings} (${(100 * open / dwellings).toFixed(1)}%)`);
-	assert.ok(dwellings >= 5 * SEEDS.length, `dwellings ${dwellings}`);
+	assert.ok(dwellings >= 4 * SEEDS.length, `dwellings ${dwellings}`);
 	assert.ok(open / dwellings < 0.2, `dwelling fronts open ${open} of ${dwellings} (${(100 * open / dwellings).toFixed(1)}%), bar 20%`);
 });
