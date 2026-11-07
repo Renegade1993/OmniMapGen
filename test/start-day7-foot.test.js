@@ -107,6 +107,9 @@ test('an undone pass puts back every field of every object, a guard trade of the
 	assert.strictEqual(plans[1].objects[1], g2);
 });
 
+// pw_047's settings carry bio.roadNetwork 0. Since fd3c09f (Build Road Network Off is the plan of On with the road type none; K Q9, 2026-11-05: Off means no roads at all, the same
+// as stock's three road toggles all off) that is the plan of On with no road drawn, not the reduced road network the old Off planned. On 0.3.30 this case reads 205, 424, 310, 333 and
+// 191 on foot (424 over 2.2 x 191 = 420) and fails; on fd3c09f it passes. The case is kept as it was, and nobody should read its pass as the old reduced network.
 test('pw_047_108p2uf: the starts within 2.2 on foot, the passes leave the map as with them off; orange\'s sailing walk is over 2.2 of the weakest walk on foot', { timeout: 1500000 }, () => {
 	const on = gen(PW047, 'on', { VMAPGEN_FLOOR_TRACE: '1' }), off = gen(PW047, 'off', { VMAPGEN_START_DAY7: '0' });
 	const t = trace(on.log), foot = [...t.values()].map(s => s.foot), sail = [...t.values()].map(s => s.sail);
