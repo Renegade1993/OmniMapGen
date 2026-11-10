@@ -94,6 +94,8 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		if ((o.l || 0) === l && o.template && o.template.mask && PICKUP.test(o.type))
 			for (const [fx, fy] of pickCells(o.template, o.x, o.y)) { const c = at(fx, fy); if (c >= 0) pickAt.add(c); }
 	const walk = c => c >= 0 && land(c) && (!(blocked[base + c] & OCCUPIED) || monsterAt.has(c) || pickAt.has(c));
+	// a gold mine's front tile with a pile on it is a way in (VMAPGEN_GOLD_PILE_WAY=0 off): the removals below count it, so a stack that rings it is not taken away or moved off it
+	const goldPile = q => q.type === 'mine' && q.subtype === 'goldMine' && process.env.VMAPGEN_GOLD_PILE_WAY !== '0';
 	const wayInFor = (q, a) => wayIn(a) || (process.env.VMAPGEN_GOLD_PILE_WAY !== '0' && q.type === 'mine' && q.subtype === 'goldMine' && pickAt.has(a));
 	// a pickup's visiting tile is stepped onto only from a side it is visited from (a prison from its sides and below): the floods below took
 	// the prison (11,21) of K's s440782210 on 40ccf74 from the tile above it, so the pile behind looked joined and its last way was closed.
@@ -206,7 +208,8 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		if (!isFree(c)) return no('taken');
 		if (blocked[base + c] & RESERVED) return no('reserved');
 		if (roads.has(c)) return no('road');
-		if (zone[c] !== zone[o.y * W + o.x]) return no('other zone');
+		// a gold mine at a zone line: its front tile in the next zone is closed too (the mine's front is the mine's; VMAPGEN_GOLD_PILE_WAY=0 off)
+		if (zone[c] !== zone[o.y * W + o.x] && !(goldPile(o) && (appOf.get(o) || []).includes(c))) return no('other zone');
 		// the object itself keeps a free way in: closing a mine's two open front tiles left only the tile under a subterranean gate in its
 		// guard's ring, and the mine was sealed (grid, 72x72 two levels four players seed 2, 2026-10-09)
 		// a guard's tile is a way in too (a hero beats it and steps there): two piles whose only free tile was a dead end below them, reached
@@ -455,7 +458,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			const affected = [];
 			let ok = true;
 			for (const [q, a] of appOf) {
-				if (!a.some(c => lost.has(c) && (isFree(c) || monsterAt.has(c))) && !leansOn(q, m)) continue;
+				if (!a.some(c => lost.has(c) && (isFree(c) || monsterAt.has(c) || (goldPile(q) && pickAt.has(c)))) && !leansOn(q, m)) continue;
 			if (!KIND.test(q.type) || (/^creatureGenerator/.test(q.type) && !dwellingsOn)) { ok = false; break; }
 				affected.push([q, a]);
 			}
@@ -470,6 +473,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			let good = true;
 			for (const [q, a] of affected) {
 				if (!a.some(c => ring.has(c) && (isFree(c) || monsterAt.has(c))) || (DEAR.test(q.type, q) && !monsterBeside(q))) { good = false; break; }
+				if (goldPile(q) && a.some(c => pickAt.has(c) && !ring.has(c))) { good = false; break; }
 				for (const c of a.filter(c => isFree(c) && !ring.has(c))) if (!block(c, q)) { good = false; break; }
 				if (!good) break;
 			}
@@ -588,7 +592,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = at(m.x + dx, m.y + dy); if (n >= 0 && rc.get(n) === 1) lost.add(n); }
 			const deps = []; let ok = true;
 			for (const [q, a] of appOf) {
-				if (!a.some(c => lost.has(c) && (isFree(c) || monsterAt.has(c))) && !leansOn(q, m)) continue;
+				if (!a.some(c => lost.has(c) && (isFree(c) || monsterAt.has(c) || (goldPile(q) && pickAt.has(c)))) && !leansOn(q, m)) continue;
 				if (!PICKUP.test(q.type) || q.__walled || !q.template.mask) { ok = false; bump(q.__walled ? 'walled pile' : 'not a pile: ' + q.type.replace(/:.*/, '')); break; }
 				deps.push(q);
 			}
@@ -646,7 +650,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		const lost = new Set();
 		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = at(m.x + dx, m.y + dy); if (n >= 0) lost.add(n); }
 		const res = [];
-		for (const [q, a] of appOf) if (a.some(c => lost.has(c) && (isFree(c) || monsterAt.has(c))) || leansOn(q, m)) res.push(q);
+		for (const [q, a] of appOf) if (a.some(c => lost.has(c) && (isFree(c) || monsterAt.has(c) || (goldPile(q) && pickAt.has(c)))) || leansOn(q, m)) res.push(q);
 		return res;
 	};
 	for (let round = 0; round < 3; round++) {
@@ -726,7 +730,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = at(m.x + dx, m.y + dy); if (n >= 0 && rc.get(n) === 1) lost.add(n); }
 		const deps = [];
 		for (const [q, a] of appOf) {
-			const byRing = a.some(c => lost.has(c) && (isFree(c) || monsterAt.has(c)));
+			const byRing = a.some(c => lost.has(c) && (isFree(c) || monsterAt.has(c) || (goldPile(q) && pickAt.has(c))));
 			if (!byRing && !(leansOn(q, m) && !othersBeside(q, m))) continue;
 			if (!PICKUP.test(q.type) || q.__walled || !q.template.mask) return null;
 			deps.push(q);
@@ -812,7 +816,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			const lost = new Set();
 			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = at(m.x + dx, m.y + dy); if (n >= 0 && rc.get(n) === 1) lost.add(n); }
 			const kinds = new Set();
-			for (const [q, a] of appOf) if (a.some(c => lost.has(c) && (isFree(c) || monsterAt.has(c)))) kinds.add(KIND.test(q.type) ? (/^creatureGenerator/.test(q.type) ? 'dwelling' : 'dear') : PICKUP.test(q.type) ? 'cheap' : q.type.replace(/:.*/, ''));
+			for (const [q, a] of appOf) if (a.some(c => lost.has(c) && (isFree(c) || monsterAt.has(c) || (goldPile(q) && pickAt.has(c))))) kinds.add(KIND.test(q.type) ? (/^creatureGenerator/.test(q.type) ? 'dwelling' : 'dear') : PICKUP.test(q.type) ? 'cheap' : q.type.replace(/:.*/, ''));
 			const key = [...kinds].sort().join('+') || 'none';
 			hist[key] = (hist[key] || 0) + 1;
 		}
@@ -925,27 +929,44 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 				const overFront = k => [...frontRaw].some(f => within(f, k, 1));
 				const otherOver = [...monsterAt].filter(k => k !== mc && overFront(k)).length;
 				const wasOver = overFront(mc);
-				let pick = -1, ps = Infinity, pickWall = null;
+				let pick = -1, ps = Infinity, pickWall = null, pickReloc = [];
 				const whyNot = [];
 				for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
 					const c = at((mc % W) + dx, ((mc / W) | 0) + dy);
 					if (c < 0 || c === mc) continue;
 					const wall = !isFree(c) && land(c) ? pl.objects.find(q => q.__wall && (q.l || 0) === l && q.x === c % W && q.y === ((c / W) | 0)) : null;
-					if ((!isFree(c) && !wall) || pickAt.has(c) || (blocked[base + c] & RESERVED) || roads.has(c) || water && water[c] || zone[c] !== zone[o.y * W + o.x]) { if (c >= 0) whyNot.push(`(${c % W},${(c / W) | 0}) ${!isFree(c) && !wall ? 'occupied' : pickAt.has(c) ? 'pile' : (blocked[base + c] & RESERVED) ? 'reserved' : roads.has(c) ? 'road' : 'zone'}`); continue; }
+					if ((!isFree(c) && !wall) || pickAt.has(c) || (blocked[base + c] & RESERVED) || roads.has(c) || water && water[c] || (zone[c] !== zone[o.y * W + o.x] && !app.includes(c))) { if (c >= 0) whyNot.push(`(${c % W},${(c / W) | 0}) ${!isFree(c) && !wall ? 'occupied' : pickAt.has(c) ? 'pile' : (blocked[base + c] & RESERVED) ? 'reserved' : roads.has(c) ? 'road' : 'zone'}`); continue; }
 					const cx = c % W, cy = (c / W) | 0;
 					if (cx < 1 || cy < 1 || cx >= W - 1 || cy >= H - 1 || byStartRoad(c)) { whyNot.push(`(${cx},${cy}) edge/startway`); continue; }
 					// beside a road is allowed (the stock mines' guards stand on the access tile, road or not), never on one or on a start's way; it ranks last
 					let byRoad = 0;
 					for (let ey = -1; ey <= 1; ey++) for (let ex = -1; ex <= 1; ex++) if (roads.has((cy + ey) * W + cx + ex)) byRoad = 1;
 					const near = [...monsterAt].filter(k => k !== mc && within(k, c, 2));
-					if (near.some(k => within(k, c, 1)) || near.length > crowdHere) { whyNot.push(`(${cx},${cy}) crowd ${near.length} vs ${crowdHere}`); continue; }
+					if (near.some(k => within(k, c, 1)) || near.length > crowdHere + (app.includes(c) ? 1 : 0)) { whyNot.push(`(${cx},${cy}) crowd ${near.length} vs ${crowdHere}`); continue; }
 					if (!wasOver && otherOver >= 1) { whyNot.push(`(${cx},${cy}) would be a second stack beside the front`); continue; }
 					if (!need.every(a => within(a, c, 1))) { whyNot.push(`(${cx},${cy}) misses front ${need.filter(a => !within(a, c, 1)).map(a => (a % W) + ',' + ((a / W) | 0)).join(' ')}`); continue; }
-					if (!serves.every(q => visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), c, 1)))) { whyNot.push(`(${cx},${cy}) leaves ${serves.filter(q => !visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), c, 1))).map(q => q.type + '@' + q.x + ',' + q.y).join(' ')}`); continue; }
+					// a dear pile the stack guarded alone and the new tile does not ring moves into the new tile's ring (one tile, never deleted, still guarded by the same stack)
+					const unserved = serves.filter(q => !visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), c, 1)));
+					const reloc = [];
+					if (unserved.length) {
+						let okAll = process.env.VMAPGEN_GOLD_RELOC_DEAR !== '0' && unserved.every(q => PICKUP.test(q.type) && q.template && q.template.mask && blockingCells(q.template, q.x, q.y).length === 1);
+						const taken = new Set();
+						if (okAll) for (const q of unserved) {
+							let to = -1;
+							for (let ey = -1; ey <= 1 && to < 0; ey++) for (let ex = -1; ex <= 1; ex++) {
+								const u = at(cx + ex, cy + ey);
+								if (u < 0 || u === c || u === mc || taken.has(u) || !isFree(u) || (blocked[base + u] & RESERVED) || roads.has(u) || owners.has(u) || byStartRoad(u) || zone[u] !== zone[o.y * W + o.x] || frontRaw.has(u) || (water && water[u]) || pickAt.has(u)) continue;
+								to = u; break;
+							}
+							if (to < 0) { okAll = false; break; }
+							taken.add(to); reloc.push([q, to]);
+						}
+						if (!okAll) { whyNot.push(`(${cx},${cy}) leaves ${unserved.map(q => q.type + '@' + q.x + ',' + q.y).join(' ')}`); continue; }
+					}
 					// a stack on one of the mine's own front tiles is the stock mine's guard (on the access tile, the way in goes through it); elsewhere its ring must cut no way
 					if (!app.includes(c) && (!simple(c) || cutsWay(c))) { whyNot.push(`(${cx},${cy}) cuts`); continue; }
-					const sc = Math.max(Math.abs(dx), Math.abs(dy)) * 2 + near.length + byRoad * 3 + (wall ? 1 : 0);
-					if (sc < ps) { ps = sc; pick = c; pickWall = wall; }
+					const sc = Math.max(Math.abs(dx), Math.abs(dy)) * 2 + near.length + byRoad * 3 + (wall ? 1 : 0) + reloc.length * 4;
+					if (sc < ps) { ps = sc; pick = c; pickWall = wall; pickReloc = reloc; }
 				}
 				if (pick < 0) { if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldresite] mine (${o.x},${o.y}) stack (${mc % W},${(mc / W) | 0}) cannot move: need ${need.map(a => (a % W) + ',' + ((a / W) | 0)).join(' ')}; ` + whyNot.join('; ')); continue; }
 				if (pickWall) { pl.objects.splice(pl.objects.indexOf(pickWall), 1); blocked[base + pick] &= ~OCCUPIED; out.goldWallGave = (out.goldWallGave || 0) + 1; }
@@ -955,6 +976,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 				monsterAt.add(pick);
 				ring.clear(); for (const k of monsterAt) addRing(k);
 				out.goldResited = (out.goldResited || 0) + 1;
+				for (const [q, to] of pickReloc) { const oc = q.y * W + q.x; blocked[base + oc] &= ~OCCUPIED; pickAt.delete(oc); q.x = to % W; q.y = (to / W) | 0; if (q.instanceName) q.instanceName = `${q.type}_${q.x}_${q.y}_${l}`; footprintBlock(q.template, q.x, q.y, l, W, H, blocked); pickAt.add(to); out.goldPileMoved = (out.goldPileMoved || 0) + 1; }
 				if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldresite] mine (${o.x},${o.y}) stack (${mc % W},${(mc / W) | 0}) to (${m.x},${m.y}); open now ${openNow().length}`);
 				done = true;
 				break;
@@ -1041,7 +1063,8 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 				let ok = true;
 				for (const [k, tiles] of order) {
 					if (k === keeper) continue;
-					if (tiles.some(c => kept.has(c))) { ok = false; break; }
+					// a tile the keeper rings too closes as well (the other stack then rings nothing walkable), when the keeper keeps another way in
+					if (!kept0.some(c => !order.some(([k2, ts2]) => k2 !== keeper && ts2.includes(c)))) { ok = false; why1 = 'the keeper would keep no way in'; break; }
 					for (const c of tiles) {
 						if (!isFree(c)) {
 							if (!pickAt.has(c)) { ok = false; why1 = `(${c % W},${(c / W) | 0}) taken`; break; }
