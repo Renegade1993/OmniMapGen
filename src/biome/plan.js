@@ -10024,7 +10024,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 	// (K, 2026-10-06: guard, loot, guard, wall; the gaps closed with blockers, not more guards)
 	const approachClosing = (l, only = null) => {
 		const r = require('./approachclose').closeApproaches(plans[l], l, W, H, blocked, plans[l].p || params, {
-			OCCUPIED, RESERVED, APPROACH, markApproach, blockingCells, visitableCells, allowedDirs, footprintBlock, objectEntry, singleTemplate, startWayCells,
+			OCCUPIED, RESERVED, APPROACH, markApproach, blockingCells, visitableCells, allowedDirs, footprintBlock, footprintFits, objectEntry, singleTemplate, startWayCells,
 			monsterTpl: OBJECT_TEMPLATES.randomMonster, monsterOptions, scaledAmount: require('./content').scaledAmount, lootGuard: require('./content').lootGuard, zoneGuardPool: require('./content').zoneGuardPool,
 			rng: xorshift(((params.seed || 1) ^ 0x3c71) + l * 977 >>> 0), only });
 		if (r.objects) console.error(`[gen] level ${l}: dwellings and dear piles with an open approach: ${r.objects}; ${r.closed} tile(s) closed with a blocker, ${r.posted} guard(s) posted (${r.first || 0} first), ${r.left} left open ${JSON.stringify(r.why)}; into a ring ${r.intoRing || 0}, ways beside a guard closed ${r.closedBeside || 0} (guards re-sited for banks and mines ${r.resitedBeside || 0}, cheap piles into a ring ${r.cheapIntoRing || 0}), guards re-sited ${r.resited || 0}, spread ${r.spread || 0}; thinned ${r.thinned}, merged ${r.merged} (${r.moved} piles moved), pairs ${r.pairs} ${JSON.stringify(r.why3)}; flyer tiles walled ${r.flyerWalled || 0}, taken by a guard ${r.flyerShut || 0}, left ${r.flyerLeft || 0}`);
@@ -12098,10 +12098,12 @@ function clearEntranceShadow(pl, l, W, H, blocked) {
 			// what else it guards: anything but a cheap pile, a monster or scenery within a tile of it; a monolith or a gate only when the guard
 			// stands at its door (the gate (28,26)'s picture reaches the guard (28,24), which guards the pickups, not the gate)
 			const near1 = cells => cells.some(([fx, fy]) => Math.max(Math.abs(fx - guard.x), Math.abs(fy - guard.y)) <= 1);
+			// a gold mine whose front tile lies in the guard's ring is watched by it too (the gold re-site's open mine (11,43), 108x108 two levels three players seed 4: the guard went with a resource off a gate's picture and left the mine open). VMAPGEN_GOLD_PILE_WAY=0 off.
+			const goldFront = q => q.type === 'mine' && q.subtype === 'goldMine' && process.env.VMAPGEN_GOLD_PILE_WAY !== '0' && visitableCells(q.template, q.x, q.y).some(([vx, vy]) => allowedDirs(q.template).some(([ddx, ddy]) => near1([[vx + ddx, vy + ddy]])));
 			const others = pl.objects.some(q => q !== o && q !== guard && (q.l || 0) === l && q.template && q.template.mask && !/^(monster|randomMonster)/.test(q.type)
 				&& !CHEAP.test(q.type) && !(DECOR_TYPES_SET.has(q.type) && !q.template.mask.some(r2 => /[AT]/.test(r2)))
 				&& (/^(monolith|subterraneanGate)/.test(q.type) ? near1(visitableCells(q.template, q.x, q.y))
-					: near1(blockingCells(q.template, q.x, q.y).concat(visitableCells(q.template, q.x, q.y)))));
+					: near1(blockingCells(q.template, q.x, q.y).concat(visitableCells(q.template, q.x, q.y))))) || pl.objects.some(q => q !== o && (q.l || 0) === l && q.template && q.template.mask && goldFront(q));
 			let line = false;
 			const zg = pl.zone ? pl.zone[guard.y * W + guard.x] : -1;
 			if (pl.zone) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {

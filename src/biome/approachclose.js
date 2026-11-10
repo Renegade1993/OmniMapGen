@@ -28,7 +28,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 	const out = { objects: 0, closed: 0, posted: 0, left: 0 };
 	const zone = pl.zone;
 	if (!zone || !pl.biomeTerrain) return out;
-	const { OCCUPIED, RESERVED, APPROACH, blockingCells, visitableCells, allowedDirs, footprintBlock, objectEntry, singleTemplate, rng } = d;
+	const { OCCUPIED, RESERVED, APPROACH, blockingCells, visitableCells, allowedDirs, footprintBlock, footprintFits, objectEntry, singleTemplate, rng } = d;
 	const base = l * W * H, roads = pl.roadCells || new Set(), water = pl.p && pl.p.water;
 	const dwellingsOn = Number(p.guardDwellings) !== 0;
 	const land = c => zone[c] >= 0 && !(water && water[c]) && (!pl.openMask || pl.openMask[c]);
@@ -951,9 +951,31 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 					const unserved = serves.filter(q => !visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), c, 1)));
 					const reloc = [];
 					if (unserved.length) {
-						let okAll = process.env.VMAPGEN_GOLD_RELOC_DEAR !== '0' && unserved.every(q => PICKUP.test(q.type) && q.template && q.template.mask && blockingCells(q.template, q.x, q.y).length === 1);
+						const isBank = q => /^(creatureBank|dragonUtopia|crypt)$/.test(q.type) && !!q.template && !!q.template.mask && !!footprintFits;
+						let okAll = process.env.VMAPGEN_GOLD_RELOC_DEAR !== '0' && unserved.every(q => (PICKUP.test(q.type) && q.template && q.template.mask && blockingCells(q.template, q.x, q.y).length === 1) || (isBank(q) && process.env.VMAPGEN_GOLD_MOVE_BANK !== '0'));
 						const taken = new Set();
 						if (okAll) for (const q of unserved) {
+							// a bank moves inside its zone to a spot whose visiting tile the new tile's ring takes (the Reviewer 2026-11-10: the bank at (44,60) may move); its footprint must fit with the old one lifted
+							if (isBank(q)) {
+								const oldCells = blockingCells(q.template, q.x, q.y).map(([a, b]) => b * W + a);
+								for (const oc of oldCells) blocked[base + oc] &= ~OCCUPIED;
+								let bestB = null, bdB = Infinity;
+								for (let by = -4; by <= 4; by++) for (let bx = -4; bx <= 4; bx++) {
+									const nx = cx + bx, ny = cy + by;
+									if (nx < 1 || ny < 1 || nx >= W - 1 || ny >= H - 1) continue;
+									const cellsN = blockingCells(q.template, nx, ny).map(([a, b]) => b * W + a);
+									if (cellsN.some(cc => cc === c || cc === mc || zone[cc] !== zone[o.y * W + o.x] || frontRaw.has(cc) || roads.has(cc) || (water && water[cc]))) continue;
+									const vis = visitableCells(q.template, nx, ny).map(([a, b]) => at(a, b));
+									if (!vis.length || !vis.every(vc => vc >= 0 && within(vc, c, 1))) continue;
+									if (!footprintFits(q.template, nx, ny, l, W, H, blocked, false)) continue;
+									const dd = Math.max(Math.abs(nx - q.x), Math.abs(ny - q.y));
+									if (dd < bdB) { bdB = dd; bestB = [nx, ny]; }
+								}
+								for (const oc of oldCells) blocked[base + oc] |= OCCUPIED;
+								if (!bestB) { okAll = false; break; }
+								reloc.push([q, bestB]);
+								continue;
+							}
 							let to = -1;
 							for (let ey = -1; ey <= 1 && to < 0; ey++) for (let ex = -1; ex <= 1; ex++) {
 								const u = at(cx + ex, cy + ey);
@@ -978,7 +1000,16 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 				monsterAt.add(pick);
 				ring.clear(); for (const k of monsterAt) addRing(k);
 				out.goldResited = (out.goldResited || 0) + 1;
-				for (const [q, to] of pickReloc) { const oc = q.y * W + q.x; blocked[base + oc] &= ~OCCUPIED; pickAt.delete(oc); q.x = to % W; q.y = (to / W) | 0; if (q.instanceName) q.instanceName = `${q.type}_${q.x}_${q.y}_${l}`; footprintBlock(q.template, q.x, q.y, l, W, H, blocked); pickAt.add(to); out.goldPileMoved = (out.goldPileMoved || 0) + 1; }
+				for (const [q, to] of pickReloc.filter(([q2]) => !PICKUP.test(q2.type))) {
+					for (const [fx, fy] of blockingCells(q.template, q.x, q.y)) blocked[base + fy * W + fx] &= ~OCCUPIED;
+					for (const a2 of appOf.get(q) || []) { const ow = owners.get(a2); if (ow) { const ix = ow.indexOf(q); if (ix >= 0) ow.splice(ix, 1); } }
+					q.x = to[0]; q.y = to[1]; if (q.instanceName) q.instanceName = `${q.type}_${q.x}_${q.y}_${l}`;
+					footprintBlock(q.template, q.x, q.y, l, W, H, blocked);
+					if (d.markApproach) d.markApproach(q.template, q.x, q.y, l, W, H, blocked);
+					const na = approachAll(q); appOf.set(q, na); for (const a2 of na) { if (!owners.has(a2)) owners.set(a2, []); owners.get(a2).push(q); }
+					out.goldBankMoved = (out.goldBankMoved || 0) + 1;
+				}
+				for (const [q, to] of pickReloc.filter(([q2]) => PICKUP.test(q2.type))) { const oc = q.y * W + q.x; blocked[base + oc] &= ~OCCUPIED; pickAt.delete(oc); q.x = to % W; q.y = (to / W) | 0; if (q.instanceName) q.instanceName = `${q.type}_${q.x}_${q.y}_${l}`; footprintBlock(q.template, q.x, q.y, l, W, H, blocked); pickAt.add(to); out.goldPileMoved = (out.goldPileMoved || 0) + 1; }
 				if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldresite] mine (${o.x},${o.y}) stack (${mc % W},${(mc / W) | 0}) to (${m.x},${m.y}); open now ${openNow().length}`);
 				done = true;
 				break;
@@ -1035,11 +1066,11 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			const frontR = frontOf(o);
 			let best = null, bd = Infinity;
 			for (const x of pl.objects) {
-				if ((x.l || 0) !== l || x === P || !CHEAP1.test(x.type) || !one1(x)) continue;
+				if ((x.l || 0) !== l || x === P || !(CHEAP1.test(x.type) || /^(randomArtifactTreasure|randomArtifactMinor)$/.test(x.type)) || !one1(x)) continue;
 				const u = x.y * W + x.x;
 				if (frontR.has(u) || zone[u] !== zone[o.y * W + o.x] || ![...monsterAt].some(k => within2(u, k))) continue;
 				const dd = Math.max(Math.abs(x.x - P.x), Math.abs(x.y - P.y));
-				if (dd <= 14 && dd < bd) { bd = dd; best = x; }
+				if (dd <= 40 && dd < bd) { bd = dd; best = x; }
 			}
 			if (!best) return null;
 			const px = P.x, py = P.y;
@@ -1054,9 +1085,19 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			if ((o.l || 0) !== l || o.type !== 'mine' || o.subtype !== 'goldMine') continue;
 			const app = approachAll(o);
 			const walk = app.filter(c => isFree(c) || pickAt.has(c));
+			// a mine still open (the re-site found no tile for the stack that rings the rest): a guard stands on the open front tile, on the corridor tile in front of the mine if that is where
+			// it lies (the stock mines' guards stand on connections; the Opus Reviewer 2026-11-10, p2_108L1_s4 (87,24)), and the ways the other stack rings are closed below; taken back
+			// when that cannot be done. VMAPGEN_GOLD_POST_OPEN=0 off.
+			let postedNow = null;
+			if (process.env.VMAPGEN_GOLD_POST_OPEN !== '0') {
+				const openW0 = walk.filter(c => !ring.has(c));
+				const t0 = openW0.find(c => isFree(c) && !roads.has(c) && !byStartRoad(c) && c % W >= 1 && ((c / W) | 0) >= 1 && c % W < W - 1 && ((c / W) | 0) < H - 1 && ![...monsterAt].some(k => within2(c, k)));
+				if (t0 !== undefined) { const n0 = pl.objects.length; post(t0, o); if (pl.objects.length > n0) postedNow = pl.objects[pl.objects.length - 1]; }
+			}
+			const unPost = () => { if (!postedNow) return; pl.objects.splice(pl.objects.indexOf(postedNow), 1); const pc = postedNow.y * W + postedNow.x; blocked[base + pc] &= ~OCCUPIED; monsterAt.delete(pc); ring.clear(); for (const k2 of monsterAt) addRing(k2); out.posted--; postedNow = null; };
 			const cover = new Map();
 			for (const c of walk) for (const k of monsterAt) if (within2(c, k)) { if (!cover.has(k)) cover.set(k, []); cover.get(k).push(c); }
-			if (cover.size < 2) continue;
+			if (cover.size < 2) { if (postedNow) { out.goldPostedOpen = (out.goldPostedOpen || 0) + 1; if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldpost] mine (${o.x},${o.y}): guard posted on the open front tile (${postedNow.x},${postedNow.y})`); } continue; }
 			const order = [...cover].sort((x, y) => y[1].length - x[1].length);
 			let done = false;
 			for (const [keeper, kept0] of order) {
@@ -1084,6 +1125,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 				for (const r of lifted.reverse()) putBack(r);
 				if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldone] mine (${o.x},${o.y}) keeper (${keeper % W},${(keeper / W) | 0}) failed: ${why1 || 'a shared tile'}`);
 			}
+			if (!done) unPost(); else if (postedNow) { out.goldPostedOpen = (out.goldPostedOpen || 0) + 1; if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldpost] mine (${o.x},${o.y}): guard posted on the open front tile (${postedNow.x},${postedNow.y}), the other stack's ways closed`); }
 			if (!done && process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldone] mine (${o.x},${o.y}): ${cover.size} stacks over the walkable front ${order.map(([k, ts]) => `(${k % W},${(k / W) | 0}) over ${ts.map(c => (c % W) + ',' + ((c / W) | 0) + (pickAt.has(c) ? 'p' : '')).join(' ')}`).join('; ')}: cannot shut out`);
 		}
 	}
