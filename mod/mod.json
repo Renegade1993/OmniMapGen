@@ -1,7 +1,7 @@
 {
 	"name" : "OmniMapGen",
 	"description" : "Random maps for Heroes of Might and Magic III in Dead Man's Boots, made when you press Begin, with about sixty settings and the towns, creatures and dwellings of the mods you have turned on. Find it in the Random Map tab of New Game. The project page lists what is not finished.",
-	"version" : "0.3.31",
+	"version" : "0.3.32",
 	"author" : "Renegade1993",
 	"contact" : "https://github.com/Renegade1993/OmniMapGen",
 	"licenseName" : "MIT",

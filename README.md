@@ -2,7 +2,7 @@
 
 OmniMapGen makes random maps for Heroes of Might and Magic III inside Dead Man's Boots (DMB): choose it in the Random Map tab of New Game and the map is made when you press Begin. About sixty settings on eight pages set the size, players, levels, water, treasure, guards and roads, and the towns, creatures and dwellings of the mods you have turned on appear on its maps.
 
-It offers eight templates: Coldshadow's Fantasy, Classic, Jebus Cross, Golems Aplenty, Headquarters, Nostalgia, Mini Nostalgia, and Random, which picks one for you. The current version is 0.3.31; what is not finished is listed under "Known problems and in construction" below.
+It offers eight templates: Coldshadow's Fantasy, Classic, Jebus Cross, Golems Aplenty, Headquarters, Nostalgia, Mini Nostalgia, and Random, which picks one for you. The current version is 0.3.32; what is not finished is listed under "Known problems and in construction" below.
 
 ## Known problems and in construction
 
@@ -38,7 +38,7 @@ Features:
 | Template previews in the lobby | In construction | 50% |
 | Rivers and streams meeting the sea | Known problem | 40% |
 
-What goes wrong today, in plain terms: on small Coldshadow's Fantasy maps one start can be poorer than the other. About 4 in 100 gold mines on Classic maps can still be walked up to unguarded. Streams meet the beach badly. The middle zone of Jebus Cross has been reported as far too rich. Highland crossings are too narrow and too alike. Some large two-level maps take several minutes to make. On a few small maps a guard can stand where no hero can walk to it. With Guards at portals turned off, a portal can still have a monster standing beside it. On a few maps two neighbouring zones can still be walked between at one spot with no guard or wall.
+What goes wrong today, in plain terms: on small Coldshadow's Fantasy maps one start can be poorer than the other. About one gold mine in 470 still has two guards over its way in. Streams meet the beach badly. The middle zone of Jebus Cross has been reported as far too rich. Highland crossings are too narrow and too alike. Some large two-level maps take several minutes to make. On a few small maps a guard can stand where no hero can walk to it. With Guards at portals turned off, a portal can still have a monster standing beside it. On a few maps two neighbouring zones can still be walked between at one spot with no guard or wall.
 
 ## Installing it in the game
 
