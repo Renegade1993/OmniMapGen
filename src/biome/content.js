@@ -3130,7 +3130,12 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					}
 				}
 				if (looks.length) {
-					for (let n = manCount(type, 1); n > 0; n--) landmark.push(looks[(rng() * looks.length) | 0]);
+					// the look comes from a hash of the zone's first cell, the level and the hut's number, not from rng(): drawn from the fill's stream
+					// it moved every later placement (16 Coldshadow seeds: unreachable drops 18 -> 32, none of them seer huts, prisons 3 -> 9)
+					for (let n = manCount(type, 1), k = 0; n > 0; n--, k++) {
+						const h = (Math.imul((cells[0] | 0) + 1, 2654435761) ^ Math.imul(k + 1, 40503) ^ Math.imul(l + 1, 97)) >>> 0;
+						landmark.push(looks[(Math.imul(h ^ (h >>> 16), 2246822507) >>> 0) % looks.length]);
+					}
 					continue;
 				}
 			}
