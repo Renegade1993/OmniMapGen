@@ -898,8 +898,10 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 	// start's ways, and where its ring cuts no way. Nothing is posted: one guard, as the stock mines have. VMAPGEN_GOLD_RESITE=0 off.
 	if (process.env.VMAPGEN_GOLD_RESITE !== '0' && Number(p.guardMines) !== 0 && !(Number.isFinite(Number(p.mineGuardWeight)) && Number(p.mineGuardWeight) <= 0)) {
 		const within = (a, b, n) => Math.max(Math.abs(a % W - b % W), Math.abs(((a / W) | 0) - ((b / W) | 0))) <= n;
-		for (const [o, app] of appOf) {
+		for (const o of [...appOf.keys()]) {
 			if ((o.l || 0) !== l || o.type !== 'mine' || o.subtype !== 'goldMine') continue;
+			// the mine's whole front, not appOf's list: the closing above drops an approach tile it could neither close nor guard from it
+			const app = approachAll(o);
 			const openNow = () => app.filter(c => (isFree(c) || pickAt.has(c)) && !ring.has(c));
 			if (!openNow().length) continue;
 			const stacks = pl.objects.filter(m => MON.test(m.type) && (m.l || 0) === l && !(blocked[base + m.y * W + m.x] & RESERVED) && app.some(c => within(c, m.y * W + m.x, 1) || openNow().some(u => within(u, m.y * W + m.x, 3))));
