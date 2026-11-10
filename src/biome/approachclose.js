@@ -850,7 +850,9 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		// walls where a wall may stand
 		out.flyerWalled = 0;
 		trial.length = 0;
-		if (!goldOnly && !goldFront) for (const [o, t] of openT()) if (isFree(t) && !ring.has(t) && block(t, o)) out.flyerWalled++;
+		// in the last 'gold' run too: a gold mine whose front tile the late passes opened again (the corner pass cleared its blocker, p4_108L2_s1 (80,40)) is walled by the same tests
+		// (no road, no cut, not a last way); openT() lists only gold mines then. VMAPGEN_GOLD_LATE_WALL=0 off.
+		if (!goldFront && (!goldOnly || process.env.VMAPGEN_GOLD_LATE_WALL !== '0')) for (const [o, t] of openT()) if (isFree(t) && !ring.has(t) && block(t, o)) out.flyerWalled++;
 		trial.length = 0;
 		// a guard where none may: the tile whose ring takes the most open tiles, clear of other stacks
 		for (let round = 0; round < 400 && !goldFront; round++) {
