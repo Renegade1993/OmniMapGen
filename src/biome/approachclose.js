@@ -335,6 +335,9 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 	};
 	// d.only 'gold': the last run, after the late passes (guards for gold mines whose door the passes opened, no walls, no regrouping of stacks)
 	const goldOnly = d.only === 'gold';
+	// d.only 'goldfront': right after the gold mines' own guard pass, before the walls and the other passes fill the ground round them, only the re-site runs (the stock mine's one guard
+	// on the tile that rings the whole front, found while that tile is still free)
+	const goldFront = d.only === 'goldfront';
 	stages: {
 	if (goldOnly) break stages;
 	for (const o of pl.objects.slice()) {
@@ -843,10 +846,10 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		// walls where a wall may stand
 		out.flyerWalled = 0;
 		trial.length = 0;
-		if (!goldOnly) for (const [o, t] of openT()) if (isFree(t) && !ring.has(t) && block(t, o)) out.flyerWalled++;
+		if (!goldOnly && !goldFront) for (const [o, t] of openT()) if (isFree(t) && !ring.has(t) && block(t, o)) out.flyerWalled++;
 		trial.length = 0;
 		// a guard where none may: the tile whose ring takes the most open tiles, clear of other stacks
-		for (let round = 0; round < 400; round++) {
+		for (let round = 0; round < 400 && !goldFront; round++) {
 			const open = openT();
 			if (!open.length) break;
 			const [o, t] = open[0], tx = t % W, ty = (t / W) | 0;
@@ -916,6 +919,12 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 					&& visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), mc, 1))
 					&& !visitableCells(q.template, q.x, q.y).some(([a, b]) => [...monsterAt].some(k => k !== mc && within(at(a, b), k, 1))));
 				const crowdHere = [...monsterAt].filter(k => k !== mc && within(k, mc, 2)).length;
+				// the stacks beside the mine's front tiles (its own footprint's too, as the scan counts them): the move may not make a second one (Reviewer 2026-11-10: stacks side by side must not rise)
+				const frontRaw = new Set();
+				for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) for (const [ddx, ddy] of allowedDirs(o.template)) { const c0 = at(vx + ddx, vy + ddy); if (c0 >= 0) frontRaw.add(c0); }
+				const overFront = k => [...frontRaw].some(f => within(f, k, 1));
+				const otherOver = [...monsterAt].filter(k => k !== mc && overFront(k)).length;
+				const wasOver = overFront(mc);
 				let pick = -1, ps = Infinity, pickWall = null;
 				const whyNot = [];
 				for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
@@ -930,6 +939,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 					for (let ey = -1; ey <= 1; ey++) for (let ex = -1; ex <= 1; ex++) if (roads.has((cy + ey) * W + cx + ex)) byRoad = 1;
 					const near = [...monsterAt].filter(k => k !== mc && within(k, c, 2));
 					if (near.some(k => within(k, c, 1)) || near.length > crowdHere) { whyNot.push(`(${cx},${cy}) crowd ${near.length} vs ${crowdHere}`); continue; }
+					if (!wasOver && otherOver >= 1) { whyNot.push(`(${cx},${cy}) would be a second stack beside the front`); continue; }
 					if (!need.every(a => within(a, c, 1))) { whyNot.push(`(${cx},${cy}) misses front ${need.filter(a => !within(a, c, 1)).map(a => (a % W) + ',' + ((a / W) | 0)).join(' ')}`); continue; }
 					if (!serves.every(q => visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), c, 1)))) { whyNot.push(`(${cx},${cy}) leaves ${serves.filter(q => !visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), c, 1))).map(q => q.type + '@' + q.x + ',' + q.y).join(' ')}`); continue; }
 					// a stack on one of the mine's own front tiles is the stock mine's guard (on the access tile, the way in goes through it); elsewhere its ring must cut no way
@@ -950,6 +960,106 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 				break;
 			}
 			if (!done && process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldresite] mine (${o.x},${o.y}) open ${openNow().length}: no stack could move (${stacks.length} near)`);
+		}
+	}
+	// Two stacks over the walkable ways into one gold mine (K, 2026-11-01: "areas like these where two guards guard one open space are undesired"; Opus Reviewer 2026-11-10,
+	// MULTIW target 0): the stack that rings the most of the front stays, and every walkable front tile only the others ring is closed with a blocker, when each is free and
+	// the closing leaves a way in. Tried with each stack as the one that stays. VMAPGEN_GOLD_ONE_GUARD=0 off.
+	if (!goldFront && process.env.VMAPGEN_GOLD_ONE_GUARD !== '0' && Number(p.guardMines) !== 0 && !(Number.isFinite(Number(p.mineGuardWeight)) && Number(p.mineGuardWeight) <= 0)) {
+		const within2 = (a, b) => Math.max(Math.abs(a % W - b % W), Math.abs(((a / W) | 0) - ((b / W) | 0))) <= 1;
+		// a 1x1 pickup on a front tile moves into the ring of the stack that guards it (a worthless one else 3 to 8 tiles off), onto free ground of the zone that is no other object's way
+		// in, no road, no reserved tile, no start's way and none of the mine's front tiles, so the tile can be closed; put back if the closing fails
+		const CHEAP1 = /^(resource|randomResource|campfire|treasureChest)/;
+		const one1 = x => x.template && x.template.mask && blockingCells(x.template, x.x, x.y).length === 1;
+		const rename = x => { if (x.instanceName) x.instanceName = `${x.type}_${x.x}_${x.y}_${l}`; };
+		// the front of the mine, its own footprint's tiles too: a pickup does not land there
+		const frontOf = o => { const f = new Set(); for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) for (const [ddx, ddy] of allowedDirs(o.template)) { const c0 = at(vx + ddx, vy + ddy); if (c0 >= 0) f.add(c0); } return f; };
+		const lift = (c, o) => {
+			const q = pl.objects.find(x => (x.l || 0) === l && PICKUP.test(x.type) && one1(x) && x.y * W + x.x === c);
+			if (!q) return null;
+			const frontR = frontOf(o);
+			const okTile = u => isFree(u) && !(blocked[base + u] & RESERVED) && !roads.has(u) && !owners.has(u) && !byStartRoad(u) && zone[u] === zone[o.y * W + o.x] && !frontR.has(u) && u % W >= 1 && ((u / W) | 0) >= 1 && u % W < W - 1 && ((u / W) | 0) < H - 1 && !(water && water[u]);
+			let to = -1, td = Infinity;
+			// first a tile in the ring of a stack that guards it now (a dear pile stays guarded), nearest to where it stood
+			const guards = [...monsterAt].filter(k => k !== c && within2(c, k));
+			for (const k of guards) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+				const u = at((k % W) + dx, ((k / W) | 0) + dy);
+				if (u < 0 || !okTile(u)) continue;
+				const dd = Math.max(Math.abs(u % W - q.x), Math.abs(((u / W) | 0) - q.y));
+				if (dd < td) { td = dd; to = u; }
+			}
+			// a worthless pickup with no such tile moves 3 to 8 tiles off
+			if (to < 0 && CHEAP1.test(q.type)) for (let dy = -8; dy <= 8; dy++) for (let dx = -8; dx <= 8; dx++) {
+				const x = q.x + dx, y = q.y + dy, dd = Math.max(Math.abs(dx), Math.abs(dy));
+				if (dd < 3 || x < 1 || y < 1 || x >= W - 1 || y >= H - 1) continue;
+				const u = y * W + x;
+				if (!okTile(u) || ring.has(u)) continue;
+				if (dd < td) { td = dd; to = u; }
+			}
+			if (to < 0) return null;
+			blocked[base + c] &= ~OCCUPIED;
+			q.x = to % W; q.y = (to / W) | 0; rename(q);
+			footprintBlock(q.template, q.x, q.y, l, W, H, blocked);
+			pickAt.delete(c); pickAt.add(to);
+			return { q, from: c, to };
+		};
+		// a dear pile that cannot move trades places with a worthless pickup of the zone that a stack already guards (Opus Reviewer 2026-11-10: the dear pile is moved, never
+		// deleted, and stays guarded); the pickup that lands on the front tile is lifted off it after
+		const swapOut = (c, o) => {
+			const P = pl.objects.find(x => (x.l || 0) === l && PICKUP.test(x.type) && !CHEAP1.test(x.type) && one1(x) && x.y * W + x.x === c);
+			if (!P) return null;
+			const frontR = frontOf(o);
+			let best = null, bd = Infinity;
+			for (const x of pl.objects) {
+				if ((x.l || 0) !== l || x === P || !CHEAP1.test(x.type) || !one1(x)) continue;
+				const u = x.y * W + x.x;
+				if (frontR.has(u) || zone[u] !== zone[o.y * W + o.x] || ![...monsterAt].some(k => within2(u, k))) continue;
+				const dd = Math.max(Math.abs(x.x - P.x), Math.abs(x.y - P.y));
+				if (dd <= 14 && dd < bd) { bd = dd; best = x; }
+			}
+			if (!best) return null;
+			const px = P.x, py = P.y;
+			P.x = best.x; P.y = best.y; best.x = px; best.y = py; rename(P); rename(best);
+			return { swap: [P, best] };
+		};
+		const putBack = r => {
+			if (r.swap) { const [P, B] = r.swap, px = P.x, py = P.y; P.x = B.x; P.y = B.y; B.x = px; B.y = py; rename(P); rename(B); return; }
+			blocked[base + r.to] &= ~OCCUPIED; r.q.x = r.from % W; r.q.y = (r.from / W) | 0; rename(r.q); footprintBlock(r.q.template, r.q.x, r.q.y, l, W, H, blocked); pickAt.delete(r.to); pickAt.add(r.from);
+		};
+		for (const o of [...appOf.keys()]) {
+			if ((o.l || 0) !== l || o.type !== 'mine' || o.subtype !== 'goldMine') continue;
+			const app = approachAll(o);
+			const walk = app.filter(c => isFree(c) || pickAt.has(c));
+			const cover = new Map();
+			for (const c of walk) for (const k of monsterAt) if (within2(c, k)) { if (!cover.has(k)) cover.set(k, []); cover.get(k).push(c); }
+			if (cover.size < 2) continue;
+			const order = [...cover].sort((x, y) => y[1].length - x[1].length);
+			let done = false;
+			for (const [keeper, kept0] of order) {
+				const kept = new Set(kept0), mark = trial.length, lifted = [];
+				let why1 = '';
+				let ok = true;
+				for (const [k, tiles] of order) {
+					if (k === keeper) continue;
+					if (tiles.some(c => kept.has(c))) { ok = false; break; }
+					for (const c of tiles) {
+						if (!isFree(c)) {
+							if (!pickAt.has(c)) { ok = false; why1 = `(${c % W},${(c / W) | 0}) taken`; break; }
+							let r = lift(c, o);
+							if (!r) { const sw = swapOut(c, o); if (sw) { lifted.push(sw); r = lift(c, o); } }
+							if (!r) { ok = false; why1 = `(${c % W},${(c / W) | 0}) pickup cannot move`; break; }
+							lifted.push(r);
+						}
+						if (!block(c, o)) { ok = false; why1 = `(${c % W},${(c / W) | 0}) not closed: ${lastNo}`; break; }
+					}
+					if (!ok) break;
+				}
+				if (ok) { out.goldOneGuard = (out.goldOneGuard || 0) + 1; if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldone] mine (${o.x},${o.y}): one guard kept at (${keeper % W},${(keeper / W) | 0}), ${order.length - 1} other stack(s) shut out with blockers, ${lifted.length} pickup(s) moved off a front tile`); done = true; break; }
+				for (const { e, c } of trial.splice(mark).reverse()) { pl.objects.splice(pl.objects.indexOf(e), 1); blocked[base + c] &= ~OCCUPIED; out.closed--; }
+				for (const r of lifted.reverse()) putBack(r);
+				if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldone] mine (${o.x},${o.y}) keeper (${keeper % W},${(keeper / W) | 0}) failed: ${why1 || 'a shared tile'}`);
+			}
+			if (!done && process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldone] mine (${o.x},${o.y}): ${cover.size} stacks over the walkable front ${order.map(([k, ts]) => `(${k % W},${(k / W) | 0}) over ${ts.map(c => (c % W) + ',' + ((c / W) | 0) + (pickAt.has(c) ? 'p' : '')).join(' ')}`).join('; ')}: cannot shut out`);
 		}
 	}
 	if (process.env.VMAPGEN_GOLD_TRACE) for (const [o, a] of appOf) {

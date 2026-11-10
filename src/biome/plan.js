@@ -10044,6 +10044,10 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			if (s.swapped || s.moved) console.error(`[gen] level ${l}: after the last guard moves, ${s.swapped} open dear pickup(s) traded places with guarded cheap ones, ${s.moved || 0} moved into a guarded pocket`);
 		}
 	};
+	// the gold mines' guards first (approachclose.js, 'goldfront'): a stack that rings part of a mine's front moves to the tile that rings all of it while that tile is free
+	if (process.env.VMAPGEN_GOLD_FRONT_EARLY !== '0' && process.env.VMAPGEN_DEAR_GUARD !== '0' && (params.guardTreasure === undefined || Number(params.guardTreasure) !== 0)
+		&& (params.lootGuardWeight === undefined || Number(params.lootGuardWeight) > 0))
+		for (let l = 0; l < levels; l++) approachClosing(l, 'goldfront');
 	if (process.env.VMAPGEN_DEAR_GUARD !== '0' && (params.guardTreasure === undefined || Number(params.guardTreasure) !== 0)
 		&& (params.lootGuardWeight === undefined || Number(params.lootGuardWeight) > 0))
 		for (let l = 0; l < levels; l++) approachClosing(l);
@@ -11138,13 +11142,16 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		const most = list => { let best, bn = 0; for (const c of list) { const n = coverN(c); if (n > bn) { best = c; bn = n; } } return best; };
 		// no tile for a guard, or one that covers only part of the open front: the piles laid before the entrance took the others. The 1x1 pickup of no worth (a resource, a campfire,
 		// a chest) on or beside an open front tile whose tile covers most of it moves to a free tile of the zone 3 to 8 tiles off, and the round runs again.
+		// a dear pickup (an artifact, a scroll, a Pandora's box) on a front tile moves too, after the worthless ones (the Opus Reviewer 2026-11-10, gold mines still open: a pile on the only open
+		// front tile and no tile for a guard); the dear-pile guard pass that follows posts its guard. VMAPGEN_GOLD_MOVE_DEAR=0 off.
+		const dearMove = process.env.VMAPGEN_GOLD_MOVE_DEAR !== '0';
 		const makeRoom = onlyOn => {
 			let pick = null, pd = Infinity;
 			for (const q of pl.objects) {
-				if ((q.l || 0) !== l || !/^(resource|randomResource|campfire|treasureChest)/.test(q.type) || !q.template || !q.template.mask || blockingCells(q.template, q.x, q.y).length !== 1) continue;
+				if ((q.l || 0) !== l || !(/^(resource|randomResource|campfire|treasureChest)/.test(q.type) || (dearMove && /^(randomArtifact|artifact|spellScroll|pandoraBox)/.test(q.type))) || !q.template || !q.template.mask || blockingCells(q.template, q.x, q.y).length !== 1) continue;
 				const d = Math.min(...need.map(f => Math.max(Math.abs(f % W - q.x), Math.abs(((f / W) | 0) - q.y))));
 				// the pile whose tile covers the most of the open front first (on the access tile, as the stock guard stands), then the nearest
-				const score = d * 10 - coverN(q.y * W + q.x);
+				const score = d * 10 - coverN(q.y * W + q.x) + (/^(resource|randomResource|campfire|treasureChest)/.test(q.type) ? 0 : 5);
 				if (onlyOn ? d === 0 : d <= 1) if (score < pd) { pick = q; pd = score; }
 			}
 			if (!pick) return false;
