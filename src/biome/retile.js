@@ -333,6 +333,52 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 			return false;
 		};
 	}
+	// No piece drawn over a pickup (the Opus Reviewer, 2026-11-10, left-widen row a: "a decor or object picture may not cover a quarter or more of a pickup's picture; the pass picks another
+	// tile or a smaller piece"): the pickups' opaque pixels by tile, and a piece anchored south of a pickup (the south-first order, pictures.js drawnBeforeR2b) that would cover a quarter
+	// or more of one is refused, as the building rule above. On cold108 seed 32 58 of 111 walled piles were hidden a quarter or more, 25 by mountains and 15 by oak trees; declipPictures
+	// skips a walled pile by design, so the cause is here. VMAPGEN_DECOR_OVER_LOOT=0 off.
+	if (process.env.VMAPGEN_DECOR_OVER_LOOT !== '0' && process.env.VMAPGEN_TALL_ART !== '0') {
+		const { artPix } = require('./content');
+		const LOOT = /^(resource|randomResource|treasureChest|randomArtifact\w*|artifact|campfire|seaChest|flotsam|spellScroll|pandoraBox|prison)$/;
+		const pc = x => { let v = x >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); return (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; };
+		const pop = rows => { let n = 0; for (let i = 0; i < 32; i++) n += pc(rows[i]); return n; };
+		const lootPix = new Map(), lootPx = new Map();
+		for (const o of rest) {
+			if ((o.l || 0) !== l || !LOOT.test(o.type) || !o.template || !o.template.animation) continue;
+			let px = 0;
+			for (const [dx, dy, rows] of artPix(o.template)) {
+				const x = o.x + dx, y = o.y + dy;
+				if (x < 0 || y < 0 || x >= W || y >= H) continue;
+				px += pop(rows);
+				const c = y * W + x;
+				if (!lootPix.has(c)) lootPix.set(c, []);
+				lootPix.get(c).push({ o, rows });
+			}
+			lootPx.set(o, px);
+		}
+		if (lootPix.size) {
+			const before = refuse;
+			let refused = 0, calls = 0, maxr = 0;
+			refuse = (e, ax, ay) => {
+				if (before && before(e, ax, ay)) return true;
+				const over = new Map();
+				for (const [dx, dy, rows] of artPix({ animation: e.animation, mask: e.mask })) {
+					const x = ax + dx, y = ay + dy;
+					if (x < 0 || y < 0 || x >= W || y >= H) continue;
+					for (const b of lootPix.get(y * W + x) || []) {
+						if (b.o.y >= ay) continue;
+						let n = 0;
+						for (let i = 0; i < 32; i++) n += pc(rows[i] & b.rows[i]);
+						if (n) over.set(b.o, (over.get(b.o) || 0) + n);
+					}
+				}
+				calls++; for (const [o, n] of over) { const r = n / (lootPx.get(o) || Infinity); if (r > maxr) maxr = r; }
+				for (const [o, n] of over) if (n >= (lootPx.get(o) || Infinity) / 4) { refused++; return true; }
+				return false;
+			};
+			if (process.env.VMAPGEN_DECOR_TRACE) process.on('exit', () => console.error(`[decor] level ${l}: pieces refused over a pickup ${refused}, calls ${calls}, loot ${lootPix.size} tiles, max share ${maxr.toFixed(2)}`));
+		}
+	}
 	const r = retile({ W, H, allowed, region, groupsFor, rng, refuse });
 
 	const unc = new Set(r.uncovered);
