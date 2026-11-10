@@ -932,7 +932,8 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 					if (near.some(k => within(k, c, 1)) || near.length > crowdHere) { whyNot.push(`(${cx},${cy}) crowd ${near.length} vs ${crowdHere}`); continue; }
 					if (!need.every(a => within(a, c, 1))) { whyNot.push(`(${cx},${cy}) misses front ${need.filter(a => !within(a, c, 1)).map(a => (a % W) + ',' + ((a / W) | 0)).join(' ')}`); continue; }
 					if (!serves.every(q => visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), c, 1)))) { whyNot.push(`(${cx},${cy}) leaves ${serves.filter(q => !visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), c, 1))).map(q => q.type + '@' + q.x + ',' + q.y).join(' ')}`); continue; }
-					if (!simple(c) || cutsWay(c)) { whyNot.push(`(${cx},${cy}) cuts`); continue; }
+					// a stack on one of the mine's own front tiles is the stock mine's guard (on the access tile, the way in goes through it); elsewhere its ring must cut no way
+					if (!app.includes(c) && (!simple(c) || cutsWay(c))) { whyNot.push(`(${cx},${cy}) cuts`); continue; }
 					const sc = Math.max(Math.abs(dx), Math.abs(dy)) * 2 + near.length + byRoad * 3 + (wall ? 1 : 0);
 					if (sc < ps) { ps = sc; pick = c; pickWall = wall; }
 				}
