@@ -3113,6 +3113,27 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// have a template here (a kind with none yet is left, see the harness's missing-kinds list)
 		for (const type of pileMan.keys()) {
 			if (type === 'crypt') continue;   // from the bank draw below, where the engine's piles put it
+			// a seer hut: each one its own look, drawn evenly among those with a template for this zone's ground, as the engine's
+			// chooseRandomAppearance does (piles.js seerLooks). A core look keeps the harvested template of its subtype; a mod look its own
+			// template allowed here. VMAPGEN_SEER_LOOKS=0 gives every seer hut the first utility entry, as before.
+			if (type === 'seerHut' && process.env.VMAPGEN_SEER_LOOKS !== '0' && objectPools.seerLooks && objectPools.seerLooks.length) {
+				const tn = String(((objectPools.terrainNames && objectPools.terrainNames.get(terrain)) || {}).name || '').toLowerCase();
+				const allowed = x => !x.allowedTerrains || !x.allowedTerrains.length || x.allowedTerrains.some(a => String(a).slice(String(a).lastIndexOf(':') + 1).toLowerCase() === tn);
+				const looks = [];
+				for (const L of objectPools.seerLooks) {
+					if (L.core) {
+						const c = UTIL_POOL.find(x => x.type === 'seerHut' && String(x.subtype) === L.subtype);
+						if (c && (!L.terrains || L.terrains.includes(tn))) looks.push({ type, subtype: L.subtype, tpl: c.tpl, weight: c.weight });
+					} else {
+						const m = (L.tpls || []).find(allowed);
+						if (m) looks.push({ type, subtype: L.subtype, tpl: { animation: m.animation, mask: m.mask, visitableFrom: m.visitableFrom } });
+					}
+				}
+				if (looks.length) {
+					for (let n = manCount(type, 1); n > 0; n--) landmark.push(looks[(rng() * looks.length) | 0]);
+					continue;
+				}
+			}
 			const u = UTIL_POOL.find(x => x.type === type && !x.pair && type !== 'monolithTwoWay');
 			const b = BONUS_POOL.find(x => x.type === type);
 			let e = u || b;

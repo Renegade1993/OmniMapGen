@@ -2002,6 +2002,8 @@ async function generateMap(params) {
 			sightOf: (() => { const m = new Map(); for (const o of assetIndex.objects.values()) if (o && o.sight && o.type) m.set(String(o.type), Math.max(m.get(String(o.type)) || 0, o.sight)); return m; })(),
 			// the humans' lobby picks (--heroes): no prison holds one
 			pickedHeroes: new Set((params.pickedHeroes || []).map(h => String(h).toLowerCase())),
+			// every seer hut look, for the per-hut choice the engine makes (piles.js seerLooks)
+			seerLooks: require('../rmg/piles').seerLooks(assetIndex.objects, useMods, h3TerrainRows([roots.userDir, roots.installDir].filter(Boolean))),
 			pileCommon: require('../rmg/piles').commonPool(assetIndex.objects, useMods,
 				h3TerrainRows([roots.userDir, roots.installDir].filter(Boolean))), ...(concreteGuards ? { guards: guardPool(registry) } : {}),
 			// the game's own template for a core object the engine's piles can draw and ours has no art for
