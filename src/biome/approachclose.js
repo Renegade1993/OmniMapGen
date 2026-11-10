@@ -94,6 +94,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		if ((o.l || 0) === l && o.template && o.template.mask && PICKUP.test(o.type))
 			for (const [fx, fy] of pickCells(o.template, o.x, o.y)) { const c = at(fx, fy); if (c >= 0) pickAt.add(c); }
 	const walk = c => c >= 0 && land(c) && (!(blocked[base + c] & OCCUPIED) || monsterAt.has(c) || pickAt.has(c));
+	const wayInFor = (q, a) => wayIn(a) || (process.env.VMAPGEN_GOLD_PILE_WAY !== '0' && q.type === 'mine' && q.subtype === 'goldMine' && pickAt.has(a));
 	// a pickup's visiting tile is stepped onto only from a side it is visited from (a prison from its sides and below): the floods below took
 	// the prison (11,21) of K's s440782210 on 40ccf74 from the tile above it, so the pile behind looked joined and its last way was closed.
 	// The step off it is held to the same sides, which counts a little less as joined than the game allows. VMAPGEN_PICK_VISIT_ONLY=0 off.
@@ -211,10 +212,10 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		// a guard's tile is a way in too (a hero beats it and steps there): two piles whose only free tile was a dead end below them, reached
 		// by a flyer alone, kept it open while their guard stood on the tile above (K's small underground map seed 1750425234, (6,5) and (7,5)
 		// level 1; dear piles open 11 of 36). VMAPGEN_WAY_PAST_GUARD=0 counts free tiles only.
-		if (appOf.get(o) && !appOf.get(o).some(a => a !== c && wayIn(a))) return no('own last way');
+		if (appOf.get(o) && !appOf.get(o).some(a => a !== c && wayInFor(o, a))) return no('own last way');
 		for (const q of owners.get(c) || []) {
 			if (q === o) continue;
-			if (!appOf.get(q).some(a => a !== c && wayIn(a))) return no('last way of another');
+			if (!appOf.get(q).some(a => a !== c && wayInFor(q, a))) return no('last way of another');
 		}
 		if (!simple(c) && !joinedWithout(c)) return no('would cut');
 		let st = singleTemplate(pl.biomeTerrain[zone[c]], rng);
@@ -222,6 +223,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		if (!st || !st.tpl.mask || st.tpl.mask.length !== 1 || st.tpl.mask[0].length !== 1) return no('no art');
 		const x = c % W, y = (c / W) | 0;
 		const be = objectEntry(st.type, x, y, l, st.tpl, st.subtype || 'object');
+		be.__wall = true;
 		pl.objects.push(be);
 		trial.push({ e: be, c });
 		footprintBlock(st.tpl, x, y, l, W, H, blocked);
@@ -888,6 +890,63 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			if (STOCK_GUARDS && appOf.get(o).some(u => ring.has(u))) { out.noSecond = (out.noSecond || 0) + 1; continue; }
 			post(best, o);
 			out.flyerShut++;
+		}
+	}
+	// Gold mines still open after the walls and the guard pass (Opus Reviewer, 2026-11-07: "re-site the guard, no second stack, targets 0 and 0"; 80-map grid on the
+	// release 0.3.31 tip: 20 of 468 gold mines open). The stack that rings part of the mine's front moves, 2 tiles at most, to the free tile whose ring takes every open
+	// front tile as well as every tile the stack guarded alone, with no other stack within 1 of the new tile and no more within 2 than before, off the roads and a
+	// start's ways, and where its ring cuts no way. Nothing is posted: one guard, as the stock mines have. VMAPGEN_GOLD_RESITE=0 off.
+	if (process.env.VMAPGEN_GOLD_RESITE !== '0' && Number(p.guardMines) !== 0 && !(Number.isFinite(Number(p.mineGuardWeight)) && Number(p.mineGuardWeight) <= 0)) {
+		const within = (a, b, n) => Math.max(Math.abs(a % W - b % W), Math.abs(((a / W) | 0) - ((b / W) | 0))) <= n;
+		for (const [o, app] of appOf) {
+			if ((o.l || 0) !== l || o.type !== 'mine' || o.subtype !== 'goldMine') continue;
+			const openNow = () => app.filter(c => (isFree(c) || pickAt.has(c)) && !ring.has(c));
+			if (!openNow().length) continue;
+			const stacks = pl.objects.filter(m => MON.test(m.type) && (m.l || 0) === l && !(blocked[base + m.y * W + m.x] & RESERVED) && app.some(c => within(c, m.y * W + m.x, 1) || openNow().some(u => within(u, m.y * W + m.x, 3))));
+			let done = false;
+			for (const m of stacks) {
+				const mc = m.y * W + m.x;
+				const others = new Set();
+				for (const k of monsterAt) if (k !== mc) { const kx = k % W, ky = (k / W) | 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const n = at(kx + dx, ky + dy); if (n >= 0) others.add(n); } }
+				// what this stack guards alone: the mine's open and ringed front tiles, and every dear pile, bank, dwelling or mine with a visit tile beside it that no other stack is beside (a cheap pile is no duty: the stock maps leave them unguarded)
+				const need = [...new Set([...openNow(), ...app.filter(c => within(c, mc, 1) && !others.has(c))])];
+				const serves = pl.objects.filter(q => q !== o && !MON.test(q.type) && (q.l || 0) === l && q.template && q.template.mask && (DEAR.test(q.type, q) || /^(creatureBank|dragonUtopia|crypt|mine|abandonedMine|creatureGenerator)/.test(q.type))
+					&& visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), mc, 1))
+					&& !visitableCells(q.template, q.x, q.y).some(([a, b]) => [...monsterAt].some(k => k !== mc && within(at(a, b), k, 1))));
+				const crowdHere = [...monsterAt].filter(k => k !== mc && within(k, mc, 2)).length;
+				let pick = -1, ps = Infinity, pickWall = null;
+				const whyNot = [];
+				for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+					const c = at((mc % W) + dx, ((mc / W) | 0) + dy);
+					if (c < 0 || c === mc) continue;
+					const wall = !isFree(c) && land(c) ? pl.objects.find(q => q.__wall && (q.l || 0) === l && q.x === c % W && q.y === ((c / W) | 0)) : null;
+					if ((!isFree(c) && !wall) || pickAt.has(c) || (blocked[base + c] & RESERVED) || roads.has(c) || water && water[c] || zone[c] !== zone[o.y * W + o.x]) { if (c >= 0) whyNot.push(`(${c % W},${(c / W) | 0}) ${!isFree(c) && !wall ? 'occupied' : pickAt.has(c) ? 'pile' : (blocked[base + c] & RESERVED) ? 'reserved' : roads.has(c) ? 'road' : 'zone'}`); continue; }
+					const cx = c % W, cy = (c / W) | 0;
+					if (cx < 1 || cy < 1 || cx >= W - 1 || cy >= H - 1 || byStartRoad(c)) { whyNot.push(`(${cx},${cy}) edge/startway`); continue; }
+					// beside a road is allowed (the stock mines' guards stand on the access tile, road or not), never on one or on a start's way; it ranks last
+					let byRoad = 0;
+					for (let ey = -1; ey <= 1; ey++) for (let ex = -1; ex <= 1; ex++) if (roads.has((cy + ey) * W + cx + ex)) byRoad = 1;
+					const near = [...monsterAt].filter(k => k !== mc && within(k, c, 2));
+					if (near.some(k => within(k, c, 1)) || near.length > crowdHere) { whyNot.push(`(${cx},${cy}) crowd ${near.length} vs ${crowdHere}`); continue; }
+					if (!need.every(a => within(a, c, 1))) { whyNot.push(`(${cx},${cy}) misses front ${need.filter(a => !within(a, c, 1)).map(a => (a % W) + ',' + ((a / W) | 0)).join(' ')}`); continue; }
+					if (!serves.every(q => visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), c, 1)))) { whyNot.push(`(${cx},${cy}) leaves ${serves.filter(q => !visitableCells(q.template, q.x, q.y).some(([a, b]) => within(at(a, b), c, 1))).map(q => q.type + '@' + q.x + ',' + q.y).join(' ')}`); continue; }
+					if (!simple(c) || cutsWay(c)) { whyNot.push(`(${cx},${cy}) cuts`); continue; }
+					const sc = Math.max(Math.abs(dx), Math.abs(dy)) * 2 + near.length + byRoad * 3 + (wall ? 1 : 0);
+					if (sc < ps) { ps = sc; pick = c; pickWall = wall; }
+				}
+				if (pick < 0) { if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldresite] mine (${o.x},${o.y}) stack (${mc % W},${(mc / W) | 0}) cannot move: need ${need.map(a => (a % W) + ',' + ((a / W) | 0)).join(' ')}; ` + whyNot.join('; ')); continue; }
+				if (pickWall) { pl.objects.splice(pl.objects.indexOf(pickWall), 1); blocked[base + pick] &= ~OCCUPIED; out.goldWallGave = (out.goldWallGave || 0) + 1; }
+				blocked[base + mc] &= ~OCCUPIED; monsterAt.delete(mc);
+				m.x = pick % W; m.y = (pick / W) | 0; m.instanceName = `${m.type}_${m.x}_${m.y}_${l}`;
+				footprintBlock(d.monsterTpl, m.x, m.y, l, W, H, blocked);
+				monsterAt.add(pick);
+				ring.clear(); for (const k of monsterAt) addRing(k);
+				out.goldResited = (out.goldResited || 0) + 1;
+				if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldresite] mine (${o.x},${o.y}) stack (${mc % W},${(mc / W) | 0}) to (${m.x},${m.y}); open now ${openNow().length}`);
+				done = true;
+				break;
+			}
+			if (!done && process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldresite] mine (${o.x},${o.y}) open ${openNow().length}: no stack could move (${stacks.length} near)`);
 		}
 	}
 	if (process.env.VMAPGEN_GOLD_TRACE) for (const [o, a] of appOf) {
