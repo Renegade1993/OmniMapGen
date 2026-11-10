@@ -1085,6 +1085,40 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			if (!done && process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldone] mine (${o.x},${o.y}): ${cover.size} stacks over the walkable front ${order.map(([k, ts]) => `(${k % W},${(k / W) | 0}) over ${ts.map(c => (c % W) + ',' + ((c / W) | 0) + (pickAt.has(c) ? 'p' : '')).join(' ')}`).join('; ')}: cannot shut out`);
 		}
 	}
+	// A second stack beside a gold mine's front that guards nothing dear (Opus Reviewer 2026-11-10: stacks side by side must not rise; K 2026-10-31: "one creature and more blockers"):
+	// when one stack rings the mine's walkable ways in and another stands beside a tile of its front (a shut one too) with no dear pile, bank, dwelling or other mine depending on
+	// it, the other goes. VMAPGEN_GOLD_EXTRA_STACKS=0 off.
+	if (!goldFront && process.env.VMAPGEN_GOLD_EXTRA_STACKS !== '0' && Number(p.guardMines) !== 0 && !(Number.isFinite(Number(p.mineGuardWeight)) && Number(p.mineGuardWeight) <= 0)) {
+		const w1 = (a, b) => Math.max(Math.abs(a % W - b % W), Math.abs(((a / W) | 0) - ((b / W) | 0))) <= 1;
+		const dearish = q => DEAR.test(q.type, q) || /^(creatureBank|dragonUtopia|crypt|mine|abandonedMine|creatureGenerator)/.test(q.type);
+		for (const o of [...appOf.keys()]) {
+			if ((o.l || 0) !== l || o.type !== 'mine' || o.subtype !== 'goldMine') continue;
+			const front = new Set();
+			for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) for (const [ddx, ddy] of allowedDirs(o.template)) { const c0 = at(vx + ddx, vy + ddy); if (c0 >= 0) front.add(c0); }
+			const walkable = approachAll(o).filter(c => isFree(c) || pickAt.has(c));
+			const over = [...monsterAt].filter(k => [...front].some(f => w1(f, k)));
+			if (over.length < 2) continue;
+			const guards = over.filter(k => walkable.some(c => w1(c, k)));
+			if (guards.length !== 1) continue;
+			for (const k of over) {
+				if (k === guards[0]) continue;
+				const m = pl.objects.find(x => MON.test(x.type) && (x.l || 0) === l && x.y * W + x.x === k);
+				if (!m) continue;
+				const alone = (cells) => !cells.some(c => [...monsterAt].some(k2 => k2 !== k && w1(c, k2)));
+				const duty = pl.objects.some(q => q !== o && !MON.test(q.type) && (q.l || 0) === l && q.template && q.template.mask && dearish(q)
+					&& (() => { const vc = visitableCells(q.template, q.x, q.y).map(([a, b]) => at(a, b)); return vc.some(c => w1(c, k)) && alone(vc.filter(c => w1(c, k))); })());
+				if (duty) continue;
+				// another gold mine's walkable front that only this stack rings is a duty too
+				const dutyMine = [...appOf].some(([q, a2]) => q !== o && (q.l || 0) === l && q.type === 'mine' && q.subtype === 'goldMine' && (() => { const wk = a2.filter(c => isFree(c) || pickAt.has(c)).filter(c => w1(c, k)); return wk.length && alone(wk); })());
+				if (dutyMine) continue;
+				pl.objects.splice(pl.objects.indexOf(m), 1);
+				blocked[base + k] &= ~OCCUPIED; monsterAt.delete(k);
+				ring.clear(); for (const k2 of monsterAt) addRing(k2);
+				out.goldStackGone = (out.goldStackGone || 0) + 1;
+				if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldextra] mine (${o.x},${o.y}): stack (${k % W},${(k / W) | 0}) beside the front, guarding nothing dear, removed; the guard stays at (${guards[0] % W},${(guards[0] / W) | 0})`);
+			}
+		}
+	}
 	if (process.env.VMAPGEN_GOLD_TRACE) for (const [o, a] of appOf) {
 		if ((o.l || 0) !== l || o.type !== 'mine' || o.subtype !== 'goldMine') continue;
 		const open = a.filter(t => isFree(t) && !ring.has(t));
