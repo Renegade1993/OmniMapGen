@@ -2643,7 +2643,7 @@ async function generateMap(params) {
 						const wetD = plans[li].p && plans[li].p.waterMask;
 						const nd = require('../biome/roadplan').joinDoorRoads(plans[li].roadDoors, roadCells, plans[li].zone, Wl, Hl, bl, li, c => !(openMask && !openMask[c]) && !(li === 0 && wetD && wetD[c]));
 						// always logged (the Reviewer, 2026-11-11): how many link doorways had no road across them, how many the pass joined, and each one left
-						if (nd.doors) console.error(`[gen] level ${li}: link doorways with no road across them: ${nd.doors}, joined ${nd.joined} (${nd.added} tile(s)), left ${nd.left}${nd.left ? ': ' + nd.leftAt.join('; ') : ''}`);
+						if (nd.doors) console.error(`[gen] level ${li}: link doorways with no road across them: ${nd.doors}, joined ${nd.joined} (${nd.added} tile(s)), left ${nd.left} (${nd.noRoadZone} in a zone with no road, ${nd.left - nd.noRoadZone} with no way)${nd.left ? ': ' + nd.leftAt.join('; ') : ''}`);
 						if (nd.added) require('../biome/gateroad').closeDiagonalSteps(plans[li], Wl, Hl, li, bl, 1, blockingCells, dOpts);
 					}
 				}

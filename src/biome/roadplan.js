@@ -663,7 +663,7 @@ function pruneTails(roadCells, destinations, W, H) {
  */
 function joinDoorRoads(doors, roadCells, zone, W, H, blocked, l, allow) {
 	// roadCells, zone and blocked are one level's (plans[l].roadCells holds cells y * W + x of that level only; blocked is read at the level's own offset l * W * H by route)
-	const out = { added: 0, doors: 0, joined: 0, left: 0, leftAt: [] };
+	const out = { added: 0, doors: 0, joined: 0, left: 0, noRoadZone: 0, leftAt: [] };
 	for (const { cells } of doors || []) {
 		if (cells.some(c => roadCells.has(c))) continue;
 		out.doors++;
@@ -671,7 +671,13 @@ function joinDoorRoads(doors, roadCells, zone, W, H, blocked, l, allow) {
 		const sources = zs.length === 2 ? [...roadCells].filter(c => zone[c] === zs[0]) : [];
 		const targets = new Set(zs.length === 2 ? [...roadCells].filter(c => zone[c] === zs[1]) : []);
 		let path = sources.length && targets.size ? route(sources, targets, W, H, blocked, l, roadCells, R8, c => (zone[c] === zs[0] || zone[c] === zs[1]) && (!allow || allow(c)), { elbow: 1.2, corner: 2 }) : null;
-		if (!path) { out.left++; out.leftAt.push(cells.map(c => (c % W) + ',' + ((c / W) | 0)).join(' ')); continue; }
+		if (!path) {
+			// a zone with no road at all has nothing to join (the open layout's zones with no town and no roaded passage); counted apart from a way that does not exist
+			const none = !sources.length || !targets.size;
+			out.left++; if (none) out.noRoadZone = (out.noRoadZone || 0) + 1;
+			out.leftAt.push(cells.map(c => (c % W) + ',' + ((c / W) | 0)).join(' ') + (none ? ' (a zone has no road)' : ' (no way)'));
+			continue;
+		}
 		path = addElbows(path, W, H, blocked, l);
 		for (const c of path) if (!roadCells.has(c)) { roadCells.add(c); out.added++; }
 		out.joined++;
