@@ -70,7 +70,7 @@ PLANS = {
         [F(36, 2, 2, 2), F(72, 3, 2, 4), F(72, 4, 2, 5), F(108, 2, 1, 7, "coastal"), F(144, 3, 2, 9), F(180, 2, 1, 10, "mediterranean"), F(252, 4, 2, 12),
          F(108, 3, 1, 13, "lakes")]), {}),
     "coldshadows_fantasy": ("Coldshadow's Fantasy", "Coldshadow's Fantasy", plan(144, lambda s: F(s, 8, 2, 1),   # Extra Large to Giant, two levels, eight players
-        [F(144, 4, 2, 2), F(180, 2, 1, 3), F(252, 6, 2, 4), F(108, 3, 1, 5), F(72, 2, 2, 6), F(144, 5, 1, 7, "lakes"), F(180, 8, 2, 8, "coastal")]), {}),
+        [F(144, 4, 2, 2), F(180, 2, 2, 3), F(252, 6, 2, 4), F(108, 3, 2, 5), F(72, 2, 2, 6), F(144, 5, 2, 7, "lakes"), F(180, 8, 2, 8, "coastal")]), {}),
     # Large, one level or two in the original, 2 to 7 players. One level is the preferred setup: on two levels all seven starts stay on the surface and both
     # treasure zones go below, so the picture shows gates instead of the two shared prizes (MapGen Dev, 2026-11-04)
     "headquarters": ("Headquarters", "Headquarters", plan(108, lambda s: F(s, 7, 1, 1),
