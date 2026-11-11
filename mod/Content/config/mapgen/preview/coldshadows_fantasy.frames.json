@@ -28,9 +28,23 @@
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "01-surface.png",
+     "label": "Surface",
+     "contentSha256": "6628949edaee1ce078b29dfda861d887e29bb60cdd4c25aec8b6db51112a9fd5"
+    },
+    {
+     "file": "01-underground.png",
+     "label": "Underground",
+     "contentSha256": "695c19ee852559e9ecad3aab4d67032c93fe73984e1bd07c00091608d73c2957"
+    }
+   ],
+   "legendFile": "01-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/01",
    "seconds": 3.0,
-   "contentSha256": "90ddd042ad490db2b8057f830484db40e6ac5ca94b88403c8dcf2cefc284ea0c"
+   "contentSha256": "e5e40a187d88a7fda36cb2355106f5529990a3b3119195b54cd5ca57d0c8e956",
+   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
   },
   {
    "order": 2,
@@ -58,9 +72,23 @@
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "02-surface.png",
+     "label": "Surface",
+     "contentSha256": "d0ac83c557e8811e074b2cf611b7032229797ed753afc87c91bd49b2ee5900d8"
+    },
+    {
+     "file": "02-underground.png",
+     "label": "Underground",
+     "contentSha256": "322876eccc4a6bb0c0d3f38c28c6032fc5447d6574130deae2246cd31c8b3c64"
+    }
+   ],
+   "legendFile": "02-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/02",
    "seconds": 3.0,
-   "contentSha256": "17ac476b6b4283bb16a162f3fb011ff15612a07eaa63fc4ff636fc8a28d4c83a"
+   "contentSha256": "11c64bf983576428c95e68afe390d253d8469e8750dd478665b98398b6188331",
+   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
   },
   {
    "order": 3,
@@ -88,9 +116,23 @@
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "03-surface.png",
+     "label": "Surface",
+     "contentSha256": "0f89aa0e8d1bea5c7156b0a96d7db6bce58d4e5632c55411d6f74f9e8b06ad90"
+    },
+    {
+     "file": "03-underground.png",
+     "label": "Underground",
+     "contentSha256": "3c3832852a076e77030e704c7e74a1cdb3d3d7c0e1823f5a4380b6c46cc2ac2d"
+    }
+   ],
+   "legendFile": "03-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/03",
    "seconds": 3.0,
-   "contentSha256": "b1fe51d7c9c88e0d41b6da003b38e79e69a2cd14a1e1f7f05ac4ac2e0c05f253"
+   "contentSha256": "f86e47c1e0efa0d338531dbe7c43a6c58b0c3ba876f790910a5d65a798989615",
+   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
   },
   {
    "order": 4,
@@ -118,9 +160,23 @@
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "04-surface.png",
+     "label": "Surface",
+     "contentSha256": "030e81fee181afb23f9da981bf4a7991ae9e4470e47ff24edbec8887f0fd50b9"
+    },
+    {
+     "file": "04-underground.png",
+     "label": "Underground",
+     "contentSha256": "bc85389736e60a025ac51c0fb0d118ac783cc26c4872aa1e0bb1048714c81cf0"
+    }
+   ],
+   "legendFile": "04-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/04",
    "seconds": 3.0,
-   "contentSha256": "9fc0ff1a046819680faa38740e4695bcf00bccc0f56d968bd92eaff39ea9bed5"
+   "contentSha256": "fcf54e5c59eb69087aaf1c6bc9cbd23544869e6628c431789e79cbe2343a22b8",
+   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
   },
   {
    "order": 5,
@@ -147,9 +203,23 @@
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "05-surface.png",
+     "label": "Surface",
+     "contentSha256": "e8264b82cd544c6beaf2af62e4117b7e3660f8f763f585256af8f78017dc0a78"
+    },
+    {
+     "file": "05-underground.png",
+     "label": "Underground",
+     "contentSha256": "bbcbee185836e843545bcc7b98ed5df24209ac4915650f46a2e1f2d04b307bfb"
+    }
+   ],
+   "legendFile": "05-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/05",
    "seconds": 3.0,
-   "contentSha256": "85b4981c07c40dbbef026b21829aadbcd878d22758a9fb661b76563e616579c4"
+   "contentSha256": "c536d250b43c107a8437dc0e6b294edb543995e7bfd7b567c3501c17fd9a9fc8",
+   "legendSha256": "c6593a3d1fe79add809a77ff09b846676dfba8db418df6a2b0173c7436220b7f"
   },
   {
    "order": 6,
@@ -177,9 +247,23 @@
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "06-surface.png",
+     "label": "Surface",
+     "contentSha256": "7585e47108443a42d3cf056906a16e3a0f4d37e5144bf365de52796700a9d6d6"
+    },
+    {
+     "file": "06-underground.png",
+     "label": "Underground",
+     "contentSha256": "7a1f825784d7231d110772f61deef4c058cab1dbad98007b128b3ad6897e39f6"
+    }
+   ],
+   "legendFile": "06-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/06",
    "seconds": 3.0,
-   "contentSha256": "78f62067808e783467532cecc0fc9a08499a5ce3010be704eb1eb9f0ae009896"
+   "contentSha256": "a82b933d1de96296b3532934ddc2ce24e4c80d95c75424657b4160e5e38731f1",
+   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
   },
   {
    "order": 7,
@@ -207,9 +291,23 @@
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "07-surface.png",
+     "label": "Surface",
+     "contentSha256": "18395449277fca280e63b9389d24b3ffe012357edff0c4f13993c590082fa403"
+    },
+    {
+     "file": "07-underground.png",
+     "label": "Underground",
+     "contentSha256": "704fb6b32a370e67e1f844a787c5a396a70693c48cc61eb8e0374e5fc64c8eb4"
+    }
+   ],
+   "legendFile": "07-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/07",
    "seconds": 3.0,
-   "contentSha256": "0904aea0093611f5599b73fbf8aa86bb2a0cd11133260af9b84f15334407c899"
+   "contentSha256": "8cee2305847352fc084d052c9d8f1e5d401aa354982693281792c02e6b06cc37",
+   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
   },
   {
    "order": 8,
@@ -238,39 +336,68 @@
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "08-surface.png",
+     "label": "Surface",
+     "contentSha256": "d43c4b735d865773fde7fd9993a9096fdbbd0de885da194f91efa5269424ee74"
+    },
+    {
+     "file": "08-underground.png",
+     "label": "Underground",
+     "contentSha256": "b1aa0d3ad0b7d36e6a17775e9725b5a69529b3410dfce0baf158caba19bd9fb1"
+    }
+   ],
+   "legendFile": "08-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/08",
    "seconds": 3.0,
-   "contentSha256": "f1f151ec54892df145a191e6db71578baae12b2d9fefc1c91cc5e9ce85285a7b"
+   "contentSha256": "1a2894940edbe29bd2c22737dbe566fe15cdf9944793fb5c8d044733e22c5ab5",
+   "legendSha256": "45aea9bb35e655536331e662c2747b1c000a5a3b647bed158862c9e34159450e"
   },
   {
    "order": 9,
    "file": "09.png",
    "size": 180,
    "players": 2,
-   "levels": 1,
+   "levels": 2,
    "seed": 3,
    "water": null,
    "preferred": false,
-   "caption": "Coldshadow's Fantasy, Huge 180x180: 2 players, 1 level",
-   "drawHash": "acbfc109bd27d968de9926cc4167b8917d95ac300f7f00783d6ee9e9cc6d3227",
+   "caption": "Coldshadow's Fantasy, Huge 180x180: 2 players, 2 levels",
+   "drawHash": "f2fd5791b613859acc950c9447b34eb2ed3bf819aae9d87aae83c4a504709149",
    "zones": 21,
    "lanes": 22,
-   "portals": 7,
+   "portals": 4,
    "starts": 2,
-   "towns": 20,
+   "towns": 25,
    "legend": [
     "Player start",
     "Empty start",
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
+    "Way between levels",
     "Start zone",
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "09-surface.png",
+     "label": "Surface",
+     "contentSha256": "a0133fcc09b14d868ec8bc8bb5892c4b7c0737d6dd350ca2befa86616a704e65"
+    },
+    {
+     "file": "09-underground.png",
+     "label": "Underground",
+     "contentSha256": "0479ffef4a1712749fcb67cb7e90702926f6563de1624be8941cd47426a79aa5"
+    }
+   ],
+   "legendFile": "09-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/09",
    "seconds": 3.0,
-   "contentSha256": "b6905ce4920afaa651b5844c49a68a277dfb07030d2d3bf8d306e53e1a3c9d71"
+   "contentSha256": "17dad5264fcc6de6346ef546c5f9701748cd29fef8cb8fa160ce676fae26b1a4",
+   "legendSha256": "45aea9bb35e655536331e662c2747b1c000a5a3b647bed158862c9e34159450e"
   },
   {
    "order": 10,
@@ -299,39 +426,68 @@
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "10-surface.png",
+     "label": "Surface",
+     "contentSha256": "7c03d60d18f9c33d6089a6c31bb9fe11809b2ba8b91ad8208de7d824c142b169"
+    },
+    {
+     "file": "10-underground.png",
+     "label": "Underground",
+     "contentSha256": "4f8724ecf43850654f2c964b347b1c3e3ef5c71efe5fb4a9e1c4b6911a1b9579"
+    }
+   ],
+   "legendFile": "10-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/10",
    "seconds": 3.0,
-   "contentSha256": "56b4b6639ee403cb77e296c19e160157fb1782a83ceed6bd333cf90c5d818bf3"
+   "contentSha256": "ee9e76bc3efce90867eee7f829737644db396eee751bff4fe0dff33fd89c41db",
+   "legendSha256": "45aea9bb35e655536331e662c2747b1c000a5a3b647bed158862c9e34159450e"
   },
   {
    "order": 11,
    "file": "11.png",
    "size": 108,
    "players": 3,
-   "levels": 1,
+   "levels": 2,
    "seed": 5,
    "water": null,
    "preferred": false,
-   "caption": "Coldshadow's Fantasy, Large 108x108: 3 players, 1 level",
-   "drawHash": "5be8d64a8c0f7225f604e789c0d0702a79c1267016151e735a97ff031239e762",
+   "caption": "Coldshadow's Fantasy, Large 108x108: 3 players, 2 levels",
+   "drawHash": "c9231f2724e3756177dd56a2455a7e99c5868d95be02f8f756ecb931ca81217e",
    "zones": 21,
    "lanes": 22,
-   "portals": 7,
+   "portals": 4,
    "starts": 3,
-   "towns": 11,
+   "towns": 17,
    "legend": [
     "Player start",
     "Empty start",
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
+    "Way between levels",
     "Start zone",
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "11-surface.png",
+     "label": "Surface",
+     "contentSha256": "314967a67ae20552e57c6d0b5fbbef1c7e14c6a88779691d3b1b4ed27dbb6519"
+    },
+    {
+     "file": "11-underground.png",
+     "label": "Underground",
+     "contentSha256": "b4eca1eb3489358708dcfa3b4025cec128938673f8575669337455963002f5ab"
+    }
+   ],
+   "legendFile": "11-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/11",
    "seconds": 3.0,
-   "contentSha256": "d0a6387c60af95e0cf752cba6ee19fc6fdc861b4388383ff7a6305abc787c288"
+   "contentSha256": "0a1127942f40f9570f84300282cddd99b39c9f69fe6851d48a386f6276b4559c",
+   "legendSha256": "45aea9bb35e655536331e662c2747b1c000a5a3b647bed158862c9e34159450e"
   },
   {
    "order": 12,
@@ -360,40 +516,69 @@
     "Treasure zone",
     "Junction"
    ],
+   "layers": [
+    {
+     "file": "12-surface.png",
+     "label": "Surface",
+     "contentSha256": "070274abde6dbd9de3a5815d39644c7e4e8312286322d7a3f85f0a7a56f96de6"
+    },
+    {
+     "file": "12-underground.png",
+     "label": "Underground",
+     "contentSha256": "a599326bd280bec97a11d1ee94f026e75eb10c04b3b82ec70f816c0de0eeaddf"
+    }
+   ],
+   "legendFile": "12-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/12",
    "seconds": 3.0,
-   "contentSha256": "458969da92f7e715fb6d60284537f8dcb17517ece3c66d24d89965b5dd5b5238"
+   "contentSha256": "0df3c258f02f43c420d5c12896230801b6b9db2d1628db2d750736daee7309cb",
+   "legendSha256": "45aea9bb35e655536331e662c2747b1c000a5a3b647bed158862c9e34159450e"
   },
   {
    "order": 13,
    "file": "13.png",
    "size": 144,
    "players": 5,
-   "levels": 1,
+   "levels": 2,
    "seed": 7,
    "water": "lakes",
    "preferred": false,
-   "caption": "Coldshadow's Fantasy, Extra Large 144x144: 5 players, 1 level, Lakes water",
-   "drawHash": "527a68c834b000fee1a653433e82bce29340fdbe34819a4e64f4debb2d8cfdac",
+   "caption": "Coldshadow's Fantasy, Extra Large 144x144: 5 players, 2 levels, Lakes water",
+   "drawHash": "7831727184bbfceaea97127f70b303d48f78ff8766685f1652c70b859d73f7d0",
    "zones": 21,
    "lanes": 22,
    "portals": 4,
    "starts": 5,
-   "towns": 18,
+   "towns": 25,
    "legend": [
     "Player start",
     "Empty start",
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
+    "Way between levels",
     "Start zone",
     "Treasure zone",
     "Junction",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "13-surface.png",
+     "label": "Surface",
+     "contentSha256": "3144a817fb18846b1b6450bd6f533ace295d241af6c7f75161fa41c0fa386c45"
+    },
+    {
+     "file": "13-underground.png",
+     "label": "Underground",
+     "contentSha256": "4cb8812f5574eb9b524292dadda5c63b3f5df2da54752aa2fceeaab4ae72002c"
+    }
+   ],
+   "legendFile": "13-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/13",
    "seconds": 3.0,
-   "contentSha256": "5639a8d4be2ea529a8262ed5d0a0074aad71bb8e2c87cf3a70d97309ddbacd53"
+   "contentSha256": "b51c036c223f6a805f29022eec24bd7003dcbb9767a9dc83db0be1e66998bff0",
+   "legendSha256": "5ac5af6cf09b13ed118948107f78d8f70048c2270b9b713fe62eb10ce1daf619"
   },
   {
    "order": 14,
@@ -422,9 +607,23 @@
     "Junction",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "14-surface.png",
+     "label": "Surface",
+     "contentSha256": "aaa76b64eb000a62a7b901b0c9d6944e40a7e01e276f3034ded5372612cb6c12"
+    },
+    {
+     "file": "14-underground.png",
+     "label": "Underground",
+     "contentSha256": "f698a942f2067e4d9340d6b50359a6bff614ebce65de3218591be1887558b975"
+    }
+   ],
+   "legendFile": "14-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/14",
    "seconds": 3.0,
-   "contentSha256": "d9545a91895f99855155249451b951fe8c6e1f544fda355a88b7fe4adf388aa1"
+   "contentSha256": "d78074da35873352caf8c132aaa63a16953fcfd8e53c801761ed5c9b7f744945",
+   "legendSha256": "0eea9e00f82283b0623a869e1eb70c40f47812f4dc3dc20db10a9a6ebcfa9098"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

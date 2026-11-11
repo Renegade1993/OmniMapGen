@@ -26,9 +26,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "01-surface.png",
+     "label": "Surface",
+     "contentSha256": "02808c601632b02928de31c8264f0d3a26787e711626126d72cbd44250b77ee0"
+    }
+   ],
+   "legendFile": "01-legend.png",
    "path": "mapgen/preview/headquarters/01",
    "seconds": 3.0,
-   "contentSha256": "b0a9682d9da85729e0b6f1a42bdf8375959038aa4bfd47ad64aeeb235aab17a0"
+   "contentSha256": "acaf172f40e9fae6e00c3f66078bbefcb0f736989f05f30a678d98a99f62a500",
+   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
   },
   {
    "order": 2,
@@ -54,9 +63,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "02-surface.png",
+     "label": "Surface",
+     "contentSha256": "4c6b478187e2837ba1469523b7b8c6273ba5f952cae5f813bb41da4a2965e64a"
+    }
+   ],
+   "legendFile": "02-legend.png",
    "path": "mapgen/preview/headquarters/02",
    "seconds": 3.0,
-   "contentSha256": "9b2b0455f82e44cf546805c98dd6a5b2fc31e5adac627a7343860e06783ff3dd"
+   "contentSha256": "d15b321089f6e1d9928f440e5d2c77163039d1ab3f516137d960737025af7b75",
+   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
   },
   {
    "order": 3,
@@ -82,9 +100,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "03-surface.png",
+     "label": "Surface",
+     "contentSha256": "d57978ac3bb21fdc1b590c6f6726d737a0eb2943165df808670906a22a66a703"
+    }
+   ],
+   "legendFile": "03-legend.png",
    "path": "mapgen/preview/headquarters/03",
    "seconds": 3.0,
-   "contentSha256": "bbb5b39d3736f01c571c52c5ae8d3034b3a5885376e759ccedb47bbcc00a67b0"
+   "contentSha256": "fabe6dd6f2dd009313930faaa6af6e7e73ddfd513dd1ab464f85bf66e866ad95",
+   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
   },
   {
    "order": 4,
@@ -110,9 +137,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "04-surface.png",
+     "label": "Surface",
+     "contentSha256": "69548459433872e9554765b7d420375ab9f20f44678138c4168250f2b574d535"
+    }
+   ],
+   "legendFile": "04-legend.png",
    "path": "mapgen/preview/headquarters/04",
    "seconds": 3.0,
-   "contentSha256": "37474cac04c500cf66a43b33e38547cc2832715bbc387004cb43eb141e62f4c4"
+   "contentSha256": "1a17d23018328c380ecc854c9eb1a34f6051d205e8e4f70f32d1378816d89c2b",
+   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
   },
   {
    "order": 5,
@@ -138,9 +174,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "05-surface.png",
+     "label": "Surface",
+     "contentSha256": "f8ec4c4befca2399b6793cade5d842f74a693995fae3b2236ef8c7b467e8ada9"
+    }
+   ],
+   "legendFile": "05-legend.png",
    "path": "mapgen/preview/headquarters/05",
    "seconds": 3.0,
-   "contentSha256": "52bf044b907d4cdee83299a48822e0d30125bbe2b000823a2d9ad9fb06b52c19"
+   "contentSha256": "eb19ba00a6bb44db1729907bf2fb611587e138bd11db7152fae8803fb37cadb1",
+   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
   },
   {
    "order": 6,
@@ -164,9 +209,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "06-surface.png",
+     "label": "Surface",
+     "contentSha256": "e35996581ff19c5610fab7c16267f42713ad402e4e2b74e927d42bc948c258b6"
+    }
+   ],
+   "legendFile": "06-legend.png",
    "path": "mapgen/preview/headquarters/06",
    "seconds": 3.0,
-   "contentSha256": "076c52f9bd82dd00f209a16acfef8eead5758f322b67d47e800c6602a3057e01"
+   "contentSha256": "52e7c572715e95f8251251d011aa4fe462a98a124caf5364ba3b7ba54547ecba",
+   "legendSha256": "ea77d2f6f03b49b2321e2d5d93355749093a5ab5c5abd9c281908dccb740e712"
   },
   {
    "order": 7,
@@ -178,7 +232,7 @@
    "water": null,
    "preferred": true,
    "caption": "Headquarters, Medium 72x72: 7 players, 1 level",
-   "drawHash": "7146ca2d77741d3f83c83d49e56ac6d3daaff50b49bf80fc3c3fe5fda29bc024",
+   "drawHash": "8127ea64f580ef631f91424ad7321b084141161a6fbc033ef06955fdbb3c8724",
    "zones": 9,
    "lanes": 15,
    "portals": 5,
@@ -192,9 +246,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "07-surface.png",
+     "label": "Surface",
+     "contentSha256": "58a51b1f9593e0373d160c980a4bd94ef2da15d77d32cacb5f634478982de542"
+    }
+   ],
+   "legendFile": "07-legend.png",
    "path": "mapgen/preview/headquarters/07",
    "seconds": 3.0,
-   "contentSha256": "072c08b6c7c4d4fe207dc0d19c9b5a93a13f8c3289bdc4259cd0753072cdb199"
+   "contentSha256": "6be043117e720cc7b7b3210bfa741cc91b48c2740fda24f8efb78e25a286a81b",
+   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
   },
   {
    "order": 8,
@@ -206,7 +269,7 @@
    "water": null,
    "preferred": false,
    "caption": "Headquarters, Small 36x36: 2 players, 1 level",
-   "drawHash": "a86b046d5086f49d3c9c5b0f61570a5d91329f6595166aa5a3a64603ec55871f",
+   "drawHash": "b97ca51d65c7f444b2f5ee04fa0f4a665456a4943028a4cec66c598bd6bd2ada",
    "zones": 6,
    "lanes": 9,
    "portals": 1,
@@ -221,9 +284,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "08-surface.png",
+     "label": "Surface",
+     "contentSha256": "fa36d20c0ab18c7e932ac5c4d88f72e191c84a18d446760e78ec065974d0a023"
+    }
+   ],
+   "legendFile": "08-legend.png",
    "path": "mapgen/preview/headquarters/08",
    "seconds": 3.0,
-   "contentSha256": "3ea636a9e4f2bd64d153adc9e1136f42a32e59f2c62d0dafe7b1774c1d373df8"
+   "contentSha256": "0b69e6c3e82436e4ccaf14d5ee5a41573369f30e601dd9d79176d17a31d2b678",
+   "legendSha256": "accf588f2aa8121a37fb2d0ed1efebe1fdad913ca78912b86bab28ab100d2594"
   },
   {
    "order": 9,
@@ -235,7 +307,7 @@
    "water": null,
    "preferred": false,
    "caption": "Headquarters, Medium 72x72: 4 players, 2 levels",
-   "drawHash": "085abf691a64ae2f04a8414ef738e84e3fe6bf193e1156570da4e665f1d3bf3a",
+   "drawHash": "9f95b37fadcbb5e148f9988c353b928145fee604c14828f8060e5926bb100120",
    "zones": 9,
    "lanes": 15,
    "portals": 6,
@@ -251,9 +323,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "09-surface.png",
+     "label": "Surface",
+     "contentSha256": "3bacc29fff9c9f4f06d42723f98df52badb41dabcdb105d287d606745a84934a"
+    },
+    {
+     "file": "09-underground.png",
+     "label": "Underground",
+     "contentSha256": "3ae0a1bbd49932b9c80da30e3edfe392942e0ee9a3781a78465ded7c123ef303"
+    }
+   ],
+   "legendFile": "09-legend.png",
    "path": "mapgen/preview/headquarters/09",
    "seconds": 3.0,
-   "contentSha256": "9204fc6c6e5961fbd7a395d602d95731545cf507154626c03ea417810569b1c3"
+   "contentSha256": "834fa8137ea94b0880f639b67a8b76c232853a44edc5c7748920ce3bb786d792",
+   "legendSha256": "6ed59ad27d594fb91e3fc9979e541230c6125e8bbfde1357c4e3577292bcfecc"
   },
   {
    "order": 10,
@@ -280,9 +366,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "10-surface.png",
+     "label": "Surface",
+     "contentSha256": "182a119dad1a70c11252fea328197530034c61b96cba440f4beeac0f2e0de776"
+    }
+   ],
+   "legendFile": "10-legend.png",
    "path": "mapgen/preview/headquarters/10",
    "seconds": 3.0,
-   "contentSha256": "dcfdb8234c42cce9f23763891b696234d0d8afc6de05c1244950f5e61b908b9d"
+   "contentSha256": "b7326bead32c60f71728667ee7ceee3d1fbb7242acbdb2412b4472e7291b51e3",
+   "legendSha256": "accf588f2aa8121a37fb2d0ed1efebe1fdad913ca78912b86bab28ab100d2594"
   },
   {
    "order": 11,
@@ -294,7 +389,7 @@
    "water": "coastal",
    "preferred": false,
    "caption": "Headquarters, Extra Large 144x144: 5 players, 2 levels, Coastal water",
-   "drawHash": "afaa35e4960bb1f938102b09de88afacb9e743eea09c8544fec22c18bd0ce1c7",
+   "drawHash": "020e63cd78e9d815c6098c3325a69bbf6cdd9d603fd5939f6ae05ef50036d7e0",
    "zones": 9,
    "lanes": 15,
    "portals": 3,
@@ -311,9 +406,23 @@
     "Treasure zone",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "11-surface.png",
+     "label": "Surface",
+     "contentSha256": "18d5f18487335f9a6429291e83f47e41bb296d9bcdf9290f9eca9037874925db"
+    },
+    {
+     "file": "11-underground.png",
+     "label": "Underground",
+     "contentSha256": "95ede29f6e418391036bf54a722ce48a6623b61bf83a701ebe1209d117c4c26d"
+    }
+   ],
+   "legendFile": "11-legend.png",
    "path": "mapgen/preview/headquarters/11",
    "seconds": 3.0,
-   "contentSha256": "2be337cfd3698c627f6a920e919ffccc48e897bc528d14d6a1413437a4c86710"
+   "contentSha256": "d08012364f16bbd9a34c5e62778b0e3db212e30289a5ac00a6ff06aa799d552a",
+   "legendSha256": "7e5e72052c2a2949ee249afa43f301925c008c8a8b298036fabf2e7d9fa03966"
   },
   {
    "order": 12,
@@ -340,9 +449,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "12-surface.png",
+     "label": "Surface",
+     "contentSha256": "c4dc74e13c4a048de51775a5ac69ad765996bfe7afe33c0a96d8c498fbfa4e87"
+    }
+   ],
+   "legendFile": "12-legend.png",
    "path": "mapgen/preview/headquarters/12",
    "seconds": 3.0,
-   "contentSha256": "5157ac0b97bb66f1af4af40db7996ebdd6ddbaabc80b21915f274a453327a5a6"
+   "contentSha256": "697c2abdeeecd8558496b9fed3ad2a54dd2c252ac769177b2dfeadddf5473984",
+   "legendSha256": "accf588f2aa8121a37fb2d0ed1efebe1fdad913ca78912b86bab28ab100d2594"
   },
   {
    "order": 13,
@@ -370,9 +488,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "13-surface.png",
+     "label": "Surface",
+     "contentSha256": "9be6b47453cb82276e9b707bf66bc90abfc201a1f9a96d6700f7597e45fc2741"
+    },
+    {
+     "file": "13-underground.png",
+     "label": "Underground",
+     "contentSha256": "4db6185418dd669faf9d2fcaf5daeccb64a863bb35540bafc2385974788231e0"
+    }
+   ],
+   "legendFile": "13-legend.png",
    "path": "mapgen/preview/headquarters/13",
    "seconds": 3.0,
-   "contentSha256": "c30dd18a48fd89ea4ab511ae404709876b8ae6c1292da9cb30c23abcf42347a7"
+   "contentSha256": "5cd67c9e663d6f75f6ecad843dc01fcf86fff336333c08e58a3f6ea6f61a845e",
+   "legendSha256": "6ed59ad27d594fb91e3fc9979e541230c6125e8bbfde1357c4e3577292bcfecc"
   },
   {
    "order": 14,
@@ -399,9 +531,18 @@
     "Treasure zone",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "14-surface.png",
+     "label": "Surface",
+     "contentSha256": "d18384afdafd46c1a14b6c31d8f2a51a3378591df0b135ecab800876feb9564b"
+    }
+   ],
+   "legendFile": "14-legend.png",
    "path": "mapgen/preview/headquarters/14",
    "seconds": 3.0,
-   "contentSha256": "015463832fcbb767ebd9f42a64ee8d1ba5484af0a5dcd7fe1ef0168929127f2c"
+   "contentSha256": "2161cdcf7beea19a0d095646e83cf4297a78158f4fd7bbc946800165e8a5b5ad",
+   "legendSha256": "31b544f01b97e369ab3aef3c0e19b1d5351fbfc458b838996b86bee5cb63a975"
   },
   {
    "order": 15,
@@ -428,9 +569,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "15-surface.png",
+     "label": "Surface",
+     "contentSha256": "e093bc2ccfc84b8cdbb01d903a90c9a8b0e932779e0ca2dd138b3ab3d1c3dd07"
+    },
+    {
+     "file": "15-underground.png",
+     "label": "Underground",
+     "contentSha256": "5b57064eec37afe2c4d800d8ae3be4bd5b914ad60f768cedc3b3a7e9718be743"
+    }
+   ],
+   "legendFile": "15-legend.png",
    "path": "mapgen/preview/headquarters/15",
    "seconds": 3.0,
-   "contentSha256": "5bb1746d39d9b245ec4314f9eb20317f32a67e7657ec14309ef0a0cbb34ecc34"
+   "contentSha256": "3eb37042148d7c8fc5be06951cd664e8d87b33a49de8ec0c452c073cf43a329b",
+   "legendSha256": "b0701fed9c6737772aa26b432f7272479928bae1a922fb1f43c76bd16483bdaf"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

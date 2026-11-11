@@ -28,9 +28,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "01-surface.png",
+     "label": "Surface",
+     "contentSha256": "0df111d33ae1e1072ee48597c6d82b96de42421e9f41d31661dcecea02fcb403"
+    }
+   ],
+   "legendFile": "01-legend.png",
    "path": "mapgen/preview/water_mediterranean/01",
    "seconds": 3.0,
-   "contentSha256": "55c682fd280eea3327d5c053828ddb9a782275b57e69e616c5243a6407f187ea"
+   "contentSha256": "489a9a955b8d4e31e4744bedacd5b59de1cc6029b9080d8b27091962107cfb23",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 2,
@@ -40,7 +49,7 @@
    "levels": 1,
    "seed": 11,
    "water": "mediterranean",
-   "preferred": true,
+   "preferred": false,
    "caption": "Mediterranean, Large 108x108: 4 players, 1 level",
    "drawHash": "3498c80e01301a9c5d037a5d1cd8ff95b466aa11c8d86233bd04237d662c16d1",
    "zones": 14,
@@ -58,9 +67,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "02-surface.png",
+     "label": "Surface",
+     "contentSha256": "f0bd8298b4b8a7ef774e80a7381e652e229311b4b25eed7f4928a667492ac3c9"
+    }
+   ],
+   "legendFile": "02-legend.png",
    "path": "mapgen/preview/water_mediterranean/02",
    "seconds": 3.0,
-   "contentSha256": "fc2da3a90e65ef6728f62be5415b11e046221ae54cb2e49d12858ef58bd7ee1a"
+   "contentSha256": "f5feb9f3617d0d36412f4e43a3425207fd674d22185772b7b7b39183db1ef6af",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 3,
@@ -70,7 +88,7 @@
    "levels": 1,
    "seed": 11,
    "water": "mediterranean",
-   "preferred": true,
+   "preferred": false,
    "caption": "Mediterranean, Extra Large 144x144: 6 players, 1 level",
    "drawHash": "0140379d683729bb55f2a246897b3962c8c357dbd1e938f4b6f4d9f8e9899716",
    "zones": 23,
@@ -89,9 +107,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "03-surface.png",
+     "label": "Surface",
+     "contentSha256": "9d310a7d6fbbb3c4f0985a109f462544fa6bb4cf8fb3124512d4981f64fcbae9"
+    }
+   ],
+   "legendFile": "03-legend.png",
    "path": "mapgen/preview/water_mediterranean/03",
    "seconds": 3.0,
-   "contentSha256": "4b5200156fc9c8df270408227d1b64845b1b6a002bd97d9392478bd1f6358508"
+   "contentSha256": "beb228f227fa36c21be447500c74a59d57cbd870f9ffcbf611f76b96c79562ac",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 4,
@@ -101,7 +128,7 @@
    "levels": 1,
    "seed": 11,
    "water": "mediterranean",
-   "preferred": true,
+   "preferred": false,
    "caption": "Mediterranean, Huge 180x180: 8 players, 1 level",
    "drawHash": "7de7be896d21dcf866e5bce7d8f6dbfbc390c8c25286c97452cbaeeba691a8bc",
    "zones": 31,
@@ -120,9 +147,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "04-surface.png",
+     "label": "Surface",
+     "contentSha256": "9f881c8e338068cd6baf1bd86efd15b1862e88d882fc4447b1c41f6f54f0ec20"
+    }
+   ],
+   "legendFile": "04-legend.png",
    "path": "mapgen/preview/water_mediterranean/04",
    "seconds": 3.0,
-   "contentSha256": "1dd398bbe0647be3897c67980bc604dd53e02a5745744de92865105e402af186"
+   "contentSha256": "20e195857cecb3e277da3ca813d429484a4ba7d5c25b411597a993905899eb26",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 5,
@@ -132,7 +168,7 @@
    "levels": 1,
    "seed": 11,
    "water": "mediterranean",
-   "preferred": true,
+   "preferred": false,
    "caption": "Mediterranean, Extra Huge 216x216: 8 players, 1 level",
    "drawHash": "4a66173a8ae7f178bc93b6d1b70e252d8edc0403e75586e02db29ae5a8b90475",
    "zones": 40,
@@ -151,9 +187,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "05-surface.png",
+     "label": "Surface",
+     "contentSha256": "0476545daeba7c090cbf6629dc7422f1e73205a33d5e6d4e1de91f27d28163cf"
+    }
+   ],
+   "legendFile": "05-legend.png",
    "path": "mapgen/preview/water_mediterranean/05",
    "seconds": 3.0,
-   "contentSha256": "c3b454480396c68a1194b10ce94835c73a4a7e4a8c683c066f8657cc65593be8"
+   "contentSha256": "9bfec47013c0b87a814f26fb2df5bf960b41134b458a8183a24f0a353128e57c",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 6,
@@ -163,7 +208,7 @@
    "levels": 1,
    "seed": 11,
    "water": "mediterranean",
-   "preferred": true,
+   "preferred": false,
    "caption": "Mediterranean, Giant 252x252: 8 players, 1 level",
    "drawHash": "176eee958ea4be3b47ae0e54ddc38f3e30c3da7229d270a085aaf9563a2edb23",
    "zones": 59,
@@ -182,9 +227,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "06-surface.png",
+     "label": "Surface",
+     "contentSha256": "96ac68ce71a3bb49845efbad0eb63128cac36f48838d7d7081f7450edd607167"
+    }
+   ],
+   "legendFile": "06-legend.png",
    "path": "mapgen/preview/water_mediterranean/06",
    "seconds": 3.0,
-   "contentSha256": "1099d97bbcbbc051c987c57860fc712d88d905fdc88da51708f43d47afd3acd1"
+   "contentSha256": "4ec5f4a58fbfe1e89e568b803c398c876f28e315a7a8949d4779585b1c4b73dc",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 7,
@@ -194,7 +248,7 @@
    "levels": 1,
    "seed": 11,
    "water": "mediterranean",
-   "preferred": true,
+   "preferred": false,
    "caption": "Mediterranean, Small 36x36: 2 players, 1 level",
    "drawHash": "4f5a33959223f18f5fe44b687a00bab3ac0a4e3820a1cf5f9eb159339ffedf1c",
    "zones": 4,
@@ -208,9 +262,18 @@
     "Treasure zone",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "07-surface.png",
+     "label": "Surface",
+     "contentSha256": "a8a5869dbec565490c73675a91057ff09d7665beeb17bf679ef17b5d4f1584d2"
+    }
+   ],
+   "legendFile": "07-legend.png",
    "path": "mapgen/preview/water_mediterranean/07",
    "seconds": 3.0,
-   "contentSha256": "deb177230e5a8ee22b7b4da4c3c1c66c8b67773462ad2a040da23ed9a95a83d5"
+   "contentSha256": "9391574c458b9c173685d20a15b338c43d4cd41967cef9f6643f12a232eebb2a",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 8,
@@ -234,9 +297,18 @@
     "Treasure zone",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "08-surface.png",
+     "label": "Surface",
+     "contentSha256": "58e54449d17acf3a9e4445b7b3834a386145ea4ce4d7625e2dce2aab1fe93bb1"
+    }
+   ],
+   "legendFile": "08-legend.png",
    "path": "mapgen/preview/water_mediterranean/08",
    "seconds": 3.0,
-   "contentSha256": "ddb62847276cac7b0526d16f31cbf4ce1020f496747cd4c6289fe35a596941a8"
+   "contentSha256": "ccd2c0c38117cfdf759fb90a3053006b7ed6e439c27a5fde1f1fa2e77b98e4cf",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 9,
@@ -265,9 +337,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "09-surface.png",
+     "label": "Surface",
+     "contentSha256": "af78f7a423775ea4a4f75107e9cb1bd774d214c32afdf900de1fd21fd1687e34"
+    }
+   ],
+   "legendFile": "09-legend.png",
    "path": "mapgen/preview/water_mediterranean/09",
    "seconds": 3.0,
-   "contentSha256": "986ca5b71cbad4c0731591d34cbd3d4293d8c0909fc74e99ab4e4406026ed547"
+   "contentSha256": "0663174a1a028657eb23e861c97da627c3163650febf03990e671bc9054c08c2",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 10,
@@ -296,9 +377,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "10-surface.png",
+     "label": "Surface",
+     "contentSha256": "5a67daf448c4f81c26b4ee991565b5a51ef4f263c281154331d28ada19c8a95b"
+    }
+   ],
+   "legendFile": "10-legend.png",
    "path": "mapgen/preview/water_mediterranean/10",
    "seconds": 3.0,
-   "contentSha256": "9e89da7d5a93e4119734e1b74e5dcc5d392590a06c51be0bcf8b47402db2df9a"
+   "contentSha256": "16ac1c885f94c7e0554c7c4f93812d356ee3a8af3e345f13b773d879478c517b",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 11,
@@ -326,9 +416,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "11-surface.png",
+     "label": "Surface",
+     "contentSha256": "71c46052fcbafae52be24ad846154240cd7e38a9d314008ca555568e79157b1a"
+    }
+   ],
+   "legendFile": "11-legend.png",
    "path": "mapgen/preview/water_mediterranean/11",
    "seconds": 3.0,
-   "contentSha256": "1baf49d690aba2433ea39e61376dda84ff3992cb073e86039431ee9508594ced"
+   "contentSha256": "f7fd7c855574c2ce403d2c12e54b40f6930ea735f00cae5c129fa88db57ea67b",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 12,
@@ -357,9 +456,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "12-surface.png",
+     "label": "Surface",
+     "contentSha256": "af7fa8d6f932cf857d24d729fc2c47fe770066777c679e99ec5d4f05e9f202a7"
+    }
+   ],
+   "legendFile": "12-legend.png",
    "path": "mapgen/preview/water_mediterranean/12",
    "seconds": 3.0,
-   "contentSha256": "9e491227e5d85c21471bd0f243480640a0b171988b75f00c0e86ce54f78adfad"
+   "contentSha256": "2ff17bf73483e427543f0d6595d33aea9c3f018aecd455d251f9af166f9a93e2",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

@@ -25,9 +25,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "01-surface.png",
+     "label": "Surface",
+     "contentSha256": "6d27b15ed0e2f4742442d4f15fb4cb50a7234b6a0f4c2cc75e072ec23e2613da"
+    }
+   ],
+   "legendFile": "01-legend.png",
    "path": "mapgen/preview/golems_aplenty/01",
    "seconds": 3.0,
-   "contentSha256": "7a598c6dd3f21f5c7ef4acefc6abe70089fe2870474ddf753750f058c998e184"
+   "contentSha256": "9efa4596aebb38dc16dc10bcbd9fa3b46e26edadefe6583124e5b2e772ddc6cd",
+   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
   },
   {
    "order": 2,
@@ -53,9 +62,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "02-surface.png",
+     "label": "Surface",
+     "contentSha256": "9e25e21942b8dd463e5c104aeaac1bd9215f2b80e16fb72ba7d1ab505f180195"
+    },
+    {
+     "file": "02-underground.png",
+     "label": "Underground",
+     "contentSha256": "fa141c3226da1278ab6eefb0997c461f2b119adc076c1a37b4262434f73d4c92"
+    }
+   ],
+   "legendFile": "02-legend.png",
    "path": "mapgen/preview/golems_aplenty/02",
    "seconds": 3.0,
-   "contentSha256": "5356dcdd001a691e8d4916c0b5cbbf45ed048ea9db93a0fd9bddd781409de376"
+   "contentSha256": "f9fa3c3c8afe0ff0ebfda888fd8d11460cda3fd5fbac50e58cccc529d96cf93c",
+   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
   },
   {
    "order": 3,
@@ -81,9 +104,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "03-surface.png",
+     "label": "Surface",
+     "contentSha256": "b9eaa79ee4bf8d4866fcd137dc3ae5aaf89a82681fe4cfc1f4a5ba0d22e9fe33"
+    },
+    {
+     "file": "03-underground.png",
+     "label": "Underground",
+     "contentSha256": "a3b42cd06aef7eb48ab23975e44e493759a752ddcccc8d000864ab2a4b0cd43f"
+    }
+   ],
+   "legendFile": "03-legend.png",
    "path": "mapgen/preview/golems_aplenty/03",
    "seconds": 3.0,
-   "contentSha256": "5f8b25f3ab16409318112c0d53830dab73f8c534ce58cb43565f1ba797dbff85"
+   "contentSha256": "87d1c1ddcdeb25a02852b40e6e73ea5484a19b34405ff8047adf54f003ab104d",
+   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
   },
   {
    "order": 4,
@@ -95,7 +132,7 @@
    "water": null,
    "preferred": true,
    "caption": "Golems Aplenty, Huge 180x180: 4 players, 2 levels",
-   "drawHash": "795b6de061fc3f591d3e387c9fa195cc114f24c3b748345ecdf16bd08b75ee65",
+   "drawHash": "884e8ba3d3566e950f6463c62de3f85d1db95a5ec3310dd2228426b28c3bb234",
    "zones": 7,
    "lanes": 8,
    "portals": 0,
@@ -109,9 +146,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "04-surface.png",
+     "label": "Surface",
+     "contentSha256": "27755d9078e450cff4eb59e685545bb219a4d368edacaccc4ec7261e61014dc4"
+    },
+    {
+     "file": "04-underground.png",
+     "label": "Underground",
+     "contentSha256": "d7262cebacd3f2e9561e1d258fb1fa55b92e34990fdb15fa958567cba53dacd0"
+    }
+   ],
+   "legendFile": "04-legend.png",
    "path": "mapgen/preview/golems_aplenty/04",
    "seconds": 3.0,
-   "contentSha256": "616ebcf135b45126254c9f1ea6bfdd86b5789245b36587dd0323f80b01c1873f"
+   "contentSha256": "9b04073dc412b23e655150047151b778ef2c6743671d13ce1533fb778de0d23b",
+   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
   },
   {
    "order": 5,
@@ -123,7 +174,7 @@
    "water": null,
    "preferred": true,
    "caption": "Golems Aplenty, Extra Huge 216x216: 4 players, 2 levels",
-   "drawHash": "c46130a2f0e8a47abd92951155e85306c646a9ecf3b18addea2e4879ad32067b",
+   "drawHash": "f9276011432337111eece19b3a3808363025c3ae42084f85e353c63d546a59cb",
    "zones": 7,
    "lanes": 8,
    "portals": 0,
@@ -137,9 +188,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "05-surface.png",
+     "label": "Surface",
+     "contentSha256": "ab3b4cc56b092cd7421845ca23b55072aeea85ddd67af2954d3577ab6410aa85"
+    },
+    {
+     "file": "05-underground.png",
+     "label": "Underground",
+     "contentSha256": "d56d05165a0414648e37c1e69f0e0b5ae545275a82437ab2a8b42b944661b6f0"
+    }
+   ],
+   "legendFile": "05-legend.png",
    "path": "mapgen/preview/golems_aplenty/05",
    "seconds": 3.0,
-   "contentSha256": "ba088640695d66ad8c6f55d8cc098cb77bd9dabcee36af7a67f20a3cbc64e264"
+   "contentSha256": "f3d8046e126fd93cc2662c019735123ad97bc585e545d321049a63fbd56705ed",
+   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
   },
   {
    "order": 6,
@@ -151,7 +216,7 @@
    "water": null,
    "preferred": true,
    "caption": "Golems Aplenty, Giant 252x252: 4 players, 2 levels",
-   "drawHash": "8aa114d3453fc06f0e8820c5990057b114e06df6c956fdcf19c7b590b32bb426",
+   "drawHash": "3168be68235f3049dfbf697ee32315215640155c525ca7ce1ec6d2b849231256",
    "zones": 7,
    "lanes": 8,
    "portals": 0,
@@ -165,9 +230,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "06-surface.png",
+     "label": "Surface",
+     "contentSha256": "383c9b5fcb5c4c416a20b0e1faf46e860d13702256db7ecd4cbfbfaf5556346a"
+    },
+    {
+     "file": "06-underground.png",
+     "label": "Underground",
+     "contentSha256": "e57878564d0f57bfedef8a22999331034515afc800e9c296a28c480b40f74443"
+    }
+   ],
+   "legendFile": "06-legend.png",
    "path": "mapgen/preview/golems_aplenty/06",
    "seconds": 3.0,
-   "contentSha256": "e6361ff4a28a8f1a5aa07861c681989ad2e6a19b959654aec11e951898020702"
+   "contentSha256": "460ff20ecc644f8b6d689ace4e708948044796095db50a74d22a4648a1bc9fbb",
+   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
   },
   {
    "order": 7,
@@ -192,9 +271,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "07-surface.png",
+     "label": "Surface",
+     "contentSha256": "e0c2bf83b128b61e1888d2a219c6ea241f5f0ccd495fc50f24207078c44725ad"
+    }
+   ],
+   "legendFile": "07-legend.png",
    "path": "mapgen/preview/golems_aplenty/07",
    "seconds": 3.0,
-   "contentSha256": "5a2122f43dcb1aa2388dab91237d36e8f860c30a99a15fb15b8b388714ea0eac"
+   "contentSha256": "55ef93c5be9d5bb8f02ce1569e354eed3489e7ecb83a6607b7f4645bf1593957",
+   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
   },
   {
    "order": 8,
@@ -206,7 +294,7 @@
    "water": null,
    "preferred": false,
    "caption": "Golems Aplenty, Small 36x36: 2 players, 2 levels",
-   "drawHash": "a18916327e81a55198ee9c5909fa34bc061718ca06e46859c451da88e06e8b74",
+   "drawHash": "aec9a7b79b50ef2fa8adcecabc8c0d402fbaf392149149321df7b4391d61e2a4",
    "zones": 7,
    "lanes": 8,
    "portals": 1,
@@ -222,9 +310,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "08-surface.png",
+     "label": "Surface",
+     "contentSha256": "186f2bbe27d56b321dc75f5ad779aeb9d142f09604eb25dc24b4ab95e4bc86c0"
+    },
+    {
+     "file": "08-underground.png",
+     "label": "Underground",
+     "contentSha256": "7d17b5ac2083e7af0f7a0fe92668629a93f38449ac135648688d546c3eb4f459"
+    }
+   ],
+   "legendFile": "08-legend.png",
    "path": "mapgen/preview/golems_aplenty/08",
    "seconds": 3.0,
-   "contentSha256": "4d96f06f6f2058a8e839ba9f4b8be4fdf00b995c5d8d39ab00b8c70273ddefd4"
+   "contentSha256": "34361b2fe45e6292fb974f3b46bb4d6dbef886c3a926d845cb78dd39b3b8cb95",
+   "legendSha256": "6ed59ad27d594fb91e3fc9979e541230c6125e8bbfde1357c4e3577292bcfecc"
   },
   {
    "order": 9,
@@ -251,9 +353,18 @@
     "Treasure zone",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "09-surface.png",
+     "label": "Surface",
+     "contentSha256": "fca467df0a0d0ca839c9293d9273d6ac0249e7f5a382137056a8de3653c42440"
+    }
+   ],
+   "legendFile": "09-legend.png",
    "path": "mapgen/preview/golems_aplenty/09",
    "seconds": 3.0,
-   "contentSha256": "264da026a60ebec70f1464b0f117be3e6e82bc57c412d3adbbbfa5a193a6c519"
+   "contentSha256": "be1369b036c8045c3d2c7b3e8a559bec2a776afae55116a255dc18f28860989c",
+   "legendSha256": "928c5dc938abb8aca73266a659065840c096628e26e86075ea60797cdd9acfbe"
   },
   {
    "order": 10,
@@ -279,9 +390,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "10-surface.png",
+     "label": "Surface",
+     "contentSha256": "d00d0c047fee64ebc76c8e3accfa0cf6f62cb513147b4d67ccbd95549439f652"
+    }
+   ],
+   "legendFile": "10-legend.png",
    "path": "mapgen/preview/golems_aplenty/10",
    "seconds": 3.0,
-   "contentSha256": "8794eb1e86763e2845dad57e195d420975873d908eb14137e2dc23c655232070"
+   "contentSha256": "615e65cbf9ed781e9121ccb088e74bef6bc441bd738969dd9ee6e20521d65780",
+   "legendSha256": "5c0e3adc742e58a602affd7b85ef4e05acbb0b68237e561062983a23bf5bee8c"
   },
   {
    "order": 11,
@@ -308,9 +428,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "11-surface.png",
+     "label": "Surface",
+     "contentSha256": "e1acfbe5045e5ebddaa7737f0602a09e0649674ebb304f99a7f32bb8ef53262b"
+    },
+    {
+     "file": "11-underground.png",
+     "label": "Underground",
+     "contentSha256": "2cbe87a443bb55d505605daffab5e82ff7bc55c4221198f8d110d4acbaceea8d"
+    }
+   ],
+   "legendFile": "11-legend.png",
    "path": "mapgen/preview/golems_aplenty/11",
    "seconds": 3.0,
-   "contentSha256": "6038d4c256761ea24a7a29f0b6f0091adc0b0c720c37089f62a4b900a781e17b"
+   "contentSha256": "547b3cab3c7d5d9288c3cdcde3df3fc67cec08f6a5e10bf6c454773679ee21d4",
+   "legendSha256": "dbd376805ce0662b9e4d70dbb1b8fbd0d2cd7323d1afd4819c5638623de826b6"
   },
   {
    "order": 12,
@@ -337,9 +471,18 @@
     "Treasure zone",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "12-surface.png",
+     "label": "Surface",
+     "contentSha256": "53fd28ccce3f59d7460a213f7b849e53f1f0ab6c8f9da62a9008a0e570267375"
+    }
+   ],
+   "legendFile": "12-legend.png",
    "path": "mapgen/preview/golems_aplenty/12",
    "seconds": 3.0,
-   "contentSha256": "566f5733342d7afd250a19d2a6a5398efd6930ea8a4dd33abce4b9d11aa89284"
+   "contentSha256": "2e6a10943fad67eb20687d355753e65bb65228d14014a30f0aab3b0624dda374",
+   "legendSha256": "31b544f01b97e369ab3aef3c0e19b1d5351fbfc458b838996b86bee5cb63a975"
   },
   {
    "order": 13,
@@ -351,7 +494,7 @@
    "water": null,
    "preferred": false,
    "caption": "Golems Aplenty, Giant 252x252: 2 players, 2 levels",
-   "drawHash": "af83b305c88dde4822b9fd139037dccc5222a818ebb06d8c067842408b2e9843",
+   "drawHash": "b96470577e7980e9724a7245d6026da4ee504c8c024a7a8857e2e1a8283feccf",
    "zones": 7,
    "lanes": 8,
    "portals": 0,
@@ -366,9 +509,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "13-surface.png",
+     "label": "Surface",
+     "contentSha256": "741aae7fd1946da1055fb810fe7089a0debad4e7ebcb9d2329bc9d1f11c9a67e"
+    },
+    {
+     "file": "13-underground.png",
+     "label": "Underground",
+     "contentSha256": "99db49040ecfe9cf61fb1d1118b65f464a63d25d6d643c307b2e268b9455c79d"
+    }
+   ],
+   "legendFile": "13-legend.png",
    "path": "mapgen/preview/golems_aplenty/13",
    "seconds": 3.0,
-   "contentSha256": "0ab631712e03331f34e0d176592e4e92109323b8a03a0b0a8504894b56ec1f2e"
+   "contentSha256": "9e0408e0b8c4a8c3657c578ad3ea65782cce3cb110b3c038f96d9c7d7a652ea0",
+   "legendSha256": "dbd376805ce0662b9e4d70dbb1b8fbd0d2cd7323d1afd4819c5638623de826b6"
   },
   {
    "order": 14,
@@ -380,7 +537,7 @@
    "water": null,
    "preferred": false,
    "caption": "Golems Aplenty, Medium 72x72: 4 players, 2 levels",
-   "drawHash": "180420130df821b762de11a2fdc6375fb103abbd354b5a8648070afe2e2f5d8b",
+   "drawHash": "fcd8b3d9657dafc7a6cd2ce6d45a01ed3fe3415c7bdb372b9b5588574a5fd6c7",
    "zones": 7,
    "lanes": 8,
    "portals": 0,
@@ -394,9 +551,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "14-surface.png",
+     "label": "Surface",
+     "contentSha256": "3d43e8a5a687e88e821f075ff77f2a4e635c59d35cd244bf8d8325a93bb7f5e2"
+    },
+    {
+     "file": "14-underground.png",
+     "label": "Underground",
+     "contentSha256": "9c7f24f13b949657c2fb2a607300fd51f6c2aed4c56d144e3d76df2c02988a4f"
+    }
+   ],
+   "legendFile": "14-legend.png",
    "path": "mapgen/preview/golems_aplenty/14",
    "seconds": 3.0,
-   "contentSha256": "0bc7bd84b2f23cdde555209682cfd11260e96eb2c0f3a281e197f2e46910c8a9"
+   "contentSha256": "3455b899219f11f267d13d6ba68ff66306e07c54744d0e4ab2edee73b9120f48",
+   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

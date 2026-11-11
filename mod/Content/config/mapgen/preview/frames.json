@@ -28,9 +28,18 @@
     "Town zone",
     "Open land"
    ],
+   "layers": [
+    {
+     "file": "01-surface.png",
+     "label": "Surface",
+     "contentSha256": "00c33dfa6fe4ac5a3955f4239d54dde7a76bfc546ca1ee3548c1b4be95b8cdd8"
+    }
+   ],
+   "legendFile": "01-legend.png",
    "path": "mapgen/preview/classic/01",
    "seconds": 3.0,
-   "contentSha256": "a457b743377b86a548f81ce301110a8f489d89b391284ac5a1c71ff2fc3a852c"
+   "contentSha256": "0094d5db5690b43a45ea1a4f20e487fd101f262351e1cf775a0eee99a2ca0497",
+   "legendSha256": "6d6cbe44ce457c5c3ba4e5b13a4a8014242b9ed5fa97efce5a2eedbdde2017ec"
   },
   {
    "order": 2,
@@ -58,9 +67,18 @@
     "Town zone",
     "Open land"
    ],
+   "layers": [
+    {
+     "file": "02-surface.png",
+     "label": "Surface",
+     "contentSha256": "77cfbb3137030c7509f25b15c178c2658977d14048c3ea3dc8af98ee17e68cff"
+    }
+   ],
+   "legendFile": "02-legend.png",
    "path": "mapgen/preview/classic/02",
    "seconds": 3.0,
-   "contentSha256": "b872fcb3e05b3bdf388d6ab10852cf904becffd1efb1aced8e234467b762ab93"
+   "contentSha256": "2aec303521a3f89048caeaf7ca8ebc4a9660938a63a1849863b69e25d8f4f4c2",
+   "legendSha256": "6d6cbe44ce457c5c3ba4e5b13a4a8014242b9ed5fa97efce5a2eedbdde2017ec"
   },
   {
    "order": 3,
@@ -88,9 +106,18 @@
     "Town zone",
     "Open land"
    ],
+   "layers": [
+    {
+     "file": "03-surface.png",
+     "label": "Surface",
+     "contentSha256": "2ddb6e2c043996da07f30363680c3565f78a3936319b5583a955f07b791327ef"
+    }
+   ],
+   "legendFile": "03-legend.png",
    "path": "mapgen/preview/classic/03",
    "seconds": 3.0,
-   "contentSha256": "267ed1385aff04a3b52eef86ef29ac5d9fd69507e6daef335c6cb4198012e61e"
+   "contentSha256": "2d2c5a3ae085557880c4492dcedd834450d5e47471e311eb2189bbc910959548",
+   "legendSha256": "6d6cbe44ce457c5c3ba4e5b13a4a8014242b9ed5fa97efce5a2eedbdde2017ec"
   },
   {
    "order": 4,
@@ -117,9 +144,18 @@
     "Town zone",
     "Open land"
    ],
+   "layers": [
+    {
+     "file": "04-surface.png",
+     "label": "Surface",
+     "contentSha256": "b555856e58ef3257651a6087d3d7cee003845e7ed0d0db6466b38ee4b6ce31e8"
+    }
+   ],
+   "legendFile": "04-legend.png",
    "path": "mapgen/preview/classic/04",
    "seconds": 3.0,
-   "contentSha256": "65735ddfa48bce53ea280965c7b06843b04e19c2cfced1b1450c848b5a88c01f"
+   "contentSha256": "2b4195528a82599d8b7f072602f5110742af723969d3a76db1cc33ad3e9fc359",
+   "legendSha256": "12a2dedbfbf6e66913b38c34985b1c594cb07654fdcc63bfba5f7bf39391326d"
   },
   {
    "order": 5,
@@ -146,9 +182,18 @@
     "Town zone",
     "Open land"
    ],
+   "layers": [
+    {
+     "file": "05-surface.png",
+     "label": "Surface",
+     "contentSha256": "99e14182733ca2a9277e2eee8d457b744404083dc365e21b02565c355479da52"
+    }
+   ],
+   "legendFile": "05-legend.png",
    "path": "mapgen/preview/classic/05",
    "seconds": 3.0,
-   "contentSha256": "11119857b5281808e34d822d0cf1316298815848097a00bc1c0e1a71d62202f9"
+   "contentSha256": "70ed63a55137e1d241d5fbf90bed17ccd6a6e414af51fafc6f0cd6618bfad3da",
+   "legendSha256": "12a2dedbfbf6e66913b38c34985b1c594cb07654fdcc63bfba5f7bf39391326d"
   },
   {
    "order": 6,
@@ -173,9 +218,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "06-surface.png",
+     "label": "Surface",
+     "contentSha256": "251bc569f7b2dcad1ae362f54255e7efff474904a941600509ed18f140e8e289"
+    }
+   ],
+   "legendFile": "06-legend.png",
    "path": "mapgen/preview/classic/06",
    "seconds": 3.0,
-   "contentSha256": "5ce1710eb1fcfa36d4edd40a56f24fe3cd4fdf2db209f5411aa513c14744bd4c"
+   "contentSha256": "4d7efb428b231d9f35f777e65164d2eb8069b827d680ffc8926f4ac5a05c5c00",
+   "legendSha256": "43299c812911400373bc1c01ea8428bd727aef32fc17f1d85a5dd82100973256"
   },
   {
    "order": 7,
@@ -202,9 +256,18 @@
     "Town zone",
     "Open land"
    ],
+   "layers": [
+    {
+     "file": "07-surface.png",
+     "label": "Surface",
+     "contentSha256": "336133f4705e95b0d1a163b73b66371b7ee0abf14e67633bdd089f5d9684eb31"
+    }
+   ],
+   "legendFile": "07-legend.png",
    "path": "mapgen/preview/classic/07",
    "seconds": 3.0,
-   "contentSha256": "a6f70f7e73e343ce72845c8dcea75ace6f64713b79209c29ba5e3227953d712d"
+   "contentSha256": "a19946ae7beac1cece4dd99fe3a0cf23dccbe576b4e5f319b4a700baf863c6ca",
+   "legendSha256": "b0794d57ecfc0ddce7c901beefbf86292dc9fecf9bcbf6f8fc8e7e1d994caa10"
   },
   {
    "order": 8,
@@ -216,7 +279,7 @@
    "water": null,
    "preferred": false,
    "caption": "Classic, Small 36x36: 2 players, 2 levels, starts underground",
-   "drawHash": "7971dfbcdcaaa30ef67119cefaff9a4f02307b32c0fe6c25fd7fe264e9d1231c",
+   "drawHash": "0b3bf3d5cbb160e036d8ff0cabab304fa6bdf62509f8ca71d148c7bdc509f876",
    "zones": 7,
    "lanes": 3,
    "portals": 1,
@@ -231,9 +294,23 @@
     "Treasure zone",
     "Open land"
    ],
+   "layers": [
+    {
+     "file": "08-surface.png",
+     "label": "Surface",
+     "contentSha256": "a52a852aabf3e74a4ab460d37408dff636381a275fef1e0dbebfb4e8ba390d14"
+    },
+    {
+     "file": "08-underground.png",
+     "label": "Underground",
+     "contentSha256": "6f51b513f59e4da51008e4b57d2d9d3d9a3604ee7745ada33807ab1083a70b73"
+    }
+   ],
+   "legendFile": "08-legend.png",
    "path": "mapgen/preview/classic/08",
    "seconds": 3.0,
-   "contentSha256": "a985d00e5b6c7324ad8c0dfb0488ae07fdb29cd95dad2c9654a35a9038f8a7eb"
+   "contentSha256": "d71e4d0251d8d4573dd4cac4681fd7ed121b2cfc5bac4b495438953146f7c8ff",
+   "legendSha256": "683d86b452988b67f770163bab7379f1d87c8266b7876ab6670bf9b5852120c2"
   },
   {
    "order": 9,
@@ -262,9 +339,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "09-surface.png",
+     "label": "Surface",
+     "contentSha256": "affd25b122266b00f34879affcb78b594bf4ca7b60ac942d77d950b83775cdc9"
+    }
+   ],
+   "legendFile": "09-legend.png",
    "path": "mapgen/preview/classic/09",
    "seconds": 3.0,
-   "contentSha256": "05f1bedded86a8410cb881f58c15af63b1cf9570e94f92d3a90b1c82fdb3d4bc"
+   "contentSha256": "8172394b04fb63dfc548dff599d618f4d247c50b22df5d6bf5d5de0ed9195a8d",
+   "legendSha256": "0b99337de0c19d3fbf37dc16146fc4e48db498ce32a6c9c3bb82555bf2ba5853"
   },
   {
    "order": 10,
@@ -276,7 +362,7 @@
    "water": null,
    "preferred": false,
    "caption": "Classic, Large 108x108: 3 players, 2 levels, starts underground",
-   "drawHash": "a809d053e493467917dc6beb51270da676169adda240654efdf09648d686350e",
+   "drawHash": "336a452adc271766be23d4c1c06ff51caaf49fbb7b992c62437d0f9e9a6cf64b",
    "zones": 47,
    "lanes": 52,
    "portals": 8,
@@ -291,9 +377,23 @@
     "Town zone",
     "Open land"
    ],
+   "layers": [
+    {
+     "file": "10-surface.png",
+     "label": "Surface",
+     "contentSha256": "c16a363d3980daa0a71e90f2dfb211f84f3c4ce52bf619f82d9628a20211cea1"
+    },
+    {
+     "file": "10-underground.png",
+     "label": "Underground",
+     "contentSha256": "b6992feb23fcd6cea984e26de974167563909c7fe014a3a0ca7ee2cba4b322ab"
+    }
+   ],
+   "legendFile": "10-legend.png",
    "path": "mapgen/preview/classic/10",
    "seconds": 3.0,
-   "contentSha256": "e6d8e1311c4f4f4a9e7f01f83b594de71f1ccdc2572af915623e1b631b389319"
+   "contentSha256": "1b20df606d8707794928e4a4017635f2407cba83b699d2deb626988958a600b0",
+   "legendSha256": "12a2dedbfbf6e66913b38c34985b1c594cb07654fdcc63bfba5f7bf39391326d"
   },
   {
    "order": 11,
@@ -321,9 +421,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "11-surface.png",
+     "label": "Surface",
+     "contentSha256": "768e153310f4182b3d3cfcf2229a8bd095623f62f9ebfe4cf0cae3346b4d1290"
+    }
+   ],
+   "legendFile": "11-legend.png",
    "path": "mapgen/preview/classic/11",
    "seconds": 3.0,
-   "contentSha256": "ecca161ff6a77bc20f8a3743ef13c51c6557c58ef61e881c6fac61a6607abe5e"
+   "contentSha256": "ef4eab2ddf5a9a8621e95c5d54ca01dddd14288cf474e5a5fe860b408e873f9c",
+   "legendSha256": "c48475d6853474700174e3cbc021d2544ca33fa44b4334793b16eda66aea5616"
   },
   {
    "order": 12,
@@ -335,9 +444,9 @@
    "water": null,
    "preferred": false,
    "caption": "Classic, Huge 180x180: 5 players, 2 levels, starts on both levels",
-   "drawHash": "4f1a247d039560b1a84be87a3143d93a3641d8363a9cdb6d20eabe32532669e0",
+   "drawHash": "c10a0af46dae97a7301b653eddae44f05f80c8adc5085a9a2da0d863ff077016",
    "zones": 95,
-   "lanes": 106,
+   "lanes": 101,
    "portals": 8,
    "starts": 5,
    "towns": 19,
@@ -350,9 +459,23 @@
     "Town zone",
     "Open land"
    ],
+   "layers": [
+    {
+     "file": "12-surface.png",
+     "label": "Surface",
+     "contentSha256": "279d84c9d9157f593b857dbbce3ffdb0ec94f96487eeaa9ea92bdb79c4e91e70"
+    },
+    {
+     "file": "12-underground.png",
+     "label": "Underground",
+     "contentSha256": "80c425148e32876dc4b18f83f4b9ed171b11f9d7ce602b244738bd4e8b2b6eff"
+    }
+   ],
+   "legendFile": "12-legend.png",
    "path": "mapgen/preview/classic/12",
    "seconds": 3.0,
-   "contentSha256": "629eaa67e94c50498a9a914a078452256f009d704d7cfe1f5bff8523d8e8999f"
+   "contentSha256": "3b0b4479c519946f821ac09713d76f1073d984c9ba33147e54707ec8631fcae6",
+   "legendSha256": "12a2dedbfbf6e66913b38c34985b1c594cb07654fdcc63bfba5f7bf39391326d"
   },
   {
    "order": 13,
@@ -364,7 +487,7 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Classic, Giant 252x252: 4 players, 1 level, Archipelago water",
-   "drawHash": "499348c1f00ef4c65fe70c3c2b511f093ab640ca7178e3560f0c14cf90604720",
+   "drawHash": "5f704dde642b60bbe4adb72f0cc633b0f53bf1c2f6ebaecde8f36c703d332150",
    "zones": 49,
    "lanes": 19,
    "portals": 0,
@@ -380,9 +503,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "13-surface.png",
+     "label": "Surface",
+     "contentSha256": "0e6493f7ee25ef605ca71b9bf2e95e2ef3a277d49abd6030c02a34d99aff23fa"
+    }
+   ],
+   "legendFile": "13-legend.png",
    "path": "mapgen/preview/classic/13",
    "seconds": 3.0,
-   "contentSha256": "66f7bad0c938625b7aee4e6161f52bdb2aad6ee06394ec193dc675c98c6f7d62"
+   "contentSha256": "662ccb6c0f7cecdac5658565ac82a0b6b5510234c9f1195ba1850c6fb4791c8f",
+   "legendSha256": "c48475d6853474700174e3cbc021d2544ca33fa44b4334793b16eda66aea5616"
   },
   {
    "order": 14,
@@ -410,9 +542,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "14-surface.png",
+     "label": "Surface",
+     "contentSha256": "4e501a7d429ba6cd1f0c339f331a4b6e150c9f78785642ce735fc26dde03d53b"
+    }
+   ],
+   "legendFile": "14-legend.png",
    "path": "mapgen/preview/classic/14",
    "seconds": 3.0,
-   "contentSha256": "6fac62b8a38ce8ab25fc994ac3c81941db66e46f14906ac84a1ca2b63eba9b68"
+   "contentSha256": "d420bf609db5baae7ba0b2338595ff6c87164ae5d4d350d7e5c07f70d083b835",
+   "legendSha256": "4a4fada5d361264f788cc3a3d78e845dc5f76c1527f5618a1e9e387e9377950e"
   },
   {
    "order": 15,
@@ -440,9 +581,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "15-surface.png",
+     "label": "Surface",
+     "contentSha256": "cc474216d0870edd79899741b97bd7451790345f4cb2dfa12b7dd9eadb294f6f"
+    }
+   ],
+   "legendFile": "15-legend.png",
    "path": "mapgen/preview/classic/15",
    "seconds": 3.0,
-   "contentSha256": "1d7f99323a6a181f842cb966cf66e0c5029a6355c720c23caf9e4b78aa45811a"
+   "contentSha256": "650ee0a07519ef1c9a398998f840d077071489fc8dac2c14c60a6d04e3f51259",
+   "legendSha256": "c48475d6853474700174e3cbc021d2544ca33fa44b4334793b16eda66aea5616"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

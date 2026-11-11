@@ -27,9 +27,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "01-surface.png",
+     "label": "Surface",
+     "contentSha256": "03108b07c1ea3216e7eb5b1c31fa7c3fcde16c24ada096c67769f0f3af6151a2"
+    }
+   ],
+   "legendFile": "01-legend.png",
    "path": "mapgen/preview/water_archipelago/01",
    "seconds": 3.0,
-   "contentSha256": "b76f191ddd81e57709f119f9b9a0f7fbc79393cd9d31e2012813d47e7533dea9"
+   "contentSha256": "bb9b4f5d9d644c4b8109c259cd61cf40951cd398ed1e5be3f312a5ee58e0bb6c",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 2,
@@ -39,7 +48,7 @@
    "levels": 1,
    "seed": 11,
    "water": "archipelago",
-   "preferred": true,
+   "preferred": false,
    "caption": "Archipelago, Large 108x108: 4 players, 1 level",
    "drawHash": "804a7ed5ce115f38f5bb98aaa560157bc6566b94d47b002925f1ca62411c70d6",
    "zones": 14,
@@ -56,9 +65,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "02-surface.png",
+     "label": "Surface",
+     "contentSha256": "3469733b832f8304cd9a4a3c01e1fdd247f353f2db10d1d74adcf9869d60cf46"
+    }
+   ],
+   "legendFile": "02-legend.png",
    "path": "mapgen/preview/water_archipelago/02",
    "seconds": 3.0,
-   "contentSha256": "94e9e9d8176daddfbf9dec3979246a48b257e1abb19178bdcb23b2dddc675bd3"
+   "contentSha256": "40b1d5b1b035de158b41c16b5043cf9f4de6bdb8f98617aeec5e81e74dc683d7",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 3,
@@ -68,7 +86,7 @@
    "levels": 1,
    "seed": 11,
    "water": "archipelago",
-   "preferred": true,
+   "preferred": false,
    "caption": "Archipelago, Extra Large 144x144: 6 players, 1 level",
    "drawHash": "25266b1f6e6865a4abb38d6f923e663a444f2fac75036130162b050d36397531",
    "zones": 25,
@@ -86,9 +104,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "03-surface.png",
+     "label": "Surface",
+     "contentSha256": "9c4c375a4d5fc71889b3a32d4609ad869c74908c342c166aa6b039e655a8889e"
+    }
+   ],
+   "legendFile": "03-legend.png",
    "path": "mapgen/preview/water_archipelago/03",
    "seconds": 3.0,
-   "contentSha256": "3b2dd4a9a08ead894a1507d40816a8d4fe92afc43d5fd7170f2163fa9a595b05"
+   "contentSha256": "7171d254d9e014e2b5209b6c4d506bf85d095d459ba237ee91eff08cf8f3e914",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 4,
@@ -98,7 +125,7 @@
    "levels": 1,
    "seed": 11,
    "water": "archipelago",
-   "preferred": true,
+   "preferred": false,
    "caption": "Archipelago, Huge 180x180: 8 players, 1 level",
    "drawHash": "2c6b4f092096d6d63769c61796bfe035958c51208842a96c219f7a43a57f2f71",
    "zones": 36,
@@ -116,9 +143,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "04-surface.png",
+     "label": "Surface",
+     "contentSha256": "bffcbf3bdca4e74a9b0e1925847ec45084a5fb6c6e62a8dc62a26d52b374cccc"
+    }
+   ],
+   "legendFile": "04-legend.png",
    "path": "mapgen/preview/water_archipelago/04",
    "seconds": 3.0,
-   "contentSha256": "d0ecc13a55b3fb22d3e54bb9e733755c8aa4e993680f95077e8adff6fe6353d4"
+   "contentSha256": "92805834ec6a439fcbc91b35d6e357d0b5f488d94b0527c55b65e50e68126672",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 5,
@@ -128,7 +164,7 @@
    "levels": 1,
    "seed": 11,
    "water": "archipelago",
-   "preferred": true,
+   "preferred": false,
    "caption": "Archipelago, Extra Huge 216x216: 8 players, 1 level",
    "drawHash": "7ea3b68946f1954bff01bf27f255d1e2a3f7c22ae139ac8e8aa6a93313c5dd1a",
    "zones": 42,
@@ -146,9 +182,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "05-surface.png",
+     "label": "Surface",
+     "contentSha256": "5c0d2c047416862e7c4ccba31b913162fa6e295232ec4745e40a1d7da972f967"
+    }
+   ],
+   "legendFile": "05-legend.png",
    "path": "mapgen/preview/water_archipelago/05",
    "seconds": 3.0,
-   "contentSha256": "6c6a5b8c96573f364ccef7f673c3514bb8be3a100551e413fabf7ff6e4ecdd28"
+   "contentSha256": "e99af221370737a539cc7bf61a18da3d5ce7f7d1b67fefed4463a3afa1e4ebab",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 6,
@@ -158,7 +203,7 @@
    "levels": 1,
    "seed": 11,
    "water": "archipelago",
-   "preferred": true,
+   "preferred": false,
    "caption": "Archipelago, Giant 252x252: 8 players, 1 level",
    "drawHash": "64c4acc0cb830671b577f91e058e064b3d5befebd1a93664d5f93d2544e71706",
    "zones": 53,
@@ -176,9 +221,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "06-surface.png",
+     "label": "Surface",
+     "contentSha256": "b614f36094abd4a98b4a5d2c4319c9fe4133b693ac58bf94ef7bdccdd6f29a31"
+    }
+   ],
+   "legendFile": "06-legend.png",
    "path": "mapgen/preview/water_archipelago/06",
    "seconds": 3.0,
-   "contentSha256": "6b18fbc25c24094ef689e620bafe022df72bd8416c58ee0b2237b998a983f6d4"
+   "contentSha256": "1455bdc5a9b9dca7a3cfa04ed8403909d76e511a066baa484fe8f0dbd4f77a15",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 7,
@@ -188,7 +242,7 @@
    "levels": 1,
    "seed": 11,
    "water": "archipelago",
-   "preferred": true,
+   "preferred": false,
    "caption": "Archipelago, Small 36x36: 2 players, 1 level",
    "drawHash": "df001ace4860c8ab8c8440d9b640db1dbf83aed4e5ab1aa2999ee514cd9e1690",
    "zones": 5,
@@ -203,9 +257,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "07-surface.png",
+     "label": "Surface",
+     "contentSha256": "71f2a6c7697209de0476ecac689e7ad86902a8729e2dbb55091e512f36c92928"
+    }
+   ],
+   "legendFile": "07-legend.png",
    "path": "mapgen/preview/water_archipelago/07",
    "seconds": 3.0,
-   "contentSha256": "bc02bc35c6437146117ce917681a632123d3a4ddf90abc1a1d9fe1fed1694ccc"
+   "contentSha256": "d2cb8260fe18a77c98ca02237c3d4cae25b0cd56f8ad6529882e1ed20a3fb16e",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 8,
@@ -231,9 +294,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "08-surface.png",
+     "label": "Surface",
+     "contentSha256": "6fc32fb80f5f18a7edb3c13b632a30aec0a7b37b089547580fe1fef16171e481"
+    }
+   ],
+   "legendFile": "08-legend.png",
    "path": "mapgen/preview/water_archipelago/08",
    "seconds": 3.0,
-   "contentSha256": "cfbeef84e332a61676484d75f8af94dff3ea12e26429c891413834a6c9f87928"
+   "contentSha256": "80f36a9130ce43261dbf2e2287328482e8bf2f1b777f2c677d62fe4df5305ed8",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 9,
@@ -245,7 +317,7 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Medium 72x72: 2 players, 2 levels",
-   "drawHash": "eaaa640d0a62e2bea0d80cd08118f03b9d80f7ddf38bd7826141dafb5a83997e",
+   "drawHash": "ecc4bfff2ca7c2edf1365a4b9ddc07ec627b7ab5c8b9b012938096c04a3df914",
    "zones": 22,
    "lanes": 15,
    "portals": 5,
@@ -262,9 +334,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "09-surface.png",
+     "label": "Surface",
+     "contentSha256": "c467664b74dc5c07e14dc31e7b3ce2d09b00ed988f8f3923520b64f29e2279d4"
+    }
+   ],
+   "legendFile": "09-legend.png",
    "path": "mapgen/preview/water_archipelago/09",
    "seconds": 3.0,
-   "contentSha256": "c45fcf18342b590bd6c070ac5973bf89f8e03d5ca70823f1f00d59958ae99b93"
+   "contentSha256": "d9bf15e2daa27efc8cd131da5f8a38c81006419e2c312bc529efffb01f57c697",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 10,
@@ -276,7 +357,7 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Large 108x108: 6 players, 1 level",
-   "drawHash": "389994d0a33594f8bb2ea974e4cace93c4d51f84a09aba0157717f40bff2cc03",
+   "drawHash": "45762b1cfc31480ea64bce6e69ed1907f870a90c4c26f1866226d162bd9abee9",
    "zones": 21,
    "lanes": 3,
    "portals": 0,
@@ -292,9 +373,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "10-surface.png",
+     "label": "Surface",
+     "contentSha256": "fa16ab3cd03cc62138246a8518fc138b83ad851be10faf21e96ebb4956b1c88a"
+    }
+   ],
+   "legendFile": "10-legend.png",
    "path": "mapgen/preview/water_archipelago/10",
    "seconds": 3.0,
-   "contentSha256": "4df25aeba200b33775af1fefcd0384d2a841a31b27d75cc27d99c06b790e20d2"
+   "contentSha256": "8d7768ed6ae0e44c69b88a44f13821a1ddd730c59d5b390bb8a66b0bb9b9f8fd",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 11,
@@ -306,7 +396,7 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Extra Large 144x144: 3 players, 2 levels",
-   "drawHash": "d6179c1247818fcf522991ab8ffec911804cd03c1020dc31e97429f9a557ea34",
+   "drawHash": "c033100466c15add9e642808cc85e9ff1a6e64eef699965b992015c2a7c532a5",
    "zones": 66,
    "lanes": 84,
    "portals": 5,
@@ -322,9 +412,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "11-surface.png",
+     "label": "Surface",
+     "contentSha256": "596535ce11f963188b01c6a7595e2f4ec8e2342880d1af62cd7b63779c80722b"
+    }
+   ],
+   "legendFile": "11-legend.png",
    "path": "mapgen/preview/water_archipelago/11",
    "seconds": 3.0,
-   "contentSha256": "6b2447704b271b47977b2f476eef7df96fc65dc753c1e49d3a9f5fb891a9e619"
+   "contentSha256": "f04793611f079e0271693aca3339864da896ba30c4c5cdf8125a443f2959da8b",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   },
   {
    "order": 12,
@@ -352,9 +451,18 @@
     "Open land",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "12-surface.png",
+     "label": "Surface",
+     "contentSha256": "5dcc94b72dffd11df87b990d117866aabb0748aefddbb3255608656ae49214ea"
+    }
+   ],
+   "legendFile": "12-legend.png",
    "path": "mapgen/preview/water_archipelago/12",
    "seconds": 3.0,
-   "contentSha256": "8239aa735570a95381d4703f63cc7506bdaac880e6791fb6822b5ef0bddcc074"
+   "contentSha256": "aab7a18433437f59f08ace9f0de312cc372afc1b4dc4fc98e6dcf9b9c1bfcc18",
+   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

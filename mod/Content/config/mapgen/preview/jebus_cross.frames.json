@@ -25,9 +25,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "01-surface.png",
+     "label": "Surface",
+     "contentSha256": "914d60b20f6e662cab5fa60bc4679d58543544a604729c75fed2cb1f5b50bcc0"
+    }
+   ],
+   "legendFile": "01-legend.png",
    "path": "mapgen/preview/jebus_cross/01",
    "seconds": 3.0,
-   "contentSha256": "9bd757efba9c4ed7ec7a8dabea830a94a439a7aa839b2eead6f72e795aabf85f"
+   "contentSha256": "9bd757efba9c4ed7ec7a8dabea830a94a439a7aa839b2eead6f72e795aabf85f",
+   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
   },
   {
    "order": 2,
@@ -52,9 +61,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "02-surface.png",
+     "label": "Surface",
+     "contentSha256": "bd228109f0bad475f80a2893d179a84323eab9a8f818728bf911666aea7dcc29"
+    }
+   ],
+   "legendFile": "02-legend.png",
    "path": "mapgen/preview/jebus_cross/02",
    "seconds": 3.0,
-   "contentSha256": "5fb8da426bed3aeafffd72204d03c38f427195445dcd9e5f181e41e0176e4632"
+   "contentSha256": "5fb8da426bed3aeafffd72204d03c38f427195445dcd9e5f181e41e0176e4632",
+   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
   },
   {
    "order": 3,
@@ -79,9 +97,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "03-surface.png",
+     "label": "Surface",
+     "contentSha256": "64cc2c3bf10c1be094df5c607aa3c9128f7b4a95725057ee95a753dbe592cbac"
+    }
+   ],
+   "legendFile": "03-legend.png",
    "path": "mapgen/preview/jebus_cross/03",
    "seconds": 3.0,
-   "contentSha256": "ec679a248ccccd1e8ba9148f6dd02f4a0502b9f0ddbabd3ac2d56fab5566b0fc"
+   "contentSha256": "ec679a248ccccd1e8ba9148f6dd02f4a0502b9f0ddbabd3ac2d56fab5566b0fc",
+   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
   },
   {
    "order": 4,
@@ -106,9 +133,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "04-surface.png",
+     "label": "Surface",
+     "contentSha256": "598fa34d61a339fec6227bbe0b26aef345b5001ac83bd8b1efceb3c0513d7197"
+    }
+   ],
+   "legendFile": "04-legend.png",
    "path": "mapgen/preview/jebus_cross/04",
    "seconds": 3.0,
-   "contentSha256": "7608f6813f56cbdd5942f47fac1114ee86c8674dbb4a61b825e9a3fc1db9ecba"
+   "contentSha256": "7608f6813f56cbdd5942f47fac1114ee86c8674dbb4a61b825e9a3fc1db9ecba",
+   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
   },
   {
    "order": 5,
@@ -120,7 +156,7 @@
    "water": null,
    "preferred": true,
    "caption": "Jebus Cross, Giant 252x252: 4 players, 1 level",
-   "drawHash": "fc4971832ab9eb807105daf656d17a6ed49fc0505bb0379a2d5f1e9f51f9455b",
+   "drawHash": "5046392e537094410a23317aaa50136b8d63cf262b7b12d0943d66250be84338",
    "zones": 5,
    "lanes": 4,
    "portals": 0,
@@ -133,9 +169,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "05-surface.png",
+     "label": "Surface",
+     "contentSha256": "6ded93ad3c9be2d086d9fe9d36e30cfed23967f2bb47a67b2652192dbd9a19c2"
+    }
+   ],
+   "legendFile": "05-legend.png",
    "path": "mapgen/preview/jebus_cross/05",
    "seconds": 3.0,
-   "contentSha256": "e744af2c0438e9aabb52cc0530bd605906d2f67b032f17ef3484037c68871637"
+   "contentSha256": "c3e87caca8addef1a7f2317f0e7ace69e549a34a7ef0da4fe080fcd1c22416a2",
+   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
   },
   {
    "order": 6,
@@ -159,9 +204,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "06-surface.png",
+     "label": "Surface",
+     "contentSha256": "d7238180f5f58dff2baa3074c9b71ca483ea955391eed0049a9276c3f5516a50"
+    }
+   ],
+   "legendFile": "06-legend.png",
    "path": "mapgen/preview/jebus_cross/06",
    "seconds": 3.0,
-   "contentSha256": "1022dd73eee66184fefe41ac633bb5123d25bbc5e50c95329e3c91fd5d88bf84"
+   "contentSha256": "e0e442eb56aa77ea663b3952c38383c07a00765560fe93462aa149c84ee02617",
+   "legendSha256": "ea77d2f6f03b49b2321e2d5d93355749093a5ab5c5abd9c281908dccb740e712"
   },
   {
    "order": 7,
@@ -186,9 +240,18 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "07-surface.png",
+     "label": "Surface",
+     "contentSha256": "ba7a981c91978be863636953f4df8b90432c440407f7ab9ca721407d93af9aff"
+    }
+   ],
+   "legendFile": "07-legend.png",
    "path": "mapgen/preview/jebus_cross/07",
    "seconds": 3.0,
-   "contentSha256": "bc7cd1697978a6a745f2a9f19bd9c22289c023bc997db324ef726a390f3c2781"
+   "contentSha256": "4b1119aa1c65164bef817996aa34ffeee0f42b034a4e0b2fb8dc8c56ceed9eb6",
+   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
   },
   {
    "order": 8,
@@ -214,9 +277,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "08-surface.png",
+     "label": "Surface",
+     "contentSha256": "076ce7d6b96ce7b039cb3220d5e24059eb871a31d5c12d85a3607c982d22aa56"
+    },
+    {
+     "file": "08-underground.png",
+     "label": "Underground",
+     "contentSha256": "c7db966b6992dc26a9e52d4821f3476ab5a0868ae97c45741dab89408996122a"
+    }
+   ],
+   "legendFile": "08-legend.png",
    "path": "mapgen/preview/jebus_cross/08",
    "seconds": 3.0,
-   "contentSha256": "d6df127d9c7752624926b80c9027c868caeeb1551006632c2cb7532b7c696ac9"
+   "contentSha256": "40a4360c0851ee1a583febce8666a853b0bc593b0935c49a62d2dfd341f5dd83",
+   "legendSha256": "21b28fe819e12119a514cbdfc7afc6078b50672d63a54db8a0cfc7626a426c4f"
   },
   {
    "order": 9,
@@ -242,9 +319,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "09-surface.png",
+     "label": "Surface",
+     "contentSha256": "55463db80b2822e1ed40e83de71b6ec61ce2a755877761d618d74bbda49b0620"
+    },
+    {
+     "file": "09-underground.png",
+     "label": "Underground",
+     "contentSha256": "a35300d5f71b5e0b9b015102245a7d1ca41d9b61dea728a42610b006c98b307b"
+    }
+   ],
+   "legendFile": "09-legend.png",
    "path": "mapgen/preview/jebus_cross/09",
    "seconds": 3.0,
-   "contentSha256": "c9874457185d4a39a8fb6bf59173c2e24c8b5d713f4c1c6edf4eb523f495a69b"
+   "contentSha256": "a11825e01c006abdf33211c6876ea8f934bc4c6a4c80e71763624a193b92b762",
+   "legendSha256": "21b28fe819e12119a514cbdfc7afc6078b50672d63a54db8a0cfc7626a426c4f"
   },
   {
    "order": 10,
@@ -269,9 +360,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "10-surface.png",
+     "label": "Surface",
+     "contentSha256": "c89fa3a2d59b2353b246cafe8cda4e389fd3083024818a5f30b66a80088edbf7"
+    },
+    {
+     "file": "10-underground.png",
+     "label": "Underground",
+     "contentSha256": "f6dec6c588fffa20b648810b14825113693bde1cc970e6fc531565513760f8e9"
+    }
+   ],
+   "legendFile": "10-legend.png",
    "path": "mapgen/preview/jebus_cross/10",
    "seconds": 3.0,
-   "contentSha256": "a0a2bbacb0a3d0fd49c32ac1e9a28db5c27929e5ba6ab82300f8b1ef85abce7a"
+   "contentSha256": "26a6094a5ed48b05c54fadfd8a12f70a66450c1473a96e219ef77415f00923d1",
+   "legendSha256": "6634a5559866d20dc5fce47fc70ab18a2ba0f975df0f95d5f99f05f5fbcc8dbe"
   },
   {
    "order": 11,
@@ -298,9 +403,18 @@
     "Treasure zone",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "11-surface.png",
+     "label": "Surface",
+     "contentSha256": "f099e9e084a106a1eab4ba86658359a89596a1abee404d37e0fd1e0190f5fd6c"
+    }
+   ],
+   "legendFile": "11-legend.png",
    "path": "mapgen/preview/jebus_cross/11",
    "seconds": 3.0,
-   "contentSha256": "218aabd6b5e2a04f200a91fd0957681bd7f7997192d0b3756238b3949fc54cfb"
+   "contentSha256": "135eddede570ded1f7b1cb6429ab25d6441df8ea9435e6dc572912d249fd987e",
+   "legendSha256": "928c5dc938abb8aca73266a659065840c096628e26e86075ea60797cdd9acfbe"
   },
   {
    "order": 12,
@@ -326,9 +440,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "12-surface.png",
+     "label": "Surface",
+     "contentSha256": "e5b979de8cec53b9a8bf66fe3997a849c8e29a10eb38f52f97c97c738f226317"
+    },
+    {
+     "file": "12-underground.png",
+     "label": "Underground",
+     "contentSha256": "23aa7ea4fa9202c1ce0338d6e8debba3ec785a8fe672763cd6d49f7dcbf5ebae"
+    }
+   ],
+   "legendFile": "12-legend.png",
    "path": "mapgen/preview/jebus_cross/12",
    "seconds": 3.0,
-   "contentSha256": "656f1061204e4998a256680af121f00414303a9433404fd029252fb5f263b1df"
+   "contentSha256": "e22b772e4e6183ceb713a8f510a88c9d0eddf6fdd6f6652cc9934097e4d89979",
+   "legendSha256": "21b28fe819e12119a514cbdfc7afc6078b50672d63a54db8a0cfc7626a426c4f"
   },
   {
    "order": 13,
@@ -356,9 +484,18 @@
     "Treasure zone",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "13-surface.png",
+     "label": "Surface",
+     "contentSha256": "fe0b6557050444fd375ff3f949bf829befb718486c11db53f4ad5d8aeaa79542"
+    }
+   ],
+   "legendFile": "13-legend.png",
    "path": "mapgen/preview/jebus_cross/13",
    "seconds": 3.0,
-   "contentSha256": "2e4211bd846d781a9ea266a34300f1816019674009d4ad79853febd747306767"
+   "contentSha256": "5be11373706949ecd44176435dd859abadc9e21b704389f3f4500627f5813d79",
+   "legendSha256": "d175ea466a73a30cb1f1830117d9fa5e3a8fa486bfcef46f70b49c0bc8947703"
   },
   {
    "order": 14,
@@ -383,9 +520,23 @@
     "Start zone",
     "Treasure zone"
    ],
+   "layers": [
+    {
+     "file": "14-surface.png",
+     "label": "Surface",
+     "contentSha256": "083d35b8e6268e375592a20b6aa1c4486620a93b89289bb539abc0604dbaee86"
+    },
+    {
+     "file": "14-underground.png",
+     "label": "Underground",
+     "contentSha256": "2c8a77ef70b0eee3934a57b23c06226418969cf87864da81c6781373c448465e"
+    }
+   ],
+   "legendFile": "14-legend.png",
    "path": "mapgen/preview/jebus_cross/14",
    "seconds": 3.0,
-   "contentSha256": "90973bb0ae35119faa4a2ebc0ec589cd2593f2d466c62214182dd1a83bcc4384"
+   "contentSha256": "611afad265bca1e99843a0a50e19a0e49e91dbaa847053e849434b2332bbee87",
+   "legendSha256": "6634a5559866d20dc5fce47fc70ab18a2ba0f975df0f95d5f99f05f5fbcc8dbe"
   },
   {
    "order": 15,
@@ -397,7 +548,7 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Jebus Cross, Large 108x108: 3 players, 1 level, Lakes water",
-   "drawHash": "c11c1efbc273a74368f3abd32c463fd66fc71e66175decdbeb656774f364b10f",
+   "drawHash": "d31f4f5e844ce230bf4b98c85e405aa78318f6b0c3253a3866fc97e2c0592663",
    "zones": 5,
    "lanes": 4,
    "portals": 0,
@@ -412,9 +563,18 @@
     "Treasure zone",
     "Water"
    ],
+   "layers": [
+    {
+     "file": "15-surface.png",
+     "label": "Surface",
+     "contentSha256": "0417afb00a7cff02713484d1644329b4245604db32bb773912b89d8b950ede3d"
+    }
+   ],
+   "legendFile": "15-legend.png",
    "path": "mapgen/preview/jebus_cross/15",
    "seconds": 3.0,
-   "contentSha256": "18ee0b5c07c615df9a0f45cd6eff9a15d8c093fc50cddb1175d09b7a3b7b2e40"
+   "contentSha256": "aaf910dff2439d124e98b6754414fa17994bf384ee392aa1eb24824a258c75b0",
+   "legendSha256": "928c5dc938abb8aca73266a659065840c096628e26e86075ea60797cdd9acfbe"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"
