@@ -141,6 +141,7 @@ def panel_image(d, level, P):
     for zid, c in lut.items():
         img[big == zid] = c
     wat = d.get("water")
+    mask = None
     if wat:
         w = np.array(wat[level], dtype=np.uint8).reshape(H, W)
         if w.any():
@@ -151,6 +152,8 @@ def panel_image(d, level, P):
         edge[:, :-1 - k] |= big[:, :-1 - k] != big[:, 1 + k:]
         edge[:-1 - k, :] |= big[:-1 - k, :] != big[1 + k:, :]
     edge &= big >= 0
+    if wat and 'mask' in dir() and mask is not None:
+        edge &= ~mask   # the borders between biomes do not carry into the water (K item 32)
     img[edge] = (14, 16, 20)
     return Image.fromarray(img, "RGB")
 
@@ -279,6 +282,7 @@ def _draw_panels(d, zone, lanes, P, PAD):
         pi.paste(mp, (PAD * SS, PAD * SS))
         panels.append((pi, ImageDraw.Draw(pi)))
     cols = colour_lanes(lanes)
+    grids = [np.array(d["grid"][l], dtype=np.int32).reshape(H, W) for l in range(NL)]
     s = MP * SS / W  # high-resolution pixels per tile
 
     def at(l, x, y):
@@ -308,7 +312,19 @@ def _draw_panels(d, zone, lanes, P, PAD):
                 marksym.append(("square", pos[0], pos[1], ci))
         elif lane.get("border") and sum(1 for q in lanes if q.get("border")) <= 30:   # on a map of more than 30 passages the zone borders already show them
             l0, bx, by, dx, dy = lane["border"]
-            marksym.append(("bar", l0, at(l0, bx, by), ci, (dx, dy), lane["wide"]))
+            # the way through: from the cells of the first zone to the cells of the second within 4 tiles of the crossing (K S129: the entrances and exits "more dynamically rotated to fit
+            # the directions of the biome entrances/exits"); the border's own axis-aligned direction when a zone is not in the window
+            tx, ty = -dy, dx
+            ids = grids[l0]
+            y0, y1, x0, x1 = max(0, int(by) - 4), min(H, int(by) + 5), max(0, int(bx) - 4), min(W, int(bx) + 5)
+            win = ids[y0:y1, x0:x1]
+            ya, xa = np.nonzero(win == a["z"]); yb, xb = np.nonzero(win == b["z"])
+            if len(ya) and len(yb):
+                vx, vy = xb.mean() - xa.mean(), yb.mean() - ya.mean()
+                n = (vx * vx + vy * vy) ** 0.5
+                if n > 0.5:
+                    tx, ty = vx / n, vy / n
+            marksym.append(("bar", l0, at(l0, bx, by), ci, (tx, ty), lane["wide"]))
     for m in marksym:
         kind, lv, (px, py), ci = m[0], m[1], m[2], m[3]
         dr = panels[lv][1]
@@ -316,8 +332,8 @@ def _draw_panels(d, zone, lanes, P, PAD):
         if kind == "bar" and lv > 0:   # the underground shows no passage marks (K 2026-11-04: "underground shouldn't get them")
             continue
         if kind == "bar":   # ")(" across the border, below; was a thin neutral bar: bars never cross, so no colour is needed to tell them apart (K item 31 readability, the Reviewer's pass)
-            (dx, dy), wide = m[4], m[5]
-            parens(dr, px, py, -dy, dx, (5 if wide else 4) * SS, 1.6 * SS)
+            (tx, ty), wide = m[4], m[5]
+            parens(dr, px, py, tx, ty, (5 if wide else 4) * SS, 1.6 * SS)
         elif kind == "pin":   # a portal end: a disc in the pair's colour with the pair's number, the same at both ends (item 2 colour, item 31 readability)
             r = 4.5 * SS
             dr.ellipse([px - r - 1.5 * SS, py - r - 1.5 * SS, px + r + 1.5 * SS, py + r + 1.5 * SS], fill=INK)
