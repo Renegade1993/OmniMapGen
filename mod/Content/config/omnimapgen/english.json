@@ -222,7 +222,7 @@
 	"vcmi.mapGen.waterCoverage.hover": "Amount of water",
 	"vcmi.mapGen.waterCoverage.help": "{Amount of water}\n\nHow much of the surface is water. 0 is a dry map; more water leaves less land and more shore. Islands and Archipelago need about a quarter of the surface or more to part the islands.",
 	"vcmi.mapGen.waterShape.hover": "Water layout",
-	"vcmi.mapGen.waterShape.help": "{Water layout}\n\nWhere the water goes. Lakes: a few inland lakes, with land all along the map edge. Coastal: a sea along one side of the map. Starts on that side move inland. Continental: sea all around the map edge and one land mass in the middle. Starts move inland onto it. Mediterranean: a sea in the middle of the map with land all around it. Highland: many small lakes scattered through the land. Islands: every player on an island of their own, with open sea between. Each player starts with a shipyard and a boat on the shore, and boats are the only way across. The straits take water of their own, so a small amount comes out higher. Archipelago: many islands, every player on one of their own and the rest neutral, waiting for whoever sails there first. Needs about a quarter of a small map under water.",
+	"vcmi.mapGen.waterShape.help": "{Water layout}\n\nWhere the water goes. Lakes: a few inland lakes, with land all along the map edge. Coastal: a sea along one, two or sometimes three sides of the map. Starts on that side move inland. Continental: sea all around the map edge and one land mass in the middle. Starts move inland onto it. Mediterranean: a sea in the middle of the map with land all around it. Highland: many small lakes scattered through the land. Islands: every player on an island of their own, with open sea between. Each player starts with a shipyard and a boat on the shore, and boats are the only way across. The straits take water of their own, so a small amount comes out higher. Archipelago: many islands, every player on one of their own and the rest neutral, waiting for whoever sails there first. Needs about a quarter of a small map under water.",
 	"vcmi.mapGen.waterShape.stop0": "Lakes",
 	"vcmi.mapGen.waterShape.stop1": "Coastal",
 	"vcmi.mapGen.waterShape.stop2": "Continental",
@@ -239,7 +239,5 @@
 	"vcmi.mapGen.waterTreasure.hover": "Treasure on the water",
 	"vcmi.mapGen.waterTreasure.help": "{Treasure on the water}\n\nHow much treasure lies on the water: flotsam, sea chests, survivors, shipwrecks and derelict ships. 1x is the usual amount, 0 none.",
 	"vcmi.mapGen.waterBuildings.hover": "Buildings on the water",
-	"vcmi.mapGen.waterBuildings.help": "{Buildings on the water}\n\nHow many sites a boat can visit: mermaids and buoys for luck and morale, sirens, and whirlpools, which come in pairs and throw a ship from one to the other. 1x is the usual number.",
-	"vcmi.mapGen.map.restrictToTemplate.hover": "Restrict all settings to original template preferences",
-	"vcmi.mapGen.map.restrictToTemplate.help": "{Restrict all settings to original template preferences}"
+	"vcmi.mapGen.waterBuildings.help": "{Buildings on the water}\n\nHow many sites a boat can visit: mermaids and buoys for luck and morale, sirens, and whirlpools, which come in pairs and throw a ship from one to the other. 1x is the usual number."
 }

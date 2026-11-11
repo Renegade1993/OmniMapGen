@@ -29,7 +29,7 @@ const WATER_SHAPES = [
 	{ id: 'lakes', label: 'Lakes',
 		help: 'a few inland lakes, with land all along the map edge.' },
 	{ id: 'coastal', label: 'Coastal', relocate: true,
-		help: 'a sea along one side of the map. Starts on that side move inland.' },
+		help: 'a sea along one, two or sometimes three sides of the map. Starts on those sides move inland.' },
 	{ id: 'continental', label: 'Continental', relocate: true,
 		help: 'sea all around the map edge and one land mass in the middle. Starts move inland onto it.' },
 	{ id: 'mediterranean', label: 'Mediterranean',
