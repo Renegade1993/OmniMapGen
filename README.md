@@ -2,7 +2,7 @@
 
 OmniMapGen makes random maps for Heroes of Might and Magic III inside Dead Man's Boots (DMB): choose it in the Random Map tab of New Game and the map is made when you press Begin. About sixty settings on eight pages set the size, players, levels, water, treasure, guards and roads, and the towns, creatures and dwellings of the mods you have turned on appear on its maps.
 
-It offers eight templates: Coldshadow's Fantasy, Classic, Jebus Cross, Golems Aplenty, Headquarters, Nostalgia, Mini Nostalgia, and Random, which picks one for you. The current version is 0.3.32; what is not finished is listed under "Known problems and in construction" below.
+It offers eight templates: Coldshadow's Fantasy, Classic, Jebus Cross, Golems Aplenty, Headquarters, Nostalgia, Mini Nostalgia, and Random, which picks one for you. The current version is 0.3.33; what is not finished is listed under "Known problems and in construction" below.
 
 ## Known problems and in construction
 
