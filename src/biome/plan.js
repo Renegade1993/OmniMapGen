@@ -9302,6 +9302,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				(plans[l].roadFailed = plans[l].roadFailed || []).push({ z: plans[l].zone[app[0]], cells: app });
 			}
 		// a node missed before the fill is joined only if something was built there (a moved town leaves its held spot empty)
+		plans[l].roadDoors = (plans[l].roadFailed || []).filter(f => f.door);
 		if (roadsFirst && process.env.VMAPGEN_ROAD_SPLINES !== '0' && plans[l].roadFailed) {
 			const built = new Set();
 			for (const o of plans[l].objects) if ((o.l || 0) === l && o.template && /^(town$|randomTown$|subterraneanGate|monolith|mine$)/.test(o.type))

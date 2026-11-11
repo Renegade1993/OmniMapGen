@@ -437,7 +437,7 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null, stan
 					missed.push(...still);
 				}
 				if (process.env.VMAPGEN_ROAD_TRACE) for (const e of missed) { const s0 = Array.isArray(e) ? e[0] : e, sx = s0 % W, sy = (s0 / W) | 0; for (let y = sy - 42; y <= sy + 3; y++) { let ln = String(y).padStart(4); for (let x = sx - 30; x <= sx + 6; x++) { const c = y * W + x; ln += (x < 0 || y < 0 || x >= W || y >= H) ? " " : c === s0 ? "E" : tree.has(c) ? '#' : !floor(c) ? (zone[c] === z ? 'r' : '.') : inZone(c) ? 'o' : 'x'; } console.error(ln); } }
-				for (const e of missed) { const e0 = Array.isArray(e) ? e[0] : e; const n = list.find(q => met(q).includes(e0)); failed++; failedNodes.push({ z, cells: n || (Array.isArray(e) ? e : [e]) }); }
+				for (const e of missed) { const e0 = Array.isArray(e) ? e[0] : e; const n = list.find(q => met(q).includes(e0)); failed++; failedNodes.push({ z, cells: n || (Array.isArray(e) ? e : [e]), door: true }); }
 				zonesRoaded++; continue;
 			}
 			failed++;
@@ -653,4 +653,36 @@ function pruneTails(roadCells, destinations, W, H) {
 	return dropped;
 }
 
-module.exports = { planRoads, joinFailed, pruneTails, roadCosts, cheapestPath };
+/**
+ * A link's doorway the roads never crossed. The zone's open ground did not reach the doorway when the roads were planned (a thin arm of the zone beyond it, one tile wide, that
+ * the later scenery passes leave walkable: K's game 2026-11-08, seed 1219140137, Green's link door (36,92) opened on a lobe of the middle zone the wall band cut off), so the
+ * doorway's road stub stood alone and was taken back as a road ending at nothing: the player had no road to the middle. Called last, when the scenery that stands is final:
+ * from the roads of the zone on one side of the doorway to the roads of the zone on the other, eight ways over the two zones' own ground (a guard's or a pickup's tile is
+ * crossed, the stack stays); the elbows are filled where a side tile is free and the corner pass after it joins the rest. `blocked` is one byte a tile, a scenery or building tile
+ * set (the level's own offset l * W * H). Returns { added (cells), doors (no road across them), joined, left, leftAt }. VMAPGEN_ROAD_DOOR_JOIN=0 off.
+ */
+function joinDoorRoads(doors, roadCells, zone, W, H, blocked, l, allow) {
+	// roadCells, zone and blocked are one level's (plans[l].roadCells holds cells y * W + x of that level only; blocked is read at the level's own offset l * W * H by route)
+	const out = { added: 0, doors: 0, joined: 0, left: 0, noRoadZone: 0, leftAt: [] };
+	for (const { cells } of doors || []) {
+		if (cells.some(c => roadCells.has(c))) continue;
+		out.doors++;
+		const zs = [...new Set(cells.map(c => zone[c]).filter(z => z >= 0))];
+		const sources = zs.length === 2 ? [...roadCells].filter(c => zone[c] === zs[0]) : [];
+		const targets = new Set(zs.length === 2 ? [...roadCells].filter(c => zone[c] === zs[1]) : []);
+		let path = sources.length && targets.size ? route(sources, targets, W, H, blocked, l, roadCells, R8, c => (zone[c] === zs[0] || zone[c] === zs[1]) && (!allow || allow(c)), { elbow: 1.2, corner: 2 }) : null;
+		if (!path) {
+			// a zone with no road at all has nothing to join (the open layout's zones with no town and no roaded passage); counted apart from a way that does not exist
+			const none = !sources.length || !targets.size;
+			out.left++; if (none) out.noRoadZone = (out.noRoadZone || 0) + 1;
+			out.leftAt.push(cells.map(c => (c % W) + ',' + ((c / W) | 0)).join(' ') + (none ? ' (a zone has no road)' : ' (no way)'));
+			continue;
+		}
+		path = addElbows(path, W, H, blocked, l);
+		for (const c of path) if (!roadCells.has(c)) { roadCells.add(c); out.added++; }
+		out.joined++;
+	}
+	return out;
+}
+
+module.exports = { planRoads, joinFailed, joinDoorRoads, pruneTails, roadCosts, cheapestPath };
