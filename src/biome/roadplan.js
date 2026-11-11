@@ -659,24 +659,24 @@ function pruneTails(roadCells, destinations, W, H) {
  * doorway's road stub stood alone and was taken back as a road ending at nothing: the player had no road to the middle. Called last, when the scenery that stands is final:
  * from the roads of the zone on one side of the doorway to the roads of the zone on the other, eight ways over the two zones' own ground (a guard's or a pickup's tile is
  * crossed, the stack stays); the elbows are filled where a side tile is free and the corner pass after it joins the rest. `blocked` is one byte a tile, a scenery or building tile
- * set (the level's own offset l * W * H). Returns the cells added to roadCells. VMAPGEN_ROAD_DOOR_JOIN=0 off.
+ * set (the level's own offset l * W * H). Returns { added (cells), doors (no road across them), joined, left, leftAt }. VMAPGEN_ROAD_DOOR_JOIN=0 off.
  */
 function joinDoorRoads(doors, roadCells, zone, W, H, blocked, l, allow) {
-	let added = 0;
+	// roadCells, zone and blocked are one level's (plans[l].roadCells holds cells y * W + x of that level only; blocked is read at the level's own offset l * W * H by route)
+	const out = { added: 0, doors: 0, joined: 0, left: 0, leftAt: [] };
 	for (const { cells } of doors || []) {
 		if (cells.some(c => roadCells.has(c))) continue;
+		out.doors++;
 		const zs = [...new Set(cells.map(c => zone[c]).filter(z => z >= 0))];
-		if (zs.length !== 2) continue;
-		const sources = [...roadCells].filter(c => zone[c] === zs[0]);
-		const targets = new Set([...roadCells].filter(c => zone[c] === zs[1]));
-		if (!sources.length || !targets.size) continue;
-		let path = route(sources, targets, W, H, blocked, l, roadCells, R8, c => (zone[c] === zs[0] || zone[c] === zs[1]) && (!allow || allow(c)), { elbow: 1.2, corner: 2 });
-		if (process.env.VMAPGEN_ROAD_TRACE) console.error(`[roads] level ${l}: doorway ${cells.map(c => (c % W) + ',' + ((c / W) | 0)).join(' ')} between zones ${zs.join(' and ')}: ${path ? path.length + ' tile(s)' : 'no way'}`);
-		if (!path) continue;
+		const sources = zs.length === 2 ? [...roadCells].filter(c => zone[c] === zs[0]) : [];
+		const targets = new Set(zs.length === 2 ? [...roadCells].filter(c => zone[c] === zs[1]) : []);
+		let path = sources.length && targets.size ? route(sources, targets, W, H, blocked, l, roadCells, R8, c => (zone[c] === zs[0] || zone[c] === zs[1]) && (!allow || allow(c)), { elbow: 1.2, corner: 2 }) : null;
+		if (!path) { out.left++; out.leftAt.push(cells.map(c => (c % W) + ',' + ((c / W) | 0)).join(' ')); continue; }
 		path = addElbows(path, W, H, blocked, l);
-		for (const c of path) if (!roadCells.has(c)) { roadCells.add(c); added++; }
+		for (const c of path) if (!roadCells.has(c)) { roadCells.add(c); out.added++; }
+		out.joined++;
 	}
-	return added;
+	return out;
 }
 
 module.exports = { planRoads, joinFailed, joinDoorRoads, pruneTails, roadCosts, cheapestPath };
