@@ -29,13 +29,13 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "2137c1eb15e38e0ad77b7f7c641adad8a7427570602ed7dd10cb4f2247ce3116"
+     "contentSha256": "379c44665ae126d50c61883799c50a5c50949783b87ff9b69856dda1cea56925"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/jebus_cross/01",
    "seconds": 3.0,
-   "contentSha256": "6c290de00f05304afaf7adcb0575fc1abe4307c9fd18793b24481108c5f8503b",
+   "contentSha256": "593b855eddd068e6f7a5e68f573b7bde94020da98cf1e931e4a92b990128f0d9",
    "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
@@ -65,13 +65,13 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "accd869952f129067d5f041687bb10114c35d16901f13fe7fca25d58a686a415"
+     "contentSha256": "16e91676a8f083d2883a9a4d2c54d8e75582bd989d62e852d9aa5ad252ded7df"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/jebus_cross/02",
    "seconds": 3.0,
-   "contentSha256": "21f768c56734d0743aac4dd2566ef8d0f940c0b18d29963cc61bfe257205e4ef",
+   "contentSha256": "0a68e62499c7efc04b45b4c0791a125b923afb381267a031393963a9d59b754a",
    "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
@@ -101,13 +101,13 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "bdafa180d882e0010732e037bfa979a2247a8a73f52df0190f608c9fc647d551"
+     "contentSha256": "3738f014a7121af575dcabb639081fc2a23318a1b976408dbf722ab99c29bd40"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/jebus_cross/03",
    "seconds": 3.0,
-   "contentSha256": "0fd0dfb1dc8d6b02f195ad5be5b39d17c7e870ce4d01ad606e36830c574cbaef",
+   "contentSha256": "04aa1a89cfb8a0182502d5951c7b05191f8d1d22aaeb57becdb3dbe0ef86de58",
    "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
@@ -137,13 +137,13 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "901fd57b4bc9d10099917330608d5bd60b179cbb29dc7df051007f04f2f030eb"
+     "contentSha256": "57dd198c6b8663eee0452aa1e398c7df9d0bc1beded1fe95607d073b7c7dd1e1"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/jebus_cross/04",
    "seconds": 3.0,
-   "contentSha256": "2eef1a0d54c1fba890f61be96f15c472931d1f7206325d7eb474e5071bbb36a5",
+   "contentSha256": "b7e8612fc7ee4524291278cb365891dc0502391cfb23d75300d4291d8ac81b25",
    "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
@@ -173,13 +173,13 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "48ff047582e703a4285f764219563e30943624b57f4eff3c434a44cd3f0d38a4"
+     "contentSha256": "06f9a509256f62faf153696a6845a7500b9d8bbbc8491eebda3de1a80ff0b272"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/jebus_cross/05",
    "seconds": 3.0,
-   "contentSha256": "9cb9905956b5fbaa0fff57b4446211fc667be79da4cde67304b36728fda1919e",
+   "contentSha256": "acea283dd10aafcf68186f01e6f22de696d9664ccd1eef8652ea407f9a4a1f03",
    "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
@@ -208,13 +208,13 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "10f83a5b654e929167a2ff4ba0899f06c9a433b97cbc7341925cd29c31fc77f4"
+     "contentSha256": "be692bf451faae9ffe2b7ecd4a1612f319e2c9124399cd6b0c32e89ead2e6206"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/jebus_cross/06",
    "seconds": 3.0,
-   "contentSha256": "dc8c55ee0ab66fbc3d921c7c0759b9aa9f2ef5ce99a091e6b47b1ef94d89abc6",
+   "contentSha256": "d41bd3e45faea1f067ec1944831212c46d570e01ab4878a6b39a8857e11062e4",
    "legendSha256": "272b1deb4ced4e4eb99d7e666422f4508062622bfe276e14bd6b2e8279b69831"
   },
   {
@@ -244,13 +244,13 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "24d24352cfe87b2bb25071e45594a663df56f53b0a6b31928d99db78178087e0"
+     "contentSha256": "7661e85696ec8e759ef569739df1aa11b7ea12318920ca777cc2ba3885c44953"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/jebus_cross/07",
    "seconds": 3.0,
-   "contentSha256": "983fcaaad9b01f93fc40358c57c092f31469d48bf7fc89f857ff082ad055e4a2",
+   "contentSha256": "73d451a35b140cec504bbe6c9c95e47f1b8a21af5d0a6d1a5f1834e30e27e3c4",
    "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
@@ -281,18 +281,18 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "8fc10749a19b294a0363b0582ac9ba78663a45357f5c2e72523cdefee2ba9570"
+     "contentSha256": "18ab0698e66b2a298d787b736bced696c36d5ad763dcaf89bcf21f1636a03880"
     },
     {
      "file": "08-underground.png",
      "label": "Underground",
-     "contentSha256": "c874d44cae05e81d828962417403f840a16bed22992645207af6b70e2f3bf5e3"
+     "contentSha256": "720acae451b0961e0ecb5b61b8b3eca0839989f76cf5f03695566754dda8c3be"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/jebus_cross/08",
    "seconds": 3.0,
-   "contentSha256": "0950b59acd2306b097db7e45e6c15a83eaf6c4ab9482da8be3ed9fc7c1cf5614",
+   "contentSha256": "470698beb434fccf9ddee111a3cb784ddacbe28da7ea131a7969fd0d68529203",
    "legendSha256": "16f8db246853fff6b650750e9209e699849d73d4f9ca0bec54e972166c39f7cc"
   },
   {
@@ -334,7 +334,7 @@
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/jebus_cross/09",
    "seconds": 3.0,
-   "contentSha256": "2b5ccdd8d6714979fa33b85728715089d3cae957253751590bf7c4781dcd89ac",
+   "contentSha256": "427e28984f89731f7a0ef8e6132630ebf10bd37aeb9f0eca9e78e0d70ed63b33",
    "legendSha256": "16f8db246853fff6b650750e9209e699849d73d4f9ca0bec54e972166c39f7cc"
   },
   {
@@ -375,7 +375,7 @@
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/jebus_cross/10",
    "seconds": 3.0,
-   "contentSha256": "2b3db3054d36bfdf311ca98a46d9e29734fa8316d932b5a034a63a3f48b867e3",
+   "contentSha256": "81fa739817704a8c87743c692f9e20e6962dbc0c3652b4530da0076f27d7cbe2",
    "legendSha256": "eb2ea259b47e8933840b2c53fbd581332c7185340c4c0a744b709354c89f4c9a"
   },
   {
@@ -407,13 +407,13 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "12ee3369b7d6ac113b0706d895a43230d96252bebaa6eaec2be18c6bea123060"
+     "contentSha256": "6067c2df65cbf3d80c6219ddeba3dbdedaeeb61b27f4244434d115ea582ef49d"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/jebus_cross/11",
    "seconds": 3.0,
-   "contentSha256": "52b32bba477fbc60aba75270b38a1bba21650630057c9120c65a78ac3b0ccf7f",
+   "contentSha256": "932628a04238cef2a5dc88d7d7f4889e6b17246aec31afc4ea8d19d716f51f23",
    "legendSha256": "4453330b9cde4cee6fa7f62e9e7d877690470450459baf2e7066987e223ab87b"
   },
   {
@@ -455,7 +455,7 @@
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/jebus_cross/12",
    "seconds": 3.0,
-   "contentSha256": "4eefb598ffa80e1c138d45c95c95710239834266bac344476f1873b02a9ff467",
+   "contentSha256": "ce24071ddc6df941bb5a8a2fbcfc7e333b2da879d74fb6d058ba2ee2a62837d3",
    "legendSha256": "16f8db246853fff6b650750e9209e699849d73d4f9ca0bec54e972166c39f7cc"
   },
   {
@@ -488,13 +488,13 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "1091d215e1bdfa35bbb44ca5322728075e3c769e348167e4652cee3375a64eac"
+     "contentSha256": "026f8a30ca5d6f4cb5dbf550e4d0ee4715dfc593d69f3cf45062abd5893de9a4"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/jebus_cross/13",
    "seconds": 3.0,
-   "contentSha256": "84505443e6e38494be66004059b893e441a590696c657aaca4a790549e81681d",
+   "contentSha256": "d9d72a7c93e28526f1fd271e3f9341915b53bdc323ab7f3fb7eae4721e0bff11",
    "legendSha256": "270cb193a6181a437666225734cec17113f0d29f3f6c80921c9ae97a145cde52"
   },
   {
@@ -535,7 +535,7 @@
    "legendFile": "14-legend.png",
    "path": "mapgen/preview/jebus_cross/14",
    "seconds": 3.0,
-   "contentSha256": "68d15b3d9dc27d6d1db201c769bbad541b008518b26e2129863d90444c0bc132",
+   "contentSha256": "450f45f67b66bbb6c2c1c04a087e2b2c23748e07497737858de87e7a1d8a51aa",
    "legendSha256": "eb2ea259b47e8933840b2c53fbd581332c7185340c4c0a744b709354c89f4c9a"
   },
   {
@@ -567,13 +567,13 @@
     {
      "file": "15-surface.png",
      "label": "Surface",
-     "contentSha256": "7d90765f6d8e49210699df8315d30d3298afe8e5a6a48bc1e2c9130a8643a3f9"
+     "contentSha256": "9530e96cfe5442f4230f85fbfefda914fced34d75289a8181a4c15b2034390d9"
     }
    ],
    "legendFile": "15-legend.png",
    "path": "mapgen/preview/jebus_cross/15",
    "seconds": 3.0,
-   "contentSha256": "ae1107114d1e117bc5726dfeb0c1f815a6d6117119a8c0b5f0105236484673f5",
+   "contentSha256": "fc397ddd2db7d2180d5247fc7a2e594dbec8eaa9eb17e8e3c851b106145a2cf9",
    "legendSha256": "4453330b9cde4cee6fa7f62e9e7d877690470450459baf2e7066987e223ab87b"
   }
  ],

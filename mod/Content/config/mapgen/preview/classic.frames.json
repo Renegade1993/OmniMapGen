@@ -32,13 +32,13 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "14972121f0b6396e880af31443470be881af38f3bf7e2cd8f38c5da79c0d1328"
+     "contentSha256": "7085b2969b460d321b2c118799d2fc8a86b7afe988df3757182a481c8ec170f3"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/classic/01",
    "seconds": 3.0,
-   "contentSha256": "ebb6777e4535937cecae09f4d6e7fafb0c61fa17ef77a429f701dbcb2c572cd4",
+   "contentSha256": "9e4f910a4e506de049ee9209e4a70d2a42a1a959378e3f74dc53ca1be74c76df",
    "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
   },
   {
@@ -71,13 +71,13 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "e8841bcc26b9f1ad90285493924b0a574fa9615cf493543d2044329b7154e6d0"
+     "contentSha256": "ab04eab4068c5dfbb93d9d69e119b840b86da00f5e0adee0a75e9fb0de28626d"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/classic/02",
    "seconds": 3.0,
-   "contentSha256": "1560cbf439a2a0eb2cdbd407a020caf86917051fe871adba8d48147949787650",
+   "contentSha256": "ce6fc112ebb2fcf64e53dfaafb808727e6f7566d2b7a34dbf990fe105666f348",
    "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
   },
   {
@@ -110,13 +110,13 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "6017462f86cfddae88859ff9316f2d619938c97722153c0f4546c785345add07"
+     "contentSha256": "04e50346b1d778a75843a1327d3fce4bef94240c067408a6a14a9912e7edae48"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/classic/03",
    "seconds": 3.0,
-   "contentSha256": "78142c7d1ba0f208eee50a411c66cd6a4782e415c372ed6ec48a0c830e04d50a",
+   "contentSha256": "f25c4a14987d9967fe17df034254a6651d909ba0d79c734cd54bea191f335456",
    "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
   },
   {
@@ -222,13 +222,13 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "71bd137c99c031e1f5d351f8f9c2bd80b0588dc4d1e171d79df588f32a16ed87"
+     "contentSha256": "5a785fdd6a83d80cd33f9f3b17e38110c7076c31e199ba172268af445d603ade"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/classic/06",
    "seconds": 3.0,
-   "contentSha256": "3f21d588fd8998f8a05068c5ff93fb58162f17d45e3ac469a51161370b44941f",
+   "contentSha256": "c60b72250c9a1d4a1a5d652b0adc028d3f7d7c27d2675870f7d061b9ca1f40dc",
    "legendSha256": "2fac9c90c3fa898906c94813f39b0406457433759c886c39bfd24ef43e6b12e7"
   },
   {
@@ -260,13 +260,13 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "f6ac871109d2d95483fa51a3c3307b2b3f322a66b114ba4d8e50699ea00db0de"
+     "contentSha256": "a95e17e9aa5c9b3312bd874a54396e7d65f66f2e0e9a7a6020f4a623a810b004"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/classic/07",
    "seconds": 3.0,
-   "contentSha256": "e32d117507a6dfd21bd0a74222d9c2d66046869721d0aaa8056af9edba739f81",
+   "contentSha256": "a47b38f4dda140f101f877bba3d9270dff8f30ad31566f1df8594d17b21e9461",
    "legendSha256": "77c9fa161ec63d992872661548d3790fafe2d411ab5ee1d84d2a8b5c8cf7a4c8"
   },
   {
@@ -343,13 +343,13 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "83eac25aaf9eb47884b555e6aea9e02fa046de40846a905752474985dd3acd1e"
+     "contentSha256": "782b36c947b9e7ebb04d90191e96f7d216498ec85322ec888becff680346bd67"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/classic/09",
    "seconds": 3.0,
-   "contentSha256": "8085ab28d51ea037c37926e4d1a71594d915cfafef8ffbe46bfb3296fae9c449",
+   "contentSha256": "72095c1cb2ffa5f7b1b42db22aafa3e8d1d9bba82af35ebe80d8c626a027549e",
    "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
@@ -425,13 +425,13 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "d1f91cf57c9b677a7ddc6bb872d2970d466895283592a372f85a8c0a467848bf"
+     "contentSha256": "b8c2fbe3a1b91936a72e81572aeb36caa563ae30eb8c12fcc62f4d0929446e3b"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/classic/11",
    "seconds": 3.0,
-   "contentSha256": "eabcd31846bd68e2faabed83986666445efc860d7dfa980375ad23e2baa94d39",
+   "contentSha256": "2bdc29076878fbcb9936d2d7d52b0bd5d2ed45ac2402854c9011648c5f266c87",
    "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
@@ -507,13 +507,13 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "56eb6541b4dd80da1b062a277381c5de5847a0e21e5a28a4ec436af4307e3af5"
+     "contentSha256": "e73bfe9f3c2b98215aa9232222c1f7057573c6689a2b972cfc8578191fee8d4e"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/classic/13",
    "seconds": 3.0,
-   "contentSha256": "ab28a7445e2311e3d703c06ffd5a6ba292518bd36a8e72c092ea73276ed303cc",
+   "contentSha256": "ff232617c2f3e753cb62cac8322c807a9b1eaee119e81a0737f36cb1d3452b19",
    "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
@@ -546,13 +546,13 @@
     {
      "file": "14-surface.png",
      "label": "Surface",
-     "contentSha256": "debdcefd2009e8a1612b90457b227f5f93a480d853f1be75d3a2bcfc7e1c3dd3"
+     "contentSha256": "b83c1b8f3e4e7fa07c08d640aa8a0399a8ce073c2efb8b052aff780cf03a593a"
     }
    ],
    "legendFile": "14-legend.png",
    "path": "mapgen/preview/classic/14",
    "seconds": 3.0,
-   "contentSha256": "72c1145f9e64a7cf42559235bc57b8e60bc4bfa9fbfd036e053b32432d575f9a",
+   "contentSha256": "38347bd18ce40894f8770b99131ac78c36daf3d1e3d160d01fc6d298cfe4e327",
    "legendSha256": "273af26d6c1e2bedba0e29112f3c8e5447e50e6be99d9dce867899ac7aeda1c9"
   },
   {
@@ -585,13 +585,13 @@
     {
      "file": "15-surface.png",
      "label": "Surface",
-     "contentSha256": "d47e8c3798f1f312f598c70727f35a3b61f4d3f1779180b127b3f1c5a6b0b74d"
+     "contentSha256": "96cc27c261741d5edda2f27991402bfb7f93f226a9873b0b641f70d7f4d3df4e"
     }
    ],
    "legendFile": "15-legend.png",
    "path": "mapgen/preview/classic/15",
    "seconds": 3.0,
-   "contentSha256": "b8780d3c279fed22531d01898d43ab9a0080a72fec4e53a33ad77e1a7a3d7158",
+   "contentSha256": "61da0a8db5a77537775ab2dcaca342e98f5ed543444df3b5dbb5b5ef026548f4",
    "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   }
  ],

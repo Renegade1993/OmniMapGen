@@ -32,14 +32,14 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "dfd2e40a86b6e6c1647b7717f7c233e16dbe96a1c7d7ad28edc342c52bcb7cc5"
+     "contentSha256": "469ffaa2b6638d578e4dc35f70eeedf3735b14f784c332180323e3d464cef470"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/water_lakes/01",
    "seconds": 3.0,
-   "contentSha256": "fc550c6444b4c7d583fe7c44af44304d57ac7b8d3d17d2dcdb6ffac30f20796b",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "541476eeab6d022b178cf958bedc66e2e809655e5b2a074f427b1353b9c1d87a",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 2,
@@ -72,14 +72,14 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "ffa897eb0b974e7d2939da7cc0ea4d0d863ea15d4166fcb92790f86215745c13"
+     "contentSha256": "9e978d336527114bfe2179ace615c1f95c30e1e0872df24a92d60fe286ef18eb"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/water_lakes/02",
    "seconds": 3.0,
-   "contentSha256": "a9e06e465bb7d5154fa424894ae483217db3ea79f1c016fc63942ab68435298e",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "8844ee511983db4328fa9b7647ea3dbd87b84ac1d1c8a6aca57c1b081b6ee653",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 3,
@@ -112,14 +112,14 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "9d5989610449cd26406198f8fb9d93912024592c0e7495ca091fd504f2d791bc"
+     "contentSha256": "e0834f5bb1cd0e7394180e1c91b3f09b6682ad2389b97071b1515514780f3a4b"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/water_lakes/03",
    "seconds": 3.0,
-   "contentSha256": "c2c4285e729f9118de2bfdaf8aaec3c580e958db5c9188869a6e904ae863ca84",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "47fcb0c41a9f35eabaea54cf1b25a87e4bc1bed21cae3f2579f2070162182341",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 4,
@@ -152,14 +152,14 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "c28bbd91457f3b79f9aa0be5d53b5eba2a52e9ac1aac38f336e0f1477b9d8732"
+     "contentSha256": "6c5e5bd06b91d840bfc60530ea1839ba7c0b72a427d5f7ed2ae68a08dc2310fe"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/water_lakes/04",
    "seconds": 3.0,
-   "contentSha256": "4a84adb97eded3e36c2113d0d24667415ba2eaa8cbebfe2ce0e9ba15db06d02e",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "49dbbb76b684cff2d6e26b318870acce6a288037321b6b6dbb41113986f95858",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 5,
@@ -192,14 +192,14 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "21c55e809175dc64267606f316b77638ed1a1ce49a0855ef6df2381c829589cc"
+     "contentSha256": "db4cec991a13ccd9cc504daa819b81e896b869380c3c1bdfe91821d387a59bee"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/water_lakes/05",
    "seconds": 3.0,
-   "contentSha256": "3f6d3a7f009f3431aad08df949907beed946c171a7afc3071726ef95fe380bef",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "321a23e182949449aa9d764e979eb81f2c3309e872c1fc213fc0ccae7efbeda5",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 6,
@@ -231,14 +231,14 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "158bac8ddeec66f3f38bf0a8f39897ebb0df8dd70f3c8965da89313c839ffb6f"
+     "contentSha256": "d94b97ce8816c07878a900b9d2f2c3077483c6868f81e13a74f009f184a0a607"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/water_lakes/06",
    "seconds": 3.0,
-   "contentSha256": "9279f38f560a7c106ea480f236928b4459231ec36cc76244516a57d34f9de600",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "65c28e19c335b77503a8b5c546773414a42efdc19341ecf61e4cfb951b5bb1da",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 7,
@@ -267,14 +267,14 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "472391150cd05e230c37ad7858fe000aff9a7992378eb5c3a3de7ff2a3f8818d"
+     "contentSha256": "767354acd8edf64caed22769fc11d3fe072d49b5c5c1332445b047ef58d1b3d7"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/water_lakes/07",
    "seconds": 3.0,
-   "contentSha256": "b42027ba91661bec53f2b005ced778f0a24d783c25c313f79273af55b332ad80",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "22f15c99dbe66663de6a6e8c260d3de1da5fdea75679ebd893fe30475f15dd70",
+   "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
   },
   {
    "order": 8,
@@ -303,14 +303,14 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "aab8f074a1f70a98d67978130a93306fab3b3b59702c2456013ce033b08348ce"
+     "contentSha256": "a4b8f467f5e580325ea8567a444301f2dd22e7f71f95bae88955a08c7c179032"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/water_lakes/08",
    "seconds": 3.0,
-   "contentSha256": "d475a1f9b916066d4b58c1bf40c61e46564583474cc8764a55fe3fc26fab74a3",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "1a01db44bb851ac585c10825fd2d10d2ee96d7e023a6c9b8aa55b2a703e072fc",
+   "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
   },
   {
    "order": 9,
@@ -343,14 +343,19 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "4ed9624182b11ddba1ce8715f1f15ac1aa6f893ea4518913847853e6d2484aad"
+     "contentSha256": "840476ab16065f11b6c0573c9670a65fd1dd5f82b723d29f000ac4ee62eb2c87"
+    },
+    {
+     "file": "09-underground.png",
+     "label": "Underground",
+     "contentSha256": "ecbdf53022ff45a356169cef14c1a2e9782481bc32f07d4fba93e0db7f8ca7bf"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/water_lakes/09",
    "seconds": 3.0,
-   "contentSha256": "092e219d5bc72e386803ae9b0ab257ff4a09a5ba0f3fa43b257d965658bbc5ae",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "5b10ea9acd2c8a250056fd60c89518016aff35e7e9fee9ccfb5ef35dac1c4fd7",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 10,
@@ -383,14 +388,14 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "54c879ae2bd8aeff6a38f9420926fb0053f304a0901ec910144757ef1858379d"
+     "contentSha256": "3b8ab511ea09bb7ec50b427be215f630da8997d44aa15357fadb79d7df241d41"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/water_lakes/10",
    "seconds": 3.0,
-   "contentSha256": "fdababbe05f00250ed8d5354828b412b2262086f09986307fa4ff26cc812fbf8",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "7a5c5e4e82c5a9e1b5672286cd86d052dd02f8a8ebb1d4589a87b3500d3091c2",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 11,
@@ -422,14 +427,19 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "46c4eb0724bb349e7deb43fec620fa86fe5e92766f86f1ea06ba5cc5c25c45ff"
+     "contentSha256": "91c722520b567df3e12fd8ed78c0c5aae9976af11dd02d64c28c41c8f0c262e2"
+    },
+    {
+     "file": "11-underground.png",
+     "label": "Underground",
+     "contentSha256": "37a578c7779ebe3878c1a49f840c4a088d1bb977036d93920ff5ce50514b302c"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/water_lakes/11",
    "seconds": 3.0,
-   "contentSha256": "6b6f3c8a5461b248a7db0678700087a0a48b6e24c71508620cf843b2e1397aed",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "62dd7984c1dcced907c11ce53a340cc8182a6c7a8fd1bb5c1ebbf464fcea7545",
+   "legendSha256": "273af26d6c1e2bedba0e29112f3c8e5447e50e6be99d9dce867899ac7aeda1c9"
   },
   {
    "order": 12,
@@ -462,14 +472,14 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "720dda18691d4619496533c95b8631e6f957dc78923779c04ba1a2791ae6a8e5"
+     "contentSha256": "22b2718427860d7de1b95e7cceb04c1817fedb44177f05aa19176ab12a6331d0"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/water_lakes/12",
    "seconds": 3.0,
-   "contentSha256": "3813a6dde7851236577f13f7a60e8b93589cd270a8b797c7729275eb228d0b64",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "367f4a97287147254bb37a358a9b83464f2132257c165657142e1a556ca5a47c",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

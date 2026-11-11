@@ -32,14 +32,14 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "0df111d33ae1e1072ee48597c6d82b96de42421e9f41d31661dcecea02fcb403"
+     "contentSha256": "83c940ecf37ed967535fd1979e778c18ce8b150cb3c59c35797e7a7716c711c0"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/water_mediterranean/01",
    "seconds": 3.0,
-   "contentSha256": "489a9a955b8d4e31e4744bedacd5b59de1cc6029b9080d8b27091962107cfb23",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "d8a7452e9b416889b63a8d160425547c808f832a2e86db7436046068cf2466ea",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 2,
@@ -71,14 +71,14 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "f0bd8298b4b8a7ef774e80a7381e652e229311b4b25eed7f4928a667492ac3c9"
+     "contentSha256": "6d8b40a0bf15a48cfc3a475230160157e1be11a0a35825e6ee906b914b276590"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/water_mediterranean/02",
    "seconds": 3.0,
-   "contentSha256": "f5feb9f3617d0d36412f4e43a3425207fd674d22185772b7b7b39183db1ef6af",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "f69898517ecc5dafb6a6e89a21e5c2769a911ba272c397ebc0f86a1249e7971e",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 3,
@@ -111,14 +111,14 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "9d310a7d6fbbb3c4f0985a109f462544fa6bb4cf8fb3124512d4981f64fcbae9"
+     "contentSha256": "07bf09f59fc46cb2f249b8c4eb369cb2caeb80fe918cb9c1bfcdffbf0405d7fa"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/water_mediterranean/03",
    "seconds": 3.0,
-   "contentSha256": "beb228f227fa36c21be447500c74a59d57cbd870f9ffcbf611f76b96c79562ac",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "0ff849951ccbcc91091a748ca42913f8bf2f00331566a8bae63479a746be205a",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 4,
@@ -151,14 +151,14 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "9f881c8e338068cd6baf1bd86efd15b1862e88d882fc4447b1c41f6f54f0ec20"
+     "contentSha256": "2ded3dc18cf1cb6fe808830adfccd0c2a4d6a7982fb59e86e61ad0c61fff1fb7"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/water_mediterranean/04",
    "seconds": 3.0,
-   "contentSha256": "20e195857cecb3e277da3ca813d429484a4ba7d5c25b411597a993905899eb26",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "913b8620b5ca78bd31df290571e18a10dba923ec5eb714dbba0fcb4647b49a41",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 5,
@@ -191,14 +191,14 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "0476545daeba7c090cbf6629dc7422f1e73205a33d5e6d4e1de91f27d28163cf"
+     "contentSha256": "45b9f2a12f4765f05adad6d913d42e0e53f20dc4a927755ba07afd78c3dc0d31"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/water_mediterranean/05",
    "seconds": 3.0,
-   "contentSha256": "9bfec47013c0b87a814f26fb2df5bf960b41134b458a8183a24f0a353128e57c",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "1ea392b9cd519a5385bc9bbdff57adeb21ef5e6c080ecdff088389ee066674c2",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 6,
@@ -231,14 +231,14 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "96ac68ce71a3bb49845efbad0eb63128cac36f48838d7d7081f7450edd607167"
+     "contentSha256": "1c1a1e9780e218037f764c6482b14a273d010b611c47fe74898c1b0fcd10c752"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/water_mediterranean/06",
    "seconds": 3.0,
-   "contentSha256": "4ec5f4a58fbfe1e89e568b803c398c876f28e315a7a8949d4779585b1c4b73dc",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "87f00df2adf661e594dff5990f76db006f72dfb19904ad08b44cf50927f33238",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 7,
@@ -266,14 +266,14 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "a8a5869dbec565490c73675a91057ff09d7665beeb17bf679ef17b5d4f1584d2"
+     "contentSha256": "a2bbbdf03dfd460e3b63bdf73ae5058561b3e9056ea46b105ff36f5020a81a9c"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/water_mediterranean/07",
    "seconds": 3.0,
-   "contentSha256": "9391574c458b9c173685d20a15b338c43d4cd41967cef9f6643f12a232eebb2a",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "b1bafcbbdc906a9d75981710b0a78eb51b08bb62db9d48d5267640850ee5dbba",
+   "legendSha256": "2cc7f045030f1a7f5702e601c9d923e50a56383e950b0e2361e751f41978307a"
   },
   {
    "order": 8,
@@ -301,14 +301,14 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "58e54449d17acf3a9e4445b7b3834a386145ea4ce4d7625e2dce2aab1fe93bb1"
+     "contentSha256": "48e540201e4dba9a102ec3e82620a7e994a63a388b960b0461ec05782c695e0d"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/water_mediterranean/08",
    "seconds": 3.0,
-   "contentSha256": "ccd2c0c38117cfdf759fb90a3053006b7ed6e439c27a5fde1f1fa2e77b98e4cf",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "80a3982b5a97d11fe15fe5059ef27ecd828e56e22d9ef6b7a979bc353ac1ef92",
+   "legendSha256": "2cc7f045030f1a7f5702e601c9d923e50a56383e950b0e2361e751f41978307a"
   },
   {
    "order": 9,
@@ -341,14 +341,19 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "af78f7a423775ea4a4f75107e9cb1bd774d214c32afdf900de1fd21fd1687e34"
+     "contentSha256": "a1fe06a119ccccd042a7b7bb2d4dc08f8d907bcb06414a120d325984422064ee"
+    },
+    {
+     "file": "09-underground.png",
+     "label": "Underground",
+     "contentSha256": "cd56b39a76f05ff1c22435864ae37a79cc1364e78770f1280dbf86b1f13ef20b"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/water_mediterranean/09",
    "seconds": 3.0,
-   "contentSha256": "0663174a1a028657eb23e861c97da627c3163650febf03990e671bc9054c08c2",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "a714eedf47c0efe498aeffc35fdce5eb0071cbf4596480a870ef59a0e4f3fbbe",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 10,
@@ -381,14 +386,14 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "5a67daf448c4f81c26b4ee991565b5a51ef4f263c281154331d28ada19c8a95b"
+     "contentSha256": "82ae309de3bae191882058def11b5acfd8ef38c1c5b17841001e1f97d18e9c76"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/water_mediterranean/10",
    "seconds": 3.0,
-   "contentSha256": "16ac1c885f94c7e0554c7c4f93812d356ee3a8af3e345f13b773d879478c517b",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "04206e4864c903bb2d5985ed0230adb70b71dde8e492c62757d3371477aa0a63",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 11,
@@ -420,14 +425,19 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "71c46052fcbafae52be24ad846154240cd7e38a9d314008ca555568e79157b1a"
+     "contentSha256": "eb5af7356ab95918187dcca3559d4bfc1d6c24a673cade9ca0d486f3695d0710"
+    },
+    {
+     "file": "11-underground.png",
+     "label": "Underground",
+     "contentSha256": "77d30f3ff6f2f7ff13df9d337769d3825d661fabc7929ba11b9ec70fad2c4dc6"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/water_mediterranean/11",
    "seconds": 3.0,
-   "contentSha256": "f7fd7c855574c2ce403d2c12e54b40f6930ea735f00cae5c129fa88db57ea67b",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "4e5ebee1a3ed9936fbffd20a7b43139c35800fc058f431811731fb04f822099c",
+   "legendSha256": "273af26d6c1e2bedba0e29112f3c8e5447e50e6be99d9dce867899ac7aeda1c9"
   },
   {
    "order": 12,
@@ -460,14 +470,14 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "af7fa8d6f932cf857d24d729fc2c47fe770066777c679e99ec5d4f05e9f202a7"
+     "contentSha256": "1a81603e7489817395599c9a28e87dfc1f6b479c491a2afdcd5c52900a2d2bde"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/water_mediterranean/12",
    "seconds": 3.0,
-   "contentSha256": "2ff17bf73483e427543f0d6595d33aea9c3f018aecd455d251f9af166f9a93e2",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "39ebea5ede26ef22ecc1d606d6e457cf57715b864addac8e30dbe1a031976f3e",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"
