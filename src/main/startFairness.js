@@ -34,9 +34,9 @@
  */
 'use strict';
 
-const GATE_SLACK = 1.5;
+const GATE_SLACK = Number(process.env.VMAPGEN_GATE_SLACK || 1.5);   // S048: a variant is measured against stock's 1.15 spread (Opus Map Vision 2026-11-11)
 const GATE_EVEN = 1.3;
-const HOME_SHARE = 0.5;
+const HOME_SHARE = Number(process.env.VMAPGEN_HOME_SHARE || 0.5);
 // how often a start's way out is raised and measured again, as each raise can
 // leave the next cheapest route the way out
 const RAISE_ROUNDS = 8;
