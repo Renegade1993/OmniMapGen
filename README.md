@@ -38,7 +38,7 @@ Features:
 | Template previews in the lobby | In construction | 50% |
 | Rivers and streams meeting the sea | Known problem | 40% |
 
-What goes wrong today, in plain terms: on small Coldshadow's Fantasy maps one start can be poorer than the other. About one gold mine in 470 still has two guards over its way in. Some treasure in closed pockets is still partly hidden behind other pictures. Streams meet the beach badly. The middle zone of Jebus Cross has been reported as far too rich. Highland crossings are too narrow and too alike. Some large two-level maps take several minutes to make. On a few small maps a guard can stand where no hero can walk to it. With Guards at portals turned off, a portal can still have a monster standing beside it. On a few maps two neighbouring zones can still be walked between at one spot with no guard or wall.
+What goes wrong today, in plain terms: on small Coldshadow's Fantasy maps one start can be poorer than the other. A few gold mines still have two guards over their way in. Some treasure in closed pockets is still partly hidden behind other pictures. Streams meet the beach badly. The middle zone of Jebus Cross has been reported as far too rich. Highland crossings are too narrow and too alike. Some large two-level maps take several minutes to make. On a few small maps a guard can stand where no hero can walk to it. With Guards at portals turned off, a portal can still have a monster standing beside it. On a few maps two neighbouring zones can still be walked between at one spot with no guard or wall.
 
 ## Installing it in the game
 
