@@ -32,19 +32,19 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "07be8f7de010fb961a7c36313e21850f5433098b0839aa47d7ac4eec146d7606"
+     "contentSha256": "d08bf9dc353f159adf6529b4132994062125570acd552ded1d3dce8d8628af52"
     },
     {
      "file": "01-underground.png",
      "label": "Underground",
-     "contentSha256": "03aee86cc6724c5046c3b0a229565b947614785f85a2c381fcdccccd481dcdef"
+     "contentSha256": "bdfc467ecc3baadd27fa2823fb174960a06567e520db1008c05dacce60fc1473"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/01",
    "seconds": 3.0,
-   "contentSha256": "eb9e3438ae491e0b6b7ea301b9574cbd8b12fd2057c509f96a0d1eaa30d9ae51",
-   "legendSha256": "6d6cbe44ce457c5c3ba4e5b13a4a8014242b9ed5fa97efce5a2eedbdde2017ec"
+   "contentSha256": "1a9a21f6145b13c14ce31b9c50e53e9d961ebd9b96581c6644e41e5d5fa6e97d",
+   "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
   },
   {
    "order": 2,
@@ -75,19 +75,19 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "0ef113407c699a2d58490ad8b9a8ff2e881e4d9b511a1f4e465c8dc37dbe2deb"
+     "contentSha256": "9af0efbd0e694228ac70036edecda60534779c582377d6f0bb9080fe744d7250"
     },
     {
      "file": "02-underground.png",
      "label": "Underground",
-     "contentSha256": "0835bf061b3c19f88b8637537c4e4cec9150ae6ab7e6725ea146402d1e47ca77"
+     "contentSha256": "fd69e8853b486dc5d4e08323f3c8e92a4cef57eb13f3bfc17754debfeeb6a465"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/02",
    "seconds": 3.0,
-   "contentSha256": "ae719a4ec949cce6e5348aa06b3e27f76520c6cfa8659639e31e49f92ffc8a16",
-   "legendSha256": "12a2dedbfbf6e66913b38c34985b1c594cb07654fdcc63bfba5f7bf39391326d"
+   "contentSha256": "7e5ab3ac790a4c16147b17dcf99b199766ef6494e95129908b97af75968a681d",
+   "legendSha256": "d082cfb2acec5a692b3f8f288eb94d2785e8fff33179ae1f4531bccaf6f87cac"
   },
   {
    "order": 3,
@@ -118,19 +118,19 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "d011bd1e73e8242c063c378c7e2a1c1f842dcd7154cf9df15bb26a30019ef253"
+     "contentSha256": "6b2ecc5201391684def05ebfe44c36c1a656ab7e32ba96084059773c6d2936fa"
     },
     {
      "file": "03-underground.png",
      "label": "Underground",
-     "contentSha256": "34f3e90951ddc972d9da0e3e81e9b7ccd5c27d6d3e5d9963b3710a7980eace57"
+     "contentSha256": "4c1a89a5b9b6956fb136a23cc65a00102b8649748175a13bb42dca0e9208d243"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/03",
    "seconds": 3.0,
-   "contentSha256": "cd83a3aaf5c1d6254edcde3232e87aba07378e2b72f824dc08ebc5f5814865a3",
-   "legendSha256": "12a2dedbfbf6e66913b38c34985b1c594cb07654fdcc63bfba5f7bf39391326d"
+   "contentSha256": "1b839ef887e3c06fb3a47a368a1e43c7196ba1a803f4c0e21edeb9a96d5037c1",
+   "legendSha256": "d082cfb2acec5a692b3f8f288eb94d2785e8fff33179ae1f4531bccaf6f87cac"
   },
   {
    "order": 4,
@@ -161,19 +161,19 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "cc17d374200a1405eec15a82b010e62e0f5cd87e30c6d40d388491c45122fdeb"
+     "contentSha256": "6d011fceb875db78aa433cee805601c5181bb239a8f55a36907080c2f9b1e29e"
     },
     {
      "file": "04-underground.png",
      "label": "Underground",
-     "contentSha256": "ee153010dd6501e58cb7fa4605a28b98ae823ee7afcc23e111fa84e8ed8802c7"
+     "contentSha256": "3dcd66277e5f8f0ae662113e3e4b0eeae3edd4204d091556ea6b1874374484ed"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/04",
    "seconds": 3.0,
-   "contentSha256": "2733228709e4c4ccb0f9d666f3a313dd6034c867191d6c5600e1e41dff6f1533",
-   "legendSha256": "12a2dedbfbf6e66913b38c34985b1c594cb07654fdcc63bfba5f7bf39391326d"
+   "contentSha256": "59a58c965402ff569fa3d6e205e83638b253f642da99f0e3e72615dfa3efb6e9",
+   "legendSha256": "d082cfb2acec5a692b3f8f288eb94d2785e8fff33179ae1f4531bccaf6f87cac"
   },
   {
    "order": 5,
@@ -204,19 +204,19 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "c98844a528d96e0fd150d88b9de72e0e14d5a9e3a92c07917b9be4ad0c9c1249"
+     "contentSha256": "3fbb1aa95d4b7dbe54c6f530f5853661b8a9468d1905ebd2ceae7aa3c42aaf7f"
     },
     {
      "file": "05-underground.png",
      "label": "Underground",
-     "contentSha256": "797b1e7a4e68de0bd3be24c69281862f0e6d46a09d228dc0ba7e7cf9c6981f74"
+     "contentSha256": "e32c3748ed9466ea9d6e38a16eee1353f73403a6b91cf0989f6576486f7b660f"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/05",
    "seconds": 3.0,
-   "contentSha256": "1fb90403e1c27d2af242b3e2c74064a0d3021dcead07edb6f1a5e4093a67236b",
-   "legendSha256": "683d86b452988b67f770163bab7379f1d87c8266b7876ab6670bf9b5852120c2"
+   "contentSha256": "293c336efb7ce1079d140bc5e4e173f973c04f1fc8c8e80ac0629d1f8dadb3de",
+   "legendSha256": "c0c29239acef5dd1749c8c7d43242e74b2724f526134ffd282ce2f73dfb5cc5e"
   },
   {
    "order": 6,
@@ -247,19 +247,19 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "9a93c8d51adcf06e2119e314a8607af2849eb4f6adab1fe4e38b815500f0c4c8"
+     "contentSha256": "4795db9a3a8277568a6e5d1eeb5b91c55e2ed89ba70e6517f2e10281596b1cff"
     },
     {
      "file": "06-underground.png",
      "label": "Underground",
-     "contentSha256": "93d2c2b8e69331d1dee87e9f683b35c27005591dbe6d0eee2c08afbae75da17a"
+     "contentSha256": "75847d82b25ff1fe9f1bddf8e88459e083dc37978d7edb089f091929191f3068"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/06",
    "seconds": 3.0,
-   "contentSha256": "6643e6dd30fbc8d1649df17f6ad34f9020f43a2c110a3b5c6be56672953f433f",
-   "legendSha256": "683d86b452988b67f770163bab7379f1d87c8266b7876ab6670bf9b5852120c2"
+   "contentSha256": "d39821b709a9ff0976b52d3efeed0fe9bf1742a61d3a135f0de58cb9c9a9b631",
+   "legendSha256": "c0c29239acef5dd1749c8c7d43242e74b2724f526134ffd282ce2f73dfb5cc5e"
   },
   {
    "order": 7,
@@ -291,19 +291,19 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "9199bbdbf84ac15254a2c607713c5ac89aabd5184a66376c313d13be9c09482d"
+     "contentSha256": "2a022b4af22d514e46fdc2f4583901e68bb2004de7b497d0080d119d3c19791c"
     },
     {
      "file": "07-underground.png",
      "label": "Underground",
-     "contentSha256": "af9392a0c1e97ee2f93a21573048cd0d89a490ba85455dfa408b7c521eadcf84"
+     "contentSha256": "bc8eacf73e1ab1a433b655235ce9d02be5c847c20c5e93b8efabb6abf9a04084"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/07",
    "seconds": 3.0,
-   "contentSha256": "6bf782bd24474151694a3ed0db09b7b057c0f9a61baaf6e438fd6e6724971bb5",
-   "legendSha256": "6d6cbe44ce457c5c3ba4e5b13a4a8014242b9ed5fa97efce5a2eedbdde2017ec"
+   "contentSha256": "c012b03838cfdd8d973562955596448cf57ec7d731c12f1040b57f9ed75ce4d8",
+   "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
   },
   {
    "order": 8,
@@ -332,13 +332,13 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "c290f406ee75f573b076831ab6e444ee5103637eb405bc45346cd5db572ae53c"
+     "contentSha256": "6fb4c584b8aa3ee0fb53e23570831bdd155086732c1d74ab9a6a67ac8326ce17"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/08",
    "seconds": 3.0,
-   "contentSha256": "17b45602268f86d33fdd5f8899e68c73ce1fc16c13c401ef55dc3734910540d1",
+   "contentSha256": "e41fa2da27822494a4862b6dfaf095fc6d76fabf28647e66fd92cda2c40707a0",
    "legendSha256": "810988e69fd770455c76aa7a6ef45be164efb2dce09f665caccda5c159df69ba"
   },
   {
@@ -370,14 +370,14 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "e4e8e04528ff4c700086c655f7121ba2617d16c0a3b89348c159ad05590f7a8d"
+     "contentSha256": "bb319106f47b742dbaee1c1f68a63151cde77b298e971d17ba9a79e4eea06fd1"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/09",
    "seconds": 3.0,
-   "contentSha256": "562fd7d53b83f46b6a2ab50020dc6acf460d817b7c8fe98a8274c973eb9be5a7",
-   "legendSha256": "683d86b452988b67f770163bab7379f1d87c8266b7876ab6670bf9b5852120c2"
+   "contentSha256": "0706b902c48876a83292e037d33fededa15d3e0645f892d67e0eee1346346503",
+   "legendSha256": "c0c29239acef5dd1749c8c7d43242e74b2724f526134ffd282ce2f73dfb5cc5e"
   },
   {
    "order": 10,
@@ -410,19 +410,19 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "b0822eccd1001bea1635baea9b03444f73ae70ddf74cd21df2924de0c4f82ec1"
+     "contentSha256": "877e9cd12948b2fdbd0ee28f0dd094f65499d3038d4e8c6a5b0211566115284e"
     },
     {
      "file": "10-underground.png",
      "label": "Underground",
-     "contentSha256": "6a90ec061ac3e859d9fde2cac9fff00b9f8db7ecac8478a2ac5dfa61f6aee01e"
+     "contentSha256": "9904e84c00e6debb92e70adb63d8ccc0210f6d385845778b370e4207f7458ddf"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/10",
    "seconds": 3.0,
-   "contentSha256": "9d39e706fab44e9826d75886781da0bba4e15aeb7102d5fb6f23e36affbd76fb",
-   "legendSha256": "0b99337de0c19d3fbf37dc16146fc4e48db498ce32a6c9c3bb82555bf2ba5853"
+   "contentSha256": "144357a636c2eabbc58269d1da391c12349bd206f3c16df9285a0285f61a0334",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 11,
@@ -454,14 +454,14 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "b99795eb71a4419fe00873a3f0753b242c462850f4a92856ee81c2e99774ac69"
+     "contentSha256": "92b6f8b030777bfb4d04e8b04952ce1e26db55a7e15a9b9f3c1a85ae6cc027b3"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/11",
    "seconds": 3.0,
-   "contentSha256": "189855f70d6ac2f7e9a5abe41cffa3a50cc178952d1819fbe927bf4c10e1e127",
-   "legendSha256": "6d6cbe44ce457c5c3ba4e5b13a4a8014242b9ed5fa97efce5a2eedbdde2017ec"
+   "contentSha256": "01dc38bdd9f1c7b82794711114bc8423b3dd295542847fc060c13d213b99a64f",
+   "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
   },
   {
    "order": 12,
@@ -494,19 +494,19 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "2873a22e1d4f50a82083702f09d6b68bd4ecdbe391e7659bb17fde780a97aa49"
+     "contentSha256": "c444273e337312c480ffa876abcee5bd7e3f5339418abc3fb9fc146614bc1428"
     },
     {
      "file": "12-underground.png",
      "label": "Underground",
-     "contentSha256": "721e3b30e42a3313051abed35752f1ec34d818c27741a362053caff880ad916e"
+     "contentSha256": "d732a543f6e2bd06a9b54f03f223c0ce6b6f6cb374e2ecf37acc1664fbd719cd"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/12",
    "seconds": 3.0,
-   "contentSha256": "118e3fc6e7bcb0b6fc0a5a24b29c32267c52b310fedbeacb0e56e96e59a61d5b",
-   "legendSha256": "0b99337de0c19d3fbf37dc16146fc4e48db498ce32a6c9c3bb82555bf2ba5853"
+   "contentSha256": "1dafb9fb49b46070d754742b453b76c2684642d72c640a40dfde95906e8727d3",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 13,
@@ -538,14 +538,14 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "2648c4891f9a208c003b67579ea5cc10c274f3c5f361997177ab20da497613ea"
+     "contentSha256": "e68e1e281f84ee3bf46741c2a9b4bbdfdfd8d650ce854f382b87f01582c9d207"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/13",
    "seconds": 3.0,
-   "contentSha256": "bee5028e7d2b17e2902161ff8dc2c0af4c6d176bed1a41e310e8a56c5220f843",
-   "legendSha256": "6d6cbe44ce457c5c3ba4e5b13a4a8014242b9ed5fa97efce5a2eedbdde2017ec"
+   "contentSha256": "f6dc7401b3c271b39304162f04f99fc419c44dfe43ef8c8bd47443dd7658cfd0",
+   "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

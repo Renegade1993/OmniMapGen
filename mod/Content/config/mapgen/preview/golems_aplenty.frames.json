@@ -29,14 +29,14 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "6d27b15ed0e2f4742442d4f15fb4cb50a7234b6a0f4c2cc75e072ec23e2613da"
+     "contentSha256": "9ab84cc834707e300ca4d5144b152c02acb7e04f657c1617ac829cdf2ff41e94"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/golems_aplenty/01",
    "seconds": 3.0,
-   "contentSha256": "9efa4596aebb38dc16dc10bcbd9fa3b46e26edadefe6583124e5b2e772ddc6cd",
-   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
+   "contentSha256": "7e3b74a22d9ccefc70c435ee4a9c84659c468a1329a31d6619e60c3739a49bb6",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 2,
@@ -58,7 +58,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -66,19 +66,19 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "9e25e21942b8dd463e5c104aeaac1bd9215f2b80e16fb72ba7d1ab505f180195"
+     "contentSha256": "ac3e1b985a93e90fe6b3e29be605dec2cdbd2c4792dc28aa41cfe2c267d7e014"
     },
     {
      "file": "02-underground.png",
      "label": "Underground",
-     "contentSha256": "fa141c3226da1278ab6eefb0997c461f2b119adc076c1a37b4262434f73d4c92"
+     "contentSha256": "39709fea5919051628e0091cbaf47359873d1215f20609a031bd8df6e50b5790"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/golems_aplenty/02",
    "seconds": 3.0,
-   "contentSha256": "f9fa3c3c8afe0ff0ebfda888fd8d11460cda3fd5fbac50e58cccc529d96cf93c",
-   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
+   "contentSha256": "ff35c4bccc5642bb8a45acdf954cfe01e45eb2c600031d1bb37cffaffd927bb4",
+   "legendSha256": "74b2beba7aa0fa0ac0f672655184de5345f925449458e03c8cef7063ec8e3d37"
   },
   {
    "order": 3,
@@ -100,7 +100,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -108,19 +108,19 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "b9eaa79ee4bf8d4866fcd137dc3ae5aaf89a82681fe4cfc1f4a5ba0d22e9fe33"
+     "contentSha256": "f7dbafc4adae1f6753d537a8248c3b972a0525b0cd45060ec8dae7678fefece9"
     },
     {
      "file": "03-underground.png",
      "label": "Underground",
-     "contentSha256": "a3b42cd06aef7eb48ab23975e44e493759a752ddcccc8d000864ab2a4b0cd43f"
+     "contentSha256": "b936e41a35084648aaf8ed49f7351c6cc3c932e6d7af85bd8c048d604e54341c"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/golems_aplenty/03",
    "seconds": 3.0,
-   "contentSha256": "87d1c1ddcdeb25a02852b40e6e73ea5484a19b34405ff8047adf54f003ab104d",
-   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
+   "contentSha256": "9b770053e8085b9df4e71d38469791d88a72be87a958ec030b6e63c63952defc",
+   "legendSha256": "74b2beba7aa0fa0ac0f672655184de5345f925449458e03c8cef7063ec8e3d37"
   },
   {
    "order": 4,
@@ -142,7 +142,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -150,19 +150,19 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "27755d9078e450cff4eb59e685545bb219a4d368edacaccc4ec7261e61014dc4"
+     "contentSha256": "4b5647e0faa34b5fde38aa92201a01592576ed074f4264c92abe47d73ae010e9"
     },
     {
      "file": "04-underground.png",
      "label": "Underground",
-     "contentSha256": "d7262cebacd3f2e9561e1d258fb1fa55b92e34990fdb15fa958567cba53dacd0"
+     "contentSha256": "ac892342c270a722b7e90c9c7fe7d6dfcc9669d151829073b923c99ec10e3ed2"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/golems_aplenty/04",
    "seconds": 3.0,
-   "contentSha256": "9b04073dc412b23e655150047151b778ef2c6743671d13ce1533fb778de0d23b",
-   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
+   "contentSha256": "3767b67e87f70ffc4639b236de21799370eccfb87927da5c78a12ab2b9719791",
+   "legendSha256": "74b2beba7aa0fa0ac0f672655184de5345f925449458e03c8cef7063ec8e3d37"
   },
   {
    "order": 5,
@@ -184,7 +184,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -192,19 +192,19 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "ab3b4cc56b092cd7421845ca23b55072aeea85ddd67af2954d3577ab6410aa85"
+     "contentSha256": "b1780c1fb97769274b246f350646b8296f74bc60a2820cc46ca9434c9c712f1a"
     },
     {
      "file": "05-underground.png",
      "label": "Underground",
-     "contentSha256": "d56d05165a0414648e37c1e69f0e0b5ae545275a82437ab2a8b42b944661b6f0"
+     "contentSha256": "c916828fc163e91debd13080bef934dfb0a6b89d58ed0d22b3f277f844eadc4b"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/golems_aplenty/05",
    "seconds": 3.0,
-   "contentSha256": "f3d8046e126fd93cc2662c019735123ad97bc585e545d321049a63fbd56705ed",
-   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
+   "contentSha256": "17476566d5b3df24f777d9942dab14ad61617ed784fdfa7b3e1bcc4b4e3ba529",
+   "legendSha256": "74b2beba7aa0fa0ac0f672655184de5345f925449458e03c8cef7063ec8e3d37"
   },
   {
    "order": 6,
@@ -226,7 +226,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -234,19 +234,19 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "383c9b5fcb5c4c416a20b0e1faf46e860d13702256db7ecd4cbfbfaf5556346a"
+     "contentSha256": "128a569e0e239de3ce61dcf4663a7a14dc096c5250c89cc260f1e4aeead6f41f"
     },
     {
      "file": "06-underground.png",
      "label": "Underground",
-     "contentSha256": "e57878564d0f57bfedef8a22999331034515afc800e9c296a28c480b40f74443"
+     "contentSha256": "6511cb790296ea9d36b68fafb4319da507128c31cfaa97ea3cbc9353c35a2531"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/golems_aplenty/06",
    "seconds": 3.0,
-   "contentSha256": "460ff20ecc644f8b6d689ace4e708948044796095db50a74d22a4648a1bc9fbb",
-   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
+   "contentSha256": "e9174f1456712aab325a12dbd6ea69abc04aeaec179fa1ec5df356494cc83f81",
+   "legendSha256": "74b2beba7aa0fa0ac0f672655184de5345f925449458e03c8cef7063ec8e3d37"
   },
   {
    "order": 7,
@@ -275,14 +275,14 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "e0c2bf83b128b61e1888d2a219c6ea241f5f0ccd495fc50f24207078c44725ad"
+     "contentSha256": "3d769d1ca8867792b14b4421107b47d69970e28b7bc10168fa1aa88b8f99f7bd"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/golems_aplenty/07",
    "seconds": 3.0,
-   "contentSha256": "55ef93c5be9d5bb8f02ce1569e354eed3489e7ecb83a6607b7f4645bf1593957",
-   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
+   "contentSha256": "bcf3824cd3785ed4c8e2f7a47983eb582b58f912704c1da6dc47e5d6cd7354be",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 8,
@@ -306,7 +306,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -314,19 +314,19 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "186f2bbe27d56b321dc75f5ad779aeb9d142f09604eb25dc24b4ab95e4bc86c0"
+     "contentSha256": "f23177c265e9df1fe5484cf0174dd6ec396fe4aa92bb2f9ab92334468d5470c5"
     },
     {
      "file": "08-underground.png",
      "label": "Underground",
-     "contentSha256": "7d17b5ac2083e7af0f7a0fe92668629a93f38449ac135648688d546c3eb4f459"
+     "contentSha256": "dab6ec2b410749758c83733a78ae575cd84fcd568c9829c2000a095d08f10752"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/golems_aplenty/08",
    "seconds": 3.0,
-   "contentSha256": "34361b2fe45e6292fb974f3b46bb4d6dbef886c3a926d845cb78dd39b3b8cb95",
-   "legendSha256": "6ed59ad27d594fb91e3fc9979e541230c6125e8bbfde1357c4e3577292bcfecc"
+   "contentSha256": "387bc46b1e431245edc29d3c8deb09499b3f9649137fcdc308b7529c5d44cd41",
+   "legendSha256": "91baae352ab0174c17fe04d5f1fd7d12095db47877eb15c3dbc6ce96f8ca435b"
   },
   {
    "order": 9,
@@ -357,14 +357,14 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "fca467df0a0d0ca839c9293d9273d6ac0249e7f5a382137056a8de3653c42440"
+     "contentSha256": "51417b1777a949574ea4436cf590a33de542029c4a9d1cc53eebdcb8c836845a"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/golems_aplenty/09",
    "seconds": 3.0,
-   "contentSha256": "be1369b036c8045c3d2c7b3e8a559bec2a776afae55116a255dc18f28860989c",
-   "legendSha256": "928c5dc938abb8aca73266a659065840c096628e26e86075ea60797cdd9acfbe"
+   "contentSha256": "7c39d2b75cff4e5bf409db7e0eaf13eec94f873a77d7c7e18ae81da6b06b9a65",
+   "legendSha256": "4453330b9cde4cee6fa7f62e9e7d877690470450459baf2e7066987e223ab87b"
   },
   {
    "order": 10,
@@ -394,14 +394,14 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "d00d0c047fee64ebc76c8e3accfa0cf6f62cb513147b4d67ccbd95549439f652"
+     "contentSha256": "89e0c79374f34c37ea73941be655e1e28527817bc77d19c98b73d1c1b96c5664"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/golems_aplenty/10",
    "seconds": 3.0,
-   "contentSha256": "615e65cbf9ed781e9121ccb088e74bef6bc441bd738969dd9ee6e20521d65780",
-   "legendSha256": "5c0e3adc742e58a602affd7b85ef4e05acbb0b68237e561062983a23bf5bee8c"
+   "contentSha256": "46c61c98cb7c92fea15c7d678e8f5107e5b95888f88148b0be1e706285c46ae6",
+   "legendSha256": "d2763627b735c7b0ff040c1e1938ee613b22b376398038a0937d432fc95ecdee"
   },
   {
    "order": 11,
@@ -424,7 +424,7 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -432,19 +432,19 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "e1acfbe5045e5ebddaa7737f0602a09e0649674ebb304f99a7f32bb8ef53262b"
+     "contentSha256": "0eec8eb007566a956e519ccb656aaef1e2f75c1fa3471c404a2faf2c50a3c82b"
     },
     {
      "file": "11-underground.png",
      "label": "Underground",
-     "contentSha256": "2cbe87a443bb55d505605daffab5e82ff7bc55c4221198f8d110d4acbaceea8d"
+     "contentSha256": "962e76808f3f1b240525ce71407a3865c58c8e59bcda9ac8274dc7b41c8fc316"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/golems_aplenty/11",
    "seconds": 3.0,
-   "contentSha256": "547b3cab3c7d5d9288c3cdcde3df3fc67cec08f6a5e10bf6c454773679ee21d4",
-   "legendSha256": "dbd376805ce0662b9e4d70dbb1b8fbd0d2cd7323d1afd4819c5638623de826b6"
+   "contentSha256": "e07a6c0142eee38ec232a7421153126646c7d5264480c210f65a9cc28fb92dbd",
+   "legendSha256": "1824517037271ce040874b707818f092bf8428ba77728013b7e5f716da6a4839"
   },
   {
    "order": 12,
@@ -475,14 +475,14 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "53fd28ccce3f59d7460a213f7b849e53f1f0ab6c8f9da62a9008a0e570267375"
+     "contentSha256": "cb76ef07e9eee4a6cfb54345c1c579940c86dc923ced7e3a4a8ce4cfcf39c659"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/golems_aplenty/12",
    "seconds": 3.0,
-   "contentSha256": "2e6a10943fad67eb20687d355753e65bb65228d14014a30f0aab3b0624dda374",
-   "legendSha256": "31b544f01b97e369ab3aef3c0e19b1d5351fbfc458b838996b86bee5cb63a975"
+   "contentSha256": "fc3f0fd8ba726655e65cd81fa20c892f8801bd0f2dd79307474042a4429b4e90",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 13,
@@ -505,7 +505,7 @@
     "Empty start",
     "Neutral town",
     "Passage",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -513,19 +513,19 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "741aae7fd1946da1055fb810fe7089a0debad4e7ebcb9d2329bc9d1f11c9a67e"
+     "contentSha256": "898d16a3aa37eaea2661c8948264081a00d4a244de0cd0880b5b50f29afc7952"
     },
     {
      "file": "13-underground.png",
      "label": "Underground",
-     "contentSha256": "99db49040ecfe9cf61fb1d1118b65f464a63d25d6d643c307b2e268b9455c79d"
+     "contentSha256": "cac4fc48e7cfd54939f9d6d5be68afbfc52535adba8860c9755c46caea1cf4cd"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/golems_aplenty/13",
    "seconds": 3.0,
-   "contentSha256": "9e0408e0b8c4a8c3657c578ad3ea65782cce3cb110b3c038f96d9c7d7a652ea0",
-   "legendSha256": "dbd376805ce0662b9e4d70dbb1b8fbd0d2cd7323d1afd4819c5638623de826b6"
+   "contentSha256": "027b2a82d0368cc7ebdd842856bb75a32e8178f5ef07f7e9f8bb0f8d080f4050",
+   "legendSha256": "1824517037271ce040874b707818f092bf8428ba77728013b7e5f716da6a4839"
   },
   {
    "order": 14,
@@ -547,7 +547,7 @@
     "Player start",
     "Neutral town",
     "Passage",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -555,19 +555,19 @@
     {
      "file": "14-surface.png",
      "label": "Surface",
-     "contentSha256": "3d43e8a5a687e88e821f075ff77f2a4e635c59d35cd244bf8d8325a93bb7f5e2"
+     "contentSha256": "5fd9795af4a8547e25812efa481e62ae20ac3fe9365671b9d8ccacb088fc8a7b"
     },
     {
      "file": "14-underground.png",
      "label": "Underground",
-     "contentSha256": "9c7f24f13b949657c2fb2a607300fd51f6c2aed4c56d144e3d76df2c02988a4f"
+     "contentSha256": "ffbaae4b63c2d1f8f4adc48c21ac939e71b59a5520bf3653b665922af254f4f1"
     }
    ],
    "legendFile": "14-legend.png",
    "path": "mapgen/preview/golems_aplenty/14",
    "seconds": 3.0,
-   "contentSha256": "3455b899219f11f267d13d6ba68ff66306e07c54744d0e4ab2edee73b9120f48",
-   "legendSha256": "6991b6df3e4af027496047a02e0ed314a028bd604310294a668114eeff173863"
+   "contentSha256": "61230fee3154e5fa6f9f7ce8f60109a4c9cea5a5d9e9dea953cd8fd82efd96c2",
+   "legendSha256": "74b2beba7aa0fa0ac0f672655184de5345f925449458e03c8cef7063ec8e3d37"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

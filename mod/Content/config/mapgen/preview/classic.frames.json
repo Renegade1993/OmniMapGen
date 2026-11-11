@@ -32,14 +32,14 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "00c33dfa6fe4ac5a3955f4239d54dde7a76bfc546ca1ee3548c1b4be95b8cdd8"
+     "contentSha256": "14972121f0b6396e880af31443470be881af38f3bf7e2cd8f38c5da79c0d1328"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/classic/01",
    "seconds": 3.0,
-   "contentSha256": "0094d5db5690b43a45ea1a4f20e487fd101f262351e1cf775a0eee99a2ca0497",
-   "legendSha256": "6d6cbe44ce457c5c3ba4e5b13a4a8014242b9ed5fa97efce5a2eedbdde2017ec"
+   "contentSha256": "ebb6777e4535937cecae09f4d6e7fafb0c61fa17ef77a429f701dbcb2c572cd4",
+   "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
   },
   {
    "order": 2,
@@ -71,14 +71,14 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "77cfbb3137030c7509f25b15c178c2658977d14048c3ea3dc8af98ee17e68cff"
+     "contentSha256": "e8841bcc26b9f1ad90285493924b0a574fa9615cf493543d2044329b7154e6d0"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/classic/02",
    "seconds": 3.0,
-   "contentSha256": "2aec303521a3f89048caeaf7ca8ebc4a9660938a63a1849863b69e25d8f4f4c2",
-   "legendSha256": "6d6cbe44ce457c5c3ba4e5b13a4a8014242b9ed5fa97efce5a2eedbdde2017ec"
+   "contentSha256": "1560cbf439a2a0eb2cdbd407a020caf86917051fe871adba8d48147949787650",
+   "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
   },
   {
    "order": 3,
@@ -110,14 +110,14 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "2ddb6e2c043996da07f30363680c3565f78a3936319b5583a955f07b791327ef"
+     "contentSha256": "6017462f86cfddae88859ff9316f2d619938c97722153c0f4546c785345add07"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/classic/03",
    "seconds": 3.0,
-   "contentSha256": "2d2c5a3ae085557880c4492dcedd834450d5e47471e311eb2189bbc910959548",
-   "legendSha256": "6d6cbe44ce457c5c3ba4e5b13a4a8014242b9ed5fa97efce5a2eedbdde2017ec"
+   "contentSha256": "78142c7d1ba0f208eee50a411c66cd6a4782e415c372ed6ec48a0c830e04d50a",
+   "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
   },
   {
    "order": 4,
@@ -148,14 +148,14 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "b555856e58ef3257651a6087d3d7cee003845e7ed0d0db6466b38ee4b6ce31e8"
+     "contentSha256": "d64708b34f964539ac276d03dafe802b740bf29c93f94334bed205d251e3570b"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/classic/04",
    "seconds": 3.0,
-   "contentSha256": "2b4195528a82599d8b7f072602f5110742af723969d3a76db1cc33ad3e9fc359",
-   "legendSha256": "12a2dedbfbf6e66913b38c34985b1c594cb07654fdcc63bfba5f7bf39391326d"
+   "contentSha256": "e8e1a14a23adb09c9b3e29a2be9cdf1ba037118792ce5a09d7f9839ed46d5989",
+   "legendSha256": "d082cfb2acec5a692b3f8f288eb94d2785e8fff33179ae1f4531bccaf6f87cac"
   },
   {
    "order": 5,
@@ -186,14 +186,14 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "99e14182733ca2a9277e2eee8d457b744404083dc365e21b02565c355479da52"
+     "contentSha256": "4e00031568df71dada49ff074ced65677be90240d3ab3ad1715fea592e35817a"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/classic/05",
    "seconds": 3.0,
-   "contentSha256": "70ed63a55137e1d241d5fbf90bed17ccd6a6e414af51fafc6f0cd6618bfad3da",
-   "legendSha256": "12a2dedbfbf6e66913b38c34985b1c594cb07654fdcc63bfba5f7bf39391326d"
+   "contentSha256": "4183e0f222cecc04f40a37f77d0458d27652176fdc7a1a1d4d314901d0c3568e",
+   "legendSha256": "d082cfb2acec5a692b3f8f288eb94d2785e8fff33179ae1f4531bccaf6f87cac"
   },
   {
    "order": 6,
@@ -222,14 +222,14 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "251bc569f7b2dcad1ae362f54255e7efff474904a941600509ed18f140e8e289"
+     "contentSha256": "71bd137c99c031e1f5d351f8f9c2bd80b0588dc4d1e171d79df588f32a16ed87"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/classic/06",
    "seconds": 3.0,
-   "contentSha256": "4d7efb428b231d9f35f777e65164d2eb8069b827d680ffc8926f4ac5a05c5c00",
-   "legendSha256": "43299c812911400373bc1c01ea8428bd727aef32fc17f1d85a5dd82100973256"
+   "contentSha256": "3f21d588fd8998f8a05068c5ff93fb58162f17d45e3ac469a51161370b44941f",
+   "legendSha256": "2fac9c90c3fa898906c94813f39b0406457433759c886c39bfd24ef43e6b12e7"
   },
   {
    "order": 7,
@@ -260,14 +260,14 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "336133f4705e95b0d1a163b73b66371b7ee0abf14e67633bdd089f5d9684eb31"
+     "contentSha256": "f6ac871109d2d95483fa51a3c3307b2b3f322a66b114ba4d8e50699ea00db0de"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/classic/07",
    "seconds": 3.0,
-   "contentSha256": "a19946ae7beac1cece4dd99fe3a0cf23dccbe576b4e5f319b4a700baf863c6ca",
-   "legendSha256": "b0794d57ecfc0ddce7c901beefbf86292dc9fecf9bcbf6f8fc8e7e1d994caa10"
+   "contentSha256": "e32d117507a6dfd21bd0a74222d9c2d66046869721d0aaa8056af9edba739f81",
+   "legendSha256": "77c9fa161ec63d992872661548d3790fafe2d411ab5ee1d84d2a8b5c8cf7a4c8"
   },
   {
    "order": 8,
@@ -298,19 +298,19 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "a52a852aabf3e74a4ab460d37408dff636381a275fef1e0dbebfb4e8ba390d14"
+     "contentSha256": "cc8a7857c20f6019e310b38231a3f930852df4fb237d4191015be0420ca8076e"
     },
     {
      "file": "08-underground.png",
      "label": "Underground",
-     "contentSha256": "6f51b513f59e4da51008e4b57d2d9d3d9a3604ee7745ada33807ab1083a70b73"
+     "contentSha256": "712bc728940ee7071dda3cf7940754bdd638d4835584fd1fca6efcfaa17a59d5"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/classic/08",
    "seconds": 3.0,
-   "contentSha256": "d71e4d0251d8d4573dd4cac4681fd7ed121b2cfc5bac4b495438953146f7c8ff",
-   "legendSha256": "683d86b452988b67f770163bab7379f1d87c8266b7876ab6670bf9b5852120c2"
+   "contentSha256": "31b7d0ddc80e83b411113f409906f42404b32c5324fc4a056f5bc2f8a03d5654",
+   "legendSha256": "c0c29239acef5dd1749c8c7d43242e74b2724f526134ffd282ce2f73dfb5cc5e"
   },
   {
    "order": 9,
@@ -343,14 +343,14 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "affd25b122266b00f34879affcb78b594bf4ca7b60ac942d77d950b83775cdc9"
+     "contentSha256": "83eac25aaf9eb47884b555e6aea9e02fa046de40846a905752474985dd3acd1e"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/classic/09",
    "seconds": 3.0,
-   "contentSha256": "8172394b04fb63dfc548dff599d618f4d247c50b22df5d6bf5d5de0ed9195a8d",
-   "legendSha256": "0b99337de0c19d3fbf37dc16146fc4e48db498ce32a6c9c3bb82555bf2ba5853"
+   "contentSha256": "8085ab28d51ea037c37926e4d1a71594d915cfafef8ffbe46bfb3296fae9c449",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 10,
@@ -381,19 +381,19 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "c16a363d3980daa0a71e90f2dfb211f84f3c4ce52bf619f82d9628a20211cea1"
+     "contentSha256": "90f5426d7feed659e4e32aff462c2204b96ad76eba7e2ac5d12e05a1e2334ffd"
     },
     {
      "file": "10-underground.png",
      "label": "Underground",
-     "contentSha256": "b6992feb23fcd6cea984e26de974167563909c7fe014a3a0ca7ee2cba4b322ab"
+     "contentSha256": "1c635988e4bf67bd8aed66d92327553e79652f0f1fcb59659bc38a3a0b2df02c"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/classic/10",
    "seconds": 3.0,
-   "contentSha256": "1b20df606d8707794928e4a4017635f2407cba83b699d2deb626988958a600b0",
-   "legendSha256": "12a2dedbfbf6e66913b38c34985b1c594cb07654fdcc63bfba5f7bf39391326d"
+   "contentSha256": "1808b1dca6263dfe86656bc06b9470b0a995aba564f2fea1bbb9c6fd603d1d0d",
+   "legendSha256": "d082cfb2acec5a692b3f8f288eb94d2785e8fff33179ae1f4531bccaf6f87cac"
   },
   {
    "order": 11,
@@ -425,14 +425,14 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "768e153310f4182b3d3cfcf2229a8bd095623f62f9ebfe4cf0cae3346b4d1290"
+     "contentSha256": "d1f91cf57c9b677a7ddc6bb872d2970d466895283592a372f85a8c0a467848bf"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/classic/11",
    "seconds": 3.0,
-   "contentSha256": "ef4eab2ddf5a9a8621e95c5d54ca01dddd14288cf474e5a5fe860b408e873f9c",
-   "legendSha256": "c48475d6853474700174e3cbc021d2544ca33fa44b4334793b16eda66aea5616"
+   "contentSha256": "eabcd31846bd68e2faabed83986666445efc860d7dfa980375ad23e2baa94d39",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 12,
@@ -463,19 +463,19 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "279d84c9d9157f593b857dbbce3ffdb0ec94f96487eeaa9ea92bdb79c4e91e70"
+     "contentSha256": "bdf3dcfb9ad5a300ad597f627a2181f11f21a0b87673f8c484e513f68d204979"
     },
     {
      "file": "12-underground.png",
      "label": "Underground",
-     "contentSha256": "80c425148e32876dc4b18f83f4b9ed171b11f9d7ce602b244738bd4e8b2b6eff"
+     "contentSha256": "3d1f284550e26a5a13ab6c50be7338ef1e3e31a2a03c304810a42e500a2426cb"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/classic/12",
    "seconds": 3.0,
-   "contentSha256": "3b0b4479c519946f821ac09713d76f1073d984c9ba33147e54707ec8631fcae6",
-   "legendSha256": "12a2dedbfbf6e66913b38c34985b1c594cb07654fdcc63bfba5f7bf39391326d"
+   "contentSha256": "77d6c36d6902a9bfdbf3f4b134c662869db2c6e85cbaf9503a6dd4b02f490a60",
+   "legendSha256": "d082cfb2acec5a692b3f8f288eb94d2785e8fff33179ae1f4531bccaf6f87cac"
   },
   {
    "order": 13,
@@ -507,14 +507,14 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "0e6493f7ee25ef605ca71b9bf2e95e2ef3a277d49abd6030c02a34d99aff23fa"
+     "contentSha256": "56eb6541b4dd80da1b062a277381c5de5847a0e21e5a28a4ec436af4307e3af5"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/classic/13",
    "seconds": 3.0,
-   "contentSha256": "662ccb6c0f7cecdac5658565ac82a0b6b5510234c9f1195ba1850c6fb4791c8f",
-   "legendSha256": "c48475d6853474700174e3cbc021d2544ca33fa44b4334793b16eda66aea5616"
+   "contentSha256": "ab28a7445e2311e3d703c06ffd5a6ba292518bd36a8e72c092ea73276ed303cc",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 14,
@@ -546,14 +546,14 @@
     {
      "file": "14-surface.png",
      "label": "Surface",
-     "contentSha256": "4e501a7d429ba6cd1f0c339f331a4b6e150c9f78785642ce735fc26dde03d53b"
+     "contentSha256": "debdcefd2009e8a1612b90457b227f5f93a480d853f1be75d3a2bcfc7e1c3dd3"
     }
    ],
    "legendFile": "14-legend.png",
    "path": "mapgen/preview/classic/14",
    "seconds": 3.0,
-   "contentSha256": "d420bf609db5baae7ba0b2338595ff6c87164ae5d4d350d7e5c07f70d083b835",
-   "legendSha256": "4a4fada5d361264f788cc3a3d78e845dc5f76c1527f5618a1e9e387e9377950e"
+   "contentSha256": "72c1145f9e64a7cf42559235bc57b8e60bc4bfa9fbfd036e053b32432d575f9a",
+   "legendSha256": "273af26d6c1e2bedba0e29112f3c8e5447e50e6be99d9dce867899ac7aeda1c9"
   },
   {
    "order": 15,
@@ -585,14 +585,14 @@
     {
      "file": "15-surface.png",
      "label": "Surface",
-     "contentSha256": "cc474216d0870edd79899741b97bd7451790345f4cb2dfa12b7dd9eadb294f6f"
+     "contentSha256": "d47e8c3798f1f312f598c70727f35a3b61f4d3f1779180b127b3f1c5a6b0b74d"
     }
    ],
    "legendFile": "15-legend.png",
    "path": "mapgen/preview/classic/15",
    "seconds": 3.0,
-   "contentSha256": "650ee0a07519ef1c9a398998f840d077071489fc8dac2c14c60a6d04e3f51259",
-   "legendSha256": "c48475d6853474700174e3cbc021d2544ca33fa44b4334793b16eda66aea5616"
+   "contentSha256": "b8780d3c279fed22531d01898d43ab9a0080a72fec4e53a33ad77e1a7a3d7158",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

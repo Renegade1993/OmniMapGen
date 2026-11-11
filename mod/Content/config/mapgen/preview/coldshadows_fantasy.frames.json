@@ -23,7 +23,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction"
@@ -32,19 +32,19 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "6628949edaee1ce078b29dfda861d887e29bb60cdd4c25aec8b6db51112a9fd5"
+     "contentSha256": "f0af5c2c4510b2166766d21d7f5eae6b2ac32e2aaf825d85a0aea4858862fa0c"
     },
     {
      "file": "01-underground.png",
      "label": "Underground",
-     "contentSha256": "695c19ee852559e9ecad3aab4d67032c93fe73984e1bd07c00091608d73c2957"
+     "contentSha256": "05ca81e179a8b4b3f6701ebe5db82ae7d7b6a84c725d50431aec7efd100e5571"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/01",
    "seconds": 3.0,
-   "contentSha256": "e5e40a187d88a7fda36cb2355106f5529990a3b3119195b54cd5ca57d0c8e956",
-   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
+   "contentSha256": "e5a6578736bc388be1528ef9a919bd92e94d5827aafee5bb31064535e22a16db",
+   "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
    "order": 2,
@@ -67,7 +67,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction"
@@ -76,19 +76,19 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "d0ac83c557e8811e074b2cf611b7032229797ed753afc87c91bd49b2ee5900d8"
+     "contentSha256": "935980849dae37201adf0f5deddf1ce701bb5ac07563b35eb098a3c2e42326fa"
     },
     {
      "file": "02-underground.png",
      "label": "Underground",
-     "contentSha256": "322876eccc4a6bb0c0d3f38c28c6032fc5447d6574130deae2246cd31c8b3c64"
+     "contentSha256": "eaf63270b3663e183e7e66dc595d5f659f39191992a6eb6bb564bcfa26f9d9c9"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/02",
    "seconds": 3.0,
-   "contentSha256": "11c64bf983576428c95e68afe390d253d8469e8750dd478665b98398b6188331",
-   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
+   "contentSha256": "029f09006b13482e3a5395a1fb11ad33bf437df79c7beec206a37d4eb1ecd749",
+   "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
    "order": 3,
@@ -111,7 +111,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction"
@@ -120,19 +120,19 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "0f89aa0e8d1bea5c7156b0a96d7db6bce58d4e5632c55411d6f74f9e8b06ad90"
+     "contentSha256": "9283b38b141001fedcc8cd0f105cf5539f42606de0b3f911112d39e3771d49ad"
     },
     {
      "file": "03-underground.png",
      "label": "Underground",
-     "contentSha256": "3c3832852a076e77030e704c7e74a1cdb3d3d7c0e1823f5a4380b6c46cc2ac2d"
+     "contentSha256": "8b88e9317a0ea8f58098196c192d6093173da2c271b553b3d400e1dea43533f8"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/03",
    "seconds": 3.0,
-   "contentSha256": "f86e47c1e0efa0d338531dbe7c43a6c58b0c3ba876f790910a5d65a798989615",
-   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
+   "contentSha256": "4c8aaa1578037e23db6bfd9dd4109631e057953189dce8771fad7b41184bd3cf",
+   "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
    "order": 4,
@@ -155,7 +155,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction"
@@ -164,19 +164,19 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "030e81fee181afb23f9da981bf4a7991ae9e4470e47ff24edbec8887f0fd50b9"
+     "contentSha256": "12f7494734ac8755d32c7fc11569ac6ac293b2bd076f744760da51b2fbeaf52b"
     },
     {
      "file": "04-underground.png",
      "label": "Underground",
-     "contentSha256": "bc85389736e60a025ac51c0fb0d118ac783cc26c4872aa1e0bb1048714c81cf0"
+     "contentSha256": "043635a351bcc6e4be406777361168ef58c57241cbaec241a1e117fd815e03f1"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/04",
    "seconds": 3.0,
-   "contentSha256": "fcf54e5c59eb69087aaf1c6bc9cbd23544869e6628c431789e79cbe2343a22b8",
-   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
+   "contentSha256": "ec989bfe54623d4e3c1adaae4b8e02e6914c0c366ca36c348b4a2edeed09892d",
+   "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
    "order": 5,
@@ -207,19 +207,19 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "e8264b82cd544c6beaf2af62e4117b7e3660f8f763f585256af8f78017dc0a78"
+     "contentSha256": "f6a79094fbfc462ef5c796449dc2fe6cf615a65c60186adaf539455a9dae4f70"
     },
     {
      "file": "05-underground.png",
      "label": "Underground",
-     "contentSha256": "bbcbee185836e843545bcc7b98ed5df24209ac4915650f46a2e1f2d04b307bfb"
+     "contentSha256": "10951602ef27640b7381a43c37084e765f90d57115314bddfe4690a0025d4c43"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/05",
    "seconds": 3.0,
-   "contentSha256": "c536d250b43c107a8437dc0e6b294edb543995e7bfd7b567c3501c17fd9a9fc8",
-   "legendSha256": "c6593a3d1fe79add809a77ff09b846676dfba8db418df6a2b0173c7436220b7f"
+   "contentSha256": "e2efdf8b0565e08fc60f4d2fddcca84734135290184b0faff92e524301142755",
+   "legendSha256": "a215bb3de52cb384f6603b3a5daca6968cef6210ecc7b992793e4ff6e156ed50"
   },
   {
    "order": 6,
@@ -242,7 +242,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction"
@@ -251,19 +251,19 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "7585e47108443a42d3cf056906a16e3a0f4d37e5144bf365de52796700a9d6d6"
+     "contentSha256": "417faceb3f7be5d288c5b91de0c9c2078557908171e7ae6d37ac3c4e53b118f0"
     },
     {
      "file": "06-underground.png",
      "label": "Underground",
-     "contentSha256": "7a1f825784d7231d110772f61deef4c058cab1dbad98007b128b3ad6897e39f6"
+     "contentSha256": "3610ffe6b6f1bb361f689fa253a1c13259a3142653c73c9981a1ce6559c803e9"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/06",
    "seconds": 3.0,
-   "contentSha256": "a82b933d1de96296b3532934ddc2ce24e4c80d95c75424657b4160e5e38731f1",
-   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
+   "contentSha256": "f6623d01796c59e855e5acd204a529317e0632081bdf0c72911e3922251a7cc3",
+   "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
    "order": 7,
@@ -286,7 +286,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction"
@@ -295,19 +295,19 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "18395449277fca280e63b9389d24b3ffe012357edff0c4f13993c590082fa403"
+     "contentSha256": "9fcf7562720517e171d88e36de4014e36e6afc4f27545c431e671248f3ec6763"
     },
     {
      "file": "07-underground.png",
      "label": "Underground",
-     "contentSha256": "704fb6b32a370e67e1f844a787c5a396a70693c48cc61eb8e0374e5fc64c8eb4"
+     "contentSha256": "1f58e247d1d3bac69337752ecf252b2aabf3d6164399a0ffb03ec7909daccfe9"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/07",
    "seconds": 3.0,
-   "contentSha256": "8cee2305847352fc084d052c9d8f1e5d401aa354982693281792c02e6b06cc37",
-   "legendSha256": "ae44966b4f386b6c21db45a58d1ee854727bf916b276015a569c56be82977b73"
+   "contentSha256": "02ce9d09958577ac9dd8b312ad4b9725d4b4c1f331c2bbdab6b044b6d1709e9d",
+   "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
    "order": 8,
@@ -331,7 +331,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction"
@@ -340,19 +340,19 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "d43c4b735d865773fde7fd9993a9096fdbbd0de885da194f91efa5269424ee74"
+     "contentSha256": "437aa0d6f2ba72af2fc68c2ae7a9f4fe5da9ba86235d8b79a790f802be2dd023"
     },
     {
      "file": "08-underground.png",
      "label": "Underground",
-     "contentSha256": "b1aa0d3ad0b7d36e6a17775e9725b5a69529b3410dfce0baf158caba19bd9fb1"
+     "contentSha256": "b8c6b600b7f8358db4213017042d631d3541a6140b38cb38a934507f571e0938"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/08",
    "seconds": 3.0,
-   "contentSha256": "1a2894940edbe29bd2c22737dbe566fe15cdf9944793fb5c8d044733e22c5ab5",
-   "legendSha256": "45aea9bb35e655536331e662c2747b1c000a5a3b647bed158862c9e34159450e"
+   "contentSha256": "cdd1578a38ac9e6df32ed3b909f0050ed93f1df9abfff013d6c7638a126be9f5",
+   "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
    "order": 9,
@@ -376,7 +376,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction"
@@ -385,19 +385,19 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "a0133fcc09b14d868ec8bc8bb5892c4b7c0737d6dd350ca2befa86616a704e65"
+     "contentSha256": "fea5d12787b82c014654fe707d9f31f2efe531d96455b9b810e3cfc59108035f"
     },
     {
      "file": "09-underground.png",
      "label": "Underground",
-     "contentSha256": "0479ffef4a1712749fcb67cb7e90702926f6563de1624be8941cd47426a79aa5"
+     "contentSha256": "6485330de1d026bcae249e13889b9109e23c00f13182b9b49336ba80d0a1954c"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/09",
    "seconds": 3.0,
-   "contentSha256": "17dad5264fcc6de6346ef546c5f9701748cd29fef8cb8fa160ce676fae26b1a4",
-   "legendSha256": "45aea9bb35e655536331e662c2747b1c000a5a3b647bed158862c9e34159450e"
+   "contentSha256": "4ffc4dcd35fdc170b96b983b8f223a0b237940ffb9f3a46b34429ecfb7c88ac7",
+   "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
    "order": 10,
@@ -421,7 +421,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction"
@@ -430,19 +430,19 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "7c03d60d18f9c33d6089a6c31bb9fe11809b2ba8b91ad8208de7d824c142b169"
+     "contentSha256": "c94fefc7e6c07bccb884d8424a097a9ff9c0a496abe832286e423bb1eaccff73"
     },
     {
      "file": "10-underground.png",
      "label": "Underground",
-     "contentSha256": "4f8724ecf43850654f2c964b347b1c3e3ef5c71efe5fb4a9e1c4b6911a1b9579"
+     "contentSha256": "4dda06cdb29f7b8e9f43f3ccdf9a7398e21c1c5cc4ca4e2878c118f46d272be7"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/10",
    "seconds": 3.0,
-   "contentSha256": "ee9e76bc3efce90867eee7f829737644db396eee751bff4fe0dff33fd89c41db",
-   "legendSha256": "45aea9bb35e655536331e662c2747b1c000a5a3b647bed158862c9e34159450e"
+   "contentSha256": "0914373553392c58216e71713c2ec50ea8d3ae9f53ccfd2ed8cd553f9fec0577",
+   "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
    "order": 11,
@@ -466,7 +466,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction"
@@ -475,19 +475,19 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "314967a67ae20552e57c6d0b5fbbef1c7e14c6a88779691d3b1b4ed27dbb6519"
+     "contentSha256": "2ecf6d4b54344caaf5d6f4433aacb67f3981c9cf7bd3ea6f1243470ca0fce4aa"
     },
     {
      "file": "11-underground.png",
      "label": "Underground",
-     "contentSha256": "b4eca1eb3489358708dcfa3b4025cec128938673f8575669337455963002f5ab"
+     "contentSha256": "d3c0bd17648e89331314a763a5903a90d1796a732dc16662b6c8256ff45c0b77"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/11",
    "seconds": 3.0,
-   "contentSha256": "0a1127942f40f9570f84300282cddd99b39c9f69fe6851d48a386f6276b4559c",
-   "legendSha256": "45aea9bb35e655536331e662c2747b1c000a5a3b647bed158862c9e34159450e"
+   "contentSha256": "0b7163c44f2581bd8f8bda9585675c7b177c4f39972e37fb11d3b9a72beacaf6",
+   "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
    "order": 12,
@@ -511,7 +511,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction"
@@ -520,19 +520,19 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "070274abde6dbd9de3a5815d39644c7e4e8312286322d7a3f85f0a7a56f96de6"
+     "contentSha256": "f1ccc7fcebb918e41be91eb84fc9f14b07f42df47403b0daa09ae60adc8d1dc3"
     },
     {
      "file": "12-underground.png",
      "label": "Underground",
-     "contentSha256": "a599326bd280bec97a11d1ee94f026e75eb10c04b3b82ec70f816c0de0eeaddf"
+     "contentSha256": "aee99c448df97a0dffef74eeb6ce0a97106ec68c56b8e86b0e45abaf047ceba1"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/12",
    "seconds": 3.0,
-   "contentSha256": "0df3c258f02f43c420d5c12896230801b6b9db2d1628db2d750736daee7309cb",
-   "legendSha256": "45aea9bb35e655536331e662c2747b1c000a5a3b647bed158862c9e34159450e"
+   "contentSha256": "d3e442c1592bb96962b0aee51ef2a0d306d1aa4f1d0678e01ab939fa1c104d2a",
+   "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
    "order": 13,
@@ -556,7 +556,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction",
@@ -566,19 +566,19 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "3144a817fb18846b1b6450bd6f533ace295d241af6c7f75161fa41c0fa386c45"
+     "contentSha256": "873328b225c857e1b034602f42292bc1fc34549ce5b36ee6c6a7194e4e0c832f"
     },
     {
      "file": "13-underground.png",
      "label": "Underground",
-     "contentSha256": "4cb8812f5574eb9b524292dadda5c63b3f5df2da54752aa2fceeaab4ae72002c"
+     "contentSha256": "96ec13abb3482360ad164be67612066ce64065a9b99b5bf590451b764805293b"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/13",
    "seconds": 3.0,
-   "contentSha256": "b51c036c223f6a805f29022eec24bd7003dcbb9767a9dc83db0be1e66998bff0",
-   "legendSha256": "5ac5af6cf09b13ed118948107f78d8f70048c2270b9b713fe62eb10ce1daf619"
+   "contentSha256": "a7769b33b0738018c21de341af0d5f9e4483c28990db7bb24c77bc6ea02eb188",
+   "legendSha256": "33aa13c4e3be487c3292c53e4b739a723072d7ced2c235cfa7193077aeb4012f"
   },
   {
    "order": 14,
@@ -601,7 +601,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Junction",
@@ -611,19 +611,19 @@
     {
      "file": "14-surface.png",
      "label": "Surface",
-     "contentSha256": "aaa76b64eb000a62a7b901b0c9d6944e40a7e01e276f3034ded5372612cb6c12"
+     "contentSha256": "5cae7e2d5a57b6e7f1baaecae3f81439b5ab0d901a4dabcd5c12cfe084a0cf4c"
     },
     {
      "file": "14-underground.png",
      "label": "Underground",
-     "contentSha256": "f698a942f2067e4d9340d6b50359a6bff614ebce65de3218591be1887558b975"
+     "contentSha256": "0c4039281cce8a88f390200beccde425cd203f23fca2803ddc4542c43a41a515"
     }
    ],
    "legendFile": "14-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/14",
    "seconds": 3.0,
-   "contentSha256": "d78074da35873352caf8c132aaa63a16953fcfd8e53c801761ed5c9b7f744945",
-   "legendSha256": "0eea9e00f82283b0623a869e1eb70c40f47812f4dc3dc20db10a9a6ebcfa9098"
+   "contentSha256": "71ab2236bd8a7f2102718ef6075c84f42ceddb330524e9a0458013f99127d90d",
+   "legendSha256": "83e0978cfed7f388161be6bd7b2b7233dcb655ff57b0f175d2a2e3e70cf9619d"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

@@ -29,14 +29,14 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "914d60b20f6e662cab5fa60bc4679d58543544a604729c75fed2cb1f5b50bcc0"
+     "contentSha256": "2137c1eb15e38e0ad77b7f7c641adad8a7427570602ed7dd10cb4f2247ce3116"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/jebus_cross/01",
    "seconds": 3.0,
-   "contentSha256": "9bd757efba9c4ed7ec7a8dabea830a94a439a7aa839b2eead6f72e795aabf85f",
-   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
+   "contentSha256": "6c290de00f05304afaf7adcb0575fc1abe4307c9fd18793b24481108c5f8503b",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 2,
@@ -65,14 +65,14 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "bd228109f0bad475f80a2893d179a84323eab9a8f818728bf911666aea7dcc29"
+     "contentSha256": "accd869952f129067d5f041687bb10114c35d16901f13fe7fca25d58a686a415"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/jebus_cross/02",
    "seconds": 3.0,
-   "contentSha256": "5fb8da426bed3aeafffd72204d03c38f427195445dcd9e5f181e41e0176e4632",
-   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
+   "contentSha256": "21f768c56734d0743aac4dd2566ef8d0f940c0b18d29963cc61bfe257205e4ef",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 3,
@@ -101,14 +101,14 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "64cc2c3bf10c1be094df5c607aa3c9128f7b4a95725057ee95a753dbe592cbac"
+     "contentSha256": "bdafa180d882e0010732e037bfa979a2247a8a73f52df0190f608c9fc647d551"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/jebus_cross/03",
    "seconds": 3.0,
-   "contentSha256": "ec679a248ccccd1e8ba9148f6dd02f4a0502b9f0ddbabd3ac2d56fab5566b0fc",
-   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
+   "contentSha256": "0fd0dfb1dc8d6b02f195ad5be5b39d17c7e870ce4d01ad606e36830c574cbaef",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 4,
@@ -137,14 +137,14 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "598fa34d61a339fec6227bbe0b26aef345b5001ac83bd8b1efceb3c0513d7197"
+     "contentSha256": "901fd57b4bc9d10099917330608d5bd60b179cbb29dc7df051007f04f2f030eb"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/jebus_cross/04",
    "seconds": 3.0,
-   "contentSha256": "7608f6813f56cbdd5942f47fac1114ee86c8674dbb4a61b825e9a3fc1db9ecba",
-   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
+   "contentSha256": "2eef1a0d54c1fba890f61be96f15c472931d1f7206325d7eb474e5071bbb36a5",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 5,
@@ -173,14 +173,14 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "6ded93ad3c9be2d086d9fe9d36e30cfed23967f2bb47a67b2652192dbd9a19c2"
+     "contentSha256": "48ff047582e703a4285f764219563e30943624b57f4eff3c434a44cd3f0d38a4"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/jebus_cross/05",
    "seconds": 3.0,
-   "contentSha256": "c3e87caca8addef1a7f2317f0e7ace69e549a34a7ef0da4fe080fcd1c22416a2",
-   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
+   "contentSha256": "9cb9905956b5fbaa0fff57b4446211fc667be79da4cde67304b36728fda1919e",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 6,
@@ -208,14 +208,14 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "d7238180f5f58dff2baa3074c9b71ca483ea955391eed0049a9276c3f5516a50"
+     "contentSha256": "10f83a5b654e929167a2ff4ba0899f06c9a433b97cbc7341925cd29c31fc77f4"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/jebus_cross/06",
    "seconds": 3.0,
-   "contentSha256": "e0e442eb56aa77ea663b3952c38383c07a00765560fe93462aa149c84ee02617",
-   "legendSha256": "ea77d2f6f03b49b2321e2d5d93355749093a5ab5c5abd9c281908dccb740e712"
+   "contentSha256": "dc8c55ee0ab66fbc3d921c7c0759b9aa9f2ef5ce99a091e6b47b1ef94d89abc6",
+   "legendSha256": "272b1deb4ced4e4eb99d7e666422f4508062622bfe276e14bd6b2e8279b69831"
   },
   {
    "order": 7,
@@ -244,14 +244,14 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "ba7a981c91978be863636953f4df8b90432c440407f7ab9ca721407d93af9aff"
+     "contentSha256": "24d24352cfe87b2bb25071e45594a663df56f53b0a6b31928d99db78178087e0"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/jebus_cross/07",
    "seconds": 3.0,
-   "contentSha256": "4b1119aa1c65164bef817996aa34ffeee0f42b034a4e0b2fb8dc8c56ceed9eb6",
-   "legendSha256": "b2eb0f98f32a237bc8117270e1e9f37bb1cf8b483a6f4cbef07699b4224f0430"
+   "contentSha256": "983fcaaad9b01f93fc40358c57c092f31469d48bf7fc89f857ff082ad055e4a2",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 8,
@@ -273,7 +273,7 @@
     "Player start",
     "Empty start",
     "Neutral town",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -281,19 +281,19 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "076ce7d6b96ce7b039cb3220d5e24059eb871a31d5c12d85a3607c982d22aa56"
+     "contentSha256": "8fc10749a19b294a0363b0582ac9ba78663a45357f5c2e72523cdefee2ba9570"
     },
     {
      "file": "08-underground.png",
      "label": "Underground",
-     "contentSha256": "c7db966b6992dc26a9e52d4821f3476ab5a0868ae97c45741dab89408996122a"
+     "contentSha256": "c874d44cae05e81d828962417403f840a16bed22992645207af6b70e2f3bf5e3"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/jebus_cross/08",
    "seconds": 3.0,
-   "contentSha256": "40a4360c0851ee1a583febce8666a853b0bc593b0935c49a62d2dfd341f5dd83",
-   "legendSha256": "21b28fe819e12119a514cbdfc7afc6078b50672d63a54db8a0cfc7626a426c4f"
+   "contentSha256": "0950b59acd2306b097db7e45e6c15a83eaf6c4ab9482da8be3ed9fc7c1cf5614",
+   "legendSha256": "16f8db246853fff6b650750e9209e699849d73d4f9ca0bec54e972166c39f7cc"
   },
   {
    "order": 9,
@@ -315,7 +315,7 @@
     "Player start",
     "Empty start",
     "Neutral town",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -323,19 +323,19 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "55463db80b2822e1ed40e83de71b6ec61ce2a755877761d618d74bbda49b0620"
+     "contentSha256": "cb9320a47234815da0c1e3798587281a9d8278100f44379db54366dbaf9f2826"
     },
     {
      "file": "09-underground.png",
      "label": "Underground",
-     "contentSha256": "a35300d5f71b5e0b9b015102245a7d1ca41d9b61dea728a42610b006c98b307b"
+     "contentSha256": "7dd65a4eb0b29f87af74079522537fc4c641f7dd865d5ed4b47d8b4369b5af65"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/jebus_cross/09",
    "seconds": 3.0,
-   "contentSha256": "a11825e01c006abdf33211c6876ea8f934bc4c6a4c80e71763624a193b92b762",
-   "legendSha256": "21b28fe819e12119a514cbdfc7afc6078b50672d63a54db8a0cfc7626a426c4f"
+   "contentSha256": "2b5ccdd8d6714979fa33b85728715089d3cae957253751590bf7c4781dcd89ac",
+   "legendSha256": "16f8db246853fff6b650750e9209e699849d73d4f9ca0bec54e972166c39f7cc"
   },
   {
    "order": 10,
@@ -356,7 +356,7 @@
    "legend": [
     "Player start",
     "Neutral town",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -364,19 +364,19 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "c89fa3a2d59b2353b246cafe8cda4e389fd3083024818a5f30b66a80088edbf7"
+     "contentSha256": "da36ca4dd83408f31cbaafc0d4b43ef4bb37435fd6c94fc6f7d5271c8c5e2afd"
     },
     {
      "file": "10-underground.png",
      "label": "Underground",
-     "contentSha256": "f6dec6c588fffa20b648810b14825113693bde1cc970e6fc531565513760f8e9"
+     "contentSha256": "363c5df1f9160fb0ed054a7ef014e50aa8c0437714654cac0bb02a67ccc9e097"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/jebus_cross/10",
    "seconds": 3.0,
-   "contentSha256": "26a6094a5ed48b05c54fadfd8a12f70a66450c1473a96e219ef77415f00923d1",
-   "legendSha256": "6634a5559866d20dc5fce47fc70ab18a2ba0f975df0f95d5f99f05f5fbcc8dbe"
+   "contentSha256": "2b3db3054d36bfdf311ca98a46d9e29734fa8316d932b5a034a63a3f48b867e3",
+   "legendSha256": "eb2ea259b47e8933840b2c53fbd581332c7185340c4c0a744b709354c89f4c9a"
   },
   {
    "order": 11,
@@ -407,14 +407,14 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "f099e9e084a106a1eab4ba86658359a89596a1abee404d37e0fd1e0190f5fd6c"
+     "contentSha256": "12ee3369b7d6ac113b0706d895a43230d96252bebaa6eaec2be18c6bea123060"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/jebus_cross/11",
    "seconds": 3.0,
-   "contentSha256": "135eddede570ded1f7b1cb6429ab25d6441df8ea9435e6dc572912d249fd987e",
-   "legendSha256": "928c5dc938abb8aca73266a659065840c096628e26e86075ea60797cdd9acfbe"
+   "contentSha256": "52b32bba477fbc60aba75270b38a1bba21650630057c9120c65a78ac3b0ccf7f",
+   "legendSha256": "4453330b9cde4cee6fa7f62e9e7d877690470450459baf2e7066987e223ab87b"
   },
   {
    "order": 12,
@@ -436,7 +436,7 @@
     "Player start",
     "Empty start",
     "Neutral town",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -444,19 +444,19 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "e5b979de8cec53b9a8bf66fe3997a849c8e29a10eb38f52f97c97c738f226317"
+     "contentSha256": "960079e5c95e45f025ac4cafa68aa036a328b51a62fa73adc2c9dbab1f6c31c1"
     },
     {
      "file": "12-underground.png",
      "label": "Underground",
-     "contentSha256": "23aa7ea4fa9202c1ce0338d6e8debba3ec785a8fe672763cd6d49f7dcbf5ebae"
+     "contentSha256": "308a9e530e3f5a9dead3ab9f65168700d7b599d4142d63dc3f99835522ccc92d"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/jebus_cross/12",
    "seconds": 3.0,
-   "contentSha256": "e22b772e4e6183ceb713a8f510a88c9d0eddf6fdd6f6652cc9934097e4d89979",
-   "legendSha256": "21b28fe819e12119a514cbdfc7afc6078b50672d63a54db8a0cfc7626a426c4f"
+   "contentSha256": "4eefb598ffa80e1c138d45c95c95710239834266bac344476f1873b02a9ff467",
+   "legendSha256": "16f8db246853fff6b650750e9209e699849d73d4f9ca0bec54e972166c39f7cc"
   },
   {
    "order": 13,
@@ -488,14 +488,14 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "fe0b6557050444fd375ff3f949bf829befb718486c11db53f4ad5d8aeaa79542"
+     "contentSha256": "1091d215e1bdfa35bbb44ca5322728075e3c769e348167e4652cee3375a64eac"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/jebus_cross/13",
    "seconds": 3.0,
-   "contentSha256": "5be11373706949ecd44176435dd859abadc9e21b704389f3f4500627f5813d79",
-   "legendSha256": "d175ea466a73a30cb1f1830117d9fa5e3a8fa486bfcef46f70b49c0bc8947703"
+   "contentSha256": "84505443e6e38494be66004059b893e441a590696c657aaca4a790549e81681d",
+   "legendSha256": "270cb193a6181a437666225734cec17113f0d29f3f6c80921c9ae97a145cde52"
   },
   {
    "order": 14,
@@ -516,7 +516,7 @@
    "legend": [
     "Player start",
     "Neutral town",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -524,19 +524,19 @@
     {
      "file": "14-surface.png",
      "label": "Surface",
-     "contentSha256": "083d35b8e6268e375592a20b6aa1c4486620a93b89289bb539abc0604dbaee86"
+     "contentSha256": "ec47fab8f1fa648311093c12f2ff6646d9496be7118e4ed034657b2b3e42f9ca"
     },
     {
      "file": "14-underground.png",
      "label": "Underground",
-     "contentSha256": "2c8a77ef70b0eee3934a57b23c06226418969cf87864da81c6781373c448465e"
+     "contentSha256": "7b1309ce277c8e23cda4cd43ca8e25a763419e2151bfd6365c03f05049a1188b"
     }
    ],
    "legendFile": "14-legend.png",
    "path": "mapgen/preview/jebus_cross/14",
    "seconds": 3.0,
-   "contentSha256": "611afad265bca1e99843a0a50e19a0e49e91dbaa847053e849434b2332bbee87",
-   "legendSha256": "6634a5559866d20dc5fce47fc70ab18a2ba0f975df0f95d5f99f05f5fbcc8dbe"
+   "contentSha256": "68d15b3d9dc27d6d1db201c769bbad541b008518b26e2129863d90444c0bc132",
+   "legendSha256": "eb2ea259b47e8933840b2c53fbd581332c7185340c4c0a744b709354c89f4c9a"
   },
   {
    "order": 15,
@@ -567,14 +567,14 @@
     {
      "file": "15-surface.png",
      "label": "Surface",
-     "contentSha256": "0417afb00a7cff02713484d1644329b4245604db32bb773912b89d8b950ede3d"
+     "contentSha256": "7d90765f6d8e49210699df8315d30d3298afe8e5a6a48bc1e2c9130a8643a3f9"
     }
    ],
    "legendFile": "15-legend.png",
    "path": "mapgen/preview/jebus_cross/15",
    "seconds": 3.0,
-   "contentSha256": "aaf910dff2439d124e98b6754414fa17994bf384ee392aa1eb24824a258c75b0",
-   "legendSha256": "928c5dc938abb8aca73266a659065840c096628e26e86075ea60797cdd9acfbe"
+   "contentSha256": "ae1107114d1e117bc5726dfeb0c1f815a6d6117119a8c0b5f0105236484673f5",
+   "legendSha256": "4453330b9cde4cee6fa7f62e9e7d877690470450459baf2e7066987e223ab87b"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"
