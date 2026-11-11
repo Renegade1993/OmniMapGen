@@ -28,7 +28,7 @@ Features:
 | Towns, creatures and dwellings of the mods you have turned on | Working | 80% |
 | About sixty settings on eight pages, in the lobby | Working | 80% |
 | Map sizes, player counts, one or two levels | Working | 80% |
-| Obelisks and the Grail as a setting | Working | 70% |
+| Obelisks and the Grail as a setting | In construction | 10% |
 | Start zones: ways out, fair walks, mines in reach | Partly built | 70% |
 | Roads, including Road Network Off | Partly built | 70% |
 | Guards in front of treasure, mines and dwellings | Partly built | 70% |
