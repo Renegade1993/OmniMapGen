@@ -413,11 +413,12 @@ W_LAND = (150, 148, 96)
 W_SEA = (34, 82, 150)
 
 
-def render_water(dump_path, out_path, size=240):
+def render_water(dump_path, out_path, size=240, labels=True, colours=None):
     """a size x size picture of the first level: every land tile W_LAND, every water tile W_SEA, a castle in the player's colour on each start"""
     d = json.load(open(dump_path, encoding="utf-8")) if isinstance(dump_path, str) else dump_path
     W, H = d["W"], d["H"]
-    PAD = 12
+    k = size / 240.0   # castles and margin keep their proportion to the picture at any size
+    PAD = round(12 * k)
     MP = size - 2 * PAD
     n = MP * SS
     img = np.empty((n, n, 3), dtype=np.uint8)
@@ -435,17 +436,20 @@ def render_water(dump_path, out_path, size=240):
     def at(l, x, y):
         return (x * s + PAD * SS, y * s + PAD * SS)
     starts = [t for t in d["starts"] if t["l"] == 0]
-    spot = spread_castles(starts, at, 24 * SS, (PAD * SS, (PAD + MP) * SS))
-    fn = font(11 * SS)
+    spot = spread_castles(starts, at, 24 * SS * k, (PAD * SS, (PAD + MP) * SS))
+    fn = font(int(11 * SS * k))
     for st in sorted(starts, key=lambda t: t["colour"]):
         p = spot[id(st)]
-        hc = 20 * SS
+        hc = 20 * SS * k
         c = PCOL.get(st["colour"], GREY)
-        castle(dr, p[0], p[1] - 4 * SS, hc, c, outline=(255, 255, 255), o=1.4 * SS)
-        castle(dr, p[0], p[1] - 4 * SS, hc, c, outline=INK, o=0)
-        label = str(PLAYERS.index(st["colour"]) + 1) if st["colour"] in PLAYERS else "?"
-        dr.text((p[0], p[1] + hc / 2 + 1 * SS), label, font=fn, fill=(255, 255, 255), anchor="mm", stroke_width=SS + 1, stroke_fill=INK)
+        castle(dr, p[0], p[1] - 4 * SS * k, hc, c, outline=(255, 255, 255), o=1.4 * SS * k)
+        castle(dr, p[0], p[1] - 4 * SS * k, hc, c, outline=INK, o=0)
+        if labels:   # the player number under the castle (the menu v2 mockup); the menu of the template previews draws the castle only (K S036, DMB Dev 2026-11-11)
+            label = str(PLAYERS.index(st["colour"]) + 1) if st["colour"] in PLAYERS else "?"
+            dr.text((p[0], p[1] + hc / 2 + 1 * SS * k), label, font=fn, fill=(255, 255, 255), anchor="mm", stroke_width=SS + 1, stroke_fill=INK)
     out = pi.resize((size, size), Image.LANCZOS)
+    if colours:
+        out = out.quantize(colors=colours, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
     out.save(out_path, optimize=True)
     return {"starts": len(starts), "water_tiles": int(np.array(wat[0]).sum()) if wat else 0}
 
@@ -503,3 +507,23 @@ def render_legend(dump_path, out_path, width=LEGEND_W):
     finally:
         CW = keep
     return [t for _, t in items]
+
+
+def render_water_legend(out_path, width=LEGEND_W):
+    """the water layouts' legend as its own picture: land, water, player start (the castle only, no number)"""
+    img = Image.new("RGB", (width, ROW_H + 10), BG)
+    d = ImageDraw.Draw(img)
+    fl = font(LEGEND_FONT)
+    items = [("sq", W_LAND, "Land"), ("sq", W_SEA, "Water"), ("castle", None, "Player start")]
+    widths = [26 + int(d.textlength(t, font=fl)) + 22 for _, _, t in items]
+    x = (width - (sum(widths) - 22)) // 2
+    y = (ROW_H + 10) // 2
+    for (kind, col, text), w in zip(items, widths):
+        if kind == "sq":
+            d.rectangle([x + 2, y - 8, x + 20, y + 8], fill=col, outline=(14, 16, 20))
+        else:
+            castle(d, x + 10, y, 16, PCOL["red"], outline=(255, 255, 255), o=1)
+            castle(d, x + 10, y, 16, PCOL["red"], outline=INK, o=0)
+        d.text((x + 26, y), text, font=fl, fill=(235, 235, 235), anchor="lm")
+        x += w
+    img.save(out_path, optimize=True)

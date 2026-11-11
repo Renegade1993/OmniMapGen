@@ -25,7 +25,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
-from layout_render import render, render_layers, render_legend  # noqa: E402
+from layout_render import render, render_layers, render_legend, render_water, render_water_legend  # noqa: E402
 
 NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 NAMES = {36: "Small", 72: "Medium", 108: "Large", 144: "Extra Large", 180: "Huge", 216: "Extra Huge", 252: "Giant"}
@@ -144,11 +144,20 @@ def work(slug, name, template, levers, n, f, out, gen, env):
         return n, None, f"map has {drawn} starts, caption says {f['players']} players"
     png = os.path.join(out, f"{slug}_{n:02d}.png")
     info = render(dump, png, caption(name, f, split))
+    if slug.startswith("water_"):
+        # a water layout is shown as land and water only, the castles in colour with no number (K item 32 and S036, DMB Dev's menu): the composite and the level picture are the
+        # same drawing, at 432 and 1026 px, and the legend names the three things (the zone fills and borders of the template previews are left out)
+        render_water(dump, png, 432, labels=False, colours=64)
     # one square map-only picture per level and the frame's legend as its own picture (K 2026-11-05: "stack underground preview vertically", "the entire width of the sidebar";
     # DMB Dev's S025 ask 2026-11-11); ship.py names them NN-surface.png, NN-underground.png and NN-legend.png
     prefix = os.path.join(out, f"{slug}_{n:02d}")
-    layer_files = render_layers(dump, prefix)
-    render_legend(dump, prefix + "-legend.png")
+    if slug.startswith("water_"):
+        render_water(dump, prefix + "-surface.png", 1026, labels=False, colours=64)
+        layer_files = [os.path.basename(prefix) + "-surface.png"]
+        render_water_legend(prefix + "-legend.png")
+    else:
+        layer_files = render_layers(dump, prefix)
+        render_legend(dump, prefix + "-legend.png")
     layers = [{"file": fn, "label": ("Surface", "Underground")[i]} for i, fn in enumerate(layer_files)]
     return n, {"order": n, "file": os.path.basename(png), **f, "map": os.path.basename(vm), "caption": caption(name, f, split), "drawHash": draw_hash(dump), **info,
                "layers": layers, "legendFile": os.path.basename(prefix) + "-legend.png"}, None
@@ -190,6 +199,9 @@ def main():
         frames = [res[n] for n in sorted(res)]
         if not frames:
             continue
+        if slug.startswith("water_"):   # the water menu shows the one frame marked preferred (DMB Dev, S036): the first, the layout at its own setup
+            for f in frames:
+                f["preferred"] = f["order"] == 1
         for f in frames:
             p = os.path.join(out, f["file"])
             f["path"] = "mapgen/preview/" + slug + "/" + os.path.splitext(f["file"])[0]
