@@ -32,7 +32,7 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "f0af5c2c4510b2166766d21d7f5eae6b2ac32e2aaf825d85a0aea4858862fa0c"
+     "contentSha256": "68f950efca82c979e02ad224aff62aeccf97e0eb5fa49717c3ab76523916b793"
     },
     {
      "file": "01-underground.png",
@@ -43,7 +43,7 @@
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/01",
    "seconds": 3.0,
-   "contentSha256": "e5a6578736bc388be1528ef9a919bd92e94d5827aafee5bb31064535e22a16db",
+   "contentSha256": "1b1e870486d55526ef41ad557b8ecd7fdf25de961895b5205fca7a802284b676",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -76,7 +76,7 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "935980849dae37201adf0f5deddf1ce701bb5ac07563b35eb098a3c2e42326fa"
+     "contentSha256": "63870aa702a6dccfaa3e5bd09cc407fb907292492731e633bf489d254b6bd6b4"
     },
     {
      "file": "02-underground.png",
@@ -87,7 +87,7 @@
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/02",
    "seconds": 3.0,
-   "contentSha256": "029f09006b13482e3a5395a1fb11ad33bf437df79c7beec206a37d4eb1ecd749",
+   "contentSha256": "e73c8ae0a3781be30f9d63615f397bf0ea1aa8b2ab2b83b8f2d133fe52ae462f",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -120,7 +120,7 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "9283b38b141001fedcc8cd0f105cf5539f42606de0b3f911112d39e3771d49ad"
+     "contentSha256": "9103f87b5c74c6bd498216a041e68815aa9d79406b04837f898e103a12dd7141"
     },
     {
      "file": "03-underground.png",
@@ -131,7 +131,7 @@
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/03",
    "seconds": 3.0,
-   "contentSha256": "4c8aaa1578037e23db6bfd9dd4109631e057953189dce8771fad7b41184bd3cf",
+   "contentSha256": "41ff4a9f9a2d7aebfd89593303380d1ea211c7703a5d50b6af997bd2cafc902f",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -164,7 +164,7 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "12f7494734ac8755d32c7fc11569ac6ac293b2bd076f744760da51b2fbeaf52b"
+     "contentSha256": "27fce1b7fb2ee334559d0707496257b467ae19f52e212a076f3be3702d6b45e4"
     },
     {
      "file": "04-underground.png",
@@ -175,7 +175,7 @@
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/04",
    "seconds": 3.0,
-   "contentSha256": "ec989bfe54623d4e3c1adaae4b8e02e6914c0c366ca36c348b4a2edeed09892d",
+   "contentSha256": "21201ba3602e7e2834d07bfa7f3a6c7fd292f41a96e10e97177c4cbd71e24f98",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -251,7 +251,7 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "417faceb3f7be5d288c5b91de0c9c2078557908171e7ae6d37ac3c4e53b118f0"
+     "contentSha256": "4b3d7e09709a7d1d63eac9429637eb05c23fea6d7bbdfdbd24bb6fd900ade789"
     },
     {
      "file": "06-underground.png",
@@ -262,7 +262,7 @@
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/06",
    "seconds": 3.0,
-   "contentSha256": "f6623d01796c59e855e5acd204a529317e0632081bdf0c72911e3922251a7cc3",
+   "contentSha256": "b586f8c4a9ff0fadcab0a5886ce9de5b73a950af22709c544f9f09339a76039c",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -295,7 +295,7 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "9fcf7562720517e171d88e36de4014e36e6afc4f27545c431e671248f3ec6763"
+     "contentSha256": "bb99907e371e4f0bb0c905c0f8a7ba6acc5a08db55ac94e4c7295c1856b89c98"
     },
     {
      "file": "07-underground.png",
@@ -306,7 +306,7 @@
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/07",
    "seconds": 3.0,
-   "contentSha256": "02ce9d09958577ac9dd8b312ad4b9725d4b4c1f331c2bbdab6b044b6d1709e9d",
+   "contentSha256": "726ee8224f7c054cd526cd40477a018deaf03030c6db3d1af6c7a9ac575d79ab",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -340,7 +340,7 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "437aa0d6f2ba72af2fc68c2ae7a9f4fe5da9ba86235d8b79a790f802be2dd023"
+     "contentSha256": "7073a6633544586a978ec238cd707d3f97cc69686a6f1210d105415820855d90"
     },
     {
      "file": "08-underground.png",
@@ -351,7 +351,7 @@
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/08",
    "seconds": 3.0,
-   "contentSha256": "cdd1578a38ac9e6df32ed3b909f0050ed93f1df9abfff013d6c7638a126be9f5",
+   "contentSha256": "8633a4ff1b0ec11cc2a6e1fe17eaf0dccefdc0cfca98c0c8fb92e81435337aef",
    "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
@@ -385,7 +385,7 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "fea5d12787b82c014654fe707d9f31f2efe531d96455b9b810e3cfc59108035f"
+     "contentSha256": "b17e374dfb3a9566dd20a8ce06a0c97e42eecc54c31a28ff528c31b441c28f00"
     },
     {
      "file": "09-underground.png",
@@ -396,7 +396,7 @@
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/09",
    "seconds": 3.0,
-   "contentSha256": "4ffc4dcd35fdc170b96b983b8f223a0b237940ffb9f3a46b34429ecfb7c88ac7",
+   "contentSha256": "a553686c8a8b114f977b4bf8a6e09fd41db24b6068613a9004cfba89724d9382",
    "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
@@ -430,7 +430,7 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "c94fefc7e6c07bccb884d8424a097a9ff9c0a496abe832286e423bb1eaccff73"
+     "contentSha256": "7385c764ad068e112dff00954b7b70e69ba35ecf39ecee5719f192c5fe03e7d1"
     },
     {
      "file": "10-underground.png",
@@ -441,7 +441,7 @@
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/10",
    "seconds": 3.0,
-   "contentSha256": "0914373553392c58216e71713c2ec50ea8d3ae9f53ccfd2ed8cd553f9fec0577",
+   "contentSha256": "2040610cde2da9a84876e671550ba6d641b5b9979ea0a4dad8c620ecb490669e",
    "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
@@ -475,7 +475,7 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "2ecf6d4b54344caaf5d6f4433aacb67f3981c9cf7bd3ea6f1243470ca0fce4aa"
+     "contentSha256": "5091b31dbad67bd9a15ddd280bbf7be3a2d6f3980dfc9b3c38cf2407746f8133"
     },
     {
      "file": "11-underground.png",
@@ -486,7 +486,7 @@
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/11",
    "seconds": 3.0,
-   "contentSha256": "0b7163c44f2581bd8f8bda9585675c7b177c4f39972e37fb11d3b9a72beacaf6",
+   "contentSha256": "c6abcf7a6d896550026c866b245b04821d5800a705427a297ef3c797b7734759",
    "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
@@ -520,7 +520,7 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "f1ccc7fcebb918e41be91eb84fc9f14b07f42df47403b0daa09ae60adc8d1dc3"
+     "contentSha256": "69d01928ad8c140731c81e3bd03833ee4e3a2eed11ec50d0559db94b34f8fc73"
     },
     {
      "file": "12-underground.png",
@@ -531,7 +531,7 @@
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/12",
    "seconds": 3.0,
-   "contentSha256": "d3e442c1592bb96962b0aee51ef2a0d306d1aa4f1d0678e01ab939fa1c104d2a",
+   "contentSha256": "1030018ee93706682fb0092aabe8ff6c691387f4fb1fc5ba4bae8378cc5a6118",
    "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
@@ -566,7 +566,7 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "873328b225c857e1b034602f42292bc1fc34549ce5b36ee6c6a7194e4e0c832f"
+     "contentSha256": "269fe4a6cbf6fbe313acaf5a981fe2e4a3df770aab59599ad3d7448fa90599b7"
     },
     {
      "file": "13-underground.png",
@@ -577,7 +577,7 @@
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/13",
    "seconds": 3.0,
-   "contentSha256": "a7769b33b0738018c21de341af0d5f9e4483c28990db7bb24c77bc6ea02eb188",
+   "contentSha256": "048056d69bd48c8f79c70c7172ba515fc358df37b5d801fbc30018e07d00aada",
    "legendSha256": "33aa13c4e3be487c3292c53e4b739a723072d7ced2c235cfa7193077aeb4012f"
   },
   {
@@ -611,7 +611,7 @@
     {
      "file": "14-surface.png",
      "label": "Surface",
-     "contentSha256": "5cae7e2d5a57b6e7f1baaecae3f81439b5ab0d901a4dabcd5c12cfe084a0cf4c"
+     "contentSha256": "3b7eaa29fba573e82c06448bafefa2a81a572f2984187c1d22468bea0699652b"
     },
     {
      "file": "14-underground.png",
@@ -622,7 +622,7 @@
    "legendFile": "14-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/14",
    "seconds": 3.0,
-   "contentSha256": "71ab2236bd8a7f2102718ef6075c84f42ceddb330524e9a0458013f99127d90d",
+   "contentSha256": "5712b5906b8a59e302617e9bb0fa5457dfd337c5fc96663cbcb9d490989ac00e",
    "legendSha256": "83e0978cfed7f388161be6bd7b2b7233dcb655ff57b0f175d2a2e3e70cf9619d"
   }
  ],

@@ -29,13 +29,13 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "9ab84cc834707e300ca4d5144b152c02acb7e04f657c1617ac829cdf2ff41e94"
+     "contentSha256": "cdc542c5e1d72a35ad8f384cf1ce527477fb2fdcce280650c0f7d4c0a146f404"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/golems_aplenty/01",
    "seconds": 3.0,
-   "contentSha256": "7e3b74a22d9ccefc70c435ee4a9c84659c468a1329a31d6619e60c3739a49bb6",
+   "contentSha256": "229fbe78a47ead3d89f26197db6e6629b14f9353271258bcdd36b0d596d7081b",
    "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
@@ -275,13 +275,13 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "3d769d1ca8867792b14b4421107b47d69970e28b7bc10168fa1aa88b8f99f7bd"
+     "contentSha256": "185e3a278aecb0ad00b9e44c422d6b7709703b204e886c854c7cbc389c4bf80b"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/golems_aplenty/07",
    "seconds": 3.0,
-   "contentSha256": "bcf3824cd3785ed4c8e2f7a47983eb582b58f912704c1da6dc47e5d6cd7354be",
+   "contentSha256": "8e49671ca831ed001c5c999d5e7a990f816c9269eec5540318f691c6eb0c5dd0",
    "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
@@ -357,13 +357,13 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "51417b1777a949574ea4436cf590a33de542029c4a9d1cc53eebdcb8c836845a"
+     "contentSha256": "116b26ba0074c1d1a5b2243af9ea58e91d76c6224b52a0ccf832153bbea62da9"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/golems_aplenty/09",
    "seconds": 3.0,
-   "contentSha256": "7c39d2b75cff4e5bf409db7e0eaf13eec94f873a77d7c7e18ae81da6b06b9a65",
+   "contentSha256": "7607767f6e3e001c1d5a3815bbc6962a52bea4b87563ba659453861e73722753",
    "legendSha256": "4453330b9cde4cee6fa7f62e9e7d877690470450459baf2e7066987e223ab87b"
   },
   {
@@ -394,13 +394,13 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "89e0c79374f34c37ea73941be655e1e28527817bc77d19c98b73d1c1b96c5664"
+     "contentSha256": "b1fa6f469ea80520930099f317e0d187ec9d7e6ee49f852b9d2ef1d02edbe7b8"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/golems_aplenty/10",
    "seconds": 3.0,
-   "contentSha256": "46c61c98cb7c92fea15c7d678e8f5107e5b95888f88148b0be1e706285c46ae6",
+   "contentSha256": "458ebcf52e674d9422773cf95a1ee2e89925179012f24b92c2006bfa1cb5b7b4",
    "legendSha256": "d2763627b735c7b0ff040c1e1938ee613b22b376398038a0937d432fc95ecdee"
   },
   {
@@ -475,13 +475,13 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "cb76ef07e9eee4a6cfb54345c1c579940c86dc923ced7e3a4a8ce4cfcf39c659"
+     "contentSha256": "694a8dd6c93ac69a489cc3495ae1ba0a69047af8940f637e23824a5d0c75c9f4"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/golems_aplenty/12",
    "seconds": 3.0,
-   "contentSha256": "fc3f0fd8ba726655e65cd81fa20c892f8801bd0f2dd79307474042a4429b4e90",
+   "contentSha256": "77f7ee5e531c89b5385f329ffae5478df0aa8ddd8bcef7488515c09582c7ec03",
    "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {

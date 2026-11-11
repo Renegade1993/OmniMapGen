@@ -30,14 +30,14 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "08f140ef9133ff8e18273a184d03a0cb74bbfb995370f7055177893d422f327d"
+     "contentSha256": "a9e769eb3892879af83c459c32390c0586ecb3c8ec43b41b737f30c7ac8a941b"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/water_islands/01",
    "seconds": 3.0,
-   "contentSha256": "5b62f0bf9cd8d957872d1513b97a8dcf78e8d696b903dcb3a2b6244c4e7eeef4",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "9c30fb2f8af0cb7bc75882bd2d3767cb73350cb554f862cd505e4687ce3fabfa",
+   "legendSha256": "10ae572e9162ae660e9cf55087aa3f8b3a5721aae1ddef5262c3513058a6238b"
   },
   {
    "order": 2,
@@ -69,14 +69,14 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "6518cd8c199c08c023780c401b98071b280834d536f33bd23af8e9e142a489a1"
+     "contentSha256": "734248c3b35ca50f9fd9d2d140dd92ffe6750e61270dd6e4f4a71416c8ad01f4"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/water_islands/02",
    "seconds": 3.0,
-   "contentSha256": "433182b467018ba1ae78af91e48f81359f8e91888c91f8219103178277d5611a",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "7976b1d644dbb22e02ef7cdcf6381074fb2122b990bb9c85e2e3d7c570b92367",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 3,
@@ -108,14 +108,14 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "bc208ff5b362436b2a20545b20c95974558cac77b8edfc7d3ab0ba695a7ca0a7"
+     "contentSha256": "892b64b8f5b8d5d1b29d16f984651505a1a8001b3bd772a71b5c60a7d57660f7"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/water_islands/03",
    "seconds": 3.0,
-   "contentSha256": "8d1079da1229e29a43fd65f3f6ac91e18260a63aa0ff91fdb764f6bab5ed1b4a",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "eda819d8664001bfdb46d5f62bd25cacbe63250c44b9f2747bbe323f074cdabd",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 4,
@@ -147,14 +147,14 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "b5bd630e6fe1b295884fd74a2aa1d5f323129e162210b78107be74bc902e3883"
+     "contentSha256": "514a00fbf5a9e5ea5c145985194614c1086d34b8796173e47f895767a08cccb3"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/water_islands/04",
    "seconds": 3.0,
-   "contentSha256": "51e1cf4418cdb292ac542f6ca6623a5588343e0e3a76c3f4b6972d36e932f864",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "b1f0b63c844f193212ef162641c237a32086fa41f5b14f39e26776b9e5e68c15",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 5,
@@ -186,14 +186,14 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "d86c368fe3a69c4c975e63fbcdae2f1047458e5d2f9a77ec284dd1dbb32bdf56"
+     "contentSha256": "aaf78186cd5e011539d3629c11a2010d01bdc8b1f234ba3301ff0d14062d033d"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/water_islands/05",
    "seconds": 3.0,
-   "contentSha256": "5be0a164d961e452616126c04c2a9116598bcd1d30d7f90b3db7eeadbb6417e7",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "223c62e548c210c46e3d16fb6050392f7f2845bcbe7bb9264f68715dc95bd87e",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 6,
@@ -225,14 +225,14 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "5f45f4e9cb8a5b0a2234451a652623a6d7ffc116cfd6f46d39ebbcd98c5c8f1f"
+     "contentSha256": "20f5b79d9380b78074e6d715243d3abdb61c576c7f0b75eecb792cf4e2054e30"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/water_islands/06",
    "seconds": 3.0,
-   "contentSha256": "f1857e5bdedd321cf1ab936d25f546b3c80e94078147130e05a7ba91b8edff70",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "ac11ee7753949e70d8fb1f424dcfa9c8731e72f6e9385b4e3481c773fbb10e5e",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 7,
@@ -261,14 +261,14 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "d66a9e3ed004a7890e8d49f01f24efcea87a5e8cdb424e16f543f5c547c68eed"
+     "contentSha256": "ec79b67c31fda55ca19dd79b8b64014244ed21b426d2f299a3bcc39566957228"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/water_islands/07",
    "seconds": 3.0,
-   "contentSha256": "5edaf0efbcbb77be4dd31191687e5466b44cbd3804e22f9edac502404ec180b7",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "3dd94089cc6986046ab8f0f5ed1f060e44d65747ac06480a0c21401a50c2164c",
+   "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
   },
   {
    "order": 8,
@@ -297,14 +297,14 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "9935a3bcffe86b44b9dad07fe0c03ddc2a4c96cb9cddc807a7e54c135c5321b4"
+     "contentSha256": "e8ee849e463f9cbe90d8b4b36e0d795f0ccef36000179c5dac39f1a947eae807"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/water_islands/08",
    "seconds": 3.0,
-   "contentSha256": "d6c6e7077c01a5cc3e80672f5c1d7796e8fd251979e69cd552f6fe3b05afd29b",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "7b3cc41e564e243bea2372590a78f7cf097ad520ffc1da85e4a1052cc1694e52",
+   "legendSha256": "82732c440403ccab7f3d9ed76f17753f6d84d1e4031d4aa0d040c5bd265e11c0"
   },
   {
    "order": 9,
@@ -337,14 +337,19 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "66dbec2ba8c05e7da936f487e60d1612c7dffe6aeac7ae809da1b67a63fe5812"
+     "contentSha256": "33ef02d79b4ecf1e6c1f49c5b716ef360d3fff3319601ddd67463bee63dd4cae"
+    },
+    {
+     "file": "09-underground.png",
+     "label": "Underground",
+     "contentSha256": "cd56b39a76f05ff1c22435864ae37a79cc1364e78770f1280dbf86b1f13ef20b"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/water_islands/09",
    "seconds": 3.0,
-   "contentSha256": "cba26c6d021339659f2b48ec20cec287e34c33f927e64e2c8e2fe44a71e1b8c3",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "024474567d19865593028b22827a1be384c1cd009fe7b7a067094d57a2251b33",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 10,
@@ -376,14 +381,14 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "f36143c2538a87987b1e05a600cec562c66e3f81a7719b19e2992bb60eeccae1"
+     "contentSha256": "12f0e9e7f574b72bdf28189eee5380ea7b70ec2bb33306150fd34da0e7ad7df5"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/water_islands/10",
    "seconds": 3.0,
-   "contentSha256": "34986fd0efc45e0cc5dd3932ab20d9b389e4e26f6b7e5a4fac012eb3ddc9a0c9",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "5ff51e840479627463a7b8a00a9c2be157914d3bf5fad227ec70ed0012f7d5f0",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   },
   {
    "order": 11,
@@ -415,14 +420,19 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "84952b49719abe863589d3cd41878fac1a9ee395fc4ec4f4cf632f1514152433"
+     "contentSha256": "70cd7f882c6a77229aa916d3fba4704735d993fa14f14cfca484a149b7587c32"
+    },
+    {
+     "file": "11-underground.png",
+     "label": "Underground",
+     "contentSha256": "2dee7941828d43752bf26fae508cc0132782ce7d5dfeae126d02f76655b570b4"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/water_islands/11",
    "seconds": 3.0,
-   "contentSha256": "7b97015a31a9deb8747657f932d20fc9aed2a8ccbe8dfbb594bc624a7b42ecde",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "9d7da8b57c18a8745f19170553abe140289debdc92f968ef0b2f5ebc267e45ed",
+   "legendSha256": "273af26d6c1e2bedba0e29112f3c8e5447e50e6be99d9dce867899ac7aeda1c9"
   },
   {
    "order": 12,
@@ -454,14 +464,14 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "bb76e9af1df687efb9fd7869e87e72c8a6a492e58fa717ba8b3714f7137ffc9f"
+     "contentSha256": "437dad15ecaf0a52b09e4864dc56a49ce9526b4e6418123834807dbd0634e0b9"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/water_islands/12",
    "seconds": 3.0,
-   "contentSha256": "bd19f5263ace572f09b29094da65f4d0e9b9b7da452aee8f08e2301d2b6bf6c4",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "1b03f50823be4231ad102f203c86235c55801573e8a4bb5f35780338fcd48d8c",
+   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

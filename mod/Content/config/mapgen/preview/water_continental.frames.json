@@ -33,14 +33,14 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "14abcc2671d5c05a6df16921361e91061975000342bed579f61b8b754f0b8abf"
+     "contentSha256": "6b8f56123a15f88b73d8a747f561a715c696934f2dfa22b89a5b76c6a2092b76"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/water_continental/01",
    "seconds": 3.0,
-   "contentSha256": "ba38d62295462d6c3e6fce62f414fcc5650f6c7dffb59504527c95d31d184820",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "b63fffa8161632d1bf7dc9a16fb31a9cbfd9a8fd035f83230d639c0880eca4e9",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 2,
@@ -73,14 +73,14 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "c32f277ce7066275138d3a338ca3c16207bced3bf04fb013b6059272ffb2752f"
+     "contentSha256": "81395b8e4852484bcee6382059f5ffb02693d97b91a8dec2f14ce627b568ad9c"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/water_continental/02",
    "seconds": 3.0,
-   "contentSha256": "b9c8092987ac9382d13bd676817633d7e36ed37090f71c9c28759450e43eb8fb",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "af04923db49acc6a20e6b5a17bd3912d8ad1677af283a6102bb0e6b2b5b6c512",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 3,
@@ -113,14 +113,14 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "4294610aac55669fd4263d4fa5f79ad20dd2bdb70ff0149d8707de90ea0e80ca"
+     "contentSha256": "1b2b8b6884fb60d1ee26a0e1b5e9aebed404ab9d3ab87e7199b6c2e8c5a65cfe"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/water_continental/03",
    "seconds": 3.0,
-   "contentSha256": "f34576d94f341d21c8d38dad42f07780b378ed7bd7886e5e27e3606e2336128c",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "4b6de25c4d5f3625cb93d2f833faf3bd802a7d06283631b49060d53a7009d441",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 4,
@@ -153,14 +153,14 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "5bbd7234c2b4822a4c495fa7d35edc515d51f9d38bea9090ff0f0c2d884a2695"
+     "contentSha256": "37e7123c64a369527a57f328909f5cc7e4b06c71a3fb67431d0a3b96c17e3be8"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/water_continental/04",
    "seconds": 3.0,
-   "contentSha256": "80ce31b7033bc05442f7be80a5be255874ff02ebff424ab0c02139899704f32e",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "4fdbd271b4101ace8ee22d36121bd5d471bf7119d24b1206d4a52f781fa487f2",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 5,
@@ -192,14 +192,14 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "54777b6afac9da8a8a5c4262dc66da542cfdb00a738dad8b2aa0cf38cb32c05a"
+     "contentSha256": "fedd0b0824c28f479da6f6741281010957482d6bda7fd1b9afc22098915825cd"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/water_continental/05",
    "seconds": 3.0,
-   "contentSha256": "30d34685ebdcb1f9215f027cd212df4134c9d69d8e26292e2e8e4a2ff06e97c9",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "fb1a00042e25a7e89bec93e003c55763bd7824f7d0e80eb502cc71aac72dd799",
+   "legendSha256": "273af26d6c1e2bedba0e29112f3c8e5447e50e6be99d9dce867899ac7aeda1c9"
   },
   {
    "order": 6,
@@ -232,14 +232,14 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "a95e8962fb7f14936db72847756cbe9a5ad3e0bf329b390d0daa5e05861a7ad3"
+     "contentSha256": "4d613135d8ddc4e1aefe21a2d8d6bd513a58a9444be672013772eca2ed329ec1"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/water_continental/06",
    "seconds": 3.0,
-   "contentSha256": "d1af5107ba24d23761ee4106c9a489b65d69874f6d5d222f77fe835bba2f6ae6",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "ffaeb7e93d49b3f2e377df7f8834840b99bb9598492307d632dcb67cf0b13c55",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 7,
@@ -268,14 +268,14 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "fbb0191b9e78d33c8cdba82980014d16e78c7c6d4eb312ea3d6a080b6ec3c91b"
+     "contentSha256": "fe4ca12fa71a72133b2658b3f6dc1cd468b8dd70939736fc005f7c3ff262436d"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/water_continental/07",
    "seconds": 3.0,
-   "contentSha256": "dcb1bf96c0bfc3c92cf2196d404f7a0be75111a9774871990cb4671e3b00da7c",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "15d1ee025c90dcf1a8182ce01255e6ce8a51334ee027ed2336d8c9728f8f9d1c",
+   "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
   },
   {
    "order": 8,
@@ -304,14 +304,14 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "40e8f9b5ac3ecd1d9d7fc8b015caadc594533e28171c92a2459c8f4cdd649815"
+     "contentSha256": "c41964578a66ecff2192cd49eb9bae570309ef3f41f13cc8d6a238e1b3804d77"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/water_continental/08",
    "seconds": 3.0,
-   "contentSha256": "2b83a6f2e9a3c9a5d28dc9826775605e79c4cdd75f6d1f419b260a6bb3182a50",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "b5d2d4225a81b66514632e1faf42c7f26385fead89766768a833ae9d89aaa867",
+   "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
   },
   {
    "order": 9,
@@ -344,14 +344,19 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "8f76141b617608c95f6f9eecb22b76599fad81539074f8230f24f0a5305d561e"
+     "contentSha256": "ea44f223b50bc9847acaa67e400fe1f4cd222a3f20b3c2ecdcb8845280e3384d"
+    },
+    {
+     "file": "09-underground.png",
+     "label": "Underground",
+     "contentSha256": "311a5b01c1bd3455958141820e03a7da102f7281d1ca4065e6c248af7197edcc"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/water_continental/09",
    "seconds": 3.0,
-   "contentSha256": "c287f3181d66edda5180ccfba609a82253bb6b93524868f2dc27507157ca1d28",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "d3f47cf0a2dee0b2ffd0dc12b8e92507c0790afd0161bcb70dd1ddc84fd67913",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 10,
@@ -384,14 +389,14 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "8a95432acaec082a11f6d93df2c7443ba92634ab25fb031a0e0878946e73a51a"
+     "contentSha256": "cfe87659dfe92b3220b072f5c68f38e218a98eac41efa3ebcee30e9394f2e4fb"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/water_continental/10",
    "seconds": 3.0,
-   "contentSha256": "3af4554855e6af14203f8d8d7da12f3bb7927de7e02f3f1830eba42fd31c366d",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "8fb664a526a3753c000eef469bbca539440f53c79ebeb916668fb0596d9ade5a",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   },
   {
    "order": 11,
@@ -423,14 +428,19 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "736c92b1dac7c8fa405890a1b4f0bb289ec8ce0e1b701367c4530afc6789fafe"
+     "contentSha256": "10539a0ed9f323981d9a5c6d00e9c5f724f5017362ca090861210831f6ede72e"
+    },
+    {
+     "file": "11-underground.png",
+     "label": "Underground",
+     "contentSha256": "1eb3359e00b21aaac02eaa6ecdf43704602d00cfa4c6283f77fde09030a18d83"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/water_continental/11",
    "seconds": 3.0,
-   "contentSha256": "6af05ce55014dc424a83a008fe18b2ceb2fb7d6d6fb67ee9da1c1f66d353616e",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "b55e76b46741edcce93f37813a1bc0c2612462f46472478123c75c6110b1ac55",
+   "legendSha256": "273af26d6c1e2bedba0e29112f3c8e5447e50e6be99d9dce867899ac7aeda1c9"
   },
   {
    "order": 12,
@@ -463,14 +473,14 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "9cbd18bd0b705268945c9945603ed2735677448e3afdb65d14e227ff682c0da8"
+     "contentSha256": "4aa110555a7f2ca80e673913bf8d43d9eb4190b96539e1dcadac45ac68e18d33"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/water_continental/12",
    "seconds": 3.0,
-   "contentSha256": "e4e96916919daa7c1da8d02b0f5def93ae5212ae1c78d83748072198ba28b12c",
-   "legendSha256": "8a64be6629a79da248e10311cdf0eff0a99937eb57665a1413ed021329702627"
+   "contentSha256": "139933594d38f2094853f961210cdfb32d24808d22b58eccfdf5f52b2080afb2",
+   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"
