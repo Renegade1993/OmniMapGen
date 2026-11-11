@@ -2638,6 +2638,15 @@ async function generateMap(params) {
 							console.error(`[gen] level ${li}: road gaps of four tiles or fewer closed at the end: ${g.joined}`);
 						}
 					}
+					// a link's doorway no road crossed (roadplan.js joinDoorRoads): joined last, on the ground that stands now (K's game 2026-11-08, Green had no road to the middle)
+					if (process.env.VMAPGEN_ROAD_DOOR_JOIN !== '0' && plans[li].roadDoors && plans[li].roadDoors.length) {
+						const wetD = plans[li].p && plans[li].p.waterMask;
+						const nd = require('../biome/roadplan').joinDoorRoads(plans[li].roadDoors, roadCells, plans[li].zone, Wl, Hl, bl, li, c => !(openMask && !openMask[c]) && !(li === 0 && wetD && wetD[c]));
+						if (nd) {
+							require('../biome/gateroad').closeDiagonalSteps(plans[li], Wl, Hl, li, bl, 1, blockingCells, dOpts);
+							console.error(`[gen] level ${li}: a link doorway no road crossed joined to the roads on both sides, ${nd} tile(s)`);
+						}
+					}
 				}
 			}
 			// The loop pass, last (K, 2026-10-31: "weird loops abound in the mapgen version i have installed"): the corner joins and the gap close above
