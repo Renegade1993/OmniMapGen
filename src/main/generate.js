@@ -2453,7 +2453,7 @@ async function generateMap(params) {
 			below.forEach((d, i) => { const dd = (d.x - g.x) ** 2 + (d.y - g.y) ** 2; if (dd < bd) { bd = dd; best = i; } });
 			if (best >= 0) links.push(link(g, below.splice(best, 1)[0]));
 		}
-		const fair = evenStarts({ objects, starts, W, H, levels: plans.length, links,
+		const fair = evenStarts({ objects, starts, W, H, levels: plans.length, links, slack: params.template ? undefined : require('./startFairness').FREE_GATE_SLACK,
 			zoneAt: (l, c) => (plans[l] && plans[l].zone ? plans[l].zone[c] : -1),
 			blockedAt: (l, c) => !!(l === 0 && water && water[c]) || !!(plans[l] && plans[l].openMask && !plans[l].openMask[c]),
 			removable: o => REMOVABLE_TYPES.has(o.type),

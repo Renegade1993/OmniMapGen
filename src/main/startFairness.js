@@ -35,8 +35,12 @@
 'use strict';
 
 const GATE_SLACK = 1.5;
+// A free layout (no template): the four starts' ways out stay within 1.12 times the median, so after the pass the dearest is at most 1.25 times the cheapest (Classic 108 four players
+// seeds 1 to 8: 1.5 gave a median max/min 1.88 and 1.99 at worst, 1.12 gives 1.25; the engine's own maps 1.15, K 2026-10-31 "the starts in classic seem really unbalanced", S048).
+// A template keeps 1.5 (its link guards are sized by the template). VMAPGEN_FREE_GATE_SLACK=1.5 is the old value.
+const FREE_GATE_SLACK = Number(process.env.VMAPGEN_FREE_GATE_SLACK || 1.12);
 const GATE_EVEN = 1.3;
-const HOME_SHARE = 0.5;
+const HOME_SHARE = Number(process.env.VMAPGEN_HOME_SHARE || 0.5);
 // how often a start's way out is raised and measured again, as each raise can
 // leave the next cheapest route the way out
 const RAISE_ROUNDS = 8;
@@ -74,7 +78,7 @@ function cellsOf(o, letters, W, H) {
  * zone, rather than a treasure ground of its own behind a guard. Returns
  * { starts: [{ color, home, gate, cut }], cuts }.
  */
-function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, removable, strengthOf, setStrength, zoneAt = null }) {
+function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, removable, strengthOf, setStrength, zoneAt = null, slack = GATE_SLACK }) {
 	const N = W * H, ALL = levels * N;
 	const walls = new Uint8Array(ALL);
 	for (let l = 0; l < levels; l++)
@@ -295,8 +299,8 @@ function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, 
 		// their mean, and 1.5 times it let one start's way out cost 1.7 times the other's (K's small Coldshadow seed 1099575901,
 		// 2026-10-12: red 31136 against blue 18144, "a lot more creature value blocking me from anything substantive"). Three starts or
 		// more keep the median rule: cut to GATE_EVEN times the cheapest, every start would fall to the weakest one's guards.
-		const even = gates.length === 2 && process.env.VMAPGEN_GATE_EVEN !== '0' ? GATE_EVEN * Math.max(minGate, medGate / GATE_SLACK) : Infinity;
-		const target = boxed ? minGate : Math.min(GATE_SLACK * medGate, even);
+		const even = gates.length === 2 && process.env.VMAPGEN_GATE_EVEN !== '0' ? GATE_EVEN * Math.max(minGate, medGate / slack) : Infinity;
+		const target = boxed ? minGate : Math.min(slack * medGate, even);
 		if (m.gate.value <= target) continue;
 		for (const k of m.gate.route) {
 			if (value[k] <= target) continue;
@@ -307,7 +311,7 @@ function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, 
 		m.cut = target;
 	}
 	// and a way out that costs too little raised to the floor
-	const floor = medGate / GATE_SLACK;
+	const floor = medGate / slack;
 	for (const m of measured) {
 		if (!m.gate || measured.length < 2 || m.cut || m.gate.value >= floor) continue;
 		const from = m.gate.value;
@@ -329,4 +333,4 @@ function evenStarts({ objects, starts, W, H, levels = 1, links = [], blockedAt, 
 	};
 }
 
-module.exports = { evenStarts, GATE_SLACK, HOME_SHARE, LEADS_TO };
+module.exports = { evenStarts, GATE_SLACK, FREE_GATE_SLACK, HOME_SHARE, LEADS_TO };
