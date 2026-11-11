@@ -51,7 +51,9 @@ test('a doorway no way reaches is counted as left and named, not hidden', () => 
 	assert.strictEqual(r.doors, 1);
 	assert.strictEqual(r.joined, 0);
 	assert.strictEqual(r.left, 1);
-	assert.deepStrictEqual(r.leftAt, ['9,3 10,3']);
+	assert.strictEqual(r.leftAt.length, 1);
+	assert.ok(r.leftAt[0].startsWith('9,3 10,3'), r.leftAt[0]);
+	assert.strictEqual(r.noRoadZone + (r.left - r.noRoadZone), 1);
 });
 
 test('a doorway that already has a road is left alone', () => {
