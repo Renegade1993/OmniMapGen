@@ -4,11 +4,52 @@
 	],
 	"items": [
 		{
+			"name": "help_map.restrictToTemplate",
+			"type": "hoverHelp",
+			"rect": {
+				"x": 66,
+				"y": 103,
+				"w": 312,
+				"h": 24
+			},
+			"help": {
+				"hover": "vcmi.mapGen.map.restrictToTemplate.hover",
+				"help": "vcmi.mapGen.map.restrictToTemplate.help"
+			}
+		},
+		{
+			"name": "check_map.restrictToTemplate",
+			"type": "toggleButton",
+			"image": "ChkBlue",
+			"position": {
+				"x": 68,
+				"y": 103
+			},
+			"setting": "persistent:mapGen/map/restrictToTemplate",
+			"selected": false,
+			"help": {
+				"hover": "vcmi.mapGen.map.restrictToTemplate.hover",
+				"help": "vcmi.mapGen.map.restrictToTemplate.help"
+			}
+		},
+		{
+			"name": "label_map.restrictToTemplate",
+			"type": "label",
+			"font": "small",
+			"alignment": "left",
+			"color": "white",
+			"text": "vcmi.mapGen.map.restrictToTemplate.hover",
+			"position": {
+				"x": 103,
+				"y": 107
+			}
+		},
+		{
 			"name": "help_map.template",
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 162,
+				"y": 192,
 				"w": 143,
 				"h": 22
 			},
@@ -26,7 +67,7 @@
 			"text": "vcmi.mapGen.map.template.hover",
 			"position": {
 				"x": 58,
-				"y": 167
+				"y": 197
 			}
 		},
 		{
@@ -35,7 +76,7 @@
 			"image": "MapGenButton80",
 			"position": {
 				"x": 198,
-				"y": 158
+				"y": 188
 			},
 			"callback": "chooseMapGenTemplate",
 			"help": {
@@ -61,7 +102,7 @@
 			"text": "",
 			"position": {
 				"x": 58,
-				"y": 197
+				"y": 227
 			}
 		},
 		{
@@ -69,7 +110,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 228,
+				"y": 258,
 				"w": 143,
 				"h": 22
 			},
@@ -87,7 +128,7 @@
 			"text": "vcmi.mapGen.map.size.hover",
 			"position": {
 				"x": 58,
-				"y": 233
+				"y": 263
 			}
 		},
 		{
@@ -97,7 +138,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 232
+				"y": 262
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -153,7 +194,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 233
+				"y": 263
 			}
 		},
 		{
@@ -161,7 +202,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 258,
+				"y": 288,
 				"w": 143,
 				"h": 22
 			},
@@ -179,7 +220,7 @@
 			"text": "vcmi.mapGen.map.declareMods.hover",
 			"position": {
 				"x": 58,
-				"y": 263
+				"y": 293
 			}
 		},
 		{
@@ -188,7 +229,7 @@
 			"image": "lobby/checkbox",
 			"position": {
 				"x": 198,
-				"y": 257
+				"y": 287
 			},
 			"setting": "persistent:mapGen/map/declareMods",
 			"selected": false,
@@ -202,7 +243,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 288,
+				"y": 318,
 				"w": 143,
 				"h": 22
 			},
@@ -220,7 +261,7 @@
 			"text": "vcmi.mapGen.map.players.hover",
 			"position": {
 				"x": 58,
-				"y": 293
+				"y": 323
 			}
 		},
 		{
@@ -228,7 +269,7 @@
 			"type": "toggleGroup",
 			"position": {
 				"x": 58,
-				"y": 312
+				"y": 342
 			},
 			"setting": "persistent:mapGen/map/players",
 			"values": [
@@ -340,7 +381,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 352,
+				"y": 382,
 				"w": 143,
 				"h": 22
 			},
@@ -358,7 +399,7 @@
 			"text": "vcmi.mapGen.map.humans.hover",
 			"position": {
 				"x": 58,
-				"y": 357
+				"y": 387
 			}
 		},
 		{
@@ -366,7 +407,7 @@
 			"type": "toggleGroup",
 			"position": {
 				"x": 58,
-				"y": 376
+				"y": 406
 			},
 			"setting": "persistent:mapGen/map/humans",
 			"values": [
@@ -492,7 +533,7 @@
 			"type": "hoverHelp",
 			"rect": {
 				"x": 55,
-				"y": 420,
+				"y": 450,
 				"w": 143,
 				"h": 22
 			},
@@ -510,7 +551,7 @@
 			"text": "vcmi.mapGen.teams.hover",
 			"position": {
 				"x": 58,
-				"y": 425
+				"y": 455
 			}
 		},
 		{
@@ -520,7 +561,7 @@
 			"style": "brown",
 			"position": {
 				"x": 198,
-				"y": 424
+				"y": 454
 			},
 			"size": 104,
 			"itemsVisible": 0,
@@ -576,7 +617,7 @@
 			"text": "",
 			"position": {
 				"x": 308,
-				"y": 425
+				"y": 455
 			}
 		}
 	]

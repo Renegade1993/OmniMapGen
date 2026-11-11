@@ -15,6 +15,7 @@ they would overlap, a legend that names exactly what the picture shows, and the 
 bars and diamonds in place of lines to the zone centres, which knotted.
 """
 import json
+import os
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
@@ -243,26 +244,10 @@ def legend_rows(items, dc, fl):
     return rows
 
 
-def render(dump_path, out_path, caption=None):
-    """caption: one line drawn under the legend (the frame's settings); None draws none"""
-    d = json.load(open(dump_path, encoding="utf-8")) if isinstance(dump_path, str) else dump_path
+def _draw_panels(d, zone, lanes, P, PAD):
+    """the drawn level panels (hi-res images at SS times P with their draw handles), map only: zone fills, links, towns and starts; P a panel's side, PAD the room round the map"""
     W, H, NL = d["W"], d["H"], d["NL"]
-    zone = {(z["l"], z["z"]): z for z in d["zones"]}
-    lanes = [l for l in d["lanes"] if tuple(l["a"]) in zone and tuple(l["b"]) in zone]
-    probe = ImageDraw.Draw(Image.new("RGB", (CW, CH)))
-    fl = font(LEGEND_FONT)
-    items = legend_items(d, zone, lanes)
-    rows = legend_rows(items, probe, fl)
-    legend_h = ROW_H * len(rows) + 6 + (CAPTION_H if caption else 0)
-    title_h = 16 if NL == 2 else 0
-    P = CH - legend_h - title_h
-    PAD = 14   # room round the map so a castle on the edge is not cut
     MP = P - 2 * PAD
-    gap = 10
-    total = P * NL + gap * (NL - 1)
-    x0 = (CW - total) // 2
-    ox = [x0 + l * (P + gap) for l in range(NL)]
-    canvas = Image.new("RGB", (CW, CH), BG)
     panels = []
     for l in range(NL):
         mp = panel_image(d, l, MP)
@@ -324,7 +309,8 @@ def render(dump_path, out_path, caption=None):
             dr.rectangle([px - h, py - h, px + h, py + h], fill=LANES[ci])
     # towns: grey castles for towns no player owns, then the player castles on top, each with the player's number under it
     empty, neutral = town_marks(d)
-    spot = spread_castles(d["starts"] + empty, at, 26 * SS, (PAD * SS, (PAD + MP) * SS))
+    # castles stay a half castle (13 px) inside the picture even where the map is drawn nearer the edge (the level pictures, PAD 6)
+    spot = spread_castles(d["starts"] + empty, at, 26 * SS, (max(PAD, 14) * SS, (P - max(PAD, 14)) * SS))
     for t in neutral:   # a neutral town: a small light dot with a dark ring
         p = at(t["l"], t["x"], t["y"])
         r0 = 3.2 * SS
@@ -343,18 +329,13 @@ def render(dump_path, out_path, caption=None):
         castle(dr, p[0], p[1] - 4 * SS, hc, c, outline=INK, o=0)   # inner battlements and gate in dark, the white edge stays round the outside
         label = str(PLAYERS.index(st["colour"]) + 1) if st["colour"] in PLAYERS else "?"
         dr.text((p[0], p[1] + hc / 2 + 1 * SS), label, font=fn, fill=(255, 255, 255), anchor="mm", stroke_width=SS + 1, stroke_fill=INK)
-    for l in range(NL):
-        pi = panels[l][0].resize((P, P), Image.LANCZOS)
-        canvas.paste(pi, (ox[l], title_h))
-    dc = ImageDraw.Draw(canvas)
-    if NL == 2:
-        ft = font(14)
-        for l, name in enumerate(("Surface", "Underground")):
-            dc.text((ox[l] + P // 2, 1), name, font=ft, fill=(255, 255, 255), anchor="mt", stroke_width=1, stroke_fill=INK)
-    # legend: what this picture shows, in plain words
-    y0 = CH - legend_h + 4
+    return panels
+
+
+def _draw_legend(dc, rows, fl, y0, width):
+    """the legend rows (see legend_rows) drawn with their first row centred at y0 + ROW_H / 2, each row centred in `width`"""
     for r, row in enumerate(rows):
-        x = (CW - (sum(w for _, w in row) - 16)) // 2
+        x = (width - (sum(w for _, w in row) - 16)) // 2
         y = y0 + r * ROW_H + ROW_H // 2
         for (kind, text), w in row:
             if kind == "castle":
@@ -380,6 +361,40 @@ def render(dump_path, out_path, caption=None):
                 dc.rectangle([x + 2, y - 8, x + 20, y + 8], fill=tuple(int(c * DARKEN) for c in kind), outline=(14, 16, 20))
             dc.text((x + 26, y), text, font=fl, fill=(235, 235, 235), anchor="lm")
             x += w
+
+
+def render(dump_path, out_path, caption=None):
+    """caption: one line drawn under the legend (the frame's settings); None draws none"""
+    d = json.load(open(dump_path, encoding="utf-8")) if isinstance(dump_path, str) else dump_path
+    W, H, NL = d["W"], d["H"], d["NL"]
+    zone = {(z["l"], z["z"]): z for z in d["zones"]}
+    lanes = [l for l in d["lanes"] if tuple(l["a"]) in zone and tuple(l["b"]) in zone]
+    probe = ImageDraw.Draw(Image.new("RGB", (CW, CH)))
+    fl = font(LEGEND_FONT)
+    items = legend_items(d, zone, lanes)
+    rows = legend_rows(items, probe, fl)
+    legend_h = ROW_H * len(rows) + 6 + (CAPTION_H if caption else 0)
+    title_h = 16 if NL == 2 else 0
+    P = CH - legend_h - title_h
+    PAD = 14   # room round the map so a castle on the edge is not cut
+    MP = P - 2 * PAD
+    gap = 10
+    total = P * NL + gap * (NL - 1)
+    x0 = (CW - total) // 2
+    ox = [x0 + l * (P + gap) for l in range(NL)]
+    canvas = Image.new("RGB", (CW, CH), BG)
+    panels = _draw_panels(d, zone, lanes, P, PAD)
+    for l in range(NL):
+        pi = panels[l][0].resize((P, P), Image.LANCZOS)
+        canvas.paste(pi, (ox[l], title_h))
+    dc = ImageDraw.Draw(canvas)
+    if NL == 2:
+        ft = font(14)
+        for l, name in enumerate(("Surface", "Underground")):
+            dc.text((ox[l] + P // 2, 1), name, font=ft, fill=(255, 255, 255), anchor="mt", stroke_width=1, stroke_fill=INK)
+    # legend: what this picture shows, in plain words
+    y0 = CH - legend_h + 4
+    _draw_legend(dc, rows, fl, y0, CW)
     if caption:
         fc = font(CAPTION_FONT)
         for size in range(CAPTION_FONT, 9, -1):   # a long caption (starts and water named) steps down until it fits the width
@@ -438,3 +453,53 @@ def render_water(dump_path, out_path, size=240):
 if __name__ == "__main__":
     import sys
     print(render(sys.argv[1], sys.argv[2]))
+
+
+LAYER_PAD = 6    # room round the map in a level picture (the composite uses 14): the map fills nearly the whole width
+LAYER_P = 171    # a level picture's side before the draw scale: with LAYER_SS 6 the picture is 1026 px, symbols in the same proportion to the map as in the composite
+
+
+def render_layers(dump_path, out_prefix, size_ss=6, colours=64):
+    """one square, map-only picture per level (no heading, legend or caption): out_prefix + "-surface.png" and, on two levels, out_prefix + "-underground.png".
+    The same drawing as the composite, at LAYER_P * size_ss px, saved with a palette of `colours` (flat fills, so a Large picture stays small). Returns the file names written."""
+    global SS
+    d = json.load(open(dump_path, encoding="utf-8")) if isinstance(dump_path, str) else dump_path
+    zone = {(z["l"], z["z"]): z for z in d["zones"]}
+    lanes = [l for l in d["lanes"] if tuple(l["a"]) in zone and tuple(l["b"]) in zone]
+    keep, SS = SS, size_ss
+    try:
+        panels = _draw_panels(d, zone, lanes, LAYER_P, LAYER_PAD)
+        out = []
+        for l, (pi, _) in enumerate(panels):
+            name = out_prefix + ("-surface.png" if l == 0 else "-underground.png")
+            pi.quantize(colors=colours, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).save(name, optimize=True)
+            out.append(os.path.basename(name))
+    finally:
+        SS = keep
+    return out
+
+
+LEGEND_W = 560   # about 280 px at 1x: the sidebar's width, drawn at twice that so it is sharp
+
+
+def render_legend(dump_path, out_path, width=LEGEND_W):
+    """the legend of one frame as its own picture (what the frame's map shows, in plain words), `width` px wide, dark background, rows centred"""
+    global CW
+    d = json.load(open(dump_path, encoding="utf-8")) if isinstance(dump_path, str) else dump_path
+    zone = {(z["l"], z["z"]): z for z in d["zones"]}
+    lanes = [l for l in d["lanes"] if tuple(l["a"]) in zone and tuple(l["b"]) in zone]
+    keep = CW
+    CW = width
+    try:
+        items = legend_items(d, zone, lanes)
+        probe = ImageDraw.Draw(Image.new("RGB", (width, 40)))
+        fl = font(LEGEND_FONT)
+        rows = legend_rows(items, probe, fl)
+        h = ROW_H * len(rows) + 10
+        img = Image.new("RGB", (width, h), BG)
+        # the composite's legend drawing, on its own canvas: render() draws it inline, so this calls it on an empty map of the same legend
+        _draw_legend(ImageDraw.Draw(img), rows, fl, 5, width)
+        img.save(out_path, optimize=True)
+    finally:
+        CW = keep
+    return [t for _, t in items]

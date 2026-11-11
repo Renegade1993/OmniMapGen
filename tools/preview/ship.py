@@ -58,6 +58,15 @@ def main():
             dst = os.path.join(d, name + ".png")
             shutil.copy2(os.path.join(a.gallery, f["file"]), dst)
             f["file"], f["path"], f["contentSha256"] = name + ".png", "mapgen/preview/" + cslug + "/" + name, sha(dst)
+            # the level pictures and the legend: gallery names them <slug>_NN-surface.png and so on, the module <slug>/NN-surface.png (DMB Dev's S025 ask)
+            for lay, suffix in zip(f.get("layers", []), ("surface", "underground")):
+                ld = os.path.join(d, name + "-" + suffix + ".png")
+                shutil.copy2(os.path.join(a.gallery, lay["file"]), ld)
+                lay["file"], lay["contentSha256"] = name + "-" + suffix + ".png", sha(ld)
+            if f.get("legendFile"):
+                ld = os.path.join(d, name + "-legend.png")
+                shutil.copy2(os.path.join(a.gallery, f["legendFile"]), ld)
+                f["legendFile"], f["legendSha256"] = name + "-legend.png", sha(ld)
             f.pop("map", None)
         json.dump(fr, open(os.path.join(conf, cslug + ".frames.json"), "w", encoding="utf-8"), indent=1)
         first = os.path.join(d, "01.png")

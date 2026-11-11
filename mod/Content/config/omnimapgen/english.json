@@ -239,5 +239,7 @@
 	"vcmi.mapGen.waterTreasure.hover": "Treasure on the water",
 	"vcmi.mapGen.waterTreasure.help": "{Treasure on the water}\n\nHow much treasure lies on the water: flotsam, sea chests, survivors, shipwrecks and derelict ships. 1x is the usual amount, 0 none.",
 	"vcmi.mapGen.waterBuildings.hover": "Buildings on the water",
-	"vcmi.mapGen.waterBuildings.help": "{Buildings on the water}\n\nHow many sites a boat can visit: mermaids and buoys for luck and morale, sirens, and whirlpools, which come in pairs and throw a ship from one to the other. 1x is the usual number."
+	"vcmi.mapGen.waterBuildings.help": "{Buildings on the water}\n\nHow many sites a boat can visit: mermaids and buoys for luck and morale, sirens, and whirlpools, which come in pairs and throw a ship from one to the other. 1x is the usual number.",
+	"vcmi.mapGen.map.restrictToTemplate.hover": "Restrict all settings to original template preferences",
+	"vcmi.mapGen.map.restrictToTemplate.help": "{Restrict all settings to original template preferences}"
 }

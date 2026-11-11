@@ -17,6 +17,7 @@
 				"junction": 4
 			},
 			"description": "Up to eight players each start in a large zone with a castle of their own and a short guarded road to a treasure zone with a neutral castle. Treasure zones meet in pairs at four junctions, and the junctions open into one rich centre zone. The junctions lie underground; on a one-level map they gather in the middle of the surface.\n\nWhat makes it different: each junction keeps a neutral dragon dwelling (Crystal, Azure, Faerie and Rust dragons) behind strong guards, and the doors into the centre carry the heaviest guards on the map.\n\nThe original has two human starts and six computer starts, and a human start's road out is guarded much harder. OmniMapGen lets any player be human, and adds start zones when there are more players than the template has.",
+			"brief": "Up to eight players start in large zones and fight through treasure zones to one rich centre. Four junctions keep neutral dragon dwellings behind strong guards.",
 			"original": {
 				"players": "2 to 8",
 				"humans": "At most 2: made for 1 human against up to 7 computer players, or 2 humans against up to 6",
@@ -138,6 +139,7 @@
 			"zones": 0,
 			"zonesByKind": {},
 			"description": "An ordinary random Heroes map, and the place to start if you are new. Each player starts in a region of their own with mines close by. Treasure regions and neutral towns lie between the starts, and monsters guard the ways from one region to the next.\n\nWhat makes it different: it has no fixed layout. The map is drawn fresh from its size and number of players, and every setting on the other pages (how regions join, portals, guards, treasure, water) changes it. Every setting starts at its default, and Reset puts it back. Mini Nostalgia and Nostalgia in this list are this map with the settings turned toward those two templates.",
+			"brief": "An ordinary random Heroes map, drawn fresh from its size and number of players. Start here if you are new; every setting on the other pages changes it.",
 			"originalPreferences": {
 				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Classic: every lever at its Template value, which for Classic is the lever's own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. Mod content stays the player's own choice.",
 				"levers": {
@@ -229,6 +231,7 @@
 			"zones": 0,
 			"zonesByKind": {},
 			"description": "Random picks one of the templates in this list for you: Classic or any template that takes the map's size, players and levels. The pick comes from the map's seed, so the same seed gives the same template. Any setting you leave on \"Template\" follows the template it picks; Reset puts every setting back on \"Template\".",
+			"brief": "Picks one of the templates in this list for you, and the same one every time for the same seed.",
 			"originalPreferences": {
 				"about": "What the Reset button sets for Random: every lever at Template, so each is read from whichever template the seed picks; the values listed are the defaults, which is what Classic uses.",
 				"levers": {
@@ -322,6 +325,7 @@
 			"zones": 0,
 			"zonesByKind": {},
 			"description": "A small, typical Heroes map: eight start zones with most of the land, seven treasure zones between them linked in a branching chain, and a guard on every way.\n\nWhat makes it different: this entry is approximate. It is the Classic map with its settings turned toward Mini Nostalgia (larger start zones, many of the links between zones are portals, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
+			"brief": "A small typical Heroes map: eight start zones, seven treasure zones and a guard on every way. Approximate: it is Classic with its settings turned toward the original.",
 			"originalPreferences": {
 				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Mini Nostalgia (approximate): the sliders listed below at the values chosen to bring the open layout's numbers toward the original Mini Nostalgia's; every other lever at its own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. This entry is approximate and gets closer as junction zones, wide links and a second town in a start zone are added.",
 				"levers": {
@@ -425,6 +429,7 @@
 			"zones": 0,
 			"zonesByKind": {},
 			"description": "A large, typical Heroes map on two levels: eight start zones with a third of the land, sixteen treasure zones between them linked in a web, and a guard on every way.\n\nWhat makes it different: this entry is approximate. It is the Classic map with its settings turned toward Nostalgia (larger zones, most of the links between zones are portals, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
+			"brief": "A large typical Heroes map on two levels: eight start zones, sixteen treasure zones and a guard on every way. Approximate: it is Classic with its settings turned toward the original.",
 			"originalPreferences": {
 				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Nostalgia (approximate): the sliders listed below at the values chosen to bring the open layout's numbers toward the original Nostalgia's; every other lever at its own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. This entry is approximate and gets closer as junction zones, wide links and a second town in a start zone are added.",
 				"levers": {
@@ -529,7 +534,8 @@
 				"start": 4,
 				"treasure": 1
 			},
-			"description": "Up to four players start apart, each in a start zone with a castle, two neutral towns and a full set of mines. One treasure zone fills the middle, with two neutral castles, four gold mines and the best treasure on the map. Each start has a single way into the middle, behind a strong guard, and no way to another start except through the middle.\n\nWhat makes it different: every player has the same road to the same prize. The game is a race to break into the middle first, and the fights after that happen there.\n\nIn construction: the middle zone carries far too much treasure."
+			"description": "Up to four players start apart, each in a start zone with a castle, two neutral towns and a full set of mines. One treasure zone fills the middle, with two neutral castles, four gold mines and the best treasure on the map. Each start has a single way into the middle, behind a strong guard, and no way to another start except through the middle.\n\nWhat makes it different: every player has the same road to the same prize. The game is a race to break into the middle first, and the fights after that happen there.\n\nIn construction: the middle zone carries far too much treasure.",
+			"brief": "Up to four players start apart, each with one guarded way into a rich middle zone, so every player has the same road to the same prize. The middle holds too much treasure for now."
 		},
 		"Headquarters": {
 			"originalSizeMin": 108,
@@ -545,7 +551,8 @@
 				"start": 7,
 				"treasure": 2
 			},
-			"description": "Up to seven players each start in a start zone with a castle and one neutral town. Every start has two guarded ways out: one into a large rough-ground treasure zone with two neutral castles (Stronghold or Fortress), one into a smaller sand treasure zone with the rare-resource mines. The two treasure zones also join each other.\n\nWhat makes it different: each start zone belongs to one town type (Rampart, Tower, two Castles, Dungeon, Necropolis, Conflux). A player who leaves the town on Random gets that zone's type, so the map comes ready as seven different factions round two shared prizes.\n\nIn construction: an approximate version, not yet playtested."
+			"description": "Up to seven players each start in a start zone with a castle and one neutral town. Every start has two guarded ways out: one into a large rough-ground treasure zone with two neutral castles (Stronghold or Fortress), one into a smaller sand treasure zone with the rare-resource mines. The two treasure zones also join each other.\n\nWhat makes it different: each start zone belongs to one town type (Rampart, Tower, two Castles, Dungeon, Necropolis, Conflux). A player who leaves the town on Random gets that zone's type, so the map comes ready as seven different factions round two shared prizes.\n\nIn construction: an approximate version, not yet playtested.",
+			"brief": "Up to seven players each start with a castle and two guarded ways out, to two shared treasure zones. Each start zone belongs to one town type. An approximate version, not yet playtested."
 		},
 		"Golems Aplenty": {
 			"originalSizeMin": 36,
@@ -561,7 +568,8 @@
 				"start": 4,
 				"treasure": 3
 			},
-			"description": "Up to four players start in small zones, each with a castle and a full set of mines but no neutral town. All four open onto one middle zone of dirt and snow with a neutral Tower town and the richest treasure. Two of the starts also have a side treasure zone on Subterranean terrain, which opens into the middle as well.\n\nWhat makes it different: a tight map with light guards on the ways into the middle, so players meet early, and the Tower town in the middle, home of the golems, gives the template its name.\n\nIn construction: not yet playtested."
+			"description": "Up to four players start in small zones, each with a castle and a full set of mines but no neutral town. All four open onto one middle zone of dirt and snow with a neutral Tower town and the richest treasure. Two of the starts also have a side treasure zone on Subterranean terrain, which opens into the middle as well.\n\nWhat makes it different: a tight map with light guards on the ways into the middle, so players meet early, and the Tower town in the middle, home of the golems, gives the template its name.\n\nIn construction: not yet playtested.",
+			"brief": "Up to four players start in small zones that all open onto one middle zone with a neutral Tower town and the richest treasure. Light guards, so players meet early. Not yet playtested."
 		}
 	},
 	"waterLayouts": {
@@ -569,6 +577,7 @@
 			"label": "Lakes",
 			"oneLine": "A few inland lakes; land all the way round the map.",
 			"description": "A land map with a few lakes scattered inland. The map edge is all land, so every player walks wherever they need to go; the lakes are obstacles to go round, with treasure on their shores and sometimes a boat.\n\nGood for a first water map: nothing is cut off, and a hero never needs a ship.",
+			"brief": "A few inland lakes; land all the way round the map.",
 			"picture": "mapgen/preview/water_lakes",
 			"previewConfig": "config/mapgen/preview/water_lakes.json"
 		},
@@ -576,6 +585,7 @@
 			"label": "Coastal",
 			"oneLine": "A sea along the side of the map; the starts there move inland.",
 			"description": "Land with a sea along one side of the map. Players whose start would fall in the sea are moved inland. Shipyards and boats let a hero sail along the coast to treasure and to the other players.\n\nPlay it as a land map with a back door: most fighting happens on land, and the sea is the long way round.",
+			"brief": "A sea along the side of the map; the starts there move inland.",
 			"picture": "mapgen/preview/water_coastal",
 			"previewConfig": "config/mapgen/preview/water_coastal.json"
 		},
@@ -583,6 +593,7 @@
 			"label": "Continental",
 			"oneLine": "Sea all round the edge and one big land mass in the middle.",
 			"description": "One large continent surrounded by sea on every side. All players start on it and can walk to each other; the sea round the edge carries the water treasure, sea banks and the occasional island reached by boat.\n\nA land map with a rich shore: worth a ship once the land is settled.",
+			"brief": "Sea all round the edge and one big land mass in the middle.",
 			"picture": "mapgen/preview/water_continental",
 			"previewConfig": "config/mapgen/preview/water_continental.json"
 		},
@@ -590,6 +601,7 @@
 			"label": "Mediterranean",
 			"oneLine": "A sea in the middle with land all the way round it.",
 			"description": "A sea in the middle of the map, ringed by land. Players start on the ring and can walk round it to each other, or sail across the middle for a shortcut and the treasure out on the water.\n\nThe centre is the prize and the fastest road; the long walk round is the safe one.",
+			"brief": "A sea in the middle with land all the way round it.",
 			"picture": "mapgen/preview/water_mediterranean",
 			"previewConfig": "config/mapgen/preview/water_mediterranean.json"
 		},
@@ -597,6 +609,7 @@
 			"label": "Highland",
 			"oneLine": "A land map cut by wide rivers with a few narrow fords.",
 			"description": "A land map split by wide rivers into separate continents. One river runs through a map up to Large, two on Extra Large, three on the biggest maps. Each river is crossed only at a few narrow fords, so armies meet at those crossings.\n\nHold the fords and you hold your continent: a map of bottlenecks, after the Highland map of Age of Empires.",
+			"brief": "A land map cut by wide rivers with a few narrow fords.",
 			"picture": "mapgen/preview/water_highland",
 			"previewConfig": "config/mapgen/preview/water_highland.json"
 		},
@@ -604,6 +617,7 @@
 			"label": "Islands",
 			"oneLine": "Every player on an island of their own; boats are the only way across.",
 			"description": "Every player starts on an island of their own with open sea between them. Each start has a shipyard and a boat on its shore, and sailing is the only way to reach anyone else.\n\nA naval map: scout by sea, and carry your army across when you are ready.",
+			"brief": "Every player on an island of their own; boats are the only way across.",
 			"picture": "mapgen/preview/water_islands",
 			"previewConfig": "config/mapgen/preview/water_islands.json"
 		},
@@ -611,6 +625,7 @@
 			"label": "Archipelago",
 			"oneLine": "Many islands: one per player and the rest neutral, for whoever sails there first.",
 			"description": "Many islands. Each player starts on one, and the others are neutral, holding towns, mines and treasure for whoever sails there first.\n\nA race by boat for the free islands before the fighting starts. Needs about a quarter of a small map under water.",
+			"brief": "Many islands: one per player and the rest neutral, for whoever sails there first.",
 			"picture": "mapgen/preview/water_archipelago",
 			"previewConfig": "config/mapgen/preview/water_archipelago.json"
 		}
