@@ -30,14 +30,14 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "02808c601632b02928de31c8264f0d3a26787e711626126d72cbd44250b77ee0"
+     "contentSha256": "d0a7ccef4b9ca886202cf7e23b7dd305e3889fda661047e0e09cc145d364e74a"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/headquarters/01",
    "seconds": 3.0,
-   "contentSha256": "acaf172f40e9fae6e00c3f66078bbefcb0f736989f05f30a678d98a99f62a500",
-   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
+   "contentSha256": "bead3ea926fad938f8b530daa43bd2b8a1f79fa37df6c6889f3ff637d7e2381b",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
    "order": 2,
@@ -67,14 +67,14 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "4c6b478187e2837ba1469523b7b8c6273ba5f952cae5f813bb41da4a2965e64a"
+     "contentSha256": "16132ec4ca50caa9f2742207895467a152ab2b565273520e170da3f896ba0c02"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/headquarters/02",
    "seconds": 3.0,
-   "contentSha256": "d15b321089f6e1d9928f440e5d2c77163039d1ab3f516137d960737025af7b75",
-   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
+   "contentSha256": "bf61da5379079aea4cb36ce1007f7912523402998c2d518b0f264caeecda6b96",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
    "order": 3,
@@ -104,14 +104,14 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "d57978ac3bb21fdc1b590c6f6726d737a0eb2943165df808670906a22a66a703"
+     "contentSha256": "51f1e5ef3a54e73d759d14f0a08f6db8be582e4d8eef87123e251ef13f0ee1dc"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/headquarters/03",
    "seconds": 3.0,
-   "contentSha256": "fabe6dd6f2dd009313930faaa6af6e7e73ddfd513dd1ab464f85bf66e866ad95",
-   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
+   "contentSha256": "578e6b5552c02b3a769bd989adb7f4013a91c10ac534796515c29c54fee4296d",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
    "order": 4,
@@ -141,14 +141,14 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "69548459433872e9554765b7d420375ab9f20f44678138c4168250f2b574d535"
+     "contentSha256": "c8783d28e107ae5845c6cb5831e7f57f10538627c6bd1a400f3b22047e65ccfd"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/headquarters/04",
    "seconds": 3.0,
-   "contentSha256": "1a17d23018328c380ecc854c9eb1a34f6051d205e8e4f70f32d1378816d89c2b",
-   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
+   "contentSha256": "8556c67d5f4c892977a53e91a5afbb7729be22ead3ca38b32d3560129c7ecccc",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
    "order": 5,
@@ -178,14 +178,14 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "f8ec4c4befca2399b6793cade5d842f74a693995fae3b2236ef8c7b467e8ada9"
+     "contentSha256": "7a1428976a0477215ba22c200321d2a5399110dca5666c1717bdc5c9f02123a8"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/headquarters/05",
    "seconds": 3.0,
-   "contentSha256": "eb19ba00a6bb44db1729907bf2fb611587e138bd11db7152fae8803fb37cadb1",
-   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
+   "contentSha256": "4e55452ea354837466713a66f3f885015083ef5c6b91884a23023a068fb5445f",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
    "order": 6,
@@ -213,14 +213,14 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "e35996581ff19c5610fab7c16267f42713ad402e4e2b74e927d42bc948c258b6"
+     "contentSha256": "2eb985d6ea8a52423bb8069ae2c83f55cb85b6f6ba7357363f6a87f0bfbdaf61"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/headquarters/06",
    "seconds": 3.0,
-   "contentSha256": "52e7c572715e95f8251251d011aa4fe462a98a124caf5364ba3b7ba54547ecba",
-   "legendSha256": "ea77d2f6f03b49b2321e2d5d93355749093a5ab5c5abd9c281908dccb740e712"
+   "contentSha256": "08edac96498931b085ab90f3fcd01cf12e8302cd62c803d135d73ace0bdf56d7",
+   "legendSha256": "272b1deb4ced4e4eb99d7e666422f4508062622bfe276e14bd6b2e8279b69831"
   },
   {
    "order": 7,
@@ -250,14 +250,14 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "58a51b1f9593e0373d160c980a4bd94ef2da15d77d32cacb5f634478982de542"
+     "contentSha256": "47cf8fe3039c1dd5618ffbf69f00cf94b9491b0909a9a348cc6e49e47cd343db"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/headquarters/07",
    "seconds": 3.0,
-   "contentSha256": "6be043117e720cc7b7b3210bfa741cc91b48c2740fda24f8efb78e25a286a81b",
-   "legendSha256": "9fcedb43ef4d790c56b36aa69111d83c5a29f7f04af72ac10bd46e654eb9a21a"
+   "contentSha256": "c2f24be680f906e0e9dfee684a5c4ebc3c637cf6386752f743d819c14dd5718a",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
    "order": 8,
@@ -288,14 +288,14 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "fa36d20c0ab18c7e932ac5c4d88f72e191c84a18d446760e78ec065974d0a023"
+     "contentSha256": "6fee1c58a82b79dd9e76b43ece505ee19970ec86756bed88f2bcb2aed3192528"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/headquarters/08",
    "seconds": 3.0,
-   "contentSha256": "0b69e6c3e82436e4ccaf14d5ee5a41573369f30e601dd9d79176d17a31d2b678",
-   "legendSha256": "accf588f2aa8121a37fb2d0ed1efebe1fdad913ca78912b86bab28ab100d2594"
+   "contentSha256": "2d68661ad1e21c63afdc6ff612c2854840767137503cab492ad282dc2c6c7b2f",
+   "legendSha256": "99d1f9852d9d051c533f7e5d9ad15bcb7b24eeba7740844e84614406da9cf5a9"
   },
   {
    "order": 9,
@@ -319,7 +319,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -327,19 +327,19 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "3bacc29fff9c9f4f06d42723f98df52badb41dabcdb105d287d606745a84934a"
+     "contentSha256": "7a3f6ff3674f08e182ae406ebac7dfbfe18c8bbd6453f04dae566d8d6d1b58d3"
     },
     {
      "file": "09-underground.png",
      "label": "Underground",
-     "contentSha256": "3ae0a1bbd49932b9c80da30e3edfe392942e0ee9a3781a78465ded7c123ef303"
+     "contentSha256": "b85163a6fba802b7474887b4f0008efd1b993665a28e51a267a168f8c66efb5d"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/headquarters/09",
    "seconds": 3.0,
-   "contentSha256": "834fa8137ea94b0880f639b67a8b76c232853a44edc5c7748920ce3bb786d792",
-   "legendSha256": "6ed59ad27d594fb91e3fc9979e541230c6125e8bbfde1357c4e3577292bcfecc"
+   "contentSha256": "9b3c7f5841dc0cf25e1b7ff0a1d24f5596c4513155014f00f09f5104f43455ba",
+   "legendSha256": "91baae352ab0174c17fe04d5f1fd7d12095db47877eb15c3dbc6ce96f8ca435b"
   },
   {
    "order": 10,
@@ -370,14 +370,14 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "182a119dad1a70c11252fea328197530034c61b96cba440f4beeac0f2e0de776"
+     "contentSha256": "0b2a089c6c588e4e510d1151362ddf68376422ae87a5a872107e25c980da4617"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/headquarters/10",
    "seconds": 3.0,
-   "contentSha256": "b7326bead32c60f71728667ee7ceee3d1fbb7242acbdb2412b4472e7291b51e3",
-   "legendSha256": "accf588f2aa8121a37fb2d0ed1efebe1fdad913ca78912b86bab28ab100d2594"
+   "contentSha256": "b9d2f2a59a7a6bd11e69780d55e589a05f70e80b52f9f7025aeddd4cbf7382f9",
+   "legendSha256": "99d1f9852d9d051c533f7e5d9ad15bcb7b24eeba7740844e84614406da9cf5a9"
   },
   {
    "order": 11,
@@ -401,7 +401,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone",
     "Water"
@@ -410,19 +410,19 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "18d5f18487335f9a6429291e83f47e41bb296d9bcdf9290f9eca9037874925db"
+     "contentSha256": "e5b7195f17aa85884afc0c4116cb4845dbcb8aff8f7eb560caa27f1417958afa"
     },
     {
      "file": "11-underground.png",
      "label": "Underground",
-     "contentSha256": "95ede29f6e418391036bf54a722ce48a6623b61bf83a701ebe1209d117c4c26d"
+     "contentSha256": "f995a036d0d9243948f78c7e6c821226f51e22e35691a6c4401dc97482da9946"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/headquarters/11",
    "seconds": 3.0,
-   "contentSha256": "d08012364f16bbd9a34c5e62778b0e3db212e30289a5ac00a6ff06aa799d552a",
-   "legendSha256": "7e5e72052c2a2949ee249afa43f301925c008c8a8b298036fabf2e7d9fa03966"
+   "contentSha256": "2b4572848d2f669422711c45e97fe300c59ef723f308286fdb84a98196e797e3",
+   "legendSha256": "cb73f6f44cad200c866e8f2c070c4edae063542414040ec22cb002d9fd90818b"
   },
   {
    "order": 12,
@@ -453,14 +453,14 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "c4dc74e13c4a048de51775a5ac69ad765996bfe7afe33c0a96d8c498fbfa4e87"
+     "contentSha256": "c87e74610f8fe68e146a59570aae9a49641c6d0d6ae4bc5fa3d7882ba70fb5e4"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/headquarters/12",
    "seconds": 3.0,
-   "contentSha256": "697c2abdeeecd8558496b9fed3ad2a54dd2c252ac769177b2dfeadddf5473984",
-   "legendSha256": "accf588f2aa8121a37fb2d0ed1efebe1fdad913ca78912b86bab28ab100d2594"
+   "contentSha256": "4dccb3af46017bad9cf1355c9e27c228ee900cb6f0a1c32fa3939a71e852a081",
+   "legendSha256": "99d1f9852d9d051c533f7e5d9ad15bcb7b24eeba7740844e84614406da9cf5a9"
   },
   {
    "order": 13,
@@ -484,7 +484,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -492,19 +492,19 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "9be6b47453cb82276e9b707bf66bc90abfc201a1f9a96d6700f7597e45fc2741"
+     "contentSha256": "f9fc4b0b0a735aa4cfca99553b443175b2726b477111c8686cd96d606c4230db"
     },
     {
      "file": "13-underground.png",
      "label": "Underground",
-     "contentSha256": "4db6185418dd669faf9d2fcaf5daeccb64a863bb35540bafc2385974788231e0"
+     "contentSha256": "525de7f1e41a81c5ce1274827a220812fa043df3aa6b9645a5a34849858c13b2"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/headquarters/13",
    "seconds": 3.0,
-   "contentSha256": "5cd67c9e663d6f75f6ecad843dc01fcf86fff336333c08e58a3f6ea6f61a845e",
-   "legendSha256": "6ed59ad27d594fb91e3fc9979e541230c6125e8bbfde1357c4e3577292bcfecc"
+   "contentSha256": "aeea6fecf2dd0280f104fce0adbade5f47c4187cef9f4c829ab9f646f26dd6d2",
+   "legendSha256": "91baae352ab0174c17fe04d5f1fd7d12095db47877eb15c3dbc6ce96f8ca435b"
   },
   {
    "order": 14,
@@ -535,14 +535,14 @@
     {
      "file": "14-surface.png",
      "label": "Surface",
-     "contentSha256": "d18384afdafd46c1a14b6c31d8f2a51a3378591df0b135ecab800876feb9564b"
+     "contentSha256": "9366ee66ee4dd3b66fae71eff8b509ed0d50fbac8d33aa8942d82302161bd062"
     }
    ],
    "legendFile": "14-legend.png",
    "path": "mapgen/preview/headquarters/14",
    "seconds": 3.0,
-   "contentSha256": "2161cdcf7beea19a0d095646e83cf4297a78158f4fd7bbc946800165e8a5b5ad",
-   "legendSha256": "31b544f01b97e369ab3aef3c0e19b1d5351fbfc458b838996b86bee5cb63a975"
+   "contentSha256": "eb3b0c9fcc094843d75511d3fd5091a1fd474aa31e8dc74324a46a9f94fae8fe",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 15,
@@ -565,7 +565,7 @@
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
-    "Way between levels",
+    "Subterranean Gate",
     "Start zone",
     "Treasure zone"
    ],
@@ -573,19 +573,19 @@
     {
      "file": "15-surface.png",
      "label": "Surface",
-     "contentSha256": "e093bc2ccfc84b8cdbb01d903a90c9a8b0e932779e0ca2dd138b3ab3d1c3dd07"
+     "contentSha256": "47f1805b0065fe7c87a4c3b51931a8f9ad45946db82ac7363c87ccedf8c67e6b"
     },
     {
      "file": "15-underground.png",
      "label": "Underground",
-     "contentSha256": "5b57064eec37afe2c4d800d8ae3be4bd5b914ad60f768cedc3b3a7e9718be743"
+     "contentSha256": "ee8aceaaa2949672a8490c13471dfd158372e4840bbbdc1e9fe61e3b485233a8"
     }
    ],
    "legendFile": "15-legend.png",
    "path": "mapgen/preview/headquarters/15",
    "seconds": 3.0,
-   "contentSha256": "3eb37042148d7c8fc5be06951cd664e8d87b33a49de8ec0c452c073cf43a329b",
-   "legendSha256": "b0701fed9c6737772aa26b432f7272479928bae1a922fb1f43c76bd16483bdaf"
+   "contentSha256": "c3eba50b2e492783cff9e4d06dac85ccfe6b61fe0ba5af00d3d061cfaa0874de",
+   "legendSha256": "82323e78359a5d10dab0d04ff6449ed5045c3d1b616eca26520984b85436476c"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

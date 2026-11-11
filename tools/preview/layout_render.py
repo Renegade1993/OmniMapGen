@@ -155,6 +155,30 @@ def panel_image(d, level, P):
     return Image.fromarray(img, "RGB")
 
 
+def gate_icon(dr, cx, cy, h, fill, ink=INK):
+    """a subterranean gate: a cave mouth, a half disc in the link's colour on a base, a dark arch in it (K 2026-11-04: "the subterranean gates are just boxes, they deserve icons")"""
+    for g, c in ((h * 0.22, ink), (0, fill)):
+        dr.pieslice([cx - h - g, cy - h - g, cx + h + g, cy + h + g], 180, 360, fill=c)
+        dr.rectangle([cx - h - g, cy - g * 0.2, cx + h + g, cy + h * 0.35 + g], fill=c)
+    dr.pieslice([cx - h * 0.5, cy - h * 0.5, cx + h * 0.5, cy + h * 0.5], 180, 360, fill=ink)
+    dr.rectangle([cx - h * 0.5, cy - h * 0.02, cx + h * 0.5, cy + h * 0.35], fill=ink)
+
+
+def parens(dr, cx, cy, tx, ty, s, w, ink=INK, fill=(250, 240, 210)):
+    """a passage between two zones drawn as ")(" across their border (K 2026-11-04: change the opening symbol between biomes to something that looks like ")("); (tx, ty) the way
+    through, s half the length of each bracket"""
+    bx, by = -ty, tx
+    g, bulge = 0.95 * s, 0.45 * s
+    for col, ww in ((ink, w + 2 * (w * 0.5 + 1)), (fill, w)):
+        for side in (-1, 1):
+            pts = []
+            for i in range(9):
+                a = -1 + i / 4.0
+                t_off = side * g - side * bulge * (1 - a * a)
+                pts.append((cx + tx * t_off + bx * a * s, cy + ty * t_off + by * a * s))
+            dr.line(pts, fill=col, width=max(1, int(ww)), joint="curve")
+
+
 def town_marks(d):
     """(empty starts, neutral towns): a start zone with no player gets a grey castle on its town nearest the zone centre (or the centre when it has none); every
     other town no player owns is a neutral town (K via the lead, 2026-11-04: grey castle = a start without a player; neutral towns a smaller, clearly different symbol)"""
@@ -215,7 +239,7 @@ def legend_items(d, zone, lanes):
     if any(l.get("portal") for l in lanes):
         items.append(("pin", "Portal pair (same number)"))
     if any(zone[tuple(l["a"])]["l"] != zone[tuple(l["b"])]["l"] and not l.get("portal") for l in lanes):
-        items.append(("square", "Way between levels"))
+        items.append(("square", "Subterranean Gate"))
     roles = {z["role"] for z in d["zones"]}
     if roles & {"start", "cpuStart"}:
         items.append((FILL["start"], "Start zone"))
@@ -288,47 +312,40 @@ def _draw_panels(d, zone, lanes, P, PAD):
     for m in marksym:
         kind, lv, (px, py), ci = m[0], m[1], m[2], m[3]
         dr = panels[lv][1]
-        h = 6 * SS
-        if kind == "bar":   # a thin neutral bar: bars never cross, so no colour is needed to tell them apart (K item 31 readability, the Reviewer's pass)
+        h = 4 * SS
+        if kind == "bar" and lv > 0:   # the underground shows no passage marks (K 2026-11-04: "underground shouldn't get them")
+            continue
+        if kind == "bar":   # ")(" across the border, below; was a thin neutral bar: bars never cross, so no colour is needed to tell them apart (K item 31 readability, the Reviewer's pass)
             (dx, dy), wide = m[4], m[5]
-            half = 7 * SS
-            wb = (4 if wide else 3) * SS
-            p0, p1 = (px - dx * half, py - dy * half), (px + dx * half, py + dy * half)
-            dr.line([p0, p1], fill=INK, width=wb + 2 * SS)
-            dr.line([p0, p1], fill=(250, 240, 210), width=wb)
+            parens(dr, px, py, -dy, dx, (5 if wide else 4) * SS, 1.6 * SS)
         elif kind == "pin":   # a portal end: a disc in the pair's colour with the pair's number, the same at both ends (item 2 colour, item 31 readability)
-            r = 6.5 * SS
+            r = 4.5 * SS
             dr.ellipse([px - r - 1.5 * SS, py - r - 1.5 * SS, px + r + 1.5 * SS, py + r + 1.5 * SS], fill=INK)
             dr.ellipse([px - r, py - r, px + r, py + r], fill=LANES[ci])
-            dr.text((px, py), str(m[4]), font=font(int(9 * SS)), fill=INK, anchor="mm")
+            dr.text((px, py), str(m[4]), font=font(int(7 * SS)), fill=INK, anchor="mm")
         elif kind == "diamond":
             dr.polygon([(px, py - h - 2 * SS), (px + h + 2 * SS, py), (px, py + h + 2 * SS), (px - h - 2 * SS, py)], fill=INK)
             dr.polygon([(px, py - h), (px + h, py), (px, py + h), (px - h, py)], fill=LANES[ci])
-        else:
-            dr.rectangle([px - h - SS, py - h - SS, px + h + SS, py + h + SS], fill=INK)
-            dr.rectangle([px - h, py - h, px + h, py + h], fill=LANES[ci])
+        else:   # a way between levels: a subterranean gate
+            gate_icon(dr, px, py, 4.5 * SS, LANES[ci])
     # towns: grey castles for towns no player owns, then the player castles on top, each with the player's number under it
     empty, neutral = town_marks(d)
     # castles stay a half castle (13 px) inside the picture even where the map is drawn nearer the edge (the level pictures, PAD 6)
-    spot = spread_castles(d["starts"] + empty, at, 26 * SS, (max(PAD, 14) * SS, (P - max(PAD, 14)) * SS))
-    for t in neutral:   # a neutral town: a small light dot with a dark ring
+    spot = spread_castles(d["starts"] + empty, at, 14 * SS, (max(PAD, 14) * SS, (P - max(PAD, 14)) * SS))
+    for t in neutral:   # a neutral town: a small grey castle (K: "grey for non"), half the size of a start's
         p = at(t["l"], t["x"], t["y"])
-        r0 = 3.2 * SS
-        panels[t["l"]][1].ellipse([p[0] - r0 - 1.5 * SS, p[1] - r0 - 1.5 * SS, p[0] + r0 + 1.5 * SS, p[1] + r0 + 1.5 * SS], fill=INK)
-        panels[t["l"]][1].ellipse([p[0] - r0, p[1] - r0, p[0] + r0, p[1] + r0], fill=NEUTRAL)
+        castle(panels[t["l"]][1], p[0], p[1], 6.5 * SS, GREY)
     for t in empty:   # a start position with no player: the start castle in grey, no number
         p = spot[id(t)]
-        castle(panels[t["l"]][1], p[0], p[1], 20 * SS, GREY)
+        castle(panels[t["l"]][1], p[0], p[1], 12 * SS, GREY)
     fn = font(12 * SS)
     for st in sorted(d["starts"], key=lambda t: t["colour"]):
         dr = panels[st["l"]][1]
         p = spot[id(st)]
-        hc = 22 * SS
+        hc = 12 * SS   # half the size it was (K: "icons probably need to shrink 50%"), and no number (K: "player starts dont need numbers, only colors")
         c = PCOL.get(st["colour"], GREY)
-        castle(dr, p[0], p[1] - 4 * SS, hc, c, outline=(255, 255, 255), o=1.4 * SS)
-        castle(dr, p[0], p[1] - 4 * SS, hc, c, outline=INK, o=0)   # inner battlements and gate in dark, the white edge stays round the outside
-        label = str(PLAYERS.index(st["colour"]) + 1) if st["colour"] in PLAYERS else "?"
-        dr.text((p[0], p[1] + hc / 2 + 1 * SS), label, font=fn, fill=(255, 255, 255), anchor="mm", stroke_width=SS + 1, stroke_fill=INK)
+        castle(dr, p[0], p[1], hc, c, outline=(255, 255, 255), o=0.9 * SS)
+        castle(dr, p[0], p[1], hc, c, outline=INK, o=0)   # inner battlements and gate in dark, the white edge stays round the outside
     return panels
 
 
@@ -344,10 +361,9 @@ def _draw_legend(dc, rows, fl, y0, width):
             elif kind == "grey":
                 castle(dc, x + 10, y, 15, GREY)
             elif kind == "dot":
-                dc.ellipse([x + 4, y - 7, x + 18, y + 7], fill=INK); dc.ellipse([x + 6, y - 5, x + 16, y + 5], fill=NEUTRAL)
+                castle(dc, x + 10, y, 10, GREY)
             elif kind == "lane":
-                dc.line([(x + 5, y), (x + 17, y)], fill=INK, width=6)
-                dc.line([(x + 5, y), (x + 17, y)], fill=(250, 240, 210), width=4)
+                parens(dc, x + 11, y, 1, 0, 8, 2)
             elif kind == "pin":
                 dc.ellipse([x + 3, y - 9, x + 21, y + 9], fill=INK); dc.ellipse([x + 5, y - 7, x + 19, y + 7], fill=LANES[0]); dc.text((x + 12, y), "1", font=font(11), fill=INK, anchor="mm")
             elif kind == "portal":
@@ -356,7 +372,7 @@ def _draw_legend(dc, rows, fl, y0, width):
             elif kind == "diamond":
                 dc.polygon([(x + 11, y - 9), (x + 20, y), (x + 11, y + 9), (x + 2, y)], fill=INK); dc.polygon([(x + 11, y - 6), (x + 17, y), (x + 11, y + 6), (x + 5, y)], fill=LANES[0])
             elif kind == "square":
-                dc.rectangle([x + 3, y - 8, x + 19, y + 8], fill=INK); dc.rectangle([x + 5, y - 6, x + 17, y + 6], fill=LANES[0])
+                gate_icon(dc, x + 11, y, 8, LANES[0])
             else:
                 dc.rectangle([x + 2, y - 8, x + 20, y + 8], fill=tuple(int(c * DARKEN) for c in kind), outline=(14, 16, 20))
             dc.text((x + 26, y), text, font=fl, fill=(235, 235, 235), anchor="lm")
