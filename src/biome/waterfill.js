@@ -494,6 +494,7 @@ function placeHarbours(ctx) {
  * ctx: { W, H, l, water, harbours, rng, p, objects, objectEntry }
  */
 function fillWater(ctx) {
+	const modPlaced = [], SAME_GAP = process.env.VMAPGEN_WATER_SAME_GAP !== undefined ? Number(process.env.VMAPGEN_WATER_SAME_GAP) : 8;
 	const { W, H, l, water, harbours, rng, p, objects, objectEntry } = ctx;   // ctx.zone: the level's zone grid (the water portal check)
 	if (!water || !harbours || !harbours.length) return 0;
 	const mult = Number.isFinite(p.waterTreasure) ? p.waterTreasure : 1;
@@ -610,8 +611,9 @@ function fillWater(ctx) {
 					if (!ok) continue;
 				}
 				const [type, subtype] = modPick ? [modPick.type, modPick.subtype] : identity(entry);
+					if (modPick && SAME_GAP > 0 && modPlaced.some(q => q.k === `${type}:${subtype}` && Math.max(Math.abs(q.x - x), Math.abs(q.y - y)) < SAME_GAP)) continue;
 				objects.push(objectEntry(type, x, y, l, tpl, subtype));
-				if (modPick) objects[objects.length - 1].mod = modPick.mod;
+				if (modPick) { objects[objects.length - 1].mod = modPick.mod; modPlaced.push({ k: `${type}:${subtype}`, x, y }); }
 				if (type === 'whirlpool') whirlpools.push(objects[objects.length - 1]);
 				footprintBlock(tpl, x, y, 0, W, H, wb);
 				if (walls.length) guard.refresh();
@@ -632,6 +634,8 @@ function fillWater(ctx) {
 				break;
 			}
 		}
+		// no two of one kind of mod water object within 8 tiles of each other (K, 2026-11-13, S193: "two of the same kinds of water building next to
+		// each other (modded content)"; two Temple of the Sea banks 3 tiles apart on his Headquarters seed 376966728). VMAPGEN_WATER_SAME_GAP=0 off.
 		// water banks: own stream, off-shore by a tile, the visit reached by a boat, the sea kept in one piece. VMAPGEN_MOD_WATER_BANKS=0 off.
 		for (const G of [{ list: MOD_WATER_BANKS, rate: MOD_BANK_RATE, salt: 0xba4c, on: process.env.VMAPGEN_MOD_WATER_BANKS !== '0' }, { list: MOD_WATER_EXTRA, rate: MOD_EXTRA_RATE, salt: 0x5ea1, on: process.env.VMAPGEN_MOD_WATER_EXTRA !== '0' }, { list: MOD_WATER_SITES, rate: MOD_SITE_RATE, salt: 0x517e, on: process.env.VMAPGEN_MOD_WATER_SITES !== '0' }]) if (G.list.length && G.on) {
 			const MOD_LIST = G.list;
@@ -655,11 +659,13 @@ function fillWater(ctx) {
 					if (walls.length && !guard.accepts(walls)) continue;
 					const vis = visitableCells(tpl, x, y);
 					if (vis.length && !vis.some(([vx, vy]) => allowedDirs(tpl).some(([dx, dy]) => { const u = vx + dx, v = vy + dy; if (u < 0 || v < 0 || u >= W || v >= H) return false; const q = v * W + u; return !walls.includes(q) && !(wb[q] & OCCUPIED) && guard.reachable[q]; }))) continue;
-					objects.push(objectEntry(m.type, x, y, l, tpl, m.subtype));
+					if (SAME_GAP > 0 && modPlaced.some(q => q.k === `${m.type}:${m.subtype}` && Math.max(Math.abs(q.x - x), Math.abs(q.y - y)) < SAME_GAP)) continue;
+						objects.push(objectEntry(m.type, x, y, l, tpl, m.subtype));
 					objects[objects.length - 1].mod = m.mod;
 					footprintBlock(tpl, x, y, 0, W, H, wb);
 					if (walls.length) guard.refresh();
 					for (const [vx, vy] of vis) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const u = vx + dx, v = vy + dy; if (u >= 0 && v >= 0 && u < W && v < H) wb[v * W + u] |= RESERVED; }
+					modPlaced.push({ k: `${m.type}:${m.subtype}`, x, y });
 					placed++; if (G.list === MOD_WATER_BANKS) banksPlaced++; else if (G.list === MOD_WATER_SITES) sitesPlaced++; else extraPlaced++;
 					break;
 				}
@@ -697,7 +703,8 @@ function fillWater(ctx) {
 				}
 			}
 			if (spots.length === 2) {
-				for (const [x, y] of spots) { objects.push(objectEntry(m.type, x, y, l, tpl, m.subtype)); objects[objects.length - 1].mod = m.mod; footprintBlock(tpl, x, y, 0, W, H, wb); placed++; }
+				for (const [x, y] of spots) { if (SAME_GAP > 0 && modPlaced.some(q => q.k === `${m.type}:${m.subtype}` && Math.max(Math.abs(q.x - x), Math.abs(q.y - y)) < SAME_GAP)) continue;
+						objects.push(objectEntry(m.type, x, y, l, tpl, m.subtype)); objects[objects.length - 1].mod = m.mod; footprintBlock(tpl, x, y, 0, W, H, wb); placed++; }
 				console.error(`[gen] level ${l}: a water portal pair (${m.subtype}) between the two largest seas, ${bodies[seas[0]].size} and ${bodies[seas[1]].size} tiles`);
 			}
 		}
