@@ -8710,6 +8710,18 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			let done = false;
 			// a site that fails only the four-way rule (cornersOnly) is tried once more, last, when no other was taken
 			let spareCell = -1, lastTry = false;
+			// gates keep apart on a template too (K, 2026-11-12, S163: "these should almost never be this close"; the factory's gate_pairs.js found Headquarters
+			// gate pairs within 20 tiles on 39 of 8 maps against stock's 11 of 6): the sites within 12 percent of the side of a gate or monolith end already
+			// standing, on either level, come after the others; the held site keeps first place; nothing is refused, so no link loses its gate. VMAPGEN_GATE_APART=0 off.
+			if (process.env.VMAPGEN_GATE_APART !== '0') {
+				const gApart = Math.max(8, Math.round((W + H) / 2 * 0.12)), ends = [];
+				for (const l of [0, 1]) for (const o of plans[l].objects) if ((o.l || 0) === l && /^(monolith|subterraneanGate)/.test(o.type)) ends.push([o.x, o.y]);
+				const near = c2 => { const gx = c2 % W, gy = (c2 / W) | 0; return ends.some(([ex, ey]) => Math.max(Math.abs(ex - gx), Math.abs(ey - gy)) < gApart); };
+				const keepFirst = held !== undefined && cand[0] === held ? cand.splice(0, 1) : [];
+				const farC = cand.filter(c2 => !near(c2)), closeC = cand.filter(c2 => near(c2));
+				cand.length = 0;
+				cand.push(...keepFirst, ...farC, ...closeC);
+			}
 			for (let ci = 0; ci <= cand.length; ci++) {
 				if (ci === cand.length) { if (done || spareCell < 0) break; lastTry = true; }
 				const cell = lastTry ? spareCell : cand[ci];
