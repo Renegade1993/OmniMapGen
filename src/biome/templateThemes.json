@@ -1,4 +1,5 @@
 {
 	"_about": "A theme a template brings with it (guardThemes.json names the themes). The engine's template format has no room for one (zones and root refuse unknown fields), so the generator keeps the pairing here and applies it when the template is picked and no --theme is given.",
-	"Golem Foundry": { "theme": "golems" }
+	"Golem Foundry": { "theme": "golems" },
+	"Golems Aplenty": { "theme": "golems", "guardShare": 0.12, "dwellingShare": 0, "bankShare": 0 }
 }

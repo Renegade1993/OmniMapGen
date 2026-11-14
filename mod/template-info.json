@@ -575,8 +575,8 @@
 				"start": 4,
 				"treasure": 3
 			},
-			"description": "Up to four players start in small zones, each with a castle and a full set of mines but no neutral town. All four open onto one middle zone of dirt and snow with a neutral Tower town and the richest treasure. Two of the starts also have a side treasure zone on Subterranean terrain, which opens into the middle as well.\n\nWhat makes it different: a tight map with light guards on the ways into the middle, so players meet early, and the Tower town in the middle, home of the golems, gives the template its name.\n\nIn construction: not yet playtested.",
-			"brief": "Up to four players start in small zones that all open onto one middle zone with a neutral Tower town and the richest treasure. Light guards, so players meet early. Not yet playtested.",
+			"description": "Up to four players start in small zones, each with a castle and a full set of mines. Every start opens onto one middle zone of dirt and snow with a neutral Tower town and the richest treasure, and two of the starts have a side treasure zone on Subterranean terrain as well. It plays on one level or two.\n\nWhat makes it different: Golem Factories. In the original scenario the wizards have left their valley after a thousand years of experimenting with golems, and the lords race to grab the generators and be the first to gather enough golems. That map holds 14 Golem Factories on its two levels, about 94 times as many for its size as the other scenario maps. Here the neutral zones hold the same density, with golems among the guards.\n\nIn construction: about 50 percent built; the Golem Factories and the golem guards are new and not yet played.",
+			"brief": "Up to four players start in small zones that all open onto one middle zone with a neutral Tower town and the richest treasure. The original is about grabbing golem generators: this one is full of Golem Factories and golem guards. In construction.",
 			"templatePreference": "Golems Aplenty starts every player above ground."
 		}
 	},

@@ -637,7 +637,12 @@ async function generateMap(params) {
 	if (params.template && !params.guardTheme) {
 		const own = TEMPLATE_THEMES[loadTemplate(params.template).name];
 		if (own && own.theme) {
-			params = { ...params, guardTheme: own.theme };
+			// its own shares too (templateThemes.json guardShare, dwellingShare, bankShare): Golems Aplenty's golems stand among the guards
+			// and its Golem Factories are placed by its own density (template-settings.json extraDwellings), not drawn from a start's dwellings
+			params = { ...params, guardTheme: own.theme,
+				...(Number.isFinite(own.guardShare) ? { guardThemeShare: own.guardShare } : {}),
+				...(Number.isFinite(own.dwellingShare) ? { dwellingThemeShare: own.dwellingShare } : {}),
+				...(Number.isFinite(own.bankShare) ? { bankThemeShare: own.bankShare } : {}) };
 			console.error(`[gen] template brings theme ${own.theme}`);
 		}
 	}

@@ -9749,6 +9749,11 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		const r = ensureSignatureDwelling(plans, W, H, blocked, objectPools, p, rng);
 		if (r) console.error(`[gen] signature dwelling: ${r}`);
 	}
+	// a template's extra dwellings, its own density of one kind (template-settings.json extraDwellings: Golems Aplenty's Golem Factories)
+	if (process.env.VMAPGEN_EXTRA_DWELLINGS !== '0' && p.zonePlan && p.zonePlan.templateSettings && (p.zonePlan.templateSettings.extraDwellings || []).length) {
+		const r = placeExtraDwellings(plans, W, H, blocked, p, rng);
+		if (r) console.error(`[gen] extra dwellings: ${r}`);
+	}
 	// on a one-level map with water the far junction zones' dragon dwellings move into the middle ones (gatherDragons)
 	{
 		const g = gatherDragons(plans, W, H, blocked, p, rng);
@@ -11869,6 +11874,68 @@ function ensureSignatureDwelling(plans, W, H, blocked, objectPools, p, rng) {
 		blocked[base + g] |= OCCUPIED;
 		kinds.set(d.subtype, (kinds.get(d.subtype) || 0) + 1);
 		lines.push(`zone ${id}: ${d.subtype || d.type} at (${x},${y}) level ${l}, ${gone} scenery object(s) cleared, guarded`);
+	}
+	return lines.length ? lines.join('; ') : null;
+}
+
+/**
+ * A template's extra dwellings (K, 2026-11-13, S199: "GOLEM FACTORIES. ITS SUPPOSED TO BE GOLEM FACTORIES ... THE GOLEM FACTORIES DENSITY WAS WAY
+ * HIGHER THAN USUAL ON THAT MAP"). The original Golems Aplenty.h3m holds 14 Golem Factories on its 72x72 map of two levels, 10 on the surface and
+ * 4 underground (TemplateFactory\census\Golems_Aplenty.md, read from the file and recounted by the Checker): 1.35 to every 1000 tiles of the map's
+ * levels; ours held none. mod/template-settings.json `extraDwellings` ([{ type, subtype, per1000 }]) gives a template its own density of one kind of
+ * dwelling, over its neutral zones (no start's) in proportion to their ground, each on the spot with the fewest scenery tiles under it and as far
+ * as it can be from the same kind already placed, the scenery under it cleared whole. The Dwelling density lever scales the count. Guards and open
+ * approaches are the later passes' (closeApproaches), as for every dwelling. VMAPGEN_EXTRA_DWELLINGS=0 off. Returns a line for the log, or null.
+ */
+function placeExtraDwellings(plans, W, H, blocked, p, rng) {
+	const rules = ((p.zonePlan && p.zonePlan.templateSettings) || {}).extraDwellings || [];
+	const pool = require('./economy').DWELLING_POOL;
+	const idOf = (l, z) => { const lz = p.zonePlan.perLevel && p.zonePlan.perLevel[l]; return lz && lz[z] ? lz[z].id : undefined; };
+	const recs = new Map();
+	for (const lz of p.zonePlan.perLevel || []) for (const z of lz || []) if (z) recs.set(z.id, z);
+	const lines = [];
+	for (const rule of rules) {
+		const d = pool.find(x => x.subtype === rule.subtype && (!rule.type || x.type === rule.type));
+		if (!d || !d.tpl) { lines.push(`${rule.subtype}: no template for it`); continue; }
+		const areas = new Map();
+		for (let l = 0; l < plans.length; l++) {
+			const zone = plans[l].zone, water = plans[l].p && plans[l].p.water;
+			if (!zone) continue;
+			for (let c = 0; c < W * H; c++) {
+				const z = zone[c];
+				if (z < 0 || (water && water[c])) continue;
+				const rec = recs.get(idOf(l, z));
+				if (!rec || rec.playerTowns || /^(playerStart|cpuStart)$/.test(rec.type || '')) continue;
+				areas.set(l + ':' + z, (areas.get(l + ':' + z) || 0) + 1);
+			}
+		}
+		const total = [...areas.values()].reduce((s, v) => s + v, 0);
+		const lever = Number.isFinite(Number(p.dwellingDensity)) ? Number(p.dwellingDensity) : 1;
+		const want = Math.round(Number(rule.per1000) * W * H * plans.length / 1000 * lever);
+		if (!total || !(want > 0)) continue;
+		const keys = [...areas.keys()], placedAt = [];
+		let placed = 0, noRoom = 0, cleared = 0;
+		for (let i = 0; i < want; i++) {
+			let best = null;
+			for (let tries = 0; tries < 4 && !best; tries++) {
+				let r = rng() * total, k = 0;
+				while (k < keys.length - 1 && (r -= areas.get(keys[k])) > 0) k++;
+				const [l, z] = keys[k].split(':').map(Number);
+				const mine = placedAt.filter(q => q.l === l);
+				const spot = sceneryRoom(plans[l], l, W, H, blocked, d.tpl, q => q === z,
+					(x, y) => -Math.min(Infinity, ...mine.map(q => Math.hypot(q.x - x, q.y - y))));
+				if (spot) best = spot;
+			}
+			if (!best) { noRoom++; continue; }
+			const { l, x, y } = best, pl = plans[l];
+			cleared += clearScenery(pl, l, W, H, blocked, best);
+			pl.objects.push(objectEntry(d.type, x, y, l, d.tpl, d.subtype));
+			footprintBlock(d.tpl, x, y, l, W, H, blocked);
+			markApproach(d.tpl, x, y, l, W, H, blocked);
+			placedAt.push({ l, x, y });
+			placed++;
+		}
+		lines.push(`${d.subtype}: ${placed} of ${want} placed over ${keys.length} neutral zone(s) (${rule.per1000} to 1000 tiles of ${plans.length} level(s)), ${cleared} scenery object(s) cleared${noRoom ? `, ${noRoom} found no room` : ''}`);
 	}
 	return lines.length ? lines.join('; ') : null;
 }

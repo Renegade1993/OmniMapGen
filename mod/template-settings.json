@@ -1,5 +1,8 @@
 {
-	"_about" : "Per-template generator settings, keyed by the template's name as in approved-templates.json; a template not listed takes every default. Outside generator/, so editing it needs no re-pinning. Keys: declipArt (default true): false keeps a template's pickups where they land when another object's picture is drawn over them (plan.js, declip.js declipPictures). Coldshadow's Fantasy keeps them: its objects are part of what K accepted (the lead, 2026-10-18). Coldshadow's Fantasy had declipArt false from 2026-10-18 (its pickups on K's accepted seeds did not move) and lost it on 2026-11-07 (the lead: K's 10-18 words cover every map).",
+	"_about" : "Per-template generator settings, keyed by the template's name as in approved-templates.json; a template not listed takes every default. Outside generator/, so editing it needs no re-pinning. Keys: declipArt (default true): false keeps a template's pickups where they land when another object's picture is drawn over them (plan.js, declip.js declipPictures). Coldshadow's Fantasy keeps them: its objects are part of what K accepted (the lead, 2026-10-18). Coldshadow's Fantasy had declipArt false from 2026-10-18 (its pickups on K's accepted seeds did not move) and lost it on 2026-11-07 (the lead: K's 10-18 words cover every map). extraDwellings (a list of { type, subtype, per1000 }): the template's own density of one kind of dwelling, to every 1000 tiles of the map's levels, over its neutral zones (plan.js placeExtraDwellings; Golems Aplenty's Golem Factories at 1.35, counted on the original scenario, 14 on its 10,368 tiles, S199).",
 	"templates" : {
+		"Golems Aplenty": {
+			"extraDwellings": [ { "type": "creatureGeneratorSpecial", "subtype": "golemFactory", "per1000": 1.35 } ]
+		}
 	}
 }
