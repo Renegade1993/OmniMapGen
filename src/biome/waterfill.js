@@ -71,7 +71,9 @@ const MOD_BANK_RATE = 0.5;
 // the mods' water decor (HotA's seaweeds, rocks, waterfalls) and one-visit pickups of a generic handler (bluebottle, altar of mana):
 // 2 a 1,000 tiles of sea, beside the core kelp's 5 and rocks' 4 (SCENERY_RATE)
 let MOD_WATER_EXTRA = [];
-function setModWaterExtra(list) { MOD_WATER_EXTRA = Array.isArray(list) ? list : []; }
+// no waterfall stands in the sea (K, 2026-11-13, S192: "found a random waterfall in the water"; the factory found four on K's Headquarters seed 376966728);
+// VMAPGEN_WATER_FALLS=1 keeps them
+function setModWaterExtra(list) { MOD_WATER_EXTRA = Array.isArray(list) ? list.filter(o => process.env.VMAPGEN_WATER_FALLS === '1' || !/waterfall/i.test([o && o.id, o && o.type, o && o.subtype, o && o.name].filter(Boolean).join(' '))) : []; }
 const MOD_EXTRA_RATE = 2;
 // the mods' water sites: a dwelling (Tides of War's Coral Reef) or a market (HotA's Seafaring Academy) with only water templates, 0.1 a
 // 1,000 tiles of sea (about one each on K's 180 archipelago). No guard: stock VCMI posts none on the water.

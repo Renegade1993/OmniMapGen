@@ -3177,6 +3177,40 @@ async function generateMap(params) {
 		}
 		if (set) console.error(`[gen] objects written to be drawn under their neighbours, as the engine draws that art: ${set}`);
 	}
+	// No scenery over rock or sea (K, 2026-11-12 and 13, S165: "subterranean lava decoration blockers are overlapping the edge of the terrain in some
+	// places"; S192: "found a random waterfall in the water"). Measured on his Headquarters seed 376966728 by the factory's decor_cells.js
+	// (TemplateFactory\census\measure-decor_cells-K376966728.md): 65 scenery cells on underground rock and 58 on water, against 0 and 0 on the engine's
+	// six Headquarters maps. The last word on the ground is known only here, after the cave shaping and the shore passes, so a scenery piece (no
+	// visiting side, no town, mine, gate, monolith or stack, no reef or kelp, which stand in the sea) that has a cell on rock underground, or cells
+	// both on water and on land on the surface, is taken off. VMAPGEN_SCENERY_ON_GROUND=0 off.
+	if (process.env.VMAPGEN_SCENERY_ON_GROUND !== '0') {
+		let rockOff = 0, seaOff = 0;
+		const gone = new Set();
+		for (let li = 0; li < levels.length; li++) {
+			const pl = plans[li], Wl = levels[li].width, Hl = levels[li].height;
+			const wet = pl.p && (pl.p.waterMask || pl.p.water), om = pl.openMask;
+			if (!wet && !om) continue;
+			for (const o of objects) {
+				if ((o.l || 0) !== li || !o.template || !o.template.mask) continue;
+				// a waterfall with any cell, or its anchor, on water goes whole: K's "random waterfall in the water"
+				if (wet && /waterfall/i.test(`${o.type} ${o.subtype || ''}`)) {
+					const fc = blockingCells(o.template, o.x, o.y).concat(visitableCells(o.template, o.x, o.y), [[o.x, o.y]]).filter(([fx, fy]) => fx >= 0 && fy >= 0 && fx < Wl && fy < Hl);
+					if (fc.some(([fx, fy]) => wet[fy * Wl + fx])) { gone.add(o); seaOff++; }
+					continue;
+				}
+				if (o.template.visitableFrom || o.template.mask.some(r => /[AT]/.test(r))) continue;
+				if (/^(randomTown|town|mine|abandonedMine|subterraneanGate|monolith|monster|randomMonster|reef|kelp)/.test(o.type)) continue;
+				const cells = blockingCells(o.template, o.x, o.y).filter(([fx, fy]) => fx >= 0 && fy >= 0 && fx < Wl && fy < Hl);
+				if (om && cells.some(([fx, fy]) => !om[fy * Wl + fx])) { gone.add(o); rockOff++; }
+				else if (wet && cells.some(([fx, fy]) => wet[fy * Wl + fx]) && cells.some(([fx, fy]) => !wet[fy * Wl + fx])) { gone.add(o); seaOff++; }
+			}
+		}
+		if (gone.size) {
+			for (let i = objects.length - 1; i >= 0; i--) if (gone.has(objects[i])) objects.splice(i, 1);
+			for (const pl of plans) if (pl.objects) for (let i = pl.objects.length - 1; i >= 0; i--) if (gone.has(pl.objects[i])) pl.objects.splice(i, 1);
+			console.error(`[gen] scenery over rock or sea taken off at the end: ${rockOff} over underground rock, ${seaOff} across a shoreline`);
+		}
+	}
 	phase('ink');
 	const header = makeHeader({
 		width: params.mapW, height: params.mapH,
