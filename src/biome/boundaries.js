@@ -368,6 +368,7 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 	// template's own does, the strength climbs back a quarter at a time until one stands (the Opus Reviewer, pass 106: at 1 Coldshadow's
 	// start links lost their guards, doorway guards 16 to 11)
 	const gradGuard = (o, s0, extra) => { let s = gradStrength(o, s0); let g = engineGuard(scaled(s), 1 + shift, rng, true, extra); if (g || !(grad > 0) || s >= s0) return g; for (let k = 0; k < 12 && !g && s < s0; k++) { s = Math.min(s0, Math.round(s * 1.25) + 1); g = engineGuard(scaled(s), 1 + shift, rng, true, extra); } return g; };
+	let startExitLevel = 0;
 	for (const o of openings) {
 		if (o.kind === 'portal') continue;
 		const info = edgeInfo && edgeInfo.get(o.a * 100000 + o.b);
@@ -438,6 +439,17 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 		// mix stays the corpus's. The old bands (high-loot 5-7, town 4-5, the
 		// rest 1-4) put the free layout's levels 3 and 4 at 1.23x the corpus
 		// once the doorway guards stopped being lost.
+		// Every start's way out is one strength (K, 2026-11-13, S168: "need to hit balance on classic templates....very suss"): the free layout wrote the
+		// level of a doorway guard and no amount, so the game rolled the stack's size at load; on Classic 108 four players seed 7 (tip-1113) blue's only
+		// way out was worth about 10,580 against tan's 2,040 after the roll (worst start spread 6.95, stock's 2.03). The doorways out of the starts of
+		// one map take one level (drawn once, as above) and the middle of that level's stack range, as the engine gives every link of a template one
+		// strength. VMAPGEN_START_EXIT_EVEN=0 off.
+		if (fromStart && process.env.VMAPGEN_START_EXIT_EVEN !== '0') {
+			if (!startExitLevel) startExitLevel = creepTier(zoneClasses[o.b], rng, shift + gradLevels(o));
+			const [lo, hi] = require('./content').STACK_RANGE[Math.max(1, Math.min(7, startExitLevel)) - 1];
+			guards.push({ cell: mid, level: startExitLevel, amount: Math.round((lo + hi) / 2), edge: [o.a, o.b] });
+			continue;
+		}
 		const level = creepTier(zoneClasses[o.b], rng, shift + gradLevels(o));
 		guards.push({ cell: mid, level, edge: [o.a, o.b] });
 	}
