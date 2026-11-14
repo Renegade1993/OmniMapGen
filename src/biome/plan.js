@@ -4829,13 +4829,21 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		// through assignConnections and kept a start with no road out and 4 portal pairs that were no shortcut)
 		if (!(family >= 1 && family <= 6) && process.env.VMAPGEN_START_EXIT !== '0')
 			require('./biomes').startExits(connections, edges, seeds, familyPairs, { seeds, W, H, zone, water }, i => !!(seeds[i] && seeds[i].player));
+		// Portal pairs carry a hero far (K, 2026-11-13, S189 S156 S163 S046): each link drawn as a portal over a shared border becomes a land link and
+		// its portal a pair between zones that do not touch, a quarter of the side or more apart. Its own stream. VMAPGEN_FAR_PORTALS=0 off.
+		if (process.env.VMAPGEN_FAR_PORTALS !== '0') {
+			familyPairs.farFrom = familyPairs.length;
+			const fpLog = require('./biomes').farPortals(connections, edges, seeds, familyPairs, { seeds, W, H, zone, water }, i => !!(seeds[i] && seeds[i].player),
+				xorshift((((params.seed || 1) ^ 0xfa4b07) + levelIndex * 977) >>> 0), p);
+			if (fpLog) console.error(`[gen] level ${levelIndex}: far portals: ${fpLog}`);
+		}
 		if (family >= 1 && family <= 6) console.error(`[gen] level ${levelIndex}: Layout family ${['Mixed', 'Tree', 'Sparse mesh', 'Hub', 'Pairs', 'Ring', 'Chain'][family]}`
 			+ `${asked === 7 ? ' (Random)' : ''}: `
 			+ `${[...connections.values()].filter(k => k !== 'blocked').length + familyPairs.length} link(s) over ${edges.length} border(s)`
 			+ (familyPairs.length ? `, ${familyPairs.length} of them portal pair(s) between zones that do not touch` : ''));
 		if (connections.startExitLog) console.error(`[gen] level ${levelIndex}: starts' way out: ${connections.startExitLog}`);
 		edgeInfo = new Map();
-		unfulfilled = familyPairs.map(([a, b]) => ({ a, b, guard: 0, road: false, type: 'family' }));
+		unfulfilled = familyPairs.map(([a, b], i) => ({ a, b, guard: 0, road: false, type: 'family', far: i >= (familyPairs.farFrom === undefined ? Infinity : familyPairs.farFrom) }));
 	}
 	// Layout family acts on the free layout only; on a template the template's links stand, and the lobby greys the control (knobs.js
 	// ignoredOnTemplate). Said here so a setting never does nothing unseen.
@@ -5130,7 +5138,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 		for (const c of [...unfulfilled, ...forcedPortals]) {
 			const cellsA = cellsByBiome.get(c.a), cellsB = cellsByBiome.get(c.b);
 			if (!cellsA || !cellsA.length || !cellsB || !cellsB.length) continue;
-			openings.push({ a: c.a, b: c.b, kind: 'portal', hole: [],
+			openings.push({ a: c.a, b: c.b, kind: 'portal', far: c.far === true, hole: [],
 				portalA: nearSeed(cellsA, c.a), portalB: nearSeed(cellsB, c.b),
 				inner: [], tplGuard: c.guard || 0, road: c.road === true });
 			const zid = i => (tplZones && tplZones[i] && tplZones[i].id) || i;
@@ -8370,7 +8378,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		// map's gate count runs away the same way portals did (5.23x corpus,
 		// fidelity lens 2026-09-25, before this rescale).
 		const gateCount = Math.max(2,
-			Math.round(plans[0].openings.length * p.subterraneanGateRatio / 2
+			Math.round(plans[0].openings.filter(o => !o.far).length * p.subterraneanGateRatio / 2
 				* portalGateScale(plans[0].classes.length)));
 		const surfaceTpl = OBJECT_DEFS.subterraneanGate;
 		const underTpl = OBJECT_DEFS.subterraneanGateUnder;
@@ -8924,6 +8932,17 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		// engine adds none, and these unguarded ones were free passages
 		// between zones the template keeps apart.
 		let placed = 0, cursor = 0;
+		// Gates keep apart (K, 2026-11-12, S163: "two subterranean gates right next to each other on two layers, with nothing blocking travel
+		// from one directly to another on both levels at once ... these should almost never be this close, and when they are, they should be
+		// accessible to one another only on one layer"). The free layout's gates stood on the first random cell that fit: 2 tiles apart in one
+		// zone on K's 72x72 seed 659887289. A cell is tried three ways in turn: no gate or monolith end within `apart` tiles on either level;
+		// then a closer cell only where its zone differs from that end's zone on one level at least (a wall and a doorway part them there)
+		// and never within 3 tiles; then any cell, so no pair is lost. VMAPGEN_GATE_APART=0 off.
+		const apart = process.env.VMAPGEN_GATE_APART === '0' ? 0 : Math.max(8, Math.round((W + H) / 2 * 0.12));
+		const gateEnds = [];
+		for (const l of [0, 1]) for (const o of plans[l].objects) if ((o.l || 0) === l && /^(monolith|subterraneanGate)/.test(o.type)) gateEnds.push([o.x, o.y, l, o.type === 'subterraneanGate']);
+		const scan = [];
+		for (const mode of apart ? [0, 1, 2] : [2]) for (const c of order) scan.push([mode, c]);
 		for (let i = 0; i < (crossGates + crossPortals ? 0 : gateCount); i++) {
 			// below the surface the largest region unless a start actually lies
 			// there (mainComponent's own hasStart preference), matching the
@@ -8934,9 +8953,20 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			// a free-layout underground start left with no way out at all).
 			const reach = [0, 1].map(l => mainComponent(W, H, l, blocked, startsOn(l)));
 			let done = false;
-			for (; cursor < order.length && !done; cursor++) {
-				const c = order[cursor];
+			for (; cursor < scan.length && !done; cursor++) {
+				const [mode, c] = scan[cursor];
 				const x = c % W, y = (c / W) | 0;
+				if (mode < 2) {
+					let tooClose = false;
+					for (const [ex, ey, el, isGate] of gateEnds) {
+						const d = Math.max(Math.abs(ex - x), Math.abs(ey - y));
+						if (d >= apart) continue;
+						// a gate stands on both levels, a monolith end on one: mode 1 lets it be near only where the zones differ on a level
+						const levels = isGate ? [0, 1] : [el];
+						if (mode === 0 || d < 3 || levels.every(l => plans[l].zone[ey * W + ex] === plans[l].zone[c])) { tooClose = true; break; }
+					}
+					if (tooClose) continue;
+				}
 				// never inside a start's zone, on either level: these gates carry no
 				// guard, and one there was a way out of the start past its guarded
 				// doorways, into another start's ground (free layout, 72x72 s4)
@@ -8972,6 +9002,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 							.map(([a, b]) => b * W + a));
 				}
 				placed++;
+				gateEnds.push([x, y, 0, true], [x, y, 1, true]);
 				done = true;
 			}
 			if (!done) break;

@@ -1360,6 +1360,73 @@ function startExits(out, edges, seeds, pairs, ctx, isStart) {
 }
 
 /**
+ * Portal pairs that carry a hero far (K, 2026-11-13, S189, S156, S163, S046; the Reviewer's rule of 2026-10-31, roster\REVIEW-portal-placement-1031.md).
+ * K: "the portals still lead way too close to each other/generally don't have very good randomization in terms of distance between each pair".
+ * On K's own free layouts (252x252 seed 1802033766, 180x180 seed 1988871107) all eight pairs joined zones that touch, at a median of 0.125 and
+ * 0.178 of the map's side, four of the eight under a tenth of it; stock's pairs join zones two or more apart, median 0.54 to 0.62 of the side
+ * (roster\NOTE-s046-portals-1111.md). Acts on a free layout's chosen links after the family, startExits and Portal share have drawn them, with a
+ * stream of its own so the rest of the map draws what it drew before. Every link drawn as a portal over a shared border keeps a way: it
+ * becomes a land link on the borders' own road draw (sealed when it would join two starts that touch), and its portal becomes a pair between
+ * one of its zones and a zone it does not touch, drawn with equal chance among the zones a quarter of the side or more away in a straight line
+ * (the farthest few when none is that far; none at all leaves the link a land link), a zone already holding pair ends less likely. No start's
+ * zone is an end of a pair. The pair goes to `pairs` as the family's own pairs do (plan.js bridges it, ensureConnected counts it as joined).
+ * VMAPGEN_FAR_PORTALS=0 off. Returns a log line.
+ */
+function farPortals(out, edges, seeds, pairs, ctx, isStart, rng, params) {
+	const W = ctx.W || 0, H = ctx.H || 0;
+	if (!W || !H || !seeds.length) return '';
+	const key = (a, b) => Math.min(a, b) * 100000 + Math.max(a, b);
+	const side = (W + H) / 2, FAR = 0.25;
+	const p = { ...BIOME_DEFAULTS, ...params };
+	const noRoad = p.openPathNoRoad / ((p.openPathNoRoad + p.openPathRoad) || 1);
+	const touch = new Map();
+	for (const e of edges) {
+		if (!touch.has(e.a)) touch.set(e.a, new Set());
+		if (!touch.has(e.b)) touch.set(e.b, new Set());
+		touch.get(e.a).add(e.b); touch.get(e.b).add(e.a);
+	}
+	const land = new Map();
+	if (ctx.zone) for (let c = 0; c < W * H; c++) {
+		const z = ctx.zone[c];
+		if (z >= 0 && !(ctx.water && ctx.water[c])) land.set(z, (land.get(z) || 0) + 1);
+	}
+	// a zone with some ground to stand a monolith on, and no start's
+	const usable = z => !isStart(z) && seeds[z] && (!ctx.zone || (land.get(z) || 0) >= 40);
+	const used = new Map();
+	for (const [a, b] of pairs) { used.set(a, (used.get(a) || 0) + 1); used.set(b, (used.get(b) || 0) + 1); }
+	const paired = (a, b) => pairs.some(([u, v]) => (u === a && v === b) || (u === b && v === a));
+	let moved = 0, kept = 0; const dist = [];
+	for (const e of edges) {
+		const k = key(e.a, e.b);
+		if (out.get(k) !== 'portal') continue;
+		out.set(k, isStart(e.a) && isStart(e.b) ? 'blocked' : (rng() < noRoad ? 'openNoRoad' : 'openRoad'));
+		const ends = [e.a, e.b].filter(usable);
+		if (!ends.length) { kept++; continue; }
+		const A = ends.length === 1 ? ends[0] : ends[(rng() * 2) | 0];
+		const far = [], near = [];
+		for (let z = 0; z < seeds.length; z++) {
+			if (z === A || !usable(z) || (touch.get(A) && touch.get(A).has(z)) || paired(A, z)) continue;
+			const f = Math.hypot(seeds[z].x - seeds[A].x, seeds[z].y - seeds[A].y) / side;
+			(f >= FAR ? far : near).push([z, f]);
+		}
+		let pool = far;
+		if (!pool.length) pool = near.sort((u, v) => v[1] - u[1]).slice(0, 3);
+		if (!pool.length) { kept++; continue; }
+		const w = pool.map(([z]) => 1 / (1 + (used.get(z) || 0)));
+		let r = rng() * w.reduce((s, v) => s + v, 0), pick = 0;
+		for (; pick < pool.length - 1 && r >= w[pick]; pick++) r -= w[pick];
+		const [B, f] = pool[pick];
+		pairs.push([A, B]);
+		used.set(A, (used.get(A) || 0) + 1); used.set(B, (used.get(B) || 0) + 1);
+		dist.push(f); moved++;
+	}
+	if (!moved && !kept) return '';
+	dist.sort((u, v) => u - v);
+	return `${moved} portal link(s) over a shared border became land links with a far pair (${dist.length ? 'distance ' + dist.map(f => f.toFixed(2)).join(' ') + ' of the side' : 'none'})`
+		+ (kept ? `, ${kept} left a land link with no far zone to join` : '');
+}
+
+/**
  * The links of a free layout of one family (Layout family, BIOME_DEFAULTS.layoutFamily): a skeleton chosen over the cut's borders, the
  * other borders closed. The cut stays as it is, so the zones and the starts' share of the land do not move. Mixed (0) never comes here:
  * assignConnections draws each border on its own, and ensureConnected then opens borders until every biome joins, so the borders that
@@ -1573,7 +1640,7 @@ function ensureConnected(edges, connections, seedCount, params, rng, joined = []
 	return opened;
 }
 
-module.exports = { startExits, openEnclosedStarts, BIOME_CLASS, BIOME_DEFAULTS, partitionBiomes, partitionSeeded, wobbleWaves,
+module.exports = { startExits, farPortals, openEnclosedStarts, BIOME_CLASS, BIOME_DEFAULTS, partitionBiomes, partitionSeeded, wobbleWaves,
 	layoutZoneSeeds, symmetricEigen, spectralCoords, fitSimilarity, assignClasses, zoneDistances, physZoneDistances,
 	biomeEdges, assignConnections, familyConnections, ensureConnected, valueNoise, zonesWhole,
 	rimModeOf, rimLobeScale, bordersOff, nearestLand,
