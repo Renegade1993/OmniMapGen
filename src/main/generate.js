@@ -3267,8 +3267,12 @@ async function generateMap(params) {
 				starts: (pl.playerStarts || []).map(s => ({ x: s.x, y: s.y })),
 				// the template zone each local zone index stands for (tools/mapsight compares zone by zone with the
 				// engine's map through these; null in the free layout)
-				templateIds: (pl.zoneMeta || []).map(m => (m && m.spec ? m.spec.id : null)),
-				templateTypes: (pl.zoneMeta || []).map(m => (m && m.spec ? m.spec.type : null)),
+				// the free layout writes the same fields (S211, the factory's measures tell a start zone from another by them): the zone's own
+				// index, playerStart for a start's zone and treasure for the rest, and templateOwners, the player standing in each start zone
+				templateIds: pl.zoneMeta && pl.zoneMeta.length ? pl.zoneMeta.map(m => (m && m.spec ? m.spec.id : null)) : Array.from(pl.classes, (c, i) => i),
+				templateTypes: pl.zoneMeta && pl.zoneMeta.length ? pl.zoneMeta.map(m => (m && m.spec ? m.spec.type : null))
+					: Array.from(pl.classes, c => (c === require('../biome/biomes').BIOME_CLASS.PLAYER ? 'playerStart' : 'treasure')),
+				...(pl.zoneMeta && pl.zoneMeta.length ? {} : { templateOwners: Array.from(pl.classes, (c, i) => { const s = (pl.playerStarts || []).find(q => pl.zone[Math.round(q.y) * params.mapW + Math.round(q.x)] === i); return s ? (s.player ?? s.color ?? s.owner ?? null) : null; }) }),
 			})),
 		}));
 	}
