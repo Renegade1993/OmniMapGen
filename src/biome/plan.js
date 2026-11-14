@@ -2389,10 +2389,16 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 	// guards: a start behind its link's guard was "dug out" through the
 	// scenery beside the guard, and after the fill a treasure nook got a
 	// scenery piece removed from its wall, a back door around its guard.
+	// One the hero can step into from every side, that is: the stranded sweep clears an object only from a side its visitableFrom
+	// permits, and a prison (visitableFrom ---/+-+/+++, never from the row above) in the one gap into a piece of ground, reached
+	// only from above, sealed that piece for the sweep while this flood walked through it. Coldshadow 144 two levels seed 6 with
+	// each building keeping its look: prisons at (31,31) and (106,40), 28 objects dropped, a mine among them; the ground lay open
+	// on the finished map because the sweep had taken the prisons too.
+	const throughAnySide = o => REMOVABLE_TYPES.has(o.type) && allowedDirs(o.template || {}).length === 8;
 	const wall = c => {
 		if (!(blocked[base + c] & OCCUPIED)) return false;
 		const own = cellObjs.get(c);
-		return !own || !own.length || !own.every(o => REMOVABLE_TYPES.has(o.type));
+		return !own || !own.length || !own.every(throughAnySide);
 	};
 	const flood = seeds => {
 		const seen = new Uint8Array(W * H);
