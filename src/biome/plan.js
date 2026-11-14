@@ -4936,7 +4936,15 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// layout only (VMAPGEN_PLAN_ONLY, for analysis): zones and links are
 	// decided, which is all the water compatibility matrix measures
 	if (p.layoutOnly)
-		return { zone, classes, levelIndex, stats: layoutStats(zone, seeds, tplZones,
+		return { zone, classes, levelIndex,
+			// the layout itself (S035, DMB Dev's preview of the map the settings would make): every cell's zone, the zone table, the links (a land way, with or
+			// without a road, or a sealed border) and the portal pairs between zones, the starts' zones; no objects
+			layout: { W, H, zone: Array.from(zone), classes: Array.from(classes),
+				zones: seeds.map((s, i) => ({ id: i, x: Math.round(s.x), y: Math.round(s.y), player: s.player ? s.player : null,
+					templateId: tplZones && tplZones[i] ? tplZones[i].id : null, templateType: tplZones && tplZones[i] ? tplZones[i].type : (classes[i] === BIOME_CLASS.PLAYER ? 'playerStart' : 'treasure') })),
+				links: edges.map(e => ({ a: e.a, b: e.b, kind: connections.get(e.a * 100000 + e.b) || 'blocked', cells: e.borderCells.length })).filter(x => x.kind !== 'blocked'),
+				pairs: (unfulfilled || []).map(c => ({ a: c.a, b: c.b, type: c.type || 'template', far: c.far === true })) },
+			stats: layoutStats(zone, seeds, tplZones,
 			tplConns, unfulfilled, forced, W, H, water, null, landCells) };
 	// Underground: cut chambers and tunnels out of solid rock, and mark the
 	// rock as occupied so every later pass routes around it without knowing

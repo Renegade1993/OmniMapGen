@@ -2094,7 +2094,14 @@ async function generateMap(params) {
 	// VMAPGEN_PLAN_ONLY: stop after planning and report the layout figures
 	// (planLevel stats) as JSON on stdout; no terrain solve, no map written.
 	if (process.env.VMAPGEN_PLAN_ONLY) {
-		process.stdout.write(JSON.stringify({ plan: plans.map(pl => pl.stats || null),
+		// --layout FILE writes the JSON to FILE; --layout 1 leaves it on stdout as the one line that starts {"plan"
+		const emit = s => (process.env.VMAPGEN_LAYOUT_FILE ? fs.writeFileSync(process.env.VMAPGEN_LAYOUT_FILE, s) : process.stdout.write(s));
+		emit(JSON.stringify({ plan: plans.map(pl => pl.stats || null),
+			// the layout of each level (plan.js planLevel, S035) and the template's links between levels
+			layout: plans.map(pl => pl.layout || null),
+			crossLinks: zonePlan && zonePlan.connections ? zonePlan.connections.filter(c => c.aRef && c.bRef && c.aRef.l !== c.bRef.l).map(c => ({ a: c.aRef, b: c.bRef, guard: c.guard || 0, type: c.type || 'link' })) : [],
+			starts: (starts || []).map(s => ({ x: s.x, y: s.y, color: s.color || s.player || null, level: s.l || 0 })),
+			size: { w: params.mapW, h: params.mapH, levels: levels.length },
 			water: waterPlan ? { shape: waterPlan.shape, coverage: waterPlan.coverage,
 				moved: waterPlan.starts.filter(s => s.moved).length } : null }) + '\n');
 		return { planOnly: true };

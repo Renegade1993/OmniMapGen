@@ -13,7 +13,14 @@ const KNOWN = new Set(['w', 'h', 'players', 'out', 'seed', 'threads', 'perode',
 	'template', 'accommodate', 'listtemplates', 'humans', 'render', 'observer',
 	'aionly', 'preset', 'listknobs', 'vcmiroot', 'vcmiuserdir', 'guardtheme',
 	'guardthemeshare', 'theme', 'dwellingthemeshare', 'bankthemeshare', 'strict', 'factions',
-	'humancolors', 'heroes']);
+	'humancolors', 'heroes', 'layout']);
+// --layout: the layout only (S035, DMB Dev's preview of the map the settings would make): plan the zones, links, starts and portal pairs, write
+// one JSON line to stdout, make no map. The other options are the lobby's own (--w --h --players --template --underground --seed, the levers).
+if (process.argv.includes('--layout')) {
+	process.env.VMAPGEN_PLAN_ONLY = '1';
+	const v = process.argv[process.argv.indexOf('--layout') + 1];
+	if (v && v !== '1' && !v.startsWith('--')) process.env.VMAPGEN_LAYOUT_FILE = v;
+}
 
 /**
  * Parse `--key value` pairs, and refuse anything else.
