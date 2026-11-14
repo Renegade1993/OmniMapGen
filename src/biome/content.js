@@ -3132,7 +3132,25 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				if (!t || /^(resource|randomResource|treasureChest|campfire|pandoraBox|prison|obelisk|spellScroll|seerHut|randomArtifact|creatureBank|dragonUtopia|crypt|dwelling|monolith|subterraneanGate|mine|witchHut|learningStone|scholar|waterWheel|windmill|mysticalGarden)/.test(type)) continue;
 				e = { type, subtype: o.subtype, tpl: t, generic: true };
 			}
-			for (let n = manCount(type, b ? p.bonusDensity : 1); n > 0; n--) landmark.push(e);
+			// each building keeps the look the pile drew: the engine places the object handler it drew (TreasurePlacer, one entry per
+			// type and subtype), where ours put the type's first pool entry on every one, so a second look of a type never landed
+			// (Coldshadow and Jebus Cross against stock, 9b line 1 and S052: shrineOfMagicLevel1:shrineOfMagicMystery on 12 of 12
+			// stock maps, warMachineFactory:cannonYard on 7 of 12, ours 0). A look with no template on this ground falls back to e.
+			// VMAPGEN_OWN_LOOKS=0 as before.
+			const drawn = pileMan.get(type);
+			const tn = String(((objectPools.terrainNames && objectPools.terrainNames.get(terrain)) || {}).name || '').toLowerCase();
+			const lookOf = o => {
+				if (process.env.VMAPGEN_OWN_LOOKS === '0' || !o || String(o.subtype) === String(e.subtype)) return e;
+				let t = null;
+				if (o.core && objectPools.h3Tpl) t = objectPools.h3Tpl(o.classIndex, o.subIndex);
+				else if (!o.core && o.tpls && o.tpls.length) {
+					const m = o.tpls.find(x => !x.allowedTerrains || !x.allowedTerrains.length
+						|| x.allowedTerrains.some(a => String(a).slice(String(a).lastIndexOf(':') + 1).toLowerCase() === tn));
+					if (m) t = { animation: m.animation, mask: m.mask, visitableFrom: m.visitableFrom };
+				}
+				return t ? { ...e, subtype: o.subtype, tpl: t } : e;
+			};
+			for (let n = manCount(type, b ? p.bonusDensity : 1), k = 0; n > 0; n--, k++) landmark.push(lookOf(drawn[k % drawn.length]));
 		}
 	}
 	for (let i = pileMan ? 0 : rare(fill.utils); i > 0; i--) {
