@@ -1366,7 +1366,7 @@ function startExits(out, edges, seeds, pairs, ctx, isStart) {
  * 0.178 of the map's side, four of the eight under a tenth of it; stock's pairs join zones two or more apart, median 0.54 to 0.62 of the side
  * (roster\NOTE-s046-portals-1111.md). Acts on a free layout's chosen links after the family, startExits and Portal share have drawn them, with a
  * stream of its own so the rest of the map draws what it drew before. Every link drawn as a portal over a shared border keeps a way: it
- * becomes a land link on the borders' own road draw (sealed when it would join two starts that touch), and its portal becomes a pair between
+ * becomes a land link on the borders' own road draw (a link between two starts that touch stays as the family drew it), and its portal becomes a pair between
  * one of its zones and a zone it does not touch, drawn with equal chance among the zones a quarter of the side or more away in a straight line
  * (the farthest few when none is that far; none at all leaves the link a land link), a zone already holding pair ends less likely. No start's
  * zone is an end of a pair. The pair goes to `pairs` as the family's own pairs do (plan.js bridges it, ensureConnected counts it as joined).
@@ -1399,7 +1399,10 @@ function farPortals(out, edges, seeds, pairs, ctx, isStart, rng, params) {
 	for (const e of edges) {
 		const k = key(e.a, e.b);
 		if (out.get(k) !== 'portal') continue;
-		out.set(k, isStart(e.a) && isStart(e.b) ? 'blocked' : (rng() < noRoad ? 'openNoRoad' : 'openRoad'));
+		// two starts that touch and were joined by the family (Pairs, Hub) keep the link as it was drawn: sealing it left the Pairs family's nearest
+		// start pair unlinked (layout-family test, 48x48 four players seed 1, pair 1-3)
+		if (isStart(e.a) && isStart(e.b)) continue;
+		out.set(k, rng() < noRoad ? 'openNoRoad' : 'openRoad');
 		const ends = [e.a, e.b].filter(usable);
 		if (!ends.length) { kept++; continue; }
 		const A = ends.length === 1 ? ends[0] : ends[(rng() * 2) | 0];
