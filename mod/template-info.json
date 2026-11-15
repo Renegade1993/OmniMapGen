@@ -16,8 +16,8 @@
 				"treasure": 9,
 				"junction": 4
 			},
-			"description": "A template for 2 to 8 players, on maps from Extra Large (144x144) with an underground up to Giant (252x252) with an underground.\n\nOmniMapGen lets any player be human, and adds start zones when there are more players than the template has.",
-			"brief": "A template for up to eight players, on Extra Large to Giant maps with an underground.",
+			"description": "A template for 2 to 8 players, on maps from Extra Large (144x144) with an underground up to Giant (252x252) with an underground.\n\nIt has 21 zones: 8 start zones, 9 treasure zones and 4 junction zones. Each start zone has a castle for its player, one neutral town and a set of mines (two wood, two ore, and one each of gems, crystal, sulfur, mercury and gold). Each start zone joins one treasure zone that has a neutral castle; the road between them is guarded at 36,000 for start zones 1 and 5 and at 12,000 for the other six. The treasure zones meet in pairs at the four junction zones, the junctions meet each other in two pairs, and every junction joins the centre zone, a treasure zone with a neutral castle, with a guard of 60,000. The junction zones are underground, each has a gold mine and strong monsters, and in the maps OmniMapGen makes they hold neutral dwellings, mostly dragon dwellings (Crystal Cavern, Magic Forest, Sulfurous Lair and Frozen Cliffs). On a one-level map the junctions lie on the surface.\n\nThe original has two start zones for human players and six for computer players only. OmniMapGen lets any player be human, and adds start zones when there are more players than the template has.",
+			"brief": "Up to eight players on Extra Large to Giant maps with an underground. 21 zones: 8 start zones, 9 treasure zones and 4 junction zones; each start zone joins one treasure zone, the treasure zones meet in pairs at underground junctions, and the junctions join one centre zone.",
 			"templatePreference": "Coldshadow's Fantasy starts every player above ground.",
 			"original": {
 				"players": "2 to 8",
@@ -557,8 +557,8 @@
 				"start": 7,
 				"treasure": 2
 			},
-			"description": "A template for 2 to 7 players, on a Large map (108x108), with or without an underground.\n\nIn construction: an approximate version, not yet playtested.",
-			"brief": "A template for up to seven players, on a Large map. An approximate version, not yet playtested.",
+			"description": "A template for 2 to 7 players, on a Large map (108x108), with or without an underground.\n\nIt has 9 zones: 7 start zones and 2 treasure zones. Each start zone has a castle for its player, one neutral town and a set of mines (two wood, two ore, and one each of mercury, sulfur, crystal and gems), and each is limited to one town type: Rampart, Tower, Castle (two zones), Dungeon, Necropolis and Conflux. Every start zone has two roads out, each guarded at 45,000: one into a large treasure zone of rough ground with two neutral castles (Stronghold or Fortress), two wood mines, two ore mines and a gold mine, and one into a smaller treasure zone of sand with a mine of each rare resource and a gold mine. Both treasure zones have strong monsters, and they join each other with a guard of 45,000.\n\nIn construction: an approximate version, not yet playtested.",
+			"brief": "Up to seven players on a Large map. 9 zones: 7 start zones, each limited to one town type, and 2 treasure zones that every start zone joins by a guarded road. An approximate version, not yet playtested.",
 			"templatePreference": "Headquarters starts every player above ground; on two levels both treasure zones go below."
 		},
 		"Golems Aplenty": {
