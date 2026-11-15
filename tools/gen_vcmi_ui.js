@@ -399,7 +399,7 @@ function classicMapPageJson() {
 		items.push(...head(band - 1, 'map.size.custom'),
 			...customSizeField('map.height', 'persistent:mapGen/map/height', sizeX + 106, y),
 			{ name: 'label_map.size.x', type: 'label', font: 'small', alignment: 'center', color: 'white',
-				text: 'x', position: { x: sizeX + 88, y: y + 9 } },
+				text: 'vcmi.mapGen.map.size.x', position: { x: sizeX + 88, y: y + 9 } },   // a text id: the game looks every label's text up and logged "Unable to find localization for string 'x'" (OmniAI Dev's gate log, November 14th)
 			...customSizeField('map.width', 'persistent:mapGen/map/width', sizeX, y));
 	}
 	else if (AT_BEGIN)
@@ -624,12 +624,12 @@ function stringsJson() {
 			'vcmi.mapGen.presets.load.hover': 'Load saved settings',
 			'vcmi.mapGen.presets.load.help': '{Load saved settings}\n\nReplaces every setting on these pages with a set you saved.',
 			'vcmi.mapGen.map.size.custom.hover': 'Custom size',
-			'vcmi.mapGen.map.size.custom.help': '{Custom size}\n\nType a width and a height, 36 to 999 cells each, in place of a size from the row. Picking a size in the row above clears them.',
-			'vcmi.mapGen.template.random': '(Random)',
+			'vcmi.mapGen.map.size.custom.help': '{Custom size}\n\nType a width and a height, 36 to 999 cells each, in place of a size from the row. Picking a size in the row above clears them.',			'vcmi.mapGen.template.random': '(Random)',
 		} : {}),
 		'vcmi.mapGen.defaults.hover': 'Defaults',
 		'vcmi.mapGen.defaults.help': '{Defaults}\n\nPuts every setting back to the open layout with the widest choices: Random wherever a setting has Random, a random size, no template. A setting with no Random keeps its default.',
 		'vcmi.mapGen.defaults.word': 'Reset',
+		'vcmi.mapGen.map.size.x': 'x',   // the label between the custom size fields
 		'vcmi.mapGen.generate.hover': 'Generate map',
 		'vcmi.mapGen.generate.help': '{Generate map}\n\nMakes a map from these settings and selects it in the scenario list. Settings are saved as you change them.',
 		'vcmi.mapGen.generate.running': 'Generating a map...',

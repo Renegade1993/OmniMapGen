@@ -382,8 +382,10 @@ function buildModJson(text, { pager, atBegin, classic = false, api4 = false, api
 		// "arguments": the options beyond the Generate set DMB may send at Begin;
 		// the CLI refuses an option it does not know, so DMB sends --humanColors
 		// (the seated humans' colours, K's B2) and --heroes (their hero picks, DMB Dev 2026-10-14) only to a generator that names them
+		// and --layout (S035, DMB Dev's lobby preview); the source manifest names "layout" too, so its own line goes before the longer one is written
+		text = text.replace(/\n\t\t"arguments" : \[[^\]]*\],?/, '');
 		text = text.replace(/\n\t\t"name" : "[^"]*",/,
-			'\n\t\t"name" : "Omni Map Gen",\n\t\t"atBegin" : true,\n\t\t"arguments" : [ "humanColors", "heroes" ],');
+			'\n\t\t"name" : "Omni Map Gen",\n\t\t"atBegin" : true,\n\t\t"arguments" : [ "humanColors", "heroes", "layout" ],');
 	}
 	return text;
 }

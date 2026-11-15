@@ -155,7 +155,8 @@ test('--atbegin: the game makes the map at Begin, so no Generate button, and the
 	assert.deepStrictEqual(atBegin.dmb, { api: 3 });
 	assert.strictEqual(atBegin.mapGenerator.atBegin, true);
 	assert.strictEqual(atBegin.mapGenerator.name, 'Omni Map Gen');
-	assert.deepStrictEqual(atBegin.mapGenerator.arguments, ['humanColors', 'heroes'], 'DMB sends --humanColors and --heroes only when named');
+	assert.deepStrictEqual(atBegin.mapGenerator.arguments, ['humanColors', 'heroes', 'layout'], 'DMB sends --humanColors, --heroes and --layout only when named');
+	assert.deepStrictEqual(JSON.parse(text).mapGenerator.arguments, ['layout'], 'the released manifest names --layout, the lobby preview (S035)');
 	assert.strictEqual(atBegin.mapGenerator.command, JSON.parse(text).mapGenerator.command);
 	assert.deepStrictEqual(JSON.parse(buildModJson(text, { pager: true, atBegin: false })).dmb, { api: 2 });
 	assert.strictEqual(buildModJson(text, { pager: false, atBegin: false }), text);
