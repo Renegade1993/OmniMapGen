@@ -272,5 +272,33 @@ function zonePiles(pool, bands, cells, rng = Math.random) {
 	return out;
 }
 
-module.exports = { commonPool, zonePool, preparePile, zonePiles, creatureCount,
+/**
+ * Every look a seer hut can take (the object's subtypes, core and mods), for the engine's per-hut choice: TreasurePlacer::addSeerHuts
+ * gives each seer hut chooseRandomAppearance(rand, SEER_HUT, zone terrain) (lib/rmg/Functions.cpp), a subtype drawn evenly among those
+ * with a template for the zone's terrain. Ours gave every seer hut the first utility entry, subtype 0: Coldshadow 144 on 0.3.31, 135 of
+ * 135 seer huts on 16 maps were subtype 0, where the engine's 40 on 7 maps took seven looks (core 0, 1 and 2, HotA 1, 2 and 4, the igloo
+ * on snow; Opus Map Vision, 2026-11-10, 9b line 1, K 2026-10-31: "a full scan for any buildings not placed on my map that should have been").
+ * Returns [{ key, subtype, core, terrains, tpls }]: terrains as commonPool's (null for any land); tpls the mod's own templates, null for core.
+ */
+function seerLooks(objects, useMods = true, h3rows = null) {
+	const out = [];
+	for (const [key, o] of objects) {
+		if (!o || o.type !== 'seerHut' || o.overrides) continue;
+		const core = String(key).startsWith('core:');
+		if (!core && !useMods) continue;
+		let tpls = null;
+		if (!core) {
+			const own = (o.templates || []).filter(t => t.raw && t.raw.animation && Array.isArray(t.raw.mask) && t.raw.mask.length);
+			if (!own.length) continue;
+			tpls = own.map(t => ({ animation: t.raw.animation, mask: t.raw.mask, visitableFrom: t.raw.visitableFrom || ['---', '+-+', '+++'],
+				allowedTerrains: t.allowedTerrains || null }));
+			// a look for the sea only (HotA's water seer hut) is not a land zone's
+			if (tpls.every(t => Array.isArray(t.allowedTerrains) && t.allowedTerrains.length === 1 && t.allowedTerrains[0] === 'water')) continue;
+		}
+		out.push({ key, subtype: String(o.subtype), core, terrains: core ? groundsOf(o, h3rows) : null, tpls });
+	}
+	return out;
+}
+
+module.exports = { commonPool, seerLooks, zonePool, preparePile, zonePiles, creatureCount,
 	PRISON_VALUES, SCROLL_VALUES, PANDORA, SEER_HUT_VALUE };

@@ -2389,10 +2389,16 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 	// guards: a start behind its link's guard was "dug out" through the
 	// scenery beside the guard, and after the fill a treasure nook got a
 	// scenery piece removed from its wall, a back door around its guard.
+	// One the hero can step into from every side, that is: the stranded sweep clears an object only from a side its visitableFrom
+	// permits, and a prison (visitableFrom ---/+-+/+++, never from the row above) in the one gap into a piece of ground, reached
+	// only from above, sealed that piece for the sweep while this flood walked through it. Coldshadow 144 two levels seed 6 with
+	// each building keeping its look: prisons at (31,31) and (106,40), 28 objects dropped, a mine among them; the ground lay open
+	// on the finished map because the sweep had taken the prisons too.
+	const throughAnySide = o => REMOVABLE_TYPES.has(o.type) && allowedDirs(o.template || {}).length === 8;
 	const wall = c => {
 		if (!(blocked[base + c] & OCCUPIED)) return false;
 		const own = cellObjs.get(c);
-		return !own || !own.length || !own.every(o => REMOVABLE_TYPES.has(o.type));
+		return !own || !own.length || !own.every(throughAnySide);
 	};
 	const flood = seeds => {
 		const seen = new Uint8Array(W * H);
@@ -2635,6 +2641,100 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 		return dug;
 	};
 
+	// An object whose door the pocket rounds left shut gets one corridor dug to it, along the cheapest way from the reached ground
+	// (cellCost: scenery 1, droppable objects 25, terrain, zone borders and protected objects never), as digToStarts does for a start.
+	// The rounds below stop at 128 and peel smallest first, and most pockets they open are gaps inside a scenery cluster that hold
+	// nothing; what they left shut was dropped as unreachable after the fill. Coldshadow 144 two levels seed 22, 0.3.33: both level-0
+	// passes used all 128 and 67 objects went, 5 mines and 10 banks among them, each mine's one open door tile a pocket of its own
+	// (sulfurDune (14,27): 13,28 open, 12,28 and 14,28 scenery). Running the rounds until no pocket was left took 971 and 3,714 pieces
+	// and left the level bare. When the rounds end with no pocket left, or only pockets no corridor reaches, this finds nothing to dig.
+	// Monsters are left out: a stack in a pocket guards nothing a hero needs. Each object is tried once, so the loop ends.
+	const digToDoors = () => {
+		let dug = 0, opened = 0;
+		const tried = new Set();
+		for (;;) {
+			const main = followLinks(flood(seeds), ways, W, H, wall);
+			let who = null, target = null, whoCells = null;
+			for (const o of objects) {
+				if ((o.l || 0) !== levelIndex || !o.template || !o.template.mask || tried.has(o) || isScenery(o)
+						|| /^(monster|randomMonster)/.test(o.type)) continue;
+				const own = new Set(cellsOf(o));
+				const appr = [];
+				for (const [vx, vy] of visitableCells(o.template, o.x, o.y))
+					for (const [dx, dy] of allowedDirs(o.template)) {
+						const nx = vx + dx, ny = vy + dy;
+						if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+						const c = ny * W + nx;
+						if (!own.has(c)) appr.push(c);
+					}
+				if (!appr.length || appr.some(c => main[c])) continue;
+				who = o; target = new Set(appr); whoCells = own; break;
+			}
+			if (!who) break;
+			tried.add(who);
+			const dist = new Float64Array(W * H).fill(Infinity);
+			const from = new Int32Array(W * H).fill(-1);
+			const heap = [];
+			const push = (d, c) => {
+				heap.push([d, c]);
+				for (let i = heap.length - 1; i > 0;) {
+					const p = (i - 1) >> 1;
+					if (heap[p][0] <= heap[i][0]) break;
+					[heap[p], heap[i]] = [heap[i], heap[p]]; i = p;
+				}
+			};
+			const pop = () => {
+				const top = heap[0], last = heap.pop();
+				if (heap.length) {
+					heap[0] = last;
+					for (let i = 0; ;) {
+						const a = 2 * i + 1, b = a + 1;
+						let m = i;
+						if (a < heap.length && heap[a][0] < heap[m][0]) m = a;
+						if (b < heap.length && heap[b][0] < heap[m][0]) m = b;
+						if (m === i) break;
+						[heap[m], heap[i]] = [heap[i], heap[m]]; i = m;
+					}
+				}
+				return top;
+			};
+			for (let c = 0; c < W * H; c++) if (main[c]) { dist[c] = 0; push(0, c); }
+			let hit = -1;
+			while (heap.length) {
+				const [d, c] = pop();
+				if (d > dist[c]) continue;
+				if (target.has(c)) { hit = c; break; }
+				const x = c % W, y = (c / W) | 0;
+				for (let dy = -1; dy <= 1; dy++)
+					for (let dx = -1; dx <= 1; dx++) {
+						if (!dx && !dy) continue;
+						const nx = x + dx, ny = y + dy;
+						if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+						const n = ny * W + nx;
+						if (whoCells.has(n)) continue;   // never through the object itself
+						const w = cellCost(n);
+						if (w === Infinity || d + w >= dist[n]) continue;
+						dist[n] = d + w; from[n] = c; push(d + w, n);
+					}
+			}
+			if (hit < 0) continue;
+			const victims = new Set();
+			for (let c = hit; c >= 0 && !main[c]; c = from[c])
+				if (wall(c))
+					for (const o of cellObjs.get(c) || []) if (o !== who) victims.add(o);
+			for (const o of victims) {
+				const i = objects.indexOf(o);
+				if (i >= 0) { removeAt(i, cellsOf(o)); dug++; }
+			}
+			if (process.env.VMAPGEN_DROP_TRACE)
+				console.error(`[drop] door dug to ${who.type} at (${who.x},${who.y}) level ${levelIndex}: ${victims.size} object(s) removed`);
+			opened++;
+		}
+		if (dug)
+			console.error(`[gen] level ${levelIndex}: dug ${opened} shut door(s) out, ${dug} object(s) removed`);
+		return dug;
+	};
+
 	// On the Mediterranean (opts.seaShores) the shores of a sea a boat or shipyard is on are reached, a hero sails there: the far half of the
 	// land ring, which only a boat reaches, read as a pocket from each start, and the pass peeled up to 128 scenery pieces a sweep and then
 	// deleted what was droppable (the lead, 2026-10-15 15:32: on med_108_s7 12 creature banks, 9 shrines, 4 mines and the 4 start
@@ -2764,6 +2864,7 @@ function openSealedByObjects(objects, W, H, levelIndex, blocked, playerStarts, t
 			removeAt(victim, victimCells);
 			removed++;
 		}
+		removed += digToDoors();
 	}
 	return removed;
 }
