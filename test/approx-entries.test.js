@@ -29,7 +29,8 @@ test('the two approximate entries are approved open-layout entries that say they
 		assert.strictEqual(e.openLayout, true, `${n} is an open layout: the generator drops --template for it`);
 		// 2026-11-07 (the suite's debt): K, 2026-11-03: "focused general information provision, with a 'what makes it different' subtext": the text opens with what the map is
 		// and says it is approximate in its second paragraph, after the label 'What makes it different:' (it opened with 'APPROXIMATE.' and a slider guide before)
-		assert.match(e.description.split('\n\n')[1] || '', /^What makes it different: this entry is approximate\./, `${n}: the lobby text says so in its "what makes it different" paragraph`);
+		// 2026-11-14 (S198 audit): Nostalgia's paragraph may open with what the original does (its wiki page and census) before it says the entry is approximate
+		assert.match(e.description.split('\n\n')[1] || '', /^What makes it different: (in the original [^\n]*?)?[Tt]his entry is approximate[.:]/, `${n}: the lobby text says so in its "what makes it different" paragraph`);
 		assert.ok(!/^APPROXIMATE\./.test(e.description), `${n}: the text opens with what the map is`);
 		assert.match(e.oneLine, /^Approximate:/);
 		assert.strictEqual(e.originalPreferences.approximate, true);
@@ -67,7 +68,9 @@ test('both entries set Layout family to Tree (Opus Map Vision, 2026-10-21: 0.68 
 		assert.strictEqual(info[n].originalPreferences.levers.layoutFamily, tree, `${n} sets Layout family to Tree`);
 		assert.ok(info[n].originalPreferences.tunedSliders.includes('layoutFamily'), `${n} lists Layout family among its tuned sliders`);
 		// the text says how the zones join in plain words, not by the slider's name (K's description rule; the slider is asserted above)
-		assert.match(info[n].description, /(joined as an? (tree|mesh)|linked in (a branching chain|a web))/, `${n}: the text says how the zones join`);   // "tree" and "mesh" became "a branching chain" and "a web" in the 2026-11-07 description comb (the casual reader has not met either word)
+		// 2026-11-14 (S198 audit, the Checker confirmed the cuts): "linked in a branching chain" and "linked in a web" had no source in the wiki or the census, so the
+		// text no longer says how the zones join; the lever above is the claim
+		assert.ok(!/(joined as an? (tree|mesh)|linked in (a branching chain|a web))/.test(info[n].description), `${n}: the text makes no unsourced claim of how the zones join`);   // "tree" and "mesh" became "a branching chain" and "a web" in the 2026-11-07 description comb (the casual reader has not met either word)
 		assert.ok(!/Layout family/.test(info[n].description), `${n}: the text names no slider`);
 	}
 });
