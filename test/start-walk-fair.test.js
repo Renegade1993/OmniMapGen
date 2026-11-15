@@ -51,7 +51,9 @@ for (const [name, seed, extra] of CASES)
 	});
 
 test('the same three cases with the floor, the peer floor and the road drops off: at least one seat pair is over 2.2 (the passes are needed)', { timeout: 5400000 }, () => {
-	const off = { VMAPGEN_START_FLOOR: '0', VMAPGEN_START_PEER: '0', VMAPGEN_START_WALK_DEAR: '0', VMAPGEN_START_DAY7: '0' };
+	// 2026-11-14 (S168): every start's doorway out is one strength now (START_EXIT_EVEN), which alone brings these three seeds under 2.2 (the walks read
+	// 1.58, 1.68 and 1.01 with the other passes off), so the control turns it off too
+	const off = { VMAPGEN_START_FLOOR: '0', VMAPGEN_START_PEER: '0', VMAPGEN_START_WALK_DEAR: '0', VMAPGEN_START_DAY7: '0', VMAPGEN_START_EXIT_EVEN: '0' };
 	const rs = CASES.map(([, seed, extra]) => ratio(seed, extra, 'off' + seed, off));
 	assert.ok(rs.some(r => r.ratio > 2.2), JSON.stringify(rs));
 });
