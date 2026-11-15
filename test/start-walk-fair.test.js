@@ -17,7 +17,11 @@ const { genEnv, testTmp } = require('./_vcmi');
 const N8 = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 0], [-1, 1]];
 const NOS = ['--bio.zoneCells', '1500', '--bio.interconnectPortal', '0.8', '--bio.guardDensity', '0.5', '--bio.highLootRatio', '0.1', '--bio.artifactDensity', '0.003',
 	'--bio.dwellingDensity', '1.2', '--bio.guardGradient', '1'];
-const CASES = [['tb144x2 s7402', '7402', []], ['no144x2 s8307', '8307', NOS], ['no144x2 s8312', '8312', NOS]];
+const CASES = [['tb144x2 s7402', '7402', []], ['no144x2 s8307', '8307', NOS], ['no144x2 s8312', '8312', NOS], ['no144x2 s8302', '8302', NOS]];
+// the control seed: the one case that reads far over 2.2 with the passes off (2026-11-14, Opus Map Vision's probe on 072de69, in the suite's environment
+// with VMAPGEN_SPRITE_ROOT set: s8302 8.09 with them off and 1.11 on; 8.08 off before the opus-cold-1114 merge). s8307 was the control's one unfair
+// seed (9.80 off on 69e1e80); the merge re-laid its level 1 and it reads 1.70 now, so it stopped being an example, and s7402 and s8312 never were (1.58 and 1.22)
+const CONTROL = ['no144x2 s8302'];
 
 // each owned start's ring-free walk, as start-ground.test.js and the playable gate read it; the ratio of the larger to the smaller
 function ratio(seed, extra, tag, env = {}) {
@@ -50,11 +54,13 @@ for (const [name, seed, extra] of CASES)
 		assert.ok(r.ratio <= 2.2, `walks ${r.walks}, ratio ${r.ratio.toFixed(2)}`);
 	});
 
-test('the same three cases with the floor, the peer floor and the road drops off: at least one seat pair is over 2.2 (the passes are needed)', { timeout: 5400000 }, () => {
-	// 2026-11-14 (S168): every start's doorway out is one strength now (START_EXIT_EVEN), which alone brings these three seeds under 2.2 (the walks read
-	// 1.58, 1.68 and 1.01 with the other passes off), so the control turns it off too
+test('the control seed with the floor, the peer floor and the road drops off: its seat pair is over 2.2 (the passes are needed)', { timeout: 5400000 }, () => {
+	// (S168, 2026-11-14) every start's doorway out is one strength now (START_EXIT_EVEN), which is also a pass that evens the seats, so the control turns it off
+	// with the others; with all five off tb144x2 s7402 and no144x2 s8312 read 1.58 and 1.22 anyway, and the Opus merge did the same for s8307: the control is the
+	// seed that stays unfair, s8302
 	const off = { VMAPGEN_START_FLOOR: '0', VMAPGEN_START_PEER: '0', VMAPGEN_START_WALK_DEAR: '0', VMAPGEN_START_DAY7: '0', VMAPGEN_START_EXIT_EVEN: '0' };
-	const rs = CASES.map(([, seed, extra]) => ratio(seed, extra, 'off' + seed, off));
+	const rs = CASES.filter(([name]) => CONTROL.includes(name)).map(([, seed, extra]) => ratio(seed, extra, 'off' + seed, off));
+	assert.strictEqual(rs.length, CONTROL.length);
 	assert.ok(rs.some(r => r.ratio > 2.2), JSON.stringify(rs));
 });
 
