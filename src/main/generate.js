@@ -2103,7 +2103,11 @@ async function generateMap(params) {
 			starts: (starts || []).map(s => ({ x: s.x, y: s.y, color: s.color || s.player || null, level: s.l || 0 })),
 			size: { w: params.mapW, h: params.mapH, levels: levels.length },
 			water: waterPlan ? { shape: waterPlan.shape, coverage: waterPlan.coverage,
-				moved: waterPlan.starts.filter(s => s.moved).length } : null }) + '\n');
+				moved: waterPlan.starts.filter(s => s.moved).length } : null,
+			// S035 (DMB Dev's lobby preview, K's rows 35.1 and 35.3): the water tile by tile, one flat array of 0 and 1 per level, index y * w + x as the
+			// dump's "water" is read; water lies on the surface, so the other levels are all 0. Absent when the map has no water or VMAPGEN_LAYOUT_WATER_TILES=0.
+			...(waterPlan && waterPlan.mask && process.env.VMAPGEN_LAYOUT_WATER_TILES !== '0'
+				? { waterTiles: levels.map((lv, i) => (i === 0 ? Array.from(waterPlan.mask, v => (v ? 1 : 0)) : new Array(params.mapW * params.mapH).fill(0))) } : {}) }) + '\n');
 		return { planOnly: true };
 	}
 
