@@ -575,6 +575,37 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 			if (done) break;
 		}
 	}
+	// A cheap pile with a stack 2 or 3 tiles away whose ring covers none of its ways in looks guarded and is not (K, 2026-11-12, S166: "still lots of
+	// apparently unintentionally open loot around monsters seemingly placed to protect it"). The factory's open_loot.js on the tip-1114 Classic maps:
+	// 146 of the rows on two maps stand at 2 or 3 tiles from the stack (28 at 1 tile, which the ring does cover), 6.13 to every 1,000 tiles against the
+	// originals' 1.74. Moving such a pile into the stack's ring failed almost always (its eight ways in cannot all be closed), so it goes the other way:
+	// to the nearest free tile of its zone within 10 tiles with no stack within 3, where it is plain loot nobody seems to guard. Tried outwards ring by ring;
+	// a pile with no such tile stays. VMAPGEN_PILE_AWAY=0 off.
+	out.pileAway = 0;
+	if (process.env.VMAPGEN_PILE_AWAY !== '0') {
+		const CHEAP = /^(resource|randomResource|treasureChest|campfire|randomArtifactTreasure|randomArtifactMinor)$/;
+		const cheb = (a, b, c2, d2) => Math.max(Math.abs(a - c2), Math.abs(b - d2));
+		for (const q of pl.objects.slice()) {
+			if ((q.l || 0) !== l || !CHEAP.test(q.type) || !q.template || !q.template.mask || q.__walled || blockingCells(q.template, q.x, q.y).length !== 1) continue;
+			const a0 = appOf.get(q);
+			if (!a0 || !a0.some(c => isFree(c) && !ring.has(c))) continue;
+			const mons = monsOf();
+			const dmin = mons.reduce((m, s) => Math.min(m, cheb(s.x, s.y, q.x, q.y)), Infinity);
+			if (dmin < 2 || dmin > 3) continue;
+			const qz = zone[q.y * W + q.x];
+			let done = false;
+			for (let r = 1; r <= 10 && !done; r++) for (let dy = -r; dy <= r && !done; dy++) for (let dx = -r; dx <= r; dx++) {
+				if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+				const tx = q.x + dx, ty = q.y + dy;
+				if (tx < 1 || ty < 1 || tx >= W - 1 || ty >= H - 1 || mons.some(s => cheb(s.x, s.y, tx, ty) <= 3)) continue;
+				const cells = moveCells(q, tx, ty);
+				if (cells.some(c => c < 0 || !isFree(c) || (blocked[base + c] & (RESERVED | APPROACH)) || roads.has(c) || zone[c] !== qz || (owners.get(c) || []).some(o2 => o2 !== q))) continue;
+				relocate(q, tx, ty);
+				done = true; out.pileAway++;
+				break;
+			}
+		}
+	}
 	out.merged = 0; out.moved = out.moved || 0;
 	const w3 = out.why3 = {};
 	const bump = k => { w3[k] = (w3[k] || 0) + 1; };
