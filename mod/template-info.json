@@ -16,8 +16,8 @@
 				"treasure": 9,
 				"junction": 4
 			},
-			"description": "Up to eight players each start in a large zone with a castle of their own and a short guarded road to a treasure zone with a neutral castle. Treasure zones meet in pairs at four junctions, and the junctions open into one rich centre zone. The junctions lie underground; on a one-level map they lie on the surface.\n\nWhat makes it different: each junction keeps a neutral dragon dwelling (Crystal, Azure, Faerie and Rust dragons) behind strong guards, and the four doors into the centre carry some of the heaviest guards on the map.\n\nThe original has two human starts and six computer starts, and a human start's road out is guarded much harder. OmniMapGen lets any player be human, and adds start zones when there are more players than the template has.",
-			"brief": "Up to eight players start above ground in large zones and fight through treasure zones to one rich centre. Four junctions underground, below the starts, keep neutral dragon dwellings behind strong guards.",
+			"description": "A template for 2 to 8 players, on maps from Extra Large (144x144) with an underground up to Giant (252x252) with an underground.\n\nOmniMapGen lets any player be human, and adds start zones when there are more players than the template has.",
+			"brief": "A template for up to eight players, on Extra Large to Giant maps with an underground.",
 			"templatePreference": "Coldshadow's Fantasy starts every player above ground.",
 			"original": {
 				"players": "2 to 8",
@@ -557,8 +557,8 @@
 				"start": 7,
 				"treasure": 2
 			},
-			"description": "Up to seven players each start in a start zone with a castle and one neutral town. Every start has two guarded ways out: one into a large rough-ground treasure zone with two neutral castles (Stronghold or Fortress), one into a smaller sand treasure zone with the rare-resource mines. The two treasure zones also join each other.\n\nWhat makes it different: each start zone belongs to one town type (Rampart, Tower, two Castles, Dungeon, Necropolis, Conflux). A player who leaves the town on Random gets that zone's type, so the map comes ready as seven different factions round two shared prizes.\n\nIn construction: an approximate version, not yet playtested.",
-			"brief": "Up to seven players each start with a castle and two guarded ways out, to two shared treasure zones. Each start has its own town type. An approximate version, not yet playtested.",
+			"description": "A template for 2 to 7 players, on a Large map (108x108), with or without an underground.\n\nIn construction: an approximate version, not yet playtested.",
+			"brief": "A template for up to seven players, on a Large map. An approximate version, not yet playtested.",
 			"templatePreference": "Headquarters starts every player above ground; on two levels both treasure zones go below."
 		},
 		"Golems Aplenty": {
