@@ -6,7 +6,7 @@
 			"originalSizeMax": 252,
 			"originalSizeNames": "Extra Large to Giant",
 			"originalLevels": 2,
-			"underground": "Two levels in the original; also plays on one level, with the underground zones gathered in the middle of the surface",
+			"underground": "Two levels in the original; also plays on one level, with the underground zones on the surface",
 			"playersMin": 2,
 			"playersMax": 8,
 			"humansMax": 2,
@@ -16,7 +16,7 @@
 				"treasure": 9,
 				"junction": 4
 			},
-			"description": "Up to eight players each start in a large zone with a castle of their own and a short guarded road to a treasure zone with a neutral castle. Treasure zones meet in pairs at four junctions, and the junctions open into one rich centre zone. The junctions lie underground; on a one-level map they gather in the middle of the surface.\n\nWhat makes it different: each junction keeps a neutral dragon dwelling (Crystal, Azure, Faerie and Rust dragons) behind strong guards, and the four doors into the centre carry some of the heaviest guards on the map.\n\nThe original has two human starts and six computer starts, and a human start's road out is guarded much harder. OmniMapGen lets any player be human, and adds start zones when there are more players than the template has.",
+			"description": "Up to eight players each start in a large zone with a castle of their own and a short guarded road to a treasure zone with a neutral castle. Treasure zones meet in pairs at four junctions, and the junctions open into one rich centre zone. The junctions lie underground; on a one-level map they lie on the surface.\n\nWhat makes it different: each junction keeps a neutral dragon dwelling (Crystal, Azure, Faerie and Rust dragons) behind strong guards, and the four doors into the centre carry some of the heaviest guards on the map.\n\nThe original has two human starts and six computer starts, and a human start's road out is guarded much harder. OmniMapGen lets any player be human, and adds start zones when there are more players than the template has.",
 			"brief": "Up to eight players start above ground in large zones and fight through treasure zones to one rich centre. Four junctions underground, below the starts, keep neutral dragon dwellings behind strong guards.",
 			"templatePreference": "Coldshadow's Fantasy starts every player above ground.",
 			"original": {
