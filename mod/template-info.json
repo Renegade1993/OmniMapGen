@@ -16,8 +16,8 @@
 				"treasure": 9,
 				"junction": 4
 			},
-			"description": "Up to eight players each start in a large zone with a castle of their own and a short guarded road to a treasure zone with a neutral castle. Treasure zones meet in pairs at four junctions, and the junctions open into one rich centre zone. The junctions lie underground; on a one-level map they lie on the surface.\n\nWhat makes it different: each junction keeps a neutral dragon dwelling (Crystal, Azure, Faerie and Rust dragons) behind strong guards, and the four doors into the centre carry some of the heaviest guards on the map.\n\nThe original has two human starts and six computer starts, and a human start's road out is guarded much harder. OmniMapGen lets any player be human, and adds start zones when there are more players than the template has.",
-			"brief": "Up to eight players start above ground in large zones and fight through treasure zones to one rich centre. Four junctions underground, below the starts, keep neutral dragon dwellings behind strong guards.",
+			"description": "A template for 2 to 8 players, on maps from Extra Large (144x144) with an underground up to Giant (252x252) with an underground.\n\nOmniMapGen lets any player be human, and adds start zones when there are more players than the template has.",
+			"brief": "A template for up to eight players, on Extra Large to Giant maps with an underground.",
 			"templatePreference": "Coldshadow's Fantasy starts every player above ground.",
 			"original": {
 				"players": "2 to 8",
@@ -327,8 +327,8 @@
 			"humansMax": 8,
 			"zones": 0,
 			"zonesByKind": {},
-			"description": "A small, typical Heroes map: eight start zones and seven treasure zones.\n\nWhat makes it different: this entry is approximate. It is the Classic map with its settings turned toward Mini Nostalgia (larger start zones, many portal pairs that carry a hero far across the map, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
-			"brief": "Modelled on the original Mini Nostalgia map: eight start zones and seven treasure zones. Approximate: it is Classic with its settings turned toward that map, so the layout is not the original's.",
+			"description": "A map for up to eight players, modelled on the original Mini Nostalgia.\n\nWhat makes it different: in the original players never make an early contact between themselves; the passages out of the AI zones are lightly guarded and lead to rich, but usually small treasure zones, and the player zones are connected through an even richer treasure zone with heavily guarded connections. This entry is approximate. It is the Classic map with its settings turned toward Mini Nostalgia (larger start zones, many portal pairs that carry a hero far across the map, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
+			"brief": "Modelled on the original Mini Nostalgia map, where players never make an early contact. Approximate: it is Classic with its settings turned toward that map, so the layout is not the original's.",
 			"templatePreference": "Mini Nostalgia (approximate) is built on the open layout and has no start rule of its own, so this reads as Random.",
 			"originalPreferences": {
 				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Mini Nostalgia (approximate): the sliders listed below at the values chosen to bring the open layout's numbers toward the original Mini Nostalgia's; every other lever at its own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. This entry is approximate and gets closer as junction zones, wide links and a second town in a start zone are added.",
@@ -432,8 +432,8 @@
 			"humansMax": 8,
 			"zones": 0,
 			"zonesByKind": {},
-			"description": "A large, typical Heroes map on two levels: eight start zones and sixteen treasure zones, with a guard on every way.\n\nWhat makes it different: in the original every player has their own half of the map, the halves joined through rare treasure zones, and every link has a road. This entry is approximate: it is the Classic map with its settings turned toward Nostalgia (larger zones, many portal pairs that carry a hero far across the map, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
-			"brief": "Modelled on the original Nostalgia map, on two levels: eight start zones, sixteen treasure zones and a guard on every way. Approximate: it is Classic with its settings turned toward that map, so the layout is not the original's.",
+			"description": "An extra-large map on two levels for up to eight players, modelled on the original Nostalgia, a non-contact template with a simple layout.\n\nWhat makes it different: in the original every player has access to their own half of the map, only the central treasure zone can hold Relics, and every connection has a road. This entry is approximate: it is the Classic map with its settings turned toward Nostalgia (larger zones, many portal pairs that carry a hero far across the map, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
+			"brief": "Modelled on the original Nostalgia map, on two levels, where every player has access to their own half of the map. Approximate: it is Classic with its settings turned toward that map, so the layout is not the original's.",
 			"templatePreference": "Nostalgia (approximate) is built on the open layout and has no start rule of its own, so this reads as Random.",
 			"originalPreferences": {
 				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Nostalgia (approximate): the sliders listed below at the values chosen to bring the open layout's numbers toward the original Nostalgia's; every other lever at its own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. This entry is approximate and gets closer as junction zones, wide links and a second town in a start zone are added.",
@@ -539,8 +539,8 @@
 				"start": 4,
 				"treasure": 1
 			},
-			"description": "Up to four players start apart, each in a start zone with a castle, two neutral towns and a full set of mines. One treasure zone fills the middle, with two neutral castles, four gold mines and the extra-rich treasure. Each start has a single way into the middle, behind a strong guard, and no way to another start except through the middle.\n\nWhat makes it different: every player starts in a big, rich zone of their own with one way, past a strong guard, into the extra-rich middle zone. The middle makes a player strong fast, so it is crucial to get there as soon as possible, even in the first week.\n\nIn construction: the middle zone carries far too much treasure.",
-			"brief": "Up to four players start apart, each with one guarded way into a rich middle zone, so every player has the same road to the same prize. The middle holds too much treasure for now.",
+			"description": "Up to four players each start in a big, poorly guarded and rich zone, set up symmetrically around one extra-rich central zone. To reach the middle they must defeat strong passage guards.\n\nWhat makes it different: players need to reach the middle as soon as possible, even in the first week.\n\nIn construction: the middle zone carries far too much treasure.",
+			"brief": "Up to four players each start in a big, rich zone and must defeat strong passage guards to reach the extra-rich middle zone. The middle holds too much treasure for now.",
 			"templatePreference": "Jebus Cross starts every player above ground; on two levels only the middle zone goes below."
 		},
 		"Headquarters": {
@@ -557,8 +557,8 @@
 				"start": 7,
 				"treasure": 2
 			},
-			"description": "Up to seven players each start in a start zone with a castle and one neutral town. Every start has two guarded ways out: one into a large rough-ground treasure zone with two neutral castles (Stronghold or Fortress), one into a smaller sand treasure zone with the rare-resource mines. The two treasure zones also join each other.\n\nWhat makes it different: each start zone belongs to one town type (Rampart, Tower, two Castles, Dungeon, Necropolis, Conflux). A player who leaves the town on Random gets that zone's type, so the map comes ready as seven different factions round two shared prizes.\n\nIn construction: an approximate version, not yet playtested.",
-			"brief": "Up to seven players each start with a castle and two guarded ways out, to two shared treasure zones. Each start has its own town type. An approximate version, not yet playtested.",
+			"description": "A template for 2 to 7 players, on a Large map (108x108), with or without an underground.\n\nIn construction: an approximate version, not yet playtested.",
+			"brief": "A template for up to seven players, on a Large map. An approximate version, not yet playtested.",
 			"templatePreference": "Headquarters starts every player above ground; on two levels both treasure zones go below."
 		},
 		"Golems Aplenty": {
@@ -575,8 +575,8 @@
 				"start": 4,
 				"treasure": 3
 			},
-			"description": "Up to four players start in small zones, each with a castle and a full set of mines. Every start opens onto one middle zone of dirt and snow with a neutral Tower town and the richest treasure, and two of the starts have a side treasure zone on Subterranean terrain as well. It plays on one level or two.\n\nWhat makes it different: Golem Factories. In the original scenario the wizards have left their valley after a thousand years of experimenting with golems, and the lords race to grab the generators and be the first to gather enough golems. That map holds 14 Golem Factories on its two levels, about 94 times as many for its size as the other scenario maps. Here the neutral zones hold the same density, with golems among the guards.\n\nIn construction: about 50 percent built; the Golem Factories and the golem guards are new and not yet played.",
-			"brief": "Up to four players start in small zones that all open onto one middle zone with a neutral Tower town and the richest treasure. The original is about grabbing golem generators: this one is full of Golem Factories and golem guards. In construction.",
+			"description": "Up to four players. Every start opens onto one middle zone of dirt and snow with a neutral Tower town and the richest treasure, and two of the starts have a side treasure zone on Subterranean terrain as well.\n\nWhat makes it different: Golem Factories. In the original scenario the wizards to the south have finally left their valley after a millennium of experimenting with golems. This leaves the local warring lords an opportunity to move in and grab the generators. If you can become the first lord to amass enough golems, you will have a definite advantage. Here the neutral zones hold Golem Factories, with golems among the guards.\n\nIn construction: about 50 percent built; the Golem Factories and the golem guards are new and not yet played.",
+			"brief": "Up to four players start in zones that all open onto one middle zone with a neutral Tower town and the richest treasure. The original scenario says: 'This leaves the local warring lords an opportunity to move in and grab the generators.' This one is full of Golem Factories and golem guards. In construction.",
 			"templatePreference": "Golems Aplenty starts every player above ground."
 		}
 	},
