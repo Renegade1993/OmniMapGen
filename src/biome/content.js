@@ -409,7 +409,6 @@ function pandoraBoxValue(o) {
  * the pile moves into a fitting stack's ring or gets a guard sized on its own value, and the dear-loot pass below sizes its guard on targetValue. VMAPGEN_GUARD_BY_VALUE=0 is the earlier rule.
  */
 const GUARD_BY_VALUE = process.env.VMAPGEN_GUARD_BY_VALUE !== '0';
-const TOO_DEAR = Number(process.env.VMAPGEN_TOO_DEAR) || 1.5;
 const DEAR_TARGET = /^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact)$/;
 const targetValue = e => { const b = e.type === 'pandoraBox' ? pandoraBoxValue(e) : undefined; return Number.isFinite(b) && b > 0 ? b : spentValue(e); };
 const GUARD_FIT = Number(process.env.VMAPGEN_GUARD_FIT) || 0.8;
