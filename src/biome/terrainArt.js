@@ -230,6 +230,16 @@ function kinSwap(objects, groundAt, mineArt, freeTile = null) {
 		else { const r = artFor(o.type, o.subtype, o.template, k, KIN_RNG, false); if (r && r !== o.template) cand = r; }
 		if (!cand || !cand.animation || String(cand.animation).toLowerCase() === String(o.template.animation).toLowerCase()) continue;
 		if (!same(cand, o.template)) continue;
+		// S249 (Opus Map Vision 2026-11-16: a sawmill (91,17) drawn over a sulfur dune on seed 20, 979 px, a windmill over a garden, a ruined tower over an ore pit; 11 buildings still under
+		// another's picture on 32 Coldshadow maps): the placement checked the art it had (AVMsawg0), and the kin's art (AVMsawr0) has other pixels with the same blocked cells. A building
+		// keeps its art when the kin's covers 512 px or more of another building's and more than the old art did. VMAPGEN_KIN_ART=0 off.
+		if (process.env.VMAPGEN_KIN_ART !== '0' && o.template.mask) {
+			const C = require('./content');
+			if (C.isBuilding(o.template)) {
+				const near = objects.filter(q => q && q !== o && (q.l || 0) === (o.l || 0) && q.template && q.template.mask && Math.abs(q.x - o.x) <= 8 && Math.abs(q.y - o.y) <= 8 && C.isBuilding(q.template));
+				if (near.some(q => { const nw = C.artOverlapPx(cand, o.x, o.y, q.template, q.x, q.y); return nw >= 512 && nw > C.artOverlapPx(o.template, o.x, o.y, q.template, q.x, q.y); })) { kinSwap.kept = (kinSwap.kept || 0) + 1; continue; }
+			}
+		}
 		if (cand.mask && o.template.mask) {
 			const under = coveredBy(o, cand.mask);
 			if (under.length) {

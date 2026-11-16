@@ -1585,7 +1585,9 @@ function isBuilding(tpl) {
 	if (!tpl || !tpl.mask || !tpl.animation || !tpl.mask.some(r => /[AT]/.test(r))) return false;
 	// S249: the underground gate's art is AvTCave, which the AVT prefix (the resources' and chests' art) took for a pickup, so no gate ever counted as a building here and the fill put
 	// buildings under gate pictures (9 of the 14 buildings under another building's picture on our two-level Headquarters set); (?!cave) leaves the gate a building
-	return !/^(avwm(rnd|on)|avt(?!cave)|ava|adcfr|avxcf|treasurepile|spellstones|lostwagon)/i.test(String(tpl.animation).replace(/^.*[\/]/, ''));
+	// the Mystical Garden's art is AVTmyst0 (and AVTmystd), also under the AVT prefix: 31 on the first four of Opus Map Vision's Coldshadow maps, and it hid under a windmill, a sawmill, a witch hut
+	// and a dragon utopia on 5 of the 11 buildings still under another's picture (S249, 2026-11-16); (?!cave|myst) leaves the gate and the garden buildings
+	return !/^(avwm(rnd|on)|avt(?!cave|myst)|ava|adcfr|avxcf|treasurepile|spellstones|lostwagon)/i.test(String(tpl.animation).replace(/^.*[\/]/, ''));
 }
 function artPix(tpl) {
 	const key = String(tpl.animation).toLowerCase();
@@ -1614,6 +1616,14 @@ function bodyCells(tpl, x, y) {
 }
 const popRows = rows => { let n = 0; for (let i = 0; i < 32; i++) { let v = rows[i] >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); n += (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; } return n; };
 const popAnd = (a, b) => { const r = new Uint32Array(32); for (let i = 0; i < 32; i++) r[i] = (a[i] & b[i]) >>> 0; return popRows(r); };
+/** The opaque pixels two pictures share, a placed at (xa, ya) and b at (xb, yb), by the first frame each (artPix): for the art a ground's kin gives an object after placement (terrainArt.kinSwap). */
+function artOverlapPx(a, xa, ya, b, xb, yb) {
+	const at = new Map();
+	for (const [dx, dy, rows] of artPix(a)) at.set(`${xa + dx},${ya + dy}`, rows);
+	let n = 0;
+	for (const [dx, dy, rows] of artPix(b)) { const r = at.get(`${xb + dx},${yb + dy}`); if (r) n += popAnd(r, rows); }
+	return n;
+}
 function artStacks(tpl, x, y, l, W, H, blocked) {
 	if (process.env.VMAPGEN_ART_STACK === '0') return false;
 	if (!isBuilding(tpl)) return tallOn() && isLoot(tpl) ? lootUnderBuilding(tpl, x, y, l, W, H, blocked) : false;
@@ -1676,7 +1686,7 @@ function setTallArt(on) { tallOff = !on; TALL_STAT.loot = 0; TALL_STAT.building 
 const tallOn = () => !tallOff && process.env.VMAPGEN_TALL_ART !== '0';
 function isLoot(tpl) {
 	if (!tpl || !tpl.mask || !tpl.animation || !tpl.mask.some(r => /[AT]/.test(r))) return false;
-	return /^(avwm(rnd|on)|avt(?!cave)|ava|adcfr|avxcf|treasurepile|spellstones|lostwagon)/i.test(String(tpl.animation).replace(/^.*[\/]/, ''));
+	return /^(avwm(rnd|on)|avt(?!cave|myst)|ava|adcfr|avxcf|treasurepile|spellstones|lostwagon)/i.test(String(tpl.animation).replace(/^.*[\/]/, ''));
 }
 function lootMark(reg, tpl, x, y, l, W, H) {
 	if (!reg.lootPix) { reg.lootPix = new Map(); reg.lootPx = new Map(); reg.lootInfo = new Map(); }
@@ -5727,7 +5737,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 
 module.exports = {
 	prisonGuarded,
-	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, artStackMark, artStacks, setTallArt, tallStat, pandoraBoxValue, guardFitter, targetValue,
+	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, artStackMark, artStacks, artOverlapPx, setTallArt, tallStat, pandoraBoxValue, guardFitter, targetValue,
 	GUARD_GAP, fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	footprintCells, blockingCells, footprintFits, footprintBlock, visitableCells,
 	entranceOpen, pictureOnShadow, markShadow, shadowAt, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED, protectFronts,
