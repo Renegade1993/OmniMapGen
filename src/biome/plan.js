@@ -3343,8 +3343,23 @@ function cornersOnly(walls, l, W, H, blocked) {
 	return false;
 }
 
+// the art-stack ids of the pictures of held gates, per blocked array: key "l,x,y" (S249)
+const HELD_GATE_ART = new WeakMap();
 function holdGateGround(tpl, x, y, l, W, H, blocked) {
 	for (const [a, b] of blockingCells(tpl, x, y)) blocked[l * W * H + b * W + a] |= OCCUPIED;
+	// S249 (K 2026-11-15: "warriors tomb overlayed on a dragon utopia"; Opus Map Vision's line 12: 9 of the 14 buildings under another building's picture on our
+	// two-level Headquarters set are under a gate): the held gate's real picture goes in the art-stack registry like a placed building's, so the fill refuses a
+	// building drawn under it (the cells below are the mask's only). VMAPGEN_GATE_ART=0 off.
+	if (process.env.VMAPGEN_GATE_ART !== '0' && tpl.animation) {
+		const { artStackMark, artStackLastId } = require('./content');
+		const before = artStackLastId();
+		artStackMark(tpl, x, y, l, W, H, blocked);
+		if (artStackLastId() !== before) {
+			let m = HELD_GATE_ART.get(blocked);
+			if (!m) { m = new Map(); HELD_GATE_ART.set(blocked, m); }
+			m.set(`${l},${x},${y}`, artStackLastId());
+		}
+	}
 	// its picture too, for the fill to keep off: the gate itself is laid after the fill, and K's 876637007 kept a gold mine and a major
 	// under the pictures of gates held this way (2026-10-14)
 	const m = tpl.mask || [];
@@ -3363,6 +3378,8 @@ function holdGateGround(tpl, x, y, l, W, H, blocked) {
 
 /** The held ground given back, for the gate pass to place the gate on it. */
 function releaseGateGround(tpl, x, y, l, W, H, blocked) {
+	const held = HELD_GATE_ART.get(blocked), heldKey = `${l},${x},${y}`;
+	if (held && held.has(heldKey)) { require('./content').artStackDrop(blocked, held.get(heldKey)); held.delete(heldKey); }
 	for (const [a, b] of blockingCells(tpl, x, y))
 		if (a >= 0 && b >= 0 && a < W && b < H) blocked[l * W * H + b * W + a] &= ~(OCCUPIED | RESERVED);
 	for (const [vx, vy] of visitableCells(tpl, x, y))

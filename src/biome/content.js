@@ -1616,6 +1616,13 @@ function artStacks(tpl, x, y, l, W, H, blocked) {
 		if (ownAll && ownAllUnder >= ownAll * whole) return true;
 		for (const [id, n] of overOldAll) if (reg.allPx && n >= (reg.allPx.get(id) || Infinity) * whole) return true;
 	}
+	// S249 (K 2026-11-15: "warriors tomb overlayed on a dragon utopia"): the shares above let a big picture lose a large patch (a Dragon Utopia 1,446 px under a Parapet
+	// is under a seventh of its picture); half a tile of pixels (512, Opus Map Vision's building-overdrawn floor) is refused whatever the share. VMAPGEN_ART_ABS=0 off.
+	const absPx = process.env.VMAPGEN_ART_ABS === undefined ? 512 : Number(process.env.VMAPGEN_ART_ABS) || 0;
+	if (absPx > 0) {
+		if (ownAllUnder >= absPx) return true;
+		for (const n of overOldAll.values()) if (n >= absPx) return true;
+	}
 	return tallOn() && buildingOverLoot(tpl, x, y, l, W, H, blocked);
 }
 /**
@@ -5681,7 +5688,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 
 module.exports = {
 	prisonGuarded,
-	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, setTallArt, tallStat,
+	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, artStackMark, setTallArt, tallStat,
 	GUARD_GAP, fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	footprintCells, blockingCells, footprintFits, footprintBlock, visitableCells,
 	entranceOpen, pictureOnShadow, markShadow, shadowAt, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED, protectFronts,
