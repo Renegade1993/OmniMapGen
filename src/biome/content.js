@@ -403,6 +403,27 @@ function pandoraBoxValue(o) {
 	if (r.heroExperience) return r.heroExperience * 1.2;
 	return undefined;
 }
+/**
+ * S253, guards by value on a template map: a pile's guard is sized on the pile (engineGuard), but our objects are not piles, so it stands by a placed
+ * object of the pile's kind. The kind rank put a 6,000 pile's guard beside the dearest box left; a dear target now takes a pile guard only when its own value
+ * (a Pandora's box by its reward, pandoraBoxValue, else spentValue) is within TOO_DEAR times the pile's; a dear target no pile guard fits gets a guard sized on
+ * its own value in the dear-loot pass. VMAPGEN_GUARD_BY_VALUE=0 is the earlier matching.
+ */
+const GUARD_BY_VALUE = process.env.VMAPGEN_GUARD_BY_VALUE !== '0';
+const TOO_DEAR = Number(process.env.VMAPGEN_TOO_DEAR) || 1.5;
+const DEAR_TARGET = /^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact)$/;
+const targetValue = e => { const b = e.type === 'pandoraBox' ? pandoraBoxValue(e) : undefined; return Number.isFinite(b) && b > 0 ? b : spentValue(e); };
+const GUARD_FIT = Number(process.env.VMAPGEN_GUARD_FIT) || 0.8;
+/** A test of whether a placed stack is worth guarding dear object o (strength, AI value x amount, at least GUARD_FIT of o's value), or null when the rule is off or o is no dear target. */
+function guardFitter(pl, o) {
+	if (!GUARD_BY_VALUE || !o || !DEAR_TARGET.test(o.type) || !pl || !pl.objectPools || !pl.objectPools.guards) return null;
+	const need = GUARD_FIT * targetValue(o), pool = pl.objectPools.guards;
+	return m => {
+		const c = m.guardCreature && pool.find(q => q.id === m.guardCreature);
+		const n = m.options && m.options.amount;
+		return !c || !(n > 0) ? true : c.aiValue * n >= need;
+	};
+}
 function lootGuard(kind, p, rng, pool = GUARD_POOL, value) {
 	const base = LOOT_GUARD_STRENGTH[kind];
 	if (!base) return null;
@@ -4504,7 +4525,8 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			guardedTargets.add(entry);
 			const tier = preset ? preset.level : creepTier(cls, rng,
 				(GUARD_VALUE_BUMP[entry.type] || 0) + monsterShift);
-			const guardEntry = objectEntry(`randomMonsterLevel${tier}`, gx, gy, l, monsterTpl,
+			if (process.env.VMAPGEN_GUARD_TRACE) console.error(`[guard] L${l} target ${entry.type} (${entry.x},${entry.y}) guard (${gx},${gy}) strength ${preset ? preset.strength : 'none'} from ${new Error().stack.split('\n')[2].trim().slice(0, 80)}`);
+				const guardEntry = objectEntry(`randomMonsterLevel${tier}`, gx, gy, l, monsterTpl,
 				preset ? { character: 'hostile', amount: scaledAmount(preset.amount, p) } : monsterOptions(tier, p, rng),
 				'object');
 			// the creature the engine's rule picked, for generate.js to write
@@ -5029,6 +5051,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					for (let q = rankNext; q < rankOrder.length && cand.length < SEAL_LOOK; q++) {
 						const j = rankOrder[q];
 						if (usedTarget.has(j) || pocketed.has(byPiles[j].entry)) continue;
+						// S253 (K 2026-11-15, "high-tier pandoras ... without much fight"; the lead 2026-11-16: match pile guards to targets by value): a dear target
+						// (relic, major, plain artifact, Pandora's box) worth more than TOO_DEAR times the pile this guard was sized on is left to the dear-loot pass
+						// below, which sizes its guard on its own value (a 24,000 experience box stood beside a 4,050 stack, the guard of a pile worth far less). VMAPGEN_GUARD_BY_VALUE=0 off.
+						if (GUARD_BY_VALUE && pile && pile.value > 0 && DEAR_TARGET.test(byPiles[j].entry.type) && targetValue(byPiles[j].entry) > TOO_DEAR * pile.value) continue;
 						if (firstRank === null) firstRank = rankOf(j);
 						else if (process.env.VMAPGEN_SEAL_SAME_RANK !== '0' && rankOf(j) !== firstRank) break;
 						cand.push(j);
@@ -5097,7 +5123,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				const g = byPiles[j];
 				if (usedTarget.has(j) || pocketed.has(g.entry) || !/^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact)$/.test(g.entry.type)) continue;
 				if (thin()) continue;
-				const guard = zoneGuard(spentValue(g.entry));
+				const guard = zoneGuard(GUARD_BY_VALUE ? targetValue(g.entry) : spentValue(g.entry));
 				if (!guard) continue;
 				usedTarget.add(j);
 				if (SEAL_RESITE) resite(g, spotFor);
@@ -5707,7 +5733,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 
 module.exports = {
 	prisonGuarded,
-	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, artStackMark, artStacks, setTallArt, tallStat, pandoraBoxValue,
+	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, artStackMark, artStacks, setTallArt, tallStat, pandoraBoxValue, guardFitter, targetValue,
 	GUARD_GAP, fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	footprintCells, blockingCells, footprintFits, footprintBlock, visitableCells,
 	entranceOpen, pictureOnShadow, markShadow, shadowAt, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED, protectFronts,
