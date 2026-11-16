@@ -10959,7 +10959,7 @@ function lootGuardEntry(pl, l, W, o, p, rng, spot, tpl) {
 	const C = require('./content');
 	const kind = /^creatureGenerator/.test(o.type) ? (/^(frozenCliffs|crystalCavern|magicForest|sulfurousLair)$/i.test(o.subtype || '') ? 'dragonDwelling' : 'dwelling')
 		: o.type === 'prison' ? 'prison' + ((o.options && o.options.experience) || 0) : o.type === 'mine' ? o.subtype : o.type;
-	const g = C.lootGuard(kind, p, rng, C.zoneGuardPool(pl.objectPools.guards, meta.spec));
+	const g = C.lootGuard(kind, p, rng, C.zoneGuardPool(pl.objectPools.guards, meta.spec), C.pandoraBoxValue(o));
 	if (!g) return null;
 	const ge = objectEntry(`randomMonsterLevel${g.level}`, spot % W, (spot / W) | 0, l, tpl, 'object', { character: 'hostile', amount: C.scaledAmount(g.amount, p) });
 	ge.guardCreature = g.creature;

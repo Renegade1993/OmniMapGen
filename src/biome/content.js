@@ -391,13 +391,27 @@ const LOOT_GUARD_STRENGTH = { randomArtifactRelic: 65000, pandoraBox: 21000, ran
 	dwelling: 8000, dragonDwelling: 50000, prison90000: 61000, prison500000: 80000,
 	// the engine's gold mine guards: medians 2.2k (computer starts) to 5.9k (junctions) on 20 Coldshadow maps (mine_guards.js, 2026-10-08)
 	goldMine: 4000 };
-function lootGuard(kind, p, rng, pool = GUARD_POOL) {
+/**
+ * A Pandora's box's pile value from its reward (piles.js addPandoraBoxes, TreasurePlacer: gold i * 5000 is worth i * 5000, experience i * 5000 is worth i * 6000); creatures and spells
+ * return undefined and keep the kind's median strength. S253 (K 2026-11-15: "i'm rolling a lot of high-tier pandoras in my start biome on headquarters consistently without much
+ * fight"): the strength a guard gets is a flat median of 21,000 whatever the box holds, where the engine's chooseGuard takes the pile's own value.
+ */
+function pandoraBoxValue(o) {
+	const inf = o && o.options && o.options.rewardable && o.options.rewardable.info, r = inf && inf[0] && inf[0].reward;
+	if (!r) return undefined;
+	if (r.resources && r.resources.gold) return r.resources.gold;
+	if (r.heroExperience) return r.heroExperience * 1.2;
+	return undefined;
+}
+function lootGuard(kind, p, rng, pool = GUARD_POOL, value) {
 	const base = LOOT_GUARD_STRENGTH[kind];
 	if (!base) return null;
 	// the Monster tier lever moves the strength as it moves the engine's table (index 1 at Normal)
 	const sAt = (v, i) => Math.floor(Math.max(0, (v - GUARD_V1[i]) * GUARD_M1[i])) + Math.floor(Math.max(0, (v - GUARD_V2[i]) * GUARD_M2[i]));
 	const i = Math.max(0, Math.min(4, 1 + Math.max(-2, Math.min(2, Math.round(Number(p && p.monsterStrength) || 0)))));
-	const s = Math.floor(base * (0.6 + 0.8 * rng()) * (sAt(20000, i) / sAt(20000, 1)));
+	// a Pandora's box with a known value is guarded at the engine's strength for that value (ObjectManager::chooseGuard, sAt), not the kind's flat median (VMAPGEN_PANDORA_GUARD_VALUE=0 off)
+	const byValue = kind === 'pandoraBox' && Number.isFinite(value) && value > 0 && process.env.VMAPGEN_PANDORA_GUARD_VALUE !== '0';
+	const s = byValue ? Math.floor(sAt(value, i) * (0.8 + 0.4 * rng())) : Math.floor(base * (0.6 + 0.8 * rng()) * (sAt(20000, i) / sAt(20000, 1)));
 	if (s < MIN_GUARD_STRENGTH) return null;
 	const ok = pool.filter(c => Math.floor(c.aiValue * (c.advMin + c.advMax) / 2) < s && s < c.aiValue * 100);
 	const c = ok.length ? ok[(rng() * ok.length) | 0] : AZURE;
@@ -5681,7 +5695,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 
 module.exports = {
 	prisonGuarded,
-	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, setTallArt, tallStat,
+	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, setTallArt, tallStat, pandoraBoxValue,
 	GUARD_GAP, fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	footprintCells, blockingCells, footprintFits, footprintBlock, visitableCells,
 	entranceOpen, pictureOnShadow, markShadow, shadowAt, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED, protectFronts,
