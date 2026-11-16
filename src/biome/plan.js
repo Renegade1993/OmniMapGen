@@ -12131,6 +12131,7 @@ function sceneryRoom(pl, l, W, H, blocked, tpl, zoneOk, score, waysOk = null, fo
 	}
 	const shutsOne = own => others.some(qw => qw.some(d => own.has(d)) && !qw.some(d => !own.has(d) && !(water && water[d]) && (!(blocked[base + d] & OCCUPIED) || onTile.has(d))));
 	let best = null;
+	const roomArt = process.env.VMAPGEN_ROOM_ART !== '0', artStacks = require('./content').artStacks;
 	const roomEdge = process.env.VMAPGEN_ROOM_EDGE !== '0' && tpl.mask && tpl.mask.some(r => r.includes('A')) ? { h: tpl.mask.length, w: Math.max(...tpl.mask.map(r => r.length)) } : null;
 	for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
 		const z = zone[y * W + x];
@@ -12155,6 +12156,10 @@ function sceneryRoom(pl, l, W, H, blocked, tpl, zoneOk, score, waysOk = null, fo
 			}
 		}
 		if (!ok) continue;
+		// S249 (K 2026-11-15: "warriors tomb overlayed on a dragon utopia"): no building's picture over another building's, as footprintFits keeps it for the
+		// fill. The late passes that find a spot here (the signature dwelling, a template's extra dwellings such as Golems Aplenty's Golem Factories, a moved
+		// start mine) never asked: 11 buildings on 8 Golems Aplenty maps sat under a Golem Factory's picture. VMAPGEN_ROOM_ART=0 off.
+		if (roomArt && artStacks(tpl, x, y, l, W, H, blocked)) continue;
 		// no picture over an entrance's, and no way in under one (K's 876637007: the signature dwelling sulfurousLair (13,2) went where
 		// every way in lay under the gate (13,5)'s picture, 2026-10-14). VMAPGEN_FILL_SHADOW=0 off, as for the fill.
 		const shadowOn = useShadow && process.env.VMAPGEN_FILL_SHADOW === '1';

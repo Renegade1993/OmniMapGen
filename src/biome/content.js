@@ -5690,7 +5690,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 
 module.exports = {
 	prisonGuarded,
-	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, artStackMark, setTallArt, tallStat,
+	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, artStackMark, artStacks, setTallArt, tallStat,
 	GUARD_GAP, fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	footprintCells, blockingCells, footprintFits, footprintBlock, visitableCells,
 	entranceOpen, pictureOnShadow, markShadow, shadowAt, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED, protectFronts,
