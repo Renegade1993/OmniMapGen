@@ -1550,7 +1550,9 @@ function isBuilding(tpl) {
 	// a visited object that is not a stack or a pickup (their arts: the random-monster stand-ins, the resources' and chests' AVT, the artifacts',
 	// scrolls' and Pandora's boxes' AVA, the campfires, the mods' treasure piles, spell stones and lost wagons); one-tile sites (a learning stone, an idol, a corpse) count
 	if (!tpl || !tpl.mask || !tpl.animation || !tpl.mask.some(r => /[AT]/.test(r))) return false;
-	return !/^(avwm(rnd|on)|avt|ava|adcfr|avxcf|treasurepile|spellstones|lostwagon)/i.test(String(tpl.animation).replace(/^.*[\/]/, ''));
+	// S249: the underground gate's art is AvTCave, which the AVT prefix (the resources' and chests' art) took for a pickup, so no gate ever counted as a building here and the fill put
+	// buildings under gate pictures (9 of the 14 buildings under another building's picture on our two-level Headquarters set); (?!cave) leaves the gate a building
+	return !/^(avwm(rnd|on)|avt(?!cave)|ava|adcfr|avxcf|treasurepile|spellstones|lostwagon)/i.test(String(tpl.animation).replace(/^.*[\/]/, ''));
 }
 function artPix(tpl) {
 	const key = String(tpl.animation).toLowerCase();
@@ -1641,7 +1643,7 @@ function setTallArt(on) { tallOff = !on; TALL_STAT.loot = 0; TALL_STAT.building 
 const tallOn = () => !tallOff && process.env.VMAPGEN_TALL_ART !== '0';
 function isLoot(tpl) {
 	if (!tpl || !tpl.mask || !tpl.animation || !tpl.mask.some(r => /[AT]/.test(r))) return false;
-	return /^(avwm(rnd|on)|avt|ava|adcfr|avxcf|treasurepile|spellstones|lostwagon)/i.test(String(tpl.animation).replace(/^.*[\/]/, ''));
+	return /^(avwm(rnd|on)|avt(?!cave)|ava|adcfr|avxcf|treasurepile|spellstones|lostwagon)/i.test(String(tpl.animation).replace(/^.*[\/]/, ''));
 }
 function lootMark(reg, tpl, x, y, l, W, H) {
 	if (!reg.lootPix) { reg.lootPix = new Map(); reg.lootPx = new Map(); reg.lootInfo = new Map(); }
