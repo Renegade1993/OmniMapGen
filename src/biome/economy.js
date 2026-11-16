@@ -569,6 +569,23 @@ function emptyRewardable() {
 	};
 }
 
+// The spells of a pile's Pandora's box: 12 of its level, 15 of its school, or 60 (TreasurePlacer addPandoraBoxes). Levels and schools are the Heroes wiki's table
+// (spell_levels.json); only the corpus's own spells are drawn, so every id resolves. A level or school with too few spells is filled from the next level down
+// (or any school) with the level's spells first, as the Pandora's box values by its first spell's level.
+const SPELL_TABLE = require('./spell_levels.json');
+function pandoraSpellList(item, rng) {
+	const shuffled = a => { const p = [...a]; for (let i = p.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [p[i], p[j]] = [p[j], p[i]]; } return p; };
+	const all = shuffled(PANDORA_SPELLS);
+	const info = s => SPELL_TABLE[s.replace(/^core:/, '')];
+	let want = 60, first = () => true, rest = () => true;
+	if (item.key === 'pandoraSpells') { want = 12; first = s => info(s) && info(s).level === item.spellLevel; rest = s => info(s) && info(s).level < item.spellLevel; }
+	else if (item.key === 'pandoraSchool') { want = 15; first = s => info(s) && info(s).school === item.school; rest = s => info(s) && info(s).school === 'any'; }
+	const list = all.filter(first);
+	for (const s of all) if (list.length < want && !list.includes(s) && rest(s)) list.push(s);
+	for (const s of all) if (list.length < want && !list.includes(s)) list.push(s);
+	return list.slice(0, want);
+}
+
 /**
  * A pandora's box options block, in the shape the engine writes.
  *
@@ -579,7 +596,7 @@ function emptyRewardable() {
  * their observed corpus frequency, and a spell reward is a list of 12, 15 or
  * 60 core spell identifiers.
  */
-function pandoraOptions(rng) {
+function pandoraOptions(rng, item) {
 	const S = SPECIALS.pandoraBox;
 	const reward = {
 		creatures: [], creaturesChange: [], heroExperience: 0, heroLevel: 0,
@@ -587,8 +604,18 @@ function pandoraOptions(rng) {
 		movePercentage: -1, movePoints: 0, primary: [0, 0, 0, 0],
 		secondary: [], spellCast: { level: 0 },
 	};
-	const kind = weightedKey(S.rewardWeights, rng);
-	if (kind === 'experience')
+	// S253 (K 2026-11-15: "i'm rolling a lot of high-tier pandoras in my start biome on headquarters consistently without much fight....make sure the
+	// boxes are being weighted like they are in the VCMI equivalent template"): a box the pile pass drew (item: piles.js addPandoraBoxes' entry) holds
+	// what that entry is worth, as TreasurePlacer builds it: gold = the value, experience = the value / 1.2, creatures = the entry's creature and amount,
+	// spells = 12 of the entry's level, 15 of its school, or 60. The corpus draw below ignored the zone's bands (a start zone whose top band is
+	// under 20,000 held boxes worth 20,000 to 30,000); VMAPGEN_PANDORA_FROM_PILE=0 returns it.
+	const byPile = item && item.key && process.env.VMAPGEN_PANDORA_FROM_PILE !== '0';
+	const kind = byPile ? { pandoraGold: 'gold', pandoraExperience: 'experience', pandoraCreatures: 'creatures', pandoraSpells: 'spells', pandoraSchool: 'spells', pandoraSpell60: 'spells' }[item.key] || weightedKey(S.rewardWeights, rng) : weightedKey(S.rewardWeights, rng);
+	if (byPile && kind === 'experience') reward.heroExperience = Math.round(item.value / 1.2);
+	else if (byPile && kind === 'gold') reward.resources = { gold: item.value };
+	else if (byPile && kind === 'creatures' && item.creature) reward.creatures = [{ type: 'core:' + item.creature, amount: item.amount }];
+	else if (byPile && kind === 'spells') reward.spells = pandoraSpellList(item, rng);
+	else if (kind === 'experience')
 		reward.heroExperience = +weightedKey(S.expWeights, rng);
 	else if (kind === 'gold')
 		reward.resources = { gold: +weightedKey(S.goldWeights, rng) };

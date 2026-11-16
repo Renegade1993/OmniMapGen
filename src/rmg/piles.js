@@ -164,12 +164,13 @@ function zonePool(common, opts = {}, rng = Math.random) {
 		}
 		for (const c of opts.creatures || []) {
 			const n = creatureCount(c);
-			if (n) add({ key: 'pandoraCreatures', type: 'pandoraBox', value: Math.floor(c.aiValue * n * (1 + native / total)), probability: 3, large: false }, Infinity);
+			if (n) add({ key: 'pandoraCreatures', type: 'pandoraBox', value: Math.floor(c.aiValue * n * (1 + native / total)), probability: 3, large: false, creature: c.id, amount: n }, Infinity);
 		}
+		// S253: each entry carries what the box will hold (the spell level, the school, the creature and its amount), so the generator builds the box the pile drew
 		for (let i = 1; i <= 5; i++)
-			add({ key: 'pandoraSpells', type: 'pandoraBox', value: (i + 1) * PANDORA.spells, probability: 2, large: false }, Infinity);
+			add({ key: 'pandoraSpells', type: 'pandoraBox', value: (i + 1) * PANDORA.spells, probability: 2, large: false, spellLevel: i }, Infinity);
 		for (let i = 0; i < 4; i++)
-			add({ key: 'pandoraSchool', type: 'pandoraBox', value: PANDORA.school, probability: 2, large: false }, Infinity);
+			add({ key: 'pandoraSchool', type: 'pandoraBox', value: PANDORA.school, probability: 2, large: false, school: ['air', 'earth', 'fire', 'water'][i] }, Infinity);
 		add({ key: 'pandoraSpell60', type: 'pandoraBox', value: PANDORA.spell60, probability: 2, large: false }, Infinity);
 		// addSeerHuts (TreasurePlacer.cpp): placed at 500 whatever the reward, and only while the zone has quest artifacts. The engine
 		// offers one entry per native creature (a creature reward, probability 3) and two per quest reward value (experience and gold,

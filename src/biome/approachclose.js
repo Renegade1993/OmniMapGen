@@ -169,7 +169,7 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 		const zi = zone[o.y * W + o.x], meta = pl.zoneMeta && pl.zoneMeta[zi];
 		if (pl.objectPools && pl.objectPools.guards && meta && meta.spec && d.lootGuard) {
 			const kind = /^creatureGenerator/.test(o.type) ? (DRAGON.test(o.subtype || '') ? 'dragonDwelling' : 'dwelling') : o.type;
-			const g = d.lootGuard(kind, p, rng, d.zoneGuardPool(pl.objectPools.guards, meta.spec));
+			const g = d.lootGuard(kind, p, rng, d.zoneGuardPool(pl.objectPools.guards, meta.spec), d.pandoraBoxValue ? d.pandoraBoxValue(o) : undefined);
 			if (g) {
 				const x = c % W, y = (c / W) | 0;
 				const ge = objectEntry(`randomMonsterLevel${g.level}`, x, y, l, d.monsterTpl, 'object', { character: 'hostile', amount: d.scaledAmount ? d.scaledAmount(g.amount, p) : g.amount });
