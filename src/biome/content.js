@@ -4219,8 +4219,11 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// live. Multiplying the underground rates reproduces that split.
 	const uMul = l > 0 ? { pandora: 3, prison: 3, obelisk: 2.5 } : null;
 	const pandoraTpl = pandoraTemplate();
+	// S253: each box holds what its pile entry is worth (economy.js pandoraOptions), the way the engine builds it; a lever that thins the count keeps the cheaper boxes
+	const pandoraDrawn = pileMan ? (pileMan.get('pandoraBox') || []).slice().sort((a, b) => a.value - b.value) : [];
+	let pandoraAt = 0;
 	for (let i = pileMan ? manCount('pandoraBox') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].pandoraBox * lootMul * ((lootKind === 'other' && STOCK_GUARD_LAND.pandoraBox) || 1)) : rare(fill.pandoras * (uMul ? uMul.pandora : 1)); i > 0; i--)
-		putLoot('pandoraBox', pandoraTpl, pandoraOptions(rng));
+		putLoot('pandoraBox', pandoraTpl, pandoraOptions(rng, pileMan && pandoraDrawn.length ? pandoraDrawn[pandoraAt++ % pandoraDrawn.length] : undefined));
 	if (!prisonsEarly) placePrisons();
 	const obeliskTpl = obeliskTemplate(terrain);
 	for (let i = pileMan ? manCount('obelisk') : rare(fill.obelisks * (uMul ? uMul.obelisk : 1)); i > 0; i--)

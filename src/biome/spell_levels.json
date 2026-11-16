@@ -1,0 +1,282 @@
+{
+	"magicArrow": {
+		"level": 1,
+		"school": "any"
+	},
+	"lightningBolt": {
+		"level": 2,
+		"school": "air"
+	},
+	"destroyUndead": {
+		"level": 3,
+		"school": "air"
+	},
+	"chainLightning": {
+		"level": 4,
+		"school": "air"
+	},
+	"titanBolt": {
+		"level": 5,
+		"school": "air"
+	},
+	"deathRipple": {
+		"level": 2,
+		"school": "earth"
+	},
+	"meteorShower": {
+		"level": 4,
+		"school": "earth"
+	},
+	"implosion": {
+		"level": 5,
+		"school": "earth"
+	},
+	"fireWall": {
+		"level": 2,
+		"school": "fire"
+	},
+	"fireball": {
+		"level": 3,
+		"school": "fire"
+	},
+	"landMine": {
+		"level": 3,
+		"school": "fire"
+	},
+	"armageddon": {
+		"level": 4,
+		"school": "fire"
+	},
+	"inferno": {
+		"level": 4,
+		"school": "fire"
+	},
+	"iceBolt": {
+		"level": 2,
+		"school": "water"
+	},
+	"frostRing": {
+		"level": 3,
+		"school": "water"
+	},
+	"haste": {
+		"level": 1,
+		"school": "air"
+	},
+	"disruptingRay": {
+		"level": 2,
+		"school": "air"
+	},
+	"fortune": {
+		"level": 2,
+		"school": "air"
+	},
+	"precision": {
+		"level": 2,
+		"school": "air"
+	},
+	"protectAir": {
+		"level": 2,
+		"school": "air"
+	},
+	"airShield": {
+		"level": 3,
+		"school": "air"
+	},
+	"hypnotize": {
+		"level": 3,
+		"school": "air"
+	},
+	"counterstrike": {
+		"level": 4,
+		"school": "air"
+	},
+	"magicMirror": {
+		"level": 5,
+		"school": "air"
+	},
+	"airElemental": {
+		"level": 5,
+		"school": "air"
+	},
+	"shield": {
+		"level": 1,
+		"school": "earth"
+	},
+	"slow": {
+		"level": 1,
+		"school": "earth"
+	},
+	"stoneSkin": {
+		"level": 1,
+		"school": "earth"
+	},
+	"quicksand": {
+		"level": 2,
+		"school": "earth"
+	},
+	"animateDead": {
+		"level": 3,
+		"school": "earth"
+	},
+	"antiMagic": {
+		"level": 3,
+		"school": "earth"
+	},
+	"earthquake": {
+		"level": 3,
+		"school": "earth"
+	},
+	"forceField": {
+		"level": 3,
+		"school": "earth"
+	},
+	"protectEarth": {
+		"level": 3,
+		"school": "earth"
+	},
+	"resurrection": {
+		"level": 4,
+		"school": "earth"
+	},
+	"sorrow": {
+		"level": 4,
+		"school": "earth"
+	},
+	"earthElemental": {
+		"level": 5,
+		"school": "earth"
+	},
+	"bloodlust": {
+		"level": 1,
+		"school": "fire"
+	},
+	"curse": {
+		"level": 1,
+		"school": "fire"
+	},
+	"protectFire": {
+		"level": 1,
+		"school": "fire"
+	},
+	"blind": {
+		"level": 2,
+		"school": "fire"
+	},
+	"misfortune": {
+		"level": 3,
+		"school": "fire"
+	},
+	"berserk": {
+		"level": 4,
+		"school": "fire"
+	},
+	"fireShield": {
+		"level": 4,
+		"school": "fire"
+	},
+	"frenzy": {
+		"level": 4,
+		"school": "fire"
+	},
+	"slayer": {
+		"level": 4,
+		"school": "fire"
+	},
+	"sacrifice": {
+		"level": 5,
+		"school": "fire"
+	},
+	"fireElemental": {
+		"level": 5,
+		"school": "fire"
+	},
+	"bless": {
+		"level": 1,
+		"school": "water"
+	},
+	"cure": {
+		"level": 1,
+		"school": "water"
+	},
+	"dispel": {
+		"level": 1,
+		"school": "water"
+	},
+	"protectWater": {
+		"level": 1,
+		"school": "water"
+	},
+	"removeObstacle": {
+		"level": 2,
+		"school": "water"
+	},
+	"weakness": {
+		"level": 2,
+		"school": "water"
+	},
+	"forgetfulness": {
+		"level": 3,
+		"school": "water"
+	},
+	"mirth": {
+		"level": 3,
+		"school": "water"
+	},
+	"teleport": {
+		"level": 3,
+		"school": "water"
+	},
+	"clone": {
+		"level": 4,
+		"school": "water"
+	},
+	"prayer": {
+		"level": 4,
+		"school": "water"
+	},
+	"waterElemental": {
+		"level": 5,
+		"school": "water"
+	},
+	"visions": {
+		"level": 2,
+		"school": "any"
+	},
+	"viewAir": {
+		"level": 1,
+		"school": "air"
+	},
+	"disguise": {
+		"level": 2,
+		"school": "air"
+	},
+	"dimensionDoor": {
+		"level": 5,
+		"school": "air"
+	},
+	"fly": {
+		"level": 5,
+		"school": "air"
+	},
+	"viewEarth": {
+		"level": 1,
+		"school": "earth"
+	},
+	"townPortal": {
+		"level": 4,
+		"school": "earth"
+	},
+	"summonBoat": {
+		"level": 1,
+		"school": "water"
+	},
+	"scuttleBoat": {
+		"level": 2,
+		"school": "water"
+	},
+	"waterWalk": {
+		"level": 4,
+		"school": "water"
+	}
+}
