@@ -17,11 +17,13 @@ const { genEnv, testTmp } = require('./_vcmi');
 const N8 = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 0], [-1, 1]];
 const NOS = ['--bio.zoneCells', '1500', '--bio.interconnectPortal', '0.8', '--bio.guardDensity', '0.5', '--bio.highLootRatio', '0.1', '--bio.artifactDensity', '0.003',
 	'--bio.dwellingDensity', '1.2', '--bio.guardGradient', '1'];
-const CASES = [['tb144x2 s7402', '7402', []], ['no144x2 s8307', '8307', NOS], ['no144x2 s8312', '8312', NOS], ['no144x2 s8302', '8302', NOS]];
+const CASES = [['tb144x2 s7402', '7402', []], ['no144x2 s8307', '8307', NOS], ['no144x2 s8312', '8312', NOS], ['no144x2 s8302', '8302', NOS], ['no144x2 s8303', '8303', NOS], ['no144x2 s8318', '8318', NOS]];
+// S255 (2026-11-15, rc-1116): S249 and S253 shifted the random stream and s8302 reads 1.26 with the passes off (8.09 before): the control seeds were re-seeded. Of no144x2 seeds 8303 to 8322
+// probed with the passes off (.tmp\m1113\ov\pw_*_off.txt) two read over 2.2: s8303 2.23 and s8318 2.46 (on: s8303 1.46); the rest 1.01 to 2.00. The control is these two together, over 2.2 in either
 // the control seed: the one case that reads far over 2.2 with the passes off (2026-11-14, Opus Map Vision's probe on 072de69, in the suite's environment
 // with VMAPGEN_SPRITE_ROOT set: s8302 8.09 with them off and 1.11 on; 8.08 off before the opus-cold-1114 merge). s8307 was the control's one unfair
 // seed (9.80 off on 69e1e80); the merge re-laid its level 1 and it reads 1.70 now, so it stopped being an example, and s7402 and s8312 never were (1.58 and 1.22)
-const CONTROL = ['no144x2 s8302'];
+const CONTROL = ['no144x2 s8303', 'no144x2 s8318'];
 
 // each owned start's ring-free walk, as start-ground.test.js and the playable gate read it; the ratio of the larger to the smaller
 function ratio(seed, extra, tag, env = {}) {

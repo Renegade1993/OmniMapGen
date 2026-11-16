@@ -65,8 +65,10 @@ test('every start of a 48x48 eight-player map walks 8 tiles or more without a fi
 // smallest walks of 17 to 48 tiles and none boxes a start in: the start-exit pass (K, 2026-11-02, "it seems like there is only one way in and out of each start") and the later start
 // rules keep them out of the box. With the start exit off too (VMAPGEN_START_EXIT=0) seed 14 boxes a start in again (3 tiles; .tmp\m1107\sg_scan.js). So the old walk is the one with
 // all four off, and the bar is 1 of the 16 (it was 2: 8 of 40 seeds when the seeds were found); with the start exit on, the same seed 14 keeps its walk.
-const OFF_SEEDS = Array.from({ length: 16 }, (_, i) => i + 1);
-test('VMAPGEN_START_WALK=0, VMAPGEN_START_CAPS=0 and VMAPGEN_START_EXIT=0 give the old walk: without the passes at least 1 of seeds 1 to 16 boxes a start in, and with the start exit on it does not', { timeout: 900000 }, t => {
+// S255 (2026-11-15, rc-1116): the random stream shifted (S249's gate pictures, S253's box rewards) and none of seeds 1 to 16 boxes a start in without the passes any more (they did on
+// rc-1115); a count over more seeds is the count (the lead: never re-pin a lucky seed), so the set is seeds 1 to 32, bar still 1
+const OFF_SEEDS = Array.from({ length: 32 }, (_, i) => i + 1);
+test('VMAPGEN_START_WALK=0, VMAPGEN_START_CAPS=0 and VMAPGEN_START_EXIT=0 give the old walk: without the passes at least 1 of seeds 1 to 32 boxes a start in, and with the start exit on it does not', { timeout: 1800000 }, t => {
 	const boxed = [];
 	for (const seed of OFF_SEEDS) {
 		// and the start warp guard off (biomes.js, 2026-10-16): it keeps some of these starts out of the box before the passes run (seed 12's
