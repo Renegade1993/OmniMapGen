@@ -132,7 +132,7 @@
    "water": null,
    "preferred": true,
    "caption": "Golems Aplenty, Huge 180x180: 4 players, 2 levels",
-   "drawHash": "884e8ba3d3566e950f6463c62de3f85d1db95a5ec3310dd2228426b28c3bb234",
+   "drawHash": "795b6de061fc3f591d3e387c9fa195cc114f24c3b748345ecdf16bd08b75ee65",
    "zones": 7,
    "lanes": 8,
    "portals": 0,
@@ -174,7 +174,7 @@
    "water": null,
    "preferred": true,
    "caption": "Golems Aplenty, Extra Huge 216x216: 4 players, 2 levels",
-   "drawHash": "f9276011432337111eece19b3a3808363025c3ae42084f85e353c63d546a59cb",
+   "drawHash": "b8c9f0eca32f9a34bece1bb3d1c5194b99e5a13f2ad0dea66ebad80773b124dd",
    "zones": 7,
    "lanes": 8,
    "portals": 0,
@@ -216,7 +216,7 @@
    "water": null,
    "preferred": true,
    "caption": "Golems Aplenty, Giant 252x252: 4 players, 2 levels",
-   "drawHash": "3168be68235f3049dfbf697ee32315215640155c525ca7ce1ec6d2b849231256",
+   "drawHash": "ef2ec17e9b64a9d7af6d0c1c53a91bfa3db06543d4a3d5b630fe58062f901373",
    "zones": 7,
    "lanes": 8,
    "portals": 0,
@@ -494,7 +494,7 @@
    "water": null,
    "preferred": false,
    "caption": "Golems Aplenty, Giant 252x252: 2 players, 2 levels",
-   "drawHash": "b96470577e7980e9724a7245d6026da4ee504c8c024a7a8857e2e1a8283feccf",
+   "drawHash": "af83b305c88dde4822b9fd139037dccc5222a818ebb06d8c067842408b2e9843",
    "zones": 7,
    "lanes": 8,
    "portals": 0,
@@ -537,7 +537,7 @@
    "water": null,
    "preferred": false,
    "caption": "Golems Aplenty, Medium 72x72: 4 players, 2 levels",
-   "drawHash": "fcd8b3d9657dafc7a6cd2ce6d45a01ed3fe3415c7bdb372b9b5588574a5fd6c7",
+   "drawHash": "d9695fbdf7d7734cad16861cbc5b274bbf7ae5ddc573215c440234e4d388af65",
    "zones": 7,
    "lanes": 8,
    "portals": 0,
@@ -560,13 +560,13 @@
     {
      "file": "14-underground.png",
      "label": "Underground",
-     "contentSha256": "ffbaae4b63c2d1f8f4adc48c21ac939e71b59a5520bf3653b665922af254f4f1"
+     "contentSha256": "a78a58f3dd3e909ee085a7c937b19ee498563b22d95090495b0aca642a1e1eff"
     }
    ],
    "legendFile": "14-legend.png",
    "path": "mapgen/preview/golems_aplenty/14",
    "seconds": 3.0,
-   "contentSha256": "61230fee3154e5fa6f9f7ce8f60109a4c9cea5a5d9e9dea953cd8fd82efd96c2",
+   "contentSha256": "033e0664eba66dad15cafabe06aac2602d0869756279cb2f52186a94114224f9",
    "legendSha256": "74b2beba7aa0fa0ac0f672655184de5345f925449458e03c8cef7063ec8e3d37"
   }
  ],

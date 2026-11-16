@@ -12,9 +12,9 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Extra Large 144x144: 8 players, 2 levels",
-   "drawHash": "9472648dab7127ac99490f21b798f17df4bcbc2c22e2c513d38e070131e8b29d",
+   "drawHash": "8f8047aa2a15bf9a8d30f397ae80f1fdc37d3e1274fff7508ced84fde826b09f",
    "zones": 29,
-   "lanes": 27,
+   "lanes": 29,
    "portals": 8,
    "starts": 8,
    "towns": 18,
@@ -24,27 +24,25 @@
     "Passage",
     "Portal pair (same number)",
     "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
+    "Treasure zone"
    ],
    "layers": [
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "5336daf63965744f610a9e7ef7a3e795f4990600d697771fce77feee9c6c2604"
+     "contentSha256": "80cdfb40fd21e2f26b22b39b3ab1bc70092c8848411f156854a78c8b0ac0cf4c"
     },
     {
      "file": "01-underground.png",
      "label": "Underground",
-     "contentSha256": "bdfc467ecc3baadd27fa2823fb174960a06567e520db1008c05dacce60fc1473"
+     "contentSha256": "70d51851017197aed7d83cf579368628b5f514c0780b1c119df8ce84919df7b5"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/01",
    "seconds": 3.0,
-   "contentSha256": "d919e6bc6b9b638093601ae2569d6bfabb18482fcdd19fb7826bad761dbc4115",
-   "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
+   "contentSha256": "ef07e957845bebbc427a1bc0512395a73ad0a473f0b7eb3f094e8b06f58f87cb",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
    "order": 2,
@@ -56,9 +54,9 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Huge 180x180: 8 players, 2 levels",
-   "drawHash": "a1afa177ab80e4d9678d91400c30b20f93cc92bb38107094ab6705c4d27a3e97",
+   "drawHash": "26f466a9f320bbf34c6d76c9bda6b71fc94ccc5179997e13a099c41d7f494789",
    "zones": 41,
-   "lanes": 39,
+   "lanes": 42,
    "portals": 8,
    "starts": 8,
    "towns": 21,
@@ -67,27 +65,25 @@
     "Neutral town",
     "Portal pair (same number)",
     "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
+    "Treasure zone"
    ],
    "layers": [
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "9af0efbd0e694228ac70036edecda60534779c582377d6f0bb9080fe744d7250"
+     "contentSha256": "a6dc7e381d9934eb7da9769441a787cca643124838ae7516ae2d3614e8b331ba"
     },
     {
      "file": "02-underground.png",
      "label": "Underground",
-     "contentSha256": "fd69e8853b486dc5d4e08323f3c8e92a4cef57eb13f3bfc17754debfeeb6a465"
+     "contentSha256": "9e96ff5622314180e30d92439f391e73a21f460eb57c81b68e0f0e4bdd716763"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/02",
    "seconds": 3.0,
-   "contentSha256": "7e5ab3ac790a4c16147b17dcf99b199766ef6494e95129908b97af75968a681d",
-   "legendSha256": "d082cfb2acec5a692b3f8f288eb94d2785e8fff33179ae1f4531bccaf6f87cac"
+   "contentSha256": "7740f77c50ad86e189dbc06ed450a065b292b6b669acda9e46bcf0490df7b4c2",
+   "legendSha256": "43d89b750409ae9f538c836148e3f38f0733771e3e62be5a5f8a1325febd679a"
   },
   {
    "order": 3,
@@ -99,9 +95,9 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Extra Huge 216x216: 8 players, 2 levels",
-   "drawHash": "4c96caee9e1c5fa6dc8433e9153e17311e343fa23cca5fa6ca090beb01d60a7e",
+   "drawHash": "82fd747eca885c670deabdc84d5b7e04de22aa6fc204d6099d9d55d111d96cf6",
    "zones": 55,
-   "lanes": 50,
+   "lanes": 51,
    "portals": 8,
    "starts": 8,
    "towns": 31,
@@ -110,27 +106,25 @@
     "Neutral town",
     "Portal pair (same number)",
     "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
+    "Treasure zone"
    ],
    "layers": [
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "6b2ecc5201391684def05ebfe44c36c1a656ab7e32ba96084059773c6d2936fa"
+     "contentSha256": "bfcb1efce04f94e28a519df954f27c8aae1a7377c5898e450ebbf69c6b434daa"
     },
     {
      "file": "03-underground.png",
      "label": "Underground",
-     "contentSha256": "4c1a89a5b9b6956fb136a23cc65a00102b8649748175a13bb42dca0e9208d243"
+     "contentSha256": "bc0171401a227029baec981c74c205b103d9e1d953b06f8ca8d6e39491ef3044"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/03",
    "seconds": 3.0,
-   "contentSha256": "1b839ef887e3c06fb3a47a368a1e43c7196ba1a803f4c0e21edeb9a96d5037c1",
-   "legendSha256": "d082cfb2acec5a692b3f8f288eb94d2785e8fff33179ae1f4531bccaf6f87cac"
+   "contentSha256": "27e01a3e416f431f9025a6c1df5858223599287a1cdc0b19d3b4f01ba1d8215d",
+   "legendSha256": "43d89b750409ae9f538c836148e3f38f0733771e3e62be5a5f8a1325febd679a"
   },
   {
    "order": 4,
@@ -142,38 +136,36 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Giant 252x252: 8 players, 2 levels",
-   "drawHash": "8561d8c5c675a7c80266c2537f1eec97ca05d334e8a97f78bd2a38f82f798164",
+   "drawHash": "8ae1bc3d0320e3463daffad3225c54ea0488a610bec43672c2758fb771dcc81b",
    "zones": 71,
    "lanes": 67,
    "portals": 8,
    "starts": 8,
-   "towns": 40,
+   "towns": 41,
    "legend": [
     "Player start",
     "Neutral town",
     "Portal pair (same number)",
     "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
+    "Treasure zone"
    ],
    "layers": [
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "6d011fceb875db78aa433cee805601c5181bb239a8f55a36907080c2f9b1e29e"
+     "contentSha256": "9383ad35b0791d4e1fb4ab8cd82610bbb6937909fe56efed1c751ca95b09bf5b"
     },
     {
      "file": "04-underground.png",
      "label": "Underground",
-     "contentSha256": "3dcd66277e5f8f0ae662113e3e4b0eeae3edd4204d091556ea6b1874374484ed"
+     "contentSha256": "83151a66198e8037d9aa47388f78a0d0c797ea176935d3e08f05bc8f6ce348f5"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/04",
    "seconds": 3.0,
-   "contentSha256": "59a58c965402ff569fa3d6e205e83638b253f642da99f0e3e72615dfa3efb6e9",
-   "legendSha256": "d082cfb2acec5a692b3f8f288eb94d2785e8fff33179ae1f4531bccaf6f87cac"
+   "contentSha256": "6d61c89c48d368c12d5e739e528c4f180469378f87775712790ced5d61df31d6",
+   "legendSha256": "43d89b750409ae9f538c836148e3f38f0733771e3e62be5a5f8a1325febd679a"
   },
   {
    "order": 5,
@@ -185,9 +177,9 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Small 36x36: 8 players, 2 levels",
-   "drawHash": "a73574b68644d34449b2cf87769303469868b1419fda4eaa352e3baf67e6f037",
+   "drawHash": "2b72900a80eba4be5ab32f8f61e18e7e5c163f8987993cf86c54f8cee51a497c",
    "zones": 12,
-   "lanes": 10,
+   "lanes": 9,
    "portals": 2,
    "starts": 8,
    "towns": 9,
@@ -197,26 +189,25 @@
     "Passage",
     "Portal pair (same number)",
     "Start zone",
-    "Treasure zone",
-    "Open land"
+    "Treasure zone"
    ],
    "layers": [
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "798efe206079c90d8045bc514067b1c6f68f1c12dc182ee3425ad4c21e28e5f0"
+     "contentSha256": "8d8c5ac22fd6c0e11fd095cb9d70471b86bb07b7ba6b9271aa0c63989547b276"
     },
     {
      "file": "05-underground.png",
      "label": "Underground",
-     "contentSha256": "e32c3748ed9466ea9d6e38a16eee1353f73403a6b91cf0989f6576486f7b660f"
+     "contentSha256": "77f66ec2319ccaa46aefd897f9cbd7fad33e8509e79411d60ef0074a00377782"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/05",
    "seconds": 3.0,
-   "contentSha256": "0442d1a64586eb77b70522048b87328d62a3817dcfa612bedffd4d5152e7ac32",
-   "legendSha256": "c0c29239acef5dd1749c8c7d43242e74b2724f526134ffd282ce2f73dfb5cc5e"
+   "contentSha256": "ff37fb7cd9971e9441138f5b270f816d724c3fed105f4a4c75dd4244d2ff68cd",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
    "order": 6,
@@ -228,38 +219,37 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Medium 72x72: 8 players, 2 levels",
-   "drawHash": "abfcf96586ef571a79e13e400c4fe6e314f2914c0f6136d510445f6acc5cad33",
+   "drawHash": "2102a81f4c674038bd778ec1e645613c0f3be183cebefa223d5cf4bb67568d89",
    "zones": 13,
-   "lanes": 13,
-   "portals": 8,
+   "lanes": 10,
+   "portals": 3,
    "starts": 8,
-   "towns": 11,
+   "towns": 10,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
     "Start zone",
-    "Treasure zone",
-    "Open land"
+    "Treasure zone"
    ],
    "layers": [
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "10c8615930fda3c9dfc50a1319a86e2823edd19c0c3296ebb56513a43977d930"
+     "contentSha256": "43afbf5513302ccc5fe1b3783ca3d2288c20912830e2ec657a0c50cec83f16e7"
     },
     {
      "file": "06-underground.png",
      "label": "Underground",
-     "contentSha256": "75847d82b25ff1fe9f1bddf8e88459e083dc37978d7edb089f091929191f3068"
+     "contentSha256": "398cc1637774fa7d863ca375944f85a714db7c00b8bbdc2b6d76d45fa95012aa"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/06",
    "seconds": 3.0,
-   "contentSha256": "a0d7f74500da997ef5ae54293ef7045b7f61dc98eae2d23dd98eed65306e5df4",
-   "legendSha256": "c0c29239acef5dd1749c8c7d43242e74b2724f526134ffd282ce2f73dfb5cc5e"
+   "contentSha256": "92856a437024eb12285a637f2187672a9ba36db3f3bf46ede289362925e0abbe",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
    "order": 7,
@@ -271,9 +261,9 @@
    "water": null,
    "preferred": true,
    "caption": "Nostalgia (approximate), Large 108x108: 8 players, 2 levels",
-   "drawHash": "0f496c0681dde19627cc05b9036889d2146ce1cd8868650dc741a201288193a2",
+   "drawHash": "20d9af8e0387633ce37725f9b7d8ec3655cdfc114eaf03947b74c32ef099dd2c",
    "zones": 20,
-   "lanes": 15,
+   "lanes": 22,
    "portals": 8,
    "starts": 8,
    "towns": 18,
@@ -283,27 +273,25 @@
     "Passage",
     "Portal pair (same number)",
     "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
+    "Treasure zone"
    ],
    "layers": [
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "2a022b4af22d514e46fdc2f4583901e68bb2004de7b497d0080d119d3c19791c"
+     "contentSha256": "d249f10c7637edaa788211ada28ee5e7c7d6f6461d80ce4c770bfd81942caa7a"
     },
     {
      "file": "07-underground.png",
      "label": "Underground",
-     "contentSha256": "bc8eacf73e1ab1a433b655235ce9d02be5c847c20c5e93b8efabb6abf9a04084"
+     "contentSha256": "cc430190c54f241e2db047e48356b2c9e5925df1a65e84004b68e15c714d5c61"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/07",
    "seconds": 3.0,
-   "contentSha256": "c012b03838cfdd8d973562955596448cf57ec7d731c12f1040b57f9ed75ce4d8",
-   "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
+   "contentSha256": "edc988b54557de29434cf9e91cd5e17c0d80f4e088938ed67bb160f94050fe45",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
    "order": 8,
@@ -315,31 +303,29 @@
    "water": null,
    "preferred": false,
    "caption": "Nostalgia (approximate), Small 36x36: 2 players, 1 level",
-   "drawHash": "fa877bbf30b0cd688e45390b56363c58c8972dc1f1dac46896fbbd965163d0c7",
+   "drawHash": "6e626745e4b0db82cd99315e4235672245c3e0b4089ba383c278872bedb2f35a",
    "zones": 4,
-   "lanes": 2,
-   "portals": 2,
+   "lanes": 0,
+   "portals": 0,
    "starts": 2,
    "towns": 2,
    "legend": [
     "Player start",
-    "Portal pair (same number)",
     "Start zone",
-    "Treasure zone",
-    "Open land"
+    "Treasure zone"
    ],
    "layers": [
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "6fb4c584b8aa3ee0fb53e23570831bdd155086732c1d74ab9a6a67ac8326ce17"
+     "contentSha256": "7d1f474c6fb56c33d7f9d51ee3e7bcbebdcaa167ccec86481c63c0cf296c3e24"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/08",
    "seconds": 3.0,
-   "contentSha256": "e41fa2da27822494a4862b6dfaf095fc6d76fabf28647e66fd92cda2c40707a0",
-   "legendSha256": "810988e69fd770455c76aa7a6ef45be164efb2dce09f665caccda5c159df69ba"
+   "contentSha256": "6d4f392ccbed1e4176896cb31dadfd7618c2dda45faa9bbdbef4d463117d1ff0",
+   "legendSha256": "2cdc4d4ec655efec1ad640f71e45d13c723a265fbb03c90206bef5ccd5a1ed5d"
   },
   {
    "order": 9,
@@ -351,33 +337,31 @@
    "water": null,
    "preferred": false,
    "caption": "Nostalgia (approximate), Medium 72x72: 4 players, 1 level",
-   "drawHash": "aadb30ef15105c5cd7a0d14da4049443074fbfe11717dd3b4c915e9515c49953",
+   "drawHash": "7282969d5c2ebe5407ed1c7f7e67a8ce6e8292bf8fc4b7b5671f184cab3c469b",
    "zones": 6,
-   "lanes": 4,
-   "portals": 3,
+   "lanes": 2,
+   "portals": 0,
    "starts": 4,
    "towns": 5,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same number)",
     "Start zone",
-    "Treasure zone",
-    "Open land"
+    "Treasure zone"
    ],
    "layers": [
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "76480549d402d3bc494cbf09d5a73428f0fc68b77f6531502db0688c0b005f00"
+     "contentSha256": "fb6c99feef5773fae1e8c93ee8ea0843c68e96ad228c321d49614ea1e042d144"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/09",
    "seconds": 3.0,
-   "contentSha256": "96227deedb620d3b9826bbdcac9dd27bc0b96b520ec7d2ca85746a52291462a7",
-   "legendSha256": "c0c29239acef5dd1749c8c7d43242e74b2724f526134ffd282ce2f73dfb5cc5e"
+   "contentSha256": "c2ff60c16579cf00fb5968094570e9d056fd1157ce716aa268a7ec5c1413ee41",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 10,
@@ -389,9 +373,9 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Nostalgia (approximate), Large 108x108: 6 players, 2 levels, starts underground, Lakes water",
-   "drawHash": "971a0fd94cd808f72b9eb1caf98fc670acf2e58e17c405803205f6fc9ece7bef",
+   "drawHash": "c3f891616f7cf1804e3955d1c364022bfe7a9da5d04e09e4d8ad4c65145ac045",
    "zones": 16,
-   "lanes": 18,
+   "lanes": 24,
    "portals": 8,
    "starts": 6,
    "towns": 12,
@@ -402,27 +386,25 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "e3010aff0dc9e7e12babe221d52eee4bc7b92a4dc3da21602380aba60b79c966"
+     "contentSha256": "00bd1b624e55c334d12d6a6d0cd47dcdfadc37413b7074c00d38c2ca53f9a138"
     },
     {
      "file": "10-underground.png",
      "label": "Underground",
-     "contentSha256": "9904e84c00e6debb92e70adb63d8ccc0210f6d385845778b370e4207f7458ddf"
+     "contentSha256": "acbd59d7ea7593395077e8a63415d63f93d2354a8ceb6b6890eba9d1b39e8f53"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/10",
    "seconds": 3.0,
-   "contentSha256": "f17d5f72d08b194d5a105e931f982b3d44e6541d737736992c0da6e779c099f9",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "8613933eeb2873381169eda1a37847b1864534477113915d76d1b46b8b85c818",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 11,
@@ -434,10 +416,10 @@
    "water": null,
    "preferred": false,
    "caption": "Nostalgia (approximate), Extra Large 144x144: 3 players, 1 level",
-   "drawHash": "f7924eb1703bc8f7d0d1ad91fef42517b80786b54ce8ec69f60b758c6d433f4a",
+   "drawHash": "2413341b9fb1c98cbb0152b53dbba94d3fe826596293ab8cdddaa6e3fd455d52",
    "zones": 10,
    "lanes": 6,
-   "portals": 4,
+   "portals": 5,
    "starts": 3,
    "towns": 9,
    "legend": [
@@ -446,22 +428,20 @@
     "Passage",
     "Portal pair (same number)",
     "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
+    "Treasure zone"
    ],
    "layers": [
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "dba373f6b77294d3c4bf507046b140a3f5612d3d23af5065ac007a9777c8e4a7"
+     "contentSha256": "4e5a27e82374ceb70520444a5a9d299ad77b71ed0b524b8e2347be02aa505c43"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/11",
    "seconds": 3.0,
-   "contentSha256": "f316de45e2bb4008d50482fa73e5ff09d8acc8c651d7b04c2fcbef010f6255ef",
-   "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
+   "contentSha256": "a4eedf0d44eaff2fb203a172eb0ec36906cc32392336c28e8e6b90c37fb54b62",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
    "order": 12,
@@ -473,9 +453,9 @@
    "water": "coastal",
    "preferred": false,
    "caption": "Nostalgia (approximate), Huge 180x180: 5 players, 2 levels, starts on both levels, Coastal water",
-   "drawHash": "8a8ff60204ef02bf3c1a8c8bc9718716988b557b175be572b7f05c48e3ab5865",
+   "drawHash": "11893df880474d119fe4e5e6aee857e722aef433fb0e203ee78d0a47a9be1027",
    "zones": 26,
-   "lanes": 27,
+   "lanes": 26,
    "portals": 8,
    "starts": 5,
    "towns": 16,
@@ -486,27 +466,25 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "19a6a17f11028c8fe7ac9e4cea2ec33ba0dde56df683fcb5ebd831cb6d530804"
+     "contentSha256": "4dfd8e7eac0f479d7fd16c1b2d89f309a2f2cf57850d2e39db804e2a71dc4827"
     },
     {
      "file": "12-underground.png",
      "label": "Underground",
-     "contentSha256": "d732a543f6e2bd06a9b54f03f223c0ce6b6f6cb374e2ecf37acc1664fbd719cd"
+     "contentSha256": "9702ba267af9c85b3f826927b857d76552dc3ef9dcfeb9598b22e3ed98bda6bb"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/12",
    "seconds": 3.0,
-   "contentSha256": "b2d6a68b074f8b04c5929607ca3ce1dbbae92cb434f4ef37ddd69bf7759efa47",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "0535b33444e0ebf4973f529b460f85c84cc705904b934e833514b2ac7fbc4c19",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 13,
@@ -518,34 +496,32 @@
    "water": null,
    "preferred": false,
    "caption": "Nostalgia (approximate), Giant 252x252: 4 players, 1 level",
-   "drawHash": "b4092c53ea6d0538eb9113761bb4920e851fb44cde1e95a37e9568d9c884fc52",
+   "drawHash": "7847fd7fea012b5034645af454717205a99741dcb80eb9387e12a2546ae05687",
    "zones": 25,
-   "lanes": 14,
+   "lanes": 18,
    "portals": 8,
    "starts": 4,
-   "towns": 24,
+   "towns": 25,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
     "Portal pair (same number)",
     "Start zone",
-    "Treasure zone",
-    "Town zone",
-    "Open land"
+    "Treasure zone"
    ],
    "layers": [
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "b6bc0e4e73c1ecaf10b5f7bb46661ee2f96fb78874dff0a229d6c5f17130c956"
+     "contentSha256": "af82008245de5915181219902a461056ab1168bcd8073ab6dc22314ee3369d83"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/nostalgia_approximate/13",
    "seconds": 3.0,
-   "contentSha256": "cca29d4627cccabb1c33c420647e022cd11996461e1e219c0e9c1b8cc332955b",
-   "legendSha256": "691a6bb7464d412fb9c059365620781ecbf9712c4a29e2cd9f166389a026f5e5"
+   "contentSha256": "4cf22db55e7613bae5b022494595a7d6b00287126127b7fbf1a36b682249a743",
+   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

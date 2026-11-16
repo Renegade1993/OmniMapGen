@@ -12,7 +12,7 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Extra Large 144x144: 8 players, 2 levels",
-   "drawHash": "57562adfaf7b18aa36d8456400f273246974965f601b8ed26db204a91b485fb9",
+   "drawHash": "04e38c214f02d5d73498757473a680200353ff7f9655972d68a5a55761340271",
    "zones": 21,
    "lanes": 22,
    "portals": 1,
@@ -32,18 +32,18 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "68f950efca82c979e02ad224aff62aeccf97e0eb5fa49717c3ab76523916b793"
+     "contentSha256": "56bc51d410c847a11881fcc06cea714d5ec9563a6a839acfe6aa07dbb84273ff"
     },
     {
      "file": "01-underground.png",
      "label": "Underground",
-     "contentSha256": "05ca81e179a8b4b3f6701ebe5db82ae7d7b6a84c725d50431aec7efd100e5571"
+     "contentSha256": "22e1872c8602e7ce52ab46aafa6773f8bc40d90531ba757e79533d7c2750257e"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/01",
    "seconds": 3.0,
-   "contentSha256": "1b1e870486d55526ef41ad557b8ecd7fdf25de961895b5205fca7a802284b676",
+   "contentSha256": "c27774073719f4c548323ccb81178254fa1843c428af02a37d49f5c3c5f54ec6",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -56,7 +56,7 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Huge 180x180: 8 players, 2 levels",
-   "drawHash": "ec44810f8266da12221b7de268b4f439b0d8a6a0c9797fc868e06506125cda1b",
+   "drawHash": "b8dd04f09aa3cd2753f9c15510075921c3342c0f8abd5280e1a2da874cabfdac",
    "zones": 21,
    "lanes": 22,
    "portals": 1,
@@ -76,7 +76,7 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "63870aa702a6dccfaa3e5bd09cc407fb907292492731e633bf489d254b6bd6b4"
+     "contentSha256": "72c03621e411223666e2f8d0edc09ae351e89fbfa732f3d30fcb3079bd2c1a73"
     },
     {
      "file": "02-underground.png",
@@ -87,7 +87,7 @@
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/02",
    "seconds": 3.0,
-   "contentSha256": "e73c8ae0a3781be30f9d63615f397bf0ea1aa8b2ab2b83b8f2d133fe52ae462f",
+   "contentSha256": "547963de714344b3a6e8cf59576d46d3437f7e99328aa3e2d15efca18940381f",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -100,7 +100,7 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Extra Huge 216x216: 8 players, 2 levels",
-   "drawHash": "026fa20078ab542e8e3bd0a5d7c3fed24cb3b0a761fd66a04e8df5bbdea63258",
+   "drawHash": "bde2fe94cc5d88ed2400f300a4ceadea475d821ff0228a9a33c91fda3e392c12",
    "zones": 21,
    "lanes": 22,
    "portals": 1,
@@ -120,7 +120,7 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "9103f87b5c74c6bd498216a041e68815aa9d79406b04837f898e103a12dd7141"
+     "contentSha256": "4d90c97a79ea7d79542a4d93e1737264c6b3216104e34abcaf2ee61a24ce4154"
     },
     {
      "file": "03-underground.png",
@@ -131,7 +131,7 @@
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/03",
    "seconds": 3.0,
-   "contentSha256": "41ff4a9f9a2d7aebfd89593303380d1ea211c7703a5d50b6af997bd2cafc902f",
+   "contentSha256": "d316914c29534c6843d631fa2727fada6552add4fdc8d6e32c748e615fcf494f",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -144,7 +144,7 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Giant 252x252: 8 players, 2 levels",
-   "drawHash": "608d5dbf20962f7f454e15025529f02d14333943a47260c4badc8e452beaf512",
+   "drawHash": "ce006e2df0de62ae8a1ee14f8e66670fb9c8c2b14123cfbd55ca668195740e6f",
    "zones": 21,
    "lanes": 22,
    "portals": 1,
@@ -164,7 +164,7 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "27fce1b7fb2ee334559d0707496257b467ae19f52e212a076f3be3702d6b45e4"
+     "contentSha256": "6f5623dc523ee8c0d6e13f56f3d8ffa93e33cbf5e59eb8241b4f129c07dacfe5"
     },
     {
      "file": "04-underground.png",
@@ -175,7 +175,7 @@
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/04",
    "seconds": 3.0,
-   "contentSha256": "21201ba3602e7e2834d07bfa7f3a6c7fd292f41a96e10e97177c4cbd71e24f98",
+   "contentSha256": "3224e1675918496cc42ebbaf46f579fe09fc5deccd6dea50aeb85bcea17ab0dd",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -218,7 +218,7 @@
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/05",
    "seconds": 3.0,
-   "contentSha256": "e2efdf8b0565e08fc60f4d2fddcca84734135290184b0faff92e524301142755",
+   "contentSha256": "6bc440a31e28e8581beed6d066a86ee7547abd92d1624822c429ce57a213607b",
    "legendSha256": "a215bb3de52cb384f6603b3a5daca6968cef6210ecc7b992793e4ff6e156ed50"
   },
   {
@@ -231,7 +231,7 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Medium 72x72: 8 players, 2 levels",
-   "drawHash": "aabbd5a66a9d727af04aab64a4e12458875453b7f30f21055bc0b1bd6e492549",
+   "drawHash": "4150ccdd7cfdfb85a6af5caab78ae18ab43bae5749ea61f919d7492c94296e3e",
    "zones": 21,
    "lanes": 22,
    "portals": 1,
@@ -256,13 +256,13 @@
     {
      "file": "06-underground.png",
      "label": "Underground",
-     "contentSha256": "3610ffe6b6f1bb361f689fa253a1c13259a3142653c73c9981a1ce6559c803e9"
+     "contentSha256": "8d237048936740216e386f54ffce69f0fa697e4b89e90ad6dc5698aac653c12a"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/06",
    "seconds": 3.0,
-   "contentSha256": "b586f8c4a9ff0fadcab0a5886ce9de5b73a950af22709c544f9f09339a76039c",
+   "contentSha256": "b83dd86fd7052aad661a1121841f68a3770acec91dcbc589fc799fb959a6e6a3",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -275,12 +275,12 @@
    "water": null,
    "preferred": true,
    "caption": "Coldshadow's Fantasy, Large 108x108: 8 players, 2 levels",
-   "drawHash": "16d5d355db0da470c9c826670abc8e3f45327bfa8c95d5d2133a941bef170172",
+   "drawHash": "32190f7a616ed4e025bf754473d07abc78433d38dbcb270bae2f0271ff15178d",
    "zones": 21,
    "lanes": 22,
    "portals": 2,
    "starts": 8,
-   "towns": 24,
+   "towns": 23,
    "legend": [
     "Player start",
     "Neutral town",
@@ -295,7 +295,7 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "bb99907e371e4f0bb0c905c0f8a7ba6acc5a08db55ac94e4c7295c1856b89c98"
+     "contentSha256": "36b77a5e4e15bf59c8de97eb2014fb30668ffcaee54cb1f514b7fff6e8edf072"
     },
     {
      "file": "07-underground.png",
@@ -306,7 +306,7 @@
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/07",
    "seconds": 3.0,
-   "contentSha256": "726ee8224f7c054cd526cd40477a018deaf03030c6db3d1af6c7a9ac575d79ab",
+   "contentSha256": "edfa2f2374930cac2b7ede0accd639e0ab5a5c138f5d989440e657e6b1eade21",
    "legendSha256": "4af8de9b62eff409f001b7bdedbe2500e198c84ba771b2789048b5edd4c5b769"
   },
   {
@@ -319,7 +319,7 @@
    "water": null,
    "preferred": false,
    "caption": "Coldshadow's Fantasy, Extra Large 144x144: 4 players, 2 levels",
-   "drawHash": "a7010a2dfdad65587a5a9ba6219d1a4e5ebbf878d87ee6362f6c6e1cfcdce988",
+   "drawHash": "bef4b0ada355eff13e954c4689c91ca2c87d896d6529dab4a707cc1825f78f65",
    "zones": 21,
    "lanes": 22,
    "portals": 2,
@@ -340,18 +340,18 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "7073a6633544586a978ec238cd707d3f97cc69686a6f1210d105415820855d90"
+     "contentSha256": "03e738034a67206bcb5c1cf15435030e2dfd011abb0c181db0721a28af348594"
     },
     {
      "file": "08-underground.png",
      "label": "Underground",
-     "contentSha256": "b8c6b600b7f8358db4213017042d631d3541a6140b38cb38a934507f571e0938"
+     "contentSha256": "71cdd28b3ae6f2fd8ba88d54d83fe1d2c49af98e33ff3116a0181275d5d0bade"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/08",
    "seconds": 3.0,
-   "contentSha256": "8633a4ff1b0ec11cc2a6e1fe17eaf0dccefdc0cfca98c0c8fb92e81435337aef",
+   "contentSha256": "c3bea75e74664027994872129a2629551df690bf5353a51620c49b47f7f96b5e",
    "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
@@ -396,7 +396,7 @@
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/09",
    "seconds": 3.0,
-   "contentSha256": "a553686c8a8b114f977b4bf8a6e09fd41db24b6068613a9004cfba89724d9382",
+   "contentSha256": "a425f87bec6025e34b3cae790070365a38752871125430eb0cf6b67fddcb445b",
    "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
@@ -409,7 +409,7 @@
    "water": null,
    "preferred": false,
    "caption": "Coldshadow's Fantasy, Giant 252x252: 6 players, 2 levels",
-   "drawHash": "265804a5677bb6d20f91ff0c0288e0a0bedc9a2b6aac625d1eea679a4594d5fb",
+   "drawHash": "66a3f5d7150ab6715576d8752881aac73957cc2d357435a6b76e9e0363c99c25",
    "zones": 21,
    "lanes": 22,
    "portals": 5,
@@ -430,18 +430,18 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "7385c764ad068e112dff00954b7b70e69ba35ecf39ecee5719f192c5fe03e7d1"
+     "contentSha256": "f7ece45c87cca87b52fa04c7f70f29dcd9cf85c2b3d9f6e3c7cd0e124c3612cb"
     },
     {
      "file": "10-underground.png",
      "label": "Underground",
-     "contentSha256": "4dda06cdb29f7b8e9f43f3ccdf9a7398e21c1c5cc4ca4e2878c118f46d272be7"
+     "contentSha256": "7a2d0f578f85c0762084707ad0d77a038da9b3a6b54c55e811decfbffb0478ae"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/10",
    "seconds": 3.0,
-   "contentSha256": "2040610cde2da9a84876e671550ba6d641b5b9979ea0a4dad8c620ecb490669e",
+   "contentSha256": "5ef1db4bedc48af6e13b15b49805e8522adf2a3fac54b2375662bc1337a50841",
    "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
@@ -454,7 +454,7 @@
    "water": null,
    "preferred": false,
    "caption": "Coldshadow's Fantasy, Large 108x108: 3 players, 2 levels",
-   "drawHash": "c9231f2724e3756177dd56a2455a7e99c5868d95be02f8f756ecb931ca81217e",
+   "drawHash": "45e5f04bd19a2416550eccd0b61c8351d694e5bd57a0e75ce005055bcbf3c6df",
    "zones": 21,
    "lanes": 22,
    "portals": 4,
@@ -486,7 +486,7 @@
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/11",
    "seconds": 3.0,
-   "contentSha256": "c6abcf7a6d896550026c866b245b04821d5800a705427a297ef3c797b7734759",
+   "contentSha256": "6f2e904cfd2cabd52d8bc369d897998c865efc9bc26e919eba9cacca1ac62670",
    "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
@@ -499,7 +499,7 @@
    "water": null,
    "preferred": false,
    "caption": "Coldshadow's Fantasy, Medium 72x72: 2 players, 2 levels",
-   "drawHash": "c3dfac9f9f60c638023465ad7c457e736848481988dd4f47c7ce9e589f38f166",
+   "drawHash": "269b193b6be1cfeece836156b8225cee65b264a9adbea08fca04fef2da652757",
    "zones": 21,
    "lanes": 22,
    "portals": 5,
@@ -531,7 +531,7 @@
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/12",
    "seconds": 3.0,
-   "contentSha256": "1030018ee93706682fb0092aabe8ff6c691387f4fb1fc5ba4bae8378cc5a6118",
+   "contentSha256": "a17e07aed587bee82bbdc3812f927d6505e590c846f8dc0a3687411ee09b6a49",
    "legendSha256": "ee57b35171e6c00d5a8b287456d5e8ffd8caad903291a05a984d7afdfae935f0"
   },
   {
@@ -544,7 +544,7 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Coldshadow's Fantasy, Extra Large 144x144: 5 players, 2 levels, Lakes water",
-   "drawHash": "7831727184bbfceaea97127f70b303d48f78ff8766685f1652c70b859d73f7d0",
+   "drawHash": "740bf281341c9e5fd4d4202ac4dc46c5bb21ae4363ccb7854858c6533f863596",
    "zones": 21,
    "lanes": 22,
    "portals": 4,
@@ -566,18 +566,18 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "269fe4a6cbf6fbe313acaf5a981fe2e4a3df770aab59599ad3d7448fa90599b7"
+     "contentSha256": "98ea20f706df6ac8c615e7f769285471fe1b99d8be026186bd27b54ba20c74d9"
     },
     {
      "file": "13-underground.png",
      "label": "Underground",
-     "contentSha256": "96ec13abb3482360ad164be67612066ce64065a9b99b5bf590451b764805293b"
+     "contentSha256": "586fddfd65e81ba0014031681295c7a2d1f7236d8f6910738f5e5b11064ac670"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/coldshadows_fantasy/13",
    "seconds": 3.0,
-   "contentSha256": "048056d69bd48c8f79c70c7172ba515fc358df37b5d801fbc30018e07d00aada",
+   "contentSha256": "614b0bd0409c73b89494687c215c0953f99784374e8e852df14ec57ecf9f22f8",
    "legendSha256": "33aa13c4e3be487c3292c53e4b739a723072d7ced2c235cfa7193077aeb4012f"
   },
   {
@@ -590,7 +590,7 @@
    "water": "coastal",
    "preferred": false,
    "caption": "Coldshadow's Fantasy, Huge 180x180: 8 players, 2 levels, Coastal water",
-   "drawHash": "7138145aa5eba3fa9c467e445be4326b439f419304489e43024b87ee08ad9ce6",
+   "drawHash": "9b2044e5144402f2f736d5fdd4efa3f8f9a9ca6e160659a66ea272f6635ba061",
    "zones": 21,
    "lanes": 22,
    "portals": 1,

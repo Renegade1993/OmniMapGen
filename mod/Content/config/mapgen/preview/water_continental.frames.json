@@ -12,7 +12,7 @@
    "water": "continental",
    "preferred": true,
    "caption": "Continental, Medium 72x72: 4 players, 1 level",
-   "drawHash": "d1d57716638a2ec2785a57af76826cf754dfc6278fde51eb99bfdf9a21fa2bdc",
+   "drawHash": "2793d1b89e06ee90f2abde99cd25ff30946cb1f70d30db499703b97ec749d63c",
    "zones": 9,
    "lanes": 5,
    "portals": 1,
@@ -25,22 +25,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "6b8f56123a15f88b73d8a747f561a715c696934f2dfa22b89a5b76c6a2092b76"
+     "contentSha256": "3984edb0ed6a0cd68d8b26a37600b8b7595cb19195c88c9bf9dcdb77bfd3d2a0"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/water_continental/01",
    "seconds": 3.0,
-   "contentSha256": "b63fffa8161632d1bf7dc9a16fb31a9cbfd9a8fd035f83230d639c0880eca4e9",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "3cce4e0e991f781b3455d68e132ca1b718a3c242be49882f8f98078301bb7401",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 2,
@@ -52,9 +50,9 @@
    "water": "continental",
    "preferred": false,
    "caption": "Continental, Large 108x108: 4 players, 1 level",
-   "drawHash": "09fd4fe57cdf17559e6bbf508ea0fdac164d773fe4358cdec21394d4f8114bf3",
+   "drawHash": "86ba1e638e9fa2dbb9377ba6ad6ecd0e09a9a4ad533b3e9c211c2d829a00255a",
    "zones": 13,
-   "lanes": 7,
+   "lanes": 9,
    "portals": 1,
    "starts": 4,
    "towns": 8,
@@ -65,22 +63,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "81395b8e4852484bcee6382059f5ffb02693d97b91a8dec2f14ce627b568ad9c"
+     "contentSha256": "8b3bae9730b1cb007f3968f78b53ce57cff455541c2d72de2f6ad25efcfa7064"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/water_continental/02",
    "seconds": 3.0,
-   "contentSha256": "af04923db49acc6a20e6b5a17bd3912d8ad1677af283a6102bb0e6b2b5b6c512",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "ae7e2760947edfb0a17ae572b3b1467b50b6de322cd05f1fd9e1a32fa94c05b7",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 3,
@@ -92,9 +88,9 @@
    "water": "continental",
    "preferred": false,
    "caption": "Continental, Extra Large 144x144: 6 players, 1 level",
-   "drawHash": "f42bc9c854ffdb87a51257b265e0ee0ab13152603a0c4c8d603cf38263c8918c",
+   "drawHash": "0a5f5bcfc264b068399c4e0132de72e9a826c041c321b7db22b842fcc9662223",
    "zones": 20,
-   "lanes": 13,
+   "lanes": 17,
    "portals": 3,
    "starts": 6,
    "towns": 8,
@@ -105,22 +101,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "1b2b8b6884fb60d1ee26a0e1b5e9aebed404ab9d3ab87e7199b6c2e8c5a65cfe"
+     "contentSha256": "e6a32648d2713c5bb730da1d41387d312c87703d9787b3cf3049c2d3f91d4ce6"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/water_continental/03",
    "seconds": 3.0,
-   "contentSha256": "4b6de25c4d5f3625cb93d2f833faf3bd802a7d06283631b49060d53a7009d441",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "06b05bd7f8a66f180028f20021765f80ef06d7f116b29ea10d70850397875e20",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 4,
@@ -132,7 +126,7 @@
    "water": "continental",
    "preferred": false,
    "caption": "Continental, Huge 180x180: 8 players, 1 level",
-   "drawHash": "dc825537cdb17908a5d885081704e44c11be380289b39aa9742b076c9f057afc",
+   "drawHash": "7de88c939afeea51d1399d4001f6d94ecfe9df72928cc45e7c4d739fbccd7f39",
    "zones": 35,
    "lanes": 26,
    "portals": 8,
@@ -145,22 +139,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "37e7123c64a369527a57f328909f5cc7e4b06c71a3fb67431d0a3b96c17e3be8"
+     "contentSha256": "6953676ea73fea8969e8331d105f9508f64c015defdc85a306ada84e5640a8d3"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/water_continental/04",
    "seconds": 3.0,
-   "contentSha256": "4fdbd271b4101ace8ee22d36121bd5d471bf7119d24b1206d4a52f781fa487f2",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "0ce8f4b521e3358839427bf2ef24f92caf5e21bddbc6a75e0979da4fe4eafc26",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 5,
@@ -172,34 +164,33 @@
    "water": "continental",
    "preferred": false,
    "caption": "Continental, Extra Huge 216x216: 8 players, 1 level",
-   "drawHash": "a111b6979709431dde3b386ddfc8777f4b91d380daa9be8a552340ad7000829a",
+   "drawHash": "d48b03f9b105e37bc9b6f1af2fcbc4db82f46edb973a46aaa5a5e8f4b86130c3",
    "zones": 42,
-   "lanes": 35,
+   "lanes": 27,
    "portals": 4,
    "starts": 8,
    "towns": 14,
    "legend": [
     "Player start",
     "Neutral town",
+    "Passage",
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "fedd0b0824c28f479da6f6741281010957482d6bda7fd1b9afc22098915825cd"
+     "contentSha256": "0ad5ef5d900e20a211aa992ea4537d09715282c00ee569c0b7dfbf3e0dd94abd"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/water_continental/05",
    "seconds": 3.0,
-   "contentSha256": "fb1a00042e25a7e89bec93e003c55763bd7824f7d0e80eb502cc71aac72dd799",
-   "legendSha256": "273af26d6c1e2bedba0e29112f3c8e5447e50e6be99d9dce867899ac7aeda1c9"
+   "contentSha256": "32910ccf478fb504e48c70b88fb56a915d52fc365f46137c8bbf163de04b4e89",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 6,
@@ -211,35 +202,32 @@
    "water": "continental",
    "preferred": false,
    "caption": "Continental, Giant 252x252: 8 players, 1 level",
-   "drawHash": "1cdddecd5dbbfcd3d8f80ff64123a644b861a31025e8184587423ee6150027bb",
+   "drawHash": "c16980e360efd4efa9768fd2cb9a11f4662160b88d7a8a7cf250577e3b732cfd",
    "zones": 58,
-   "lanes": 32,
+   "lanes": 43,
    "portals": 2,
    "starts": 8,
    "towns": 19,
    "legend": [
     "Player start",
     "Neutral town",
-    "Passage",
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "4d613135d8ddc4e1aefe21a2d8d6bd513a58a9444be672013772eca2ed329ec1"
+     "contentSha256": "0fead2048b291b9808077098c67acd14ea8b229a4e0f621eee66bd1eb06bfe5f"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/water_continental/06",
    "seconds": 3.0,
-   "contentSha256": "ffaeb7e93d49b3f2e377df7f8834840b99bb9598492307d632dcb67cf0b13c55",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "bafb5d66499a27b70d6b655700d254e831f6651dbc41fddf7768c45a7bbf31d2",
+   "legendSha256": "51a5626fd3859cdfed0f19f778a6db9404d2216696a0b84994ecdcdee9b76c16"
   },
   {
    "order": 7,
@@ -251,7 +239,7 @@
    "water": "continental",
    "preferred": false,
    "caption": "Continental, Small 36x36: 2 players, 1 level",
-   "drawHash": "06f0a272d83966126293d83d40d1bf46b4b64a0b34ad3de143c455be28964980",
+   "drawHash": "eca2dda5217054abba40ee9c38d7d6b388927107b67ea7ea2dea7169a972b1f3",
    "zones": 4,
    "lanes": 3,
    "portals": 0,
@@ -287,7 +275,7 @@
    "water": "continental",
    "preferred": false,
    "caption": "Continental, Small 36x36: 4 players, 1 level",
-   "drawHash": "96e40e4c089fadd4cd83c276c268a68495cdb45f6a9415d978e64457f7b5e1d7",
+   "drawHash": "3f8ed269e15c5eb5a5033f18fdb90c7ead9b35ae85cc98195428d80a84fdc443",
    "zones": 6,
    "lanes": 3,
    "portals": 0,
@@ -304,13 +292,13 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "c41964578a66ecff2192cd49eb9bae570309ef3f41f13cc8d6a238e1b3804d77"
+     "contentSha256": "cd0b29694784238514ed584d9eaf85fa5ecdb1a7c678120de6591ca746d97c97"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/water_continental/08",
    "seconds": 3.0,
-   "contentSha256": "b5d2d4225a81b66514632e1faf42c7f26385fead89766768a833ae9d89aaa867",
+   "contentSha256": "999db3cfd72a243b30b2d414b3b8a6a43ec0f1235deb3df55e294a4e8626f4a5",
    "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
   },
   {
@@ -323,12 +311,12 @@
    "water": "continental",
    "preferred": false,
    "caption": "Continental, Medium 72x72: 2 players, 2 levels",
-   "drawHash": "083b69b0d56e17ce8c18a0151ea21f96c575a41fb7ce19fa0445290cc2bb7816",
+   "drawHash": "2edc179dfe5357ed7577d67837f485114981e5d3c36b6cca48f1d0ece9cf817a",
    "zones": 19,
-   "lanes": 18,
-   "portals": 6,
+   "lanes": 22,
+   "portals": 5,
    "starts": 2,
-   "towns": 6,
+   "towns": 7,
    "legend": [
     "Player start",
     "Neutral town",
@@ -336,27 +324,25 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "ea44f223b50bc9847acaa67e400fe1f4cd222a3f20b3c2ecdcb8845280e3384d"
+     "contentSha256": "fd02ccd4aea89f1c93327601513f39da17d88a3a33594089868aa223f4eb5dac"
     },
     {
      "file": "09-underground.png",
      "label": "Underground",
-     "contentSha256": "311a5b01c1bd3455958141820e03a7da102f7281d1ca4065e6c248af7197edcc"
+     "contentSha256": "d7ac941ab936d59d2922e2c638155d274b0956dfef8df144a03dc55cb7c4f2eb"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/water_continental/09",
    "seconds": 3.0,
-   "contentSha256": "d3f47cf0a2dee0b2ffd0dc12b8e92507c0790afd0161bcb70dd1ddc84fd67913",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "0d77f0920085c9a4898228f8919b49e4898b1eb490b159f8c5830ae5edc9e415",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 10,
@@ -368,9 +354,9 @@
    "water": "continental",
    "preferred": false,
    "caption": "Continental, Large 108x108: 6 players, 1 level",
-   "drawHash": "a6f2c207a609d44fc71a09f54f6b8cbe24e705a27978c946fd72e1556b6762b2",
+   "drawHash": "17f8ab6c92b9fe20905cc241ad98c4591b5fbf13f115268c4d0beb742e4347aa",
    "zones": 16,
-   "lanes": 9,
+   "lanes": 7,
    "portals": 2,
    "starts": 6,
    "towns": 8,
@@ -381,22 +367,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "cfe87659dfe92b3220b072f5c68f38e218a98eac41efa3ebcee30e9394f2e4fb"
+     "contentSha256": "6407b83ab3ac0993809d32288af8efbc281cf68a7df88c2e8b375f9ec81a74de"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/water_continental/10",
    "seconds": 3.0,
-   "contentSha256": "8fb664a526a3753c000eef469bbca539440f53c79ebeb916668fb0596d9ade5a",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "0f4d9db024ecfcdd851581db6697c832317fefcddb7c58abcc12a22bd02cd6b7",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 11,
@@ -408,9 +392,9 @@
    "water": "continental",
    "preferred": false,
    "caption": "Continental, Extra Large 144x144: 3 players, 2 levels",
-   "drawHash": "7f9fcc02154b8038a0e89cfa50f806ea3b2475dd52fac56d4c87b85591fb6303",
+   "drawHash": "71444b561d8c32801f99884e55a706e60c81ff3e77d2a45ba18b3d8e2492ce56",
    "zones": 72,
-   "lanes": 95,
+   "lanes": 101,
    "portals": 8,
    "starts": 3,
    "towns": 14,
@@ -420,27 +404,25 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "10539a0ed9f323981d9a5c6d00e9c5f724f5017362ca090861210831f6ede72e"
+     "contentSha256": "787176206bcbdfc7118fe533df57e547c73625edb46ebe9a83bb63ac57d5716f"
     },
     {
      "file": "11-underground.png",
      "label": "Underground",
-     "contentSha256": "1eb3359e00b21aaac02eaa6ecdf43704602d00cfa4c6283f77fde09030a18d83"
+     "contentSha256": "15b42cf169411c1dc4cd95aca67b06a0214e66c76ef184dee133b8276cdff491"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/water_continental/11",
    "seconds": 3.0,
-   "contentSha256": "b55e76b46741edcce93f37813a1bc0c2612462f46472478123c75c6110b1ac55",
-   "legendSha256": "273af26d6c1e2bedba0e29112f3c8e5447e50e6be99d9dce867899ac7aeda1c9"
+   "contentSha256": "a2da16a8e3d3ae8fcb327ac80f1613ae465a8fc4d115fad1b8be4d8ede0dadce",
+   "legendSha256": "51a5626fd3859cdfed0f19f778a6db9404d2216696a0b84994ecdcdee9b76c16"
   },
   {
    "order": 12,
@@ -452,9 +434,9 @@
    "water": "continental",
    "preferred": false,
    "caption": "Continental, Huge 180x180: 4 players, 1 level",
-   "drawHash": "7e6efa53d73e12ae7cab88db792e9c57bb443ec833f5605557be0c099d034fc8",
+   "drawHash": "14fb2ffaae3867d6424a8b80277b2398da159d3cea62d87adb40325931fa815c",
    "zones": 24,
-   "lanes": 20,
+   "lanes": 18,
    "portals": 4,
    "starts": 4,
    "towns": 10,
@@ -465,22 +447,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "4aa110555a7f2ca80e673913bf8d43d9eb4190b96539e1dcadac45ac68e18d33"
+     "contentSha256": "75063361f024e6886ccb343d328c5472c033d55a24f94128838647569c8f0caa"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/water_continental/12",
    "seconds": 3.0,
-   "contentSha256": "139933594d38f2094853f961210cdfb32d24808d22b58eccfdf5f52b2080afb2",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "66a8352a4d33f69c540230a9b2dd2bd3883efd5b63f1edd68271caa3cbf80a24",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

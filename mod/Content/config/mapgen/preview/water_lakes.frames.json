@@ -12,9 +12,9 @@
    "water": "lakes",
    "preferred": true,
    "caption": "Lakes, Medium 72x72: 4 players, 1 level",
-   "drawHash": "1c830ba3a00d49a0c81405763479690bc2bcaf51a22126367afdc121ed295171",
+   "drawHash": "12b5e30fd1233b868ddd9e901311fb6623177a1cf95faef4dcd74383833c71a7",
    "zones": 9,
-   "lanes": 3,
+   "lanes": 2,
    "portals": 0,
    "starts": 4,
    "towns": 5,
@@ -24,22 +24,20 @@
     "Passage",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "469ffaa2b6638d578e4dc35f70eeedf3735b14f784c332180323e3d464cef470"
+     "contentSha256": "b2330018aa8688908c77f5e263f1177456c23d3ad8fb9705b4e91a5fe10a2023"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/water_lakes/01",
    "seconds": 3.0,
-   "contentSha256": "541476eeab6d022b178cf958bedc66e2e809655e5b2a074f427b1353b9c1d87a",
-   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
+   "contentSha256": "940f7c920b161edb822c022d8e1f9349d0581f4b6ae5c446ce4c7fa172ed696f",
+   "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
    "order": 2,
@@ -51,9 +49,9 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Large 108x108: 4 players, 1 level",
-   "drawHash": "51f8f42b2b1d4f740396b6954941160384e5b019719083e83e908ac0696bcc91",
+   "drawHash": "a79ece9601df23fc783d458586213e64450ec9eda09d3eb7edca1297528bf12a",
    "zones": 16,
-   "lanes": 5,
+   "lanes": 8,
    "portals": 1,
    "starts": 4,
    "towns": 9,
@@ -64,22 +62,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "9e978d336527114bfe2179ace615c1f95c30e1e0872df24a92d60fe286ef18eb"
+     "contentSha256": "865b6e6d7bad6cb3318a44d9acab0f3ac640cc2cdf8323e10feb6c659458efb1"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/water_lakes/02",
    "seconds": 3.0,
-   "contentSha256": "8844ee511983db4328fa9b7647ea3dbd87b84ac1d1c8a6aca57c1b081b6ee653",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "1a325942d0f51a259f3288445d0224e30d3694be9e970704652e7f82231c2345",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 3,
@@ -91,7 +87,7 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Extra Large 144x144: 6 players, 1 level",
-   "drawHash": "413dbb2ce1581bdf95ddebb2d6c716404d631e46816ac98b1fc470ec1c5a473e",
+   "drawHash": "38209f30b0614d8806a1938daf23533b2c66bcbc4c4827805189562ed9567b55",
    "zones": 25,
    "lanes": 23,
    "portals": 7,
@@ -104,22 +100,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "e0834f5bb1cd0e7394180e1c91b3f09b6682ad2389b97071b1515514780f3a4b"
+     "contentSha256": "37b12acef65eae414f961ec4489f3ecc2e71d026b5f6754603933731b21a59b0"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/water_lakes/03",
    "seconds": 3.0,
-   "contentSha256": "47fcb0c41a9f35eabaea54cf1b25a87e4bc1bed21cae3f2579f2070162182341",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "f52c6dfaea9b355b73086d6af4c1a22cc1bef11ff8f72026bacda844997ce92e",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 4,
@@ -131,9 +125,9 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Huge 180x180: 8 players, 1 level",
-   "drawHash": "e60e02cc379b154b94045d5e34b8f504e9f020acc890e02653ec1b2e93fef63a",
+   "drawHash": "8bfd130cebabcfa66647f3170bca13d51e623c3880be112598681f1a352eee92",
    "zones": 39,
-   "lanes": 12,
+   "lanes": 18,
    "portals": 2,
    "starts": 8,
    "towns": 11,
@@ -144,22 +138,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "6c5e5bd06b91d840bfc60530ea1839ba7c0b72a427d5f7ed2ae68a08dc2310fe"
+     "contentSha256": "2c8d4377d90db989467b9cc6a6d385fa9bff06cd13894337f03104b7058e161d"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/water_lakes/04",
    "seconds": 3.0,
-   "contentSha256": "49dbbb76b684cff2d6e26b318870acce6a288037321b6b6dbb41113986f95858",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "b06e5d682d9412528e468631b79bad54d0934f31e9abc1a8cdee0c256f94f4f9",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 5,
@@ -171,9 +163,9 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Extra Huge 216x216: 8 players, 1 level",
-   "drawHash": "51d4078046ca4b4868a699b357468371ab995e5462715e802f3048ad599eb4a8",
+   "drawHash": "1878da192b53f6292914b0f7349bc469bca6269599dd66920a14074b6c46aded",
    "zones": 50,
-   "lanes": 23,
+   "lanes": 24,
    "portals": 2,
    "starts": 8,
    "towns": 14,
@@ -184,22 +176,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "db4cec991a13ccd9cc504daa819b81e896b869380c3c1bdfe91821d387a59bee"
+     "contentSha256": "b8351a8bb79bbc2f7972bda8d50df7ae1e96fe20cff48be500d94e36ba905a56"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/water_lakes/05",
    "seconds": 3.0,
-   "contentSha256": "321a23e182949449aa9d764e979eb81f2c3309e872c1fc213fc0ccae7efbeda5",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "5b05f7588cf3f1d19869f5bf7c5beb04ff15abfbf19e7dc59c9bfed1da90e2f9",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 6,
@@ -211,9 +201,9 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Giant 252x252: 8 players, 1 level",
-   "drawHash": "8f31c72b2b9bf0c21c2f804f9fab17cfa4372b1b4e7cdd775db9ce1a34fa0e6a",
+   "drawHash": "d50373c9d17ad8e5b772d8a972830ebbc963f9adc80ec103cb4dbbb813fcc6d6",
    "zones": 57,
-   "lanes": 28,
+   "lanes": 27,
    "portals": 0,
    "starts": 8,
    "towns": 21,
@@ -223,22 +213,20 @@
     "Passage",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "d94b97ce8816c07878a900b9d2f2c3077483c6868f81e13a74f009f184a0a607"
+     "contentSha256": "2069a21a3f1ef8b2a291c830ae8fbd416f88640ad6268a94fa6a057386a2d63e"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/water_lakes/06",
    "seconds": 3.0,
-   "contentSha256": "65c28e19c335b77503a8b5c546773414a42efdc19341ecf61e4cfb951b5bb1da",
-   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
+   "contentSha256": "aaf7eda454b666082bd31bc4e7dae798fec6af63609671e9b20a05d3c89b5fc2",
+   "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
    "order": 7,
@@ -250,7 +238,7 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Small 36x36: 2 players, 1 level",
-   "drawHash": "e4df9cfa0740d95f8e02304e7829dd0c7de0d54fc36d87bf50f4fafaf8c72eb2",
+   "drawHash": "7ab3667a11bcf68df8750fff099710b853976cf0630ac47502a5403b69936c2e",
    "zones": 4,
    "lanes": 1,
    "portals": 0,
@@ -286,7 +274,7 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Small 36x36: 4 players, 1 level",
-   "drawHash": "10673366cf0e67c18499f4609b428d74171dbb1793570b379968131dfc41e497",
+   "drawHash": "d8201227991afee2498b2789d278f8df56766d8d6d72809af32403114a5b034d",
    "zones": 6,
    "lanes": 4,
    "portals": 0,
@@ -322,12 +310,12 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Medium 72x72: 2 players, 2 levels",
-   "drawHash": "befc55a8a5c86f2b7bb913395b377409446eebd434998845e0e03ae6d0c14d75",
+   "drawHash": "296006bf3a343151d3091cd2a11ef3f10f03d132f3d86777ce0f43b3c911a72d",
    "zones": 21,
-   "lanes": 16,
-   "portals": 4,
+   "lanes": 23,
+   "portals": 6,
    "starts": 2,
-   "towns": 6,
+   "towns": 7,
    "legend": [
     "Player start",
     "Neutral town",
@@ -335,27 +323,25 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "840476ab16065f11b6c0573c9670a65fd1dd5f82b723d29f000ac4ee62eb2c87"
+     "contentSha256": "8b170683f0979bde98a3d9c921c3ebd6036bfbb686ae8a14f6e68f8fca4db976"
     },
     {
      "file": "09-underground.png",
      "label": "Underground",
-     "contentSha256": "ecbdf53022ff45a356169cef14c1a2e9782481bc32f07d4fba93e0db7f8ca7bf"
+     "contentSha256": "7e28a616035f6cd05e9e4e792f25ed52e8139efdb5d49d4865b607005b22234c"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/water_lakes/09",
    "seconds": 3.0,
-   "contentSha256": "5b10ea9acd2c8a250056fd60c89518016aff35e7e9fee9ccfb5ef35dac1c4fd7",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "0254ad402b9d3fe9d2454a20b941186bed651d5f4e6bf118355b49d0848ebee3",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 10,
@@ -367,7 +353,7 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Large 108x108: 6 players, 1 level",
-   "drawHash": "321aeb96f9ed9ead1b89afa47886fd068bd32f3c73df418c113183715447e4d4",
+   "drawHash": "d4626cfaa51a7b99d67be1df8023039f06caec11ae3b67a43e4e9ad6c62f8f35",
    "zones": 17,
    "lanes": 9,
    "portals": 1,
@@ -380,22 +366,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "3b8ab511ea09bb7ec50b427be215f630da8997d44aa15357fadb79d7df241d41"
+     "contentSha256": "449810202b3c9873e09198d9bc84995cc524b50b0bdea3ca2f65ac24c2a3dbf0"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/water_lakes/10",
    "seconds": 3.0,
-   "contentSha256": "7a5c5e4e82c5a9e1b5672286cd86d052dd02f8a8ebb1d4589a87b3500d3091c2",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "7dcdc9eb97669fbc48a32278af9cb9dc5cd94bb52085e9a35c0d638cf2ccd6e6",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 11,
@@ -407,9 +391,9 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Extra Large 144x144: 3 players, 2 levels",
-   "drawHash": "11a932b19b886258c2ef8f289da11acf9206f0afd4b1aa69bf2b7a04bfae27eb",
+   "drawHash": "0e516258815b954c1dfa66b30218de838519eeee73306113162fa3d6edbd7020",
    "zones": 74,
-   "lanes": 91,
+   "lanes": 98,
    "portals": 8,
    "starts": 3,
    "towns": 16,
@@ -419,27 +403,25 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "91c722520b567df3e12fd8ed78c0c5aae9976af11dd02d64c28c41c8f0c262e2"
+     "contentSha256": "cff2d150b1935fe91873eaba33d2696b265a3220e0bf2cf16325c528bc57ee0f"
     },
     {
      "file": "11-underground.png",
      "label": "Underground",
-     "contentSha256": "37a578c7779ebe3878c1a49f840c4a088d1bb977036d93920ff5ce50514b302c"
+     "contentSha256": "15e91a8ca416df4be39021284c28d042c7950dc6f79e59d8789dbeccd8246128"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/water_lakes/11",
    "seconds": 3.0,
-   "contentSha256": "62dd7984c1dcced907c11ce53a340cc8182a6c7a8fd1bb5c1ebbf464fcea7545",
-   "legendSha256": "273af26d6c1e2bedba0e29112f3c8e5447e50e6be99d9dce867899ac7aeda1c9"
+   "contentSha256": "146dfb92f215ee75249cc6ebd75ed2f833e06d051319b49ffa07a78bbda0f5c8",
+   "legendSha256": "51a5626fd3859cdfed0f19f778a6db9404d2216696a0b84994ecdcdee9b76c16"
   },
   {
    "order": 12,
@@ -451,9 +433,9 @@
    "water": "lakes",
    "preferred": false,
    "caption": "Lakes, Huge 180x180: 4 players, 1 level",
-   "drawHash": "028013f039626f2b19a7105f5137f6a61fb050b377d126baac4a813747d6037c",
+   "drawHash": "d5c3b80ceb2f6705418f25b177279daadeeed06727e7f2dbab4208e813080761",
    "zones": 35,
-   "lanes": 18,
+   "lanes": 20,
    "portals": 6,
    "starts": 4,
    "towns": 10,
@@ -464,22 +446,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "22b2718427860d7de1b95e7cceb04c1817fedb44177f05aa19176ab12a6331d0"
+     "contentSha256": "3e3c6734176f201e191e77a36662fdfc9067cd36b2126eda965521f6022ac068"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/water_lakes/12",
    "seconds": 3.0,
-   "contentSha256": "367f4a97287147254bb37a358a9b83464f2132257c165657142e1a556ca5a47c",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "d670937fbc226d257648338cdbd8bdfbd5bee5cfd59bfa05083697478d9530c2",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"

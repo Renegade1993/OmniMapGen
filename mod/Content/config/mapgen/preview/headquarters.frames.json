@@ -232,7 +232,7 @@
    "water": null,
    "preferred": true,
    "caption": "Headquarters, Medium 72x72: 7 players, 1 level",
-   "drawHash": "8127ea64f580ef631f91424ad7321b084141161a6fbc033ef06955fdbb3c8724",
+   "drawHash": "fe07cddf4043ca449a6fffb7bef9df3a5fa110093e7e35e151a57baaef61382e",
    "zones": 9,
    "lanes": 15,
    "portals": 5,
@@ -250,13 +250,13 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "14db61690b9fb244cab77daa336b4d8b36c990c28b179a528024c17e5db8da52"
+     "contentSha256": "51722998546ff0b00c425b724e09358eefd7fbbca0e53b41ff8a20ddc39003a0"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/headquarters/07",
    "seconds": 3.0,
-   "contentSha256": "0bdfb01a98d8cf5f54faf31dd0b848a5d8505ac77e94d2a4b7778c394c9df62d",
+   "contentSha256": "9c850e9e971a23193977fa7769b6c98fc9e4887e31e79c5fc02c3eb3a4b208a0",
    "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
@@ -269,7 +269,7 @@
    "water": null,
    "preferred": false,
    "caption": "Headquarters, Small 36x36: 2 players, 1 level",
-   "drawHash": "b97ca51d65c7f444b2f5ee04fa0f4a665456a4943028a4cec66c598bd6bd2ada",
+   "drawHash": "648a5400228e7c90918efe96c8711f41eabb5d424a701130ea514645f9cf9877",
    "zones": 6,
    "lanes": 9,
    "portals": 1,
@@ -288,13 +288,13 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "398fb6eb09b1556eefe8822d0c3bfc96601edc75f11fbbf9dbec2bab2bda0750"
+     "contentSha256": "1bbc66be462e8a8aad79add6ffe06a3d9c73bcf94610edac03edc016735360a0"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/headquarters/08",
    "seconds": 3.0,
-   "contentSha256": "9e832592ffb7796278bd9f65719d3b0650b55ae708f6f51409274f4662f54e3c",
+   "contentSha256": "403e827be8d043dfbca2b5dd7dd61aa268143c0a45c4625bc7904406760782a9",
    "legendSha256": "99d1f9852d9d051c533f7e5d9ad15bcb7b24eeba7740844e84614406da9cf5a9"
   },
   {
@@ -307,7 +307,7 @@
    "water": null,
    "preferred": false,
    "caption": "Headquarters, Medium 72x72: 4 players, 2 levels",
-   "drawHash": "9f95b37fadcbb5e148f9988c353b928145fee604c14828f8060e5926bb100120",
+   "drawHash": "3829fb5ac0f9ee4cba56081f8ec85ec34e75ca9ce4bdc87a9b5028f9b7b98999",
    "zones": 9,
    "lanes": 15,
    "portals": 6,
@@ -327,18 +327,18 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "7a3f6ff3674f08e182ae406ebac7dfbfe18c8bbd6453f04dae566d8d6d1b58d3"
+     "contentSha256": "820c40b8b01671a61208ab0e585fded15a415d64ab502b30e1f42868924bd67c"
     },
     {
      "file": "09-underground.png",
      "label": "Underground",
-     "contentSha256": "b85163a6fba802b7474887b4f0008efd1b993665a28e51a267a168f8c66efb5d"
+     "contentSha256": "09b1a7a248dd8f3fb935c0e87251dc822b8ceb5c48b51cdd0c66bbe337a90e33"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/headquarters/09",
    "seconds": 3.0,
-   "contentSha256": "9b3c7f5841dc0cf25e1b7ff0a1d24f5596c4513155014f00f09f5104f43455ba",
+   "contentSha256": "c2dfda0bedb0a1b691690c570b8c35052d0360a38289c5757b0298b12d6e9497",
    "legendSha256": "91baae352ab0174c17fe04d5f1fd7d12095db47877eb15c3dbc6ce96f8ca435b"
   },
   {
@@ -389,7 +389,7 @@
    "water": "coastal",
    "preferred": false,
    "caption": "Headquarters, Extra Large 144x144: 5 players, 2 levels, Coastal water",
-   "drawHash": "020e63cd78e9d815c6098c3325a69bbf6cdd9d603fd5939f6ae05ef50036d7e0",
+   "drawHash": "25a9b9ae42a07528b03a047aebfb65cefdad6e17010c821390d3616e2646c31a",
    "zones": 9,
    "lanes": 15,
    "portals": 3,
@@ -410,18 +410,18 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "3ef926ca12a129961025a0b72c86cd47f691be4e2b19fe0f644cf5a5bfc60cd8"
+     "contentSha256": "9b1a1f760eab0101a81d9599017f1bdf78c772c25f3ff3a1ebbde50037c91f49"
     },
     {
      "file": "11-underground.png",
      "label": "Underground",
-     "contentSha256": "f995a036d0d9243948f78c7e6c821226f51e22e35691a6c4401dc97482da9946"
+     "contentSha256": "516948459cd1b6de35f591195784972a2a5e665a9fc8b06b55aec66cf7c5636c"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/headquarters/11",
    "seconds": 3.0,
-   "contentSha256": "8b4b1727eb01204efc667027b731758b2203ca9a40cc7bcd8769338c47d59965",
+   "contentSha256": "8ddbaab58f82ec15121260f9eeb1b012410cb8896f937472f93d09712347fd59",
    "legendSha256": "cb73f6f44cad200c866e8f2c070c4edae063542414040ec22cb002d9fd90818b"
   },
   {
@@ -472,7 +472,7 @@
    "water": null,
    "preferred": false,
    "caption": "Headquarters, Giant 252x252: 2 players, 2 levels",
-   "drawHash": "3a19c5ecaf5e2735779f358d3c6089fab731a849f59eee57cff1128994f135f8",
+   "drawHash": "1532289cc632243781766fb954ec7f0aad292f44428380b9d59c5a01db6d6d13",
    "zones": 9,
    "lanes": 15,
    "portals": 3,
@@ -492,18 +492,18 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "f9fc4b0b0a735aa4cfca99553b443175b2726b477111c8686cd96d606c4230db"
+     "contentSha256": "2bd0e0960dee5c79a5362f5b80a8a005e7de1ec34420df5903350f95713837fd"
     },
     {
      "file": "13-underground.png",
      "label": "Underground",
-     "contentSha256": "525de7f1e41a81c5ce1274827a220812fa043df3aa6b9645a5a34849858c13b2"
+     "contentSha256": "8aa765b421a71e24d9fccfecde6fbdbf626a478a657e6955542ede13c8cfdacb"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/headquarters/13",
    "seconds": 3.0,
-   "contentSha256": "aeea6fecf2dd0280f104fce0adbade5f47c4187cef9f4c829ab9f646f26dd6d2",
+   "contentSha256": "4f84133be0f14ba0e7afee2861a44ee168169886314e754266b02ff5a2e2e8e5",
    "legendSha256": "91baae352ab0174c17fe04d5f1fd7d12095db47877eb15c3dbc6ce96f8ca435b"
   },
   {
@@ -554,7 +554,7 @@
    "water": null,
    "preferred": false,
    "caption": "Headquarters, Large 108x108: 7 players, 2 levels",
-   "drawHash": "a7ae6abc542222db92a9223f396e4894970453401ae2e196d1bd0d01c70c8b84",
+   "drawHash": "231cfe359e77370ca90e30c888e356437b1ac98d81faf77b61adca7bbeafad51",
    "zones": 9,
    "lanes": 15,
    "portals": 4,
@@ -573,18 +573,18 @@
     {
      "file": "15-surface.png",
      "label": "Surface",
-     "contentSha256": "47f1805b0065fe7c87a4c3b51931a8f9ad45946db82ac7363c87ccedf8c67e6b"
+     "contentSha256": "e63ecdd810e5302a76877b69ff71f4e98859d8583387a712a57867642f9a2915"
     },
     {
      "file": "15-underground.png",
      "label": "Underground",
-     "contentSha256": "ee8aceaaa2949672a8490c13471dfd158372e4840bbbdc1e9fe61e3b485233a8"
+     "contentSha256": "cf17f3e531a67a572e082721cd93e9c0abd622d62f4736f64409a7cdc4df7cbd"
     }
    ],
    "legendFile": "15-legend.png",
    "path": "mapgen/preview/headquarters/15",
    "seconds": 3.0,
-   "contentSha256": "c3eba50b2e492783cff9e4d06dac85ccfe6b61fe0ba5af00d3d061cfaa0874de",
+   "contentSha256": "d8d959142ccfbe340438b3d47c9b36a358a3470dd7d439821495964df5861bf1",
    "legendSha256": "82323e78359a5d10dab0d04ff6449ed5045c3d1b616eca26520984b85436476c"
   }
  ],

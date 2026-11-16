@@ -7,6 +7,6 @@
  "levels": 1,
  "players": 4,
  "water": "continental",
- "contentSha256": "b63fffa8161632d1bf7dc9a16fb31a9cbfd9a8fd035f83230d639c0880eca4e9",
+ "contentSha256": "3cce4e0e991f781b3455d68e132ca1b718a3c242be49882f8f98078301bb7401",
  "note": "frame 1 of water_continental.frames.json (the preferred setup)"
 }

@@ -12,9 +12,9 @@
    "water": "mediterranean",
    "preferred": true,
    "caption": "Mediterranean, Medium 72x72: 4 players, 1 level",
-   "drawHash": "3053a5d83730940b30ae971c7c9891e43e8d8ca667014162b5ca8cf8a451bbce",
+   "drawHash": "1551c1e4611216f77dc236b63e23c6b8c246b4b4de573c3e59fed93aaeee976f",
    "zones": 9,
-   "lanes": 3,
+   "lanes": 2,
    "portals": 0,
    "starts": 4,
    "towns": 5,
@@ -24,22 +24,20 @@
     "Passage",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "83c940ecf37ed967535fd1979e778c18ce8b150cb3c59c35797e7a7716c711c0"
+     "contentSha256": "f7ee3f67ea6848d29698067f50cacf2d992ea0942ad3c16e1713e3531f5f38b3"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/water_mediterranean/01",
    "seconds": 3.0,
-   "contentSha256": "d8a7452e9b416889b63a8d160425547c808f832a2e86db7436046068cf2466ea",
-   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
+   "contentSha256": "54f249387de1ef8bba45ce67d98aa62d3748e9f996b79392d0f055048f5498a1",
+   "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
    "order": 2,
@@ -51,9 +49,9 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Large 108x108: 4 players, 1 level",
-   "drawHash": "3498c80e01301a9c5d037a5d1cd8ff95b466aa11c8d86233bd04237d662c16d1",
+   "drawHash": "4c2dc55ad133b5fdeab5b0def1e41866367791a0620489d12b4ddcd731472c7e",
    "zones": 14,
-   "lanes": 3,
+   "lanes": 4,
    "portals": 0,
    "starts": 4,
    "towns": 8,
@@ -63,22 +61,20 @@
     "Passage",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "6d8b40a0bf15a48cfc3a475230160157e1be11a0a35825e6ee906b914b276590"
+     "contentSha256": "830690fa9880e1567d4714603eb428ef8c73f54bcd539544a7575ceb71fbf045"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/water_mediterranean/02",
    "seconds": 3.0,
-   "contentSha256": "f69898517ecc5dafb6a6e89a21e5c2769a911ba272c397ebc0f86a1249e7971e",
-   "legendSha256": "503fa3ad77950e3dc79dfcde11ddf85bac7b1511e425dda5cf4201b31fbd6596"
+   "contentSha256": "768d69aff9d8bfd297c03e215f12d49f5dd1fbcfb9d5c198603207715ebe06b9",
+   "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
    "order": 3,
@@ -90,9 +86,9 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Extra Large 144x144: 6 players, 1 level",
-   "drawHash": "0140379d683729bb55f2a246897b3962c8c357dbd1e938f4b6f4d9f8e9899716",
+   "drawHash": "40ce3429278a8e9ff73ec6b82aa5e45299e7d46a7ba84505347becfc75edd0d5",
    "zones": 23,
-   "lanes": 11,
+   "lanes": 12,
    "portals": 2,
    "starts": 6,
    "towns": 8,
@@ -103,22 +99,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "07bf09f59fc46cb2f249b8c4eb369cb2caeb80fe918cb9c1bfcdffbf0405d7fa"
+     "contentSha256": "5d5185fdbb1e000fca9e5a089dc2976b9667b1d4f9060efea82d5b3ba4a87c9a"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/water_mediterranean/03",
    "seconds": 3.0,
-   "contentSha256": "0ff849951ccbcc91091a748ca42913f8bf2f00331566a8bae63479a746be205a",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "8e10fb34704afc408df87d6dad73c484c9c4b168dc49254d53f38c091b9db561",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 4,
@@ -130,9 +124,9 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Huge 180x180: 8 players, 1 level",
-   "drawHash": "7de7be896d21dcf866e5bce7d8f6dbfbc390c8c25286c97452cbaeeba691a8bc",
+   "drawHash": "895134af3070a7f1637945e13131e2dce3fde7b3c49ef256e476eeea5fdc948d",
    "zones": 31,
-   "lanes": 17,
+   "lanes": 16,
    "portals": 2,
    "starts": 8,
    "towns": 10,
@@ -143,22 +137,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "2ded3dc18cf1cb6fe808830adfccd0c2a4d6a7982fb59e86e61ad0c61fff1fb7"
+     "contentSha256": "d0b65c7572eed71267b2f8b567868879cef7c3cda611d665c7df04c3562153ec"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/water_mediterranean/04",
    "seconds": 3.0,
-   "contentSha256": "913b8620b5ca78bd31df290571e18a10dba923ec5eb714dbba0fcb4647b49a41",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "4fce5a5af91606b1bb4a2ad870eec339f16eed08959715890ed0718424911e54",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 5,
@@ -170,7 +162,7 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Extra Huge 216x216: 8 players, 1 level",
-   "drawHash": "4a66173a8ae7f178bc93b6d1b70e252d8edc0403e75586e02db29ae5a8b90475",
+   "drawHash": "ee161b4cf3c03c63652ff59fb1e04cce9aeff134bc0fd12688c181b27cbf111e",
    "zones": 40,
    "lanes": 17,
    "portals": 1,
@@ -183,22 +175,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "45b9f2a12f4765f05adad6d913d42e0e53f20dc4a927755ba07afd78c3dc0d31"
+     "contentSha256": "875c5b7c83d54461db84cad2198569e1e405e40fda07de8630b6cdec0a3f8197"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/water_mediterranean/05",
    "seconds": 3.0,
-   "contentSha256": "1ea392b9cd519a5385bc9bbdff57adeb21ef5e6c080ecdff088389ee066674c2",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "d658937fffb1fedabac12c899f887f98947aa00c784189db2f93ace3cfd47ec2",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 6,
@@ -210,35 +200,32 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Giant 252x252: 8 players, 1 level",
-   "drawHash": "176eee958ea4be3b47ae0e54ddc38f3e30c3da7229d270a085aaf9563a2edb23",
+   "drawHash": "bb395105e522de7b37822ac7bdb6bf9e9629bc696c72d959328d112b4c9f8a21",
    "zones": 59,
-   "lanes": 24,
+   "lanes": 32,
    "portals": 1,
    "starts": 8,
    "towns": 19,
    "legend": [
     "Player start",
     "Neutral town",
-    "Passage",
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "1c1a1e9780e218037f764c6482b14a273d010b611c47fe74898c1b0fcd10c752"
+     "contentSha256": "02c461c22c23c439629de1204f53e7c392b554f10d933c6b218c445875415448"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/water_mediterranean/06",
    "seconds": 3.0,
-   "contentSha256": "87f00df2adf661e594dff5990f76db006f72dfb19904ad08b44cf50927f33238",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "d5da5b5ff780413dfd195ee4cd471c5e9c895685688044226866d3795046d274",
+   "legendSha256": "51a5626fd3859cdfed0f19f778a6db9404d2216696a0b84994ecdcdee9b76c16"
   },
   {
    "order": 7,
@@ -250,7 +237,7 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Small 36x36: 2 players, 1 level",
-   "drawHash": "4f5a33959223f18f5fe44b687a00bab3ac0a4e3820a1cf5f9eb159339ffedf1c",
+   "drawHash": "f293b6cf0975e7a66ddbf8aa8bb1b850221a53e4aff6c822d9fdc8fd9ea39aa0",
    "zones": 4,
    "lanes": 0,
    "portals": 0,
@@ -285,7 +272,7 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Small 36x36: 4 players, 1 level",
-   "drawHash": "7588fea33a73596df9ad7daa72f967f2decdf63496e591a76b02c072b9234040",
+   "drawHash": "d81eabb60703d4809688bed772dd64e98b26b5cd52e057bcfc2600a555adcda0",
    "zones": 6,
    "lanes": 0,
    "portals": 0,
@@ -320,12 +307,12 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Medium 72x72: 2 players, 2 levels",
-   "drawHash": "d21ab1f49e4a6cefb8225ba9ee5a99b13ad2a5f280664e5144918cac362491e5",
+   "drawHash": "88901f5846234a8e26d32dae14d9550ea018271fde890f99eb35f64f7e73663d",
    "zones": 20,
-   "lanes": 15,
+   "lanes": 21,
    "portals": 5,
    "starts": 2,
-   "towns": 6,
+   "towns": 7,
    "legend": [
     "Player start",
     "Neutral town",
@@ -333,27 +320,25 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "a1fe06a119ccccd042a7b7bb2d4dc08f8d907bcb06414a120d325984422064ee"
+     "contentSha256": "011f3dd67c92f1080130cecc4c7d2ffad55e3c88305c725ad225ebe957116e27"
     },
     {
      "file": "09-underground.png",
      "label": "Underground",
-     "contentSha256": "cd56b39a76f05ff1c22435864ae37a79cc1364e78770f1280dbf86b1f13ef20b"
+     "contentSha256": "d7ac941ab936d59d2922e2c638155d274b0956dfef8df144a03dc55cb7c4f2eb"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/water_mediterranean/09",
    "seconds": 3.0,
-   "contentSha256": "a714eedf47c0efe498aeffc35fdce5eb0071cbf4596480a870ef59a0e4f3fbbe",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "98c405a7698e4373b25f702afa84859a7b3a080b560a08d420deef85590487e7",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 10,
@@ -365,9 +350,9 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Large 108x108: 6 players, 1 level",
-   "drawHash": "57008f04eb175f250fda2c761230b4ae75bdc0ae6825c03cc3ded63758128792",
+   "drawHash": "a74d9d07d8dd7133683d64dc681b7461c0243272ef43c1b1d38752c45996f1eb",
    "zones": 15,
-   "lanes": 6,
+   "lanes": 5,
    "portals": 1,
    "starts": 6,
    "towns": 8,
@@ -378,22 +363,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "82ae309de3bae191882058def11b5acfd8ef38c1c5b17841001e1f97d18e9c76"
+     "contentSha256": "e93837d585b0984c07649ba12eeff6dee1e0a623831e351b67e844a80fc99621"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/water_mediterranean/10",
    "seconds": 3.0,
-   "contentSha256": "04206e4864c903bb2d5985ed0230adb70b71dde8e492c62757d3371477aa0a63",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "ddc9e2395212e4ad4429be77131d222db239a85c6fca35115f591ac9f952db62",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 11,
@@ -405,39 +388,37 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Extra Large 144x144: 3 players, 2 levels",
-   "drawHash": "e2d9d9970e51dddba5a4d383f1b9a653e8391268a587203b4e716862ef3acdba",
+   "drawHash": "da337fdd5453f8ae92a2c179524768fb3cf591cb39260e9726751e1cf0e2ed5d",
    "zones": 70,
-   "lanes": 91,
-   "portals": 7,
+   "lanes": 99,
+   "portals": 8,
    "starts": 3,
-   "towns": 15,
+   "towns": 14,
    "legend": [
     "Player start",
     "Neutral town",
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "eb5af7356ab95918187dcca3559d4bfc1d6c24a673cade9ca0d486f3695d0710"
+     "contentSha256": "d47dd569d1bcc4a65b6b56f802c893ec3cd193fca494cd46db1ea7d16122d795"
     },
     {
      "file": "11-underground.png",
      "label": "Underground",
-     "contentSha256": "77d30f3ff6f2f7ff13df9d337769d3825d661fabc7929ba11b9ec70fad2c4dc6"
+     "contentSha256": "6aff660627153e36722c73d94f7caf370130f5d3d9a3dc2d517e5c5f569eff52"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/water_mediterranean/11",
    "seconds": 3.0,
-   "contentSha256": "4e5ebee1a3ed9936fbffd20a7b43139c35800fc058f431811731fb04f822099c",
-   "legendSha256": "273af26d6c1e2bedba0e29112f3c8e5447e50e6be99d9dce867899ac7aeda1c9"
+   "contentSha256": "1417b6bf8c6ba1351c85128beb36022ce62d46a4cb09a3bdd0be54409703afa2",
+   "legendSha256": "51a5626fd3859cdfed0f19f778a6db9404d2216696a0b84994ecdcdee9b76c16"
   },
   {
    "order": 12,
@@ -449,7 +430,7 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Mediterranean, Huge 180x180: 4 players, 1 level",
-   "drawHash": "08d15adc6294b794820ee881689b7cf3d53847fca3649278677b30560ddb519b",
+   "drawHash": "a0b799ea843a038cd5014613a020efafa69f9ca899fa57085f461fd0016778f9",
    "zones": 30,
    "lanes": 15,
    "portals": 1,
@@ -462,22 +443,20 @@
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
-    "Town zone",
-    "Open land",
     "Water"
    ],
    "layers": [
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "1a81603e7489817395599c9a28e87dfc1f6b479c491a2afdcd5c52900a2d2bde"
+     "contentSha256": "a0e76400991e37b278b78142690d6893cdb10d2a888c6d8b05f9204cc6905edb"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/water_mediterranean/12",
    "seconds": 3.0,
-   "contentSha256": "39ebea5ede26ef22ecc1d606d6e457cf57715b864addac8e30dbe1a031976f3e",
-   "legendSha256": "0bfa7e8f424e825029898f907ad58a5ed9952dc39948c8f3e853796e061da7aa"
+   "contentSha256": "db3c94b0108ebdb4f81e245b9918ee49fbf45902a345be7af9603e5ccd4944d2",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   }
  ],
  "note": "frame 1 is the template's preferred setup; every frame is one real generator run; tools/preview/gallery.py"
