@@ -404,10 +404,9 @@ function pandoraBoxValue(o) {
 	return undefined;
 }
 /**
- * S253, guards by value on a template map: a pile's guard is sized on the pile (engineGuard), but our objects are not piles, so it stands by a placed
- * object of the pile's kind. The kind rank put a 6,000 pile's guard beside the dearest box left; a dear target now takes a pile guard only when its own value
- * (a Pandora's box by its reward, pandoraBoxValue, else spentValue) is within TOO_DEAR times the pile's; a dear target no pile guard fits gets a guard sized on
- * its own value in the dear-loot pass. VMAPGEN_GUARD_BY_VALUE=0 is the earlier matching.
+ * S253, guards by value on a template map: a stack beside a dear pile (relic, major or plain artifact, Pandora's box) guards it only when its strength is at least GUARD_FIT of the pile's
+ * value (guardFitter; a Pandora's box is valued by its reward, pandoraBoxValue, else spentValue): plan.js guardDearLoot no longer counts a mine's 2,500 stack as the guard of a 24,000 box,
+ * the pile moves into a fitting stack's ring or gets a guard sized on its own value, and the dear-loot pass below sizes its guard on targetValue. VMAPGEN_GUARD_BY_VALUE=0 is the earlier rule.
  */
 const GUARD_BY_VALUE = process.env.VMAPGEN_GUARD_BY_VALUE !== '0';
 const TOO_DEAR = Number(process.env.VMAPGEN_TOO_DEAR) || 1.5;
@@ -5051,10 +5050,6 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 					for (let q = rankNext; q < rankOrder.length && cand.length < SEAL_LOOK; q++) {
 						const j = rankOrder[q];
 						if (usedTarget.has(j) || pocketed.has(byPiles[j].entry)) continue;
-						// S253 (K 2026-11-15, "high-tier pandoras ... without much fight"; the lead 2026-11-16: match pile guards to targets by value): a dear target
-						// (relic, major, plain artifact, Pandora's box) worth more than TOO_DEAR times the pile this guard was sized on is left to the dear-loot pass
-						// below, which sizes its guard on its own value (a 24,000 experience box stood beside a 4,050 stack, the guard of a pile worth far less). VMAPGEN_GUARD_BY_VALUE=0 off.
-						if (GUARD_BY_VALUE && pile && pile.value > 0 && DEAR_TARGET.test(byPiles[j].entry.type) && targetValue(byPiles[j].entry) > TOO_DEAR * pile.value) continue;
 						if (firstRank === null) firstRank = rankOf(j);
 						else if (process.env.VMAPGEN_SEAL_SAME_RANK !== '0' && rankOf(j) !== firstRank) break;
 						cand.push(j);
