@@ -403,6 +403,25 @@ function pandoraBoxValue(o) {
 	if (r.heroExperience) return r.heroExperience * 1.2;
 	return undefined;
 }
+/**
+ * S253, guards by value on a template map: a stack beside a dear pile (relic, major or plain artifact, Pandora's box) guards it only when its strength is at least GUARD_FIT of the pile's
+ * value (guardFitter; a Pandora's box is valued by its reward, pandoraBoxValue, else spentValue): plan.js guardDearLoot no longer counts a mine's 2,500 stack as the guard of a 24,000 box,
+ * the pile moves into a fitting stack's ring or gets a guard sized on its own value, and the dear-loot pass below sizes its guard on targetValue. VMAPGEN_GUARD_BY_VALUE=0 is the earlier rule.
+ */
+const GUARD_BY_VALUE = process.env.VMAPGEN_GUARD_BY_VALUE !== '0';
+const DEAR_TARGET = /^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact)$/;
+const targetValue = e => { const b = e.type === 'pandoraBox' ? pandoraBoxValue(e) : undefined; return Number.isFinite(b) && b > 0 ? b : spentValue(e); };
+const GUARD_FIT = Number(process.env.VMAPGEN_GUARD_FIT) || 0.8;
+/** A test of whether a placed stack is worth guarding dear object o (strength, AI value x amount, at least GUARD_FIT of o's value), or null when the rule is off or o is no dear target. */
+function guardFitter(pl, o) {
+	if (!GUARD_BY_VALUE || !o || !DEAR_TARGET.test(o.type) || !pl || !pl.objectPools || !pl.objectPools.guards) return null;
+	const need = GUARD_FIT * targetValue(o), pool = pl.objectPools.guards;
+	return m => {
+		const c = m.guardCreature && pool.find(q => q.id === m.guardCreature);
+		const n = m.options && m.options.amount;
+		return !c || !(n > 0) ? true : c.aiValue * n >= need;
+	};
+}
 function lootGuard(kind, p, rng, pool = GUARD_POOL, value) {
 	const base = LOOT_GUARD_STRENGTH[kind];
 	if (!base) return null;
@@ -4504,7 +4523,8 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			guardedTargets.add(entry);
 			const tier = preset ? preset.level : creepTier(cls, rng,
 				(GUARD_VALUE_BUMP[entry.type] || 0) + monsterShift);
-			const guardEntry = objectEntry(`randomMonsterLevel${tier}`, gx, gy, l, monsterTpl,
+			if (process.env.VMAPGEN_GUARD_TRACE) console.error(`[guard] L${l} target ${entry.type} (${entry.x},${entry.y}) guard (${gx},${gy}) strength ${preset ? preset.strength : 'none'} from ${new Error().stack.split('\n')[2].trim().slice(0, 80)}`);
+				const guardEntry = objectEntry(`randomMonsterLevel${tier}`, gx, gy, l, monsterTpl,
 				preset ? { character: 'hostile', amount: scaledAmount(preset.amount, p) } : monsterOptions(tier, p, rng),
 				'object');
 			// the creature the engine's rule picked, for generate.js to write
@@ -5097,7 +5117,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				const g = byPiles[j];
 				if (usedTarget.has(j) || pocketed.has(g.entry) || !/^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact)$/.test(g.entry.type)) continue;
 				if (thin()) continue;
-				const guard = zoneGuard(spentValue(g.entry));
+				const guard = zoneGuard(GUARD_BY_VALUE ? targetValue(g.entry) : spentValue(g.entry));
 				if (!guard) continue;
 				usedTarget.add(j);
 				if (SEAL_RESITE) resite(g, spotFor);
@@ -5707,7 +5727,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 
 module.exports = {
 	prisonGuarded,
-	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, artStackMark, artStacks, setTallArt, tallStat, pandoraBoxValue,
+	isBuilding, artPix, roamStats, artStackLastId, artStackDrop, artStackMark, artStacks, setTallArt, tallStat, pandoraBoxValue, guardFitter, targetValue,
 	GUARD_GAP, fillBiome, FILL_TYPES, CLASS_FILL, pickArtifactTier,
 	footprintCells, blockingCells, footprintFits, footprintBlock, visitableCells,
 	entranceOpen, pictureOnShadow, markShadow, shadowAt, reserveCell, makeConnectivityGuard, floodFrom, OCCUPIED, RESERVED, protectFronts,

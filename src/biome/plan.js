@@ -11029,11 +11029,16 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 	const crowdAt = c => { const x = c % W, y = (c / W) | 0; for (const m of monsterAt) if (m !== c && Math.max(Math.abs(m % W - x), Math.abs(((m / W) | 0) - y)) < GAP) return true; return false; };
 	// where a hero reaches by fighting (lootswap.js fightMap): a pile moves to a guard's side only there
 	const fightOk = require('./lootswap').fightMap(pl.objects, W, H, l, blocked, OCCUPIED, o => REMOVABLE_TYPES.has(o.type), blockingCells);
-	const intoRing = (o, reach) => {
+	const CC0 = require('./content');
+	// the stacks of this level by tile, for the strength test (guardFitter); a stack posted after this is unknown there and fits
+	const monByTile = new Map();
+	for (const m of pl.objects) if ((m.l || 0) === l && MON.test(m.type)) monByTile.set(m.y * W + m.x, m);
+	const intoRing = (o, reach, fitBy = null) => {
 		if (!o.template || !o.template.mask || blockingCells(o.template, o.x, o.y).length !== 1) return false;
 		let bestT = -1, bestD = Infinity;
 		for (const m of pl.objects) {
 			if ((m.l || 0) !== l || !MON.test(m.type)) continue;
+			if (fitBy && !fitBy(m)) continue;
 			if (Math.max(Math.abs(m.x - o.x), Math.abs(m.y - o.y)) > reach) continue;
 			if (pl.zone && pl.zone[m.y * W + m.x] !== pl.zone[o.y * W + o.x]) continue;
 			for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
@@ -11103,14 +11108,17 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		// the stock rule (K, 2026-10-31: guards exactly as stock, one creature per pile): a stack within 2 of the pile already guards it, its ring
 		// over the pile's ways in, and no second guard is posted. VMAPGEN_STOCK_GUARDS=0 counts only a stack beside it, as before.
 		const R0 = process.env.VMAPGEN_STOCK_GUARDS !== '0' ? 2 : 1;
-		for (let dy = -R0; dy <= R0 && !near; dy++) for (let dx = -R0; dx <= R0; dx++) if (monsterAt.has((o.y + dy) * W + o.x + dx)) { near = true; break; }
+		// S253 (the lead 2026-11-16, guards matched to targets by value): a stack that is not worth the pile (a mine's 2,500 beside a 24,000 box, content.js
+		// guardFitter) does not guard it; the pile takes a guard of its own value, moves into a fitting stack's ring, or is taken back as the stock rule says
+		const fitBy = CC0.guardFitter(pl, o), okM = c => !fitBy || !monByTile.has(c) || fitBy(monByTile.get(c));
+		for (let dy = -R0; dy <= R0 && !near; dy++) for (let dx = -R0; dx <= R0; dx++) if (monsterAt.has((o.y + dy) * W + o.x + dx) && okM((o.y + dy) * W + o.x + dx)) { near = true; break; }
 		// a stack 2 tiles off guards the pile only when every free tile beside it lies in a stack's ring (one 2 off with a free side left
 		// the pile walkable: 36x36 two levels, dear piles open 20.8% against 15.6% before the stock rule; approach-tiles 9 of 204 bare)
 		if (near && R0 === 2) {
 			let beside = false;
-			for (let dy = -1; dy <= 1 && !beside; dy++) for (let dx = -1; dx <= 1; dx++) if (monsterAt.has((o.y + dy) * W + o.x + dx)) { beside = true; break; }
+			for (let dy = -1; dy <= 1 && !beside; dy++) for (let dx = -1; dx <= 1; dx++) if (monsterAt.has((o.y + dy) * W + o.x + dx) && okM((o.y + dy) * W + o.x + dx)) { beside = true; break; }
 			if (!beside) {
-				const ringedC = c => { const x = c % W, y = (c / W) | 0; for (let ey = -1; ey <= 1; ey++) for (let ex = -1; ex <= 1; ex++) if (monsterAt.has((y + ey) * W + x + ex)) return true; return false; };
+				const ringedC = c => { const x = c % W, y = (c / W) | 0; for (let ey = -1; ey <= 1; ey++) for (let ex = -1; ex <= 1; ex++) if (monsterAt.has((y + ey) * W + x + ex) && okM((y + ey) * W + x + ex)) return true; return false; };
 				for (let dy = -1; dy <= 1 && near; dy++) for (let dx = -1; dx <= 1; dx++) {
 					if (!dx && !dy) continue;
 					const x = o.x + dx, y = o.y + dy, c = y * W + x;
@@ -11146,7 +11154,7 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		spot = spots.find(c => !crowdAt(c) && !shades(c));
 		if (spot === undefined) spot = spots.find(c => !tight(c) && !shades(c));
 		if (spot === undefined) {
-			if (intoRing(o, 6)) { out.shared = (out.shared || 0) + 1; continue; }
+			if (intoRing(o, 6, fitBy) || (fitBy && intoRing(o, 16, fitBy))) { out.shared = (out.shared || 0) + 1; continue; }
 			spot = moveToGuardable(o);
 			// the stock rule: a pile whose guard would stand within 2 of another stack is not placed (stock: 0.4% of stacks within 2 of another;
 			// 6 of the 9 close pairs on 4 seeds of K's settings were this pass's guard 2 tiles from a fill guard). VMAPGEN_STOCK_GUARDS=0 off.
@@ -11201,9 +11209,16 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 		// own zone, which guards it for walker and flyer alike (72x72 one level four players seed 1: a relic at (24,19) inside solid rock)
 		if (spot < 0 && o.template && o.template.mask) {
 			let bestT = -1, bestD = Infinity;
+			// S253 (the lead 2026-11-16: guards matched to targets by value): the monster whose ring takes the pile is one that is worth the pile
+			// (strength at least GUARD_FIT of the pile's value, content.js guardFit); the nearest of any strength only when none of its zone fits
+			// (a 24,000 experience box moved beside a 4,050 stack). Strength unknown (a level stack, no creature written): fits. VMAPGEN_GUARD_BY_VALUE=0 off.
+			const CC = require('./content'), fitBy = CC.guardFitter(pl, o);
+			const inZone = m => (m.l || 0) === l && MON.test(m.type) && !(pl.zone && pl.zone[m.y * W + m.x] !== pl.zone[o.y * W + o.x]);
+			const anyFit = fitBy ? pl.objects.some(m => inZone(m) && fitBy(m)) : false;
 			for (const m of pl.objects) {
 				if ((m.l || 0) !== l || !MON.test(m.type)) continue;
 				if (pl.zone && pl.zone[m.y * W + m.x] !== pl.zone[o.y * W + o.x]) continue;
+				if (anyFit && !fitBy(m)) continue;
 				for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
 					if (!dx && !dy) continue;
 					const x = m.x + dx, y = m.y + dy, c = y * W + x;
