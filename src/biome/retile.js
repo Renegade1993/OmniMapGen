@@ -88,7 +88,7 @@ function shuffle(arr, rng) {
  * `uncovered` are cells no piece could reach without leaving the allowed set;
  * the caller decides what to do with them (the engine leaves them bare).
  */
-function retile({ W, H, allowed, region, groupsFor, rng, refuse = null }) {
+function retile({ W, H, allowed, region, groupsFor, rng, refuse = null, onPlace = null }) {
 	const N = W * H;
 	// 0 = not ours, 1 = waiting for art, 2 = covered
 	const state = new Uint8Array(N);
@@ -157,6 +157,7 @@ function retile({ W, H, allowed, region, groupsFor, rng, refuse = null }) {
 		if (REP) { const k = bkey(ax, ay); if (!bucket.has(k)) bucket.set(k, []); bucket.get(k).push({ anim: e.animation, x: ax, y: ay }); }
 		placed.push({ x: ax, y: ay, type: e.type, animation: e.animation,
 			mask: e.mask, cells, ...(e.subtype ? { subtype: e.subtype } : {}) });
+		if (onPlace) onPlace(e, ax, ay);
 	}
 	return { placed, uncovered };
 }
@@ -301,6 +302,28 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 	// map seed 1479105351, 8 of the buildings a quarter or more under another picture were under a mountain, a tree or a palm after the
 	// building rule (the Opus Reviewer, 2026-10-23). VMAPGEN_ART_STACK=0 off.
 	let refuse = null;
+	// every opaque pixel of every building's picture by tile, for the whole-picture rule in refuse below (isBuilding: visitable art that is not a pickup, a stack or a town)
+	let fullPix = null;
+	const fullPx = new Map();
+	const fullCum = new Map();   // the pixels of each building's picture the pieces placed so far already cover (onPlace)
+	if (process.env.VMAPGEN_ART_STACK !== '0' && process.env.VMAPGEN_ART_FULL !== '0') {
+		const { isBuilding, artPix } = require('./content');
+		fullPix = new Map();
+		const pcount = x => { let v = x >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); return (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; };
+		for (const o of rest) {
+			if ((o.l || 0) !== l || !isBuilding(o.template)) continue;
+			let px = 0;
+			for (const [dx, dy, rows] of artPix(o.template)) {
+				const x = o.x + dx, y = o.y + dy;
+				if (x < 0 || y < 0 || x >= W || y >= H) continue;
+				for (let i = 0; i < 32; i++) px += pcount(rows[i]);
+				const c = y * W + x;
+				if (!fullPix.has(c)) fullPix.set(c, []);
+				fullPix.get(c).push({ o, rows });
+			}
+			fullPx.set(o, px);
+		}
+	}
 	if (process.env.VMAPGEN_ART_STACK !== '0') {
 		const { isBuilding, artPix } = require('./content');
 		const bodyPix = new Map(), bodyPx = new Map();
@@ -330,6 +353,28 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 				}
 			}
 			for (const [o, n] of over) if (n >= (bodyPx.get(o) || Infinity) / 4) return true;
+			// and the building's whole picture, not its body tiles alone: a tall picture reaches up over tiles that are not its body, and a piece south of it
+			// covers that part (K, 2026-11-17, S298, Coldshadow seed 6: the Alchemist's Lab sharing six of nine picture cells with two dead trees and a crater;
+			// about ten buildings a 144x144 two-level map under scenery by half a tile or more). A piece drawn after the building that covers a tenth of its
+			// opaque pixels is refused, the pass takes another tile or a smaller piece. VMAPGEN_ART_FULL=0 is the body rule only.
+			if (fullPix) {
+				const cov = new Map();
+				for (const [dx, dy, rows] of artPix({ animation: e.animation, mask: e.mask })) {
+					const x = ax + dx, y = ay + dy;
+					if (x < 0 || y < 0 || x >= W || y >= H) continue;
+					for (const b of fullPix.get(y * W + x) || []) {
+						// a piece on the building's own row can be drawn after it too (the stock order is the blocked-tile rule, then the row, then the file order, and the
+						// scenery is written after the buildings): 60 of 123 buildings under scenery on 8 Coldshadow maps had the covering piece on their row
+						if (b.o.y > ay) continue;
+						let n = 0;
+						for (let i = 0; i < 32; i++) { let v = (rows[i] & b.rows[i]) >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); n += (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; }
+						cov.set(b.o, (cov.get(b.o) || 0) + n);
+					}
+				}
+				// one piece covering a tenth of the picture, or the pieces together past a budget of 400 pixels (under half a tile, the overlap scanner's own floor is 512) or a
+				// twentieth of it: Coldshadow's big buildings (a Dragon Utopia, 12,000 pixels) sat under three or four pieces of 8 percent each
+				for (const [o, n] of cov) if (n >= (fullPx.get(o) || Infinity) / 10 || n + (fullCum.get(o) || 0) > Math.min(400, (fullPx.get(o) || Infinity) / 20)) return true;
+			}
 			return false;
 		};
 	}
@@ -379,7 +424,21 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 			if (process.env.VMAPGEN_DECOR_TRACE) process.on('exit', () => console.error(`[decor] level ${l}: pieces refused over a pickup ${refused}, calls ${calls}, loot ${lootPix.size} tiles, max share ${maxr.toFixed(2)}`));
 		}
 	}
-	const r = retile({ W, H, allowed, region, groupsFor, rng, refuse });
+	// every piece placed adds its overlap to the buildings it lies over, for the budget in refuse
+	const onPlace = fullPix ? (e, ax, ay) => {
+		const { artPix } = require('./content');
+		for (const [dx, dy, rows] of artPix({ animation: e.animation, mask: e.mask })) {
+			const x = ax + dx, y = ay + dy;
+			if (x < 0 || y < 0 || x >= W || y >= H) continue;
+			for (const b of fullPix.get(y * W + x) || []) {
+				if (b.o.y > ay) continue;
+				let n = 0;
+				for (let i = 0; i < 32; i++) { let v = (rows[i] & b.rows[i]) >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); n += (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; }
+				if (n) fullCum.set(b.o, (fullCum.get(b.o) || 0) + n);
+			}
+		}
+	} : null;
+	const r = retile({ W, H, allowed, region, groupsFor, rng, refuse, onPlace });
 
 	const unc = new Set(r.uncovered);
 	const kept = unc.size ? scenery.filter(o => blockingCells(o.template, o.x, o.y)

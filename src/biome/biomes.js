@@ -1319,6 +1319,55 @@ function startExits(out, edges, seeds, pairs, ctx, isStart) {
 			roads.add(k);
 		}
 	}
+	// 3b. no start left far from the middle (K, 2026-11-16, S277, his 108x108 four players seed 125077493: tan's way to the middle ran through three
+	// biomes and four stacks of its own, red's, blue's and green's through one, "an extremely unfair disadvantage"). The walk is counted in biome
+	// hops over land links, not through another start's biome; a start more than one hop beyond the nearest start's opens the border that
+	// shortens its way most (a border no link crosses, between biomes neither of which is another start's), as a road link, and is roaded
+	// again along its new shortest way. OFF by default since 2026-11-17 (paired on the Checker's 60 maps it cut the spread of stacks to the middle from 110 to 94 and
+	// took 1.3 percent of the piles, t -2.5: K's rule is that a fix may not lose loot); VMAPGEN_START_EQUAL=1 runs it.
+	let equalised = 0;
+	if (process.env.VMAPGEN_START_EQUAL === '1') {
+		const hopsFrom = (from, adj, banned) => {
+			const d = new Map([[from, 0]]), q = [from];
+			for (let h = 0; h < q.length; h++) for (const n of adj.get(q[h]) || []) if (!d.has(n) && !banned(n)) { d.set(n, d.get(q[h]) + 1); q.push(n); }
+			return d;
+		};
+		const hopsOf = s => { const d = hopsFrom(s, links(true), n => isStart(n) && n !== s); return d.has(mid) ? d.get(mid) : Infinity; };
+		for (let round = 0; round < 6; round++) {
+			const hs = starts.map(hopsOf);
+			const hmin = Math.min(...hs.filter(Number.isFinite));
+			let worst = -1;
+			for (let i = 0; i < starts.length; i++) if (Number.isFinite(hs[i]) && hs[i] > hmin + 1 && (worst < 0 || hs[i] > hs[worst])) worst = i;
+			if (worst < 0) break;
+			const s = starts[worst], adj = links(true);
+			const ds = hopsFrom(s, adj, n => isStart(n) && n !== s), dm = hopsFrom(mid, adj, n => isStart(n));
+			let best = null;
+			for (const e of edges) {
+				const k = key(e.a, e.b);
+				if (isLand(k) || (isStart(e.a) && e.a !== s) || (isStart(e.b) && e.b !== s)) continue;
+				for (const [u, v] of [[e.a, e.b], [e.b, e.a]]) {
+					if (!ds.has(u) || !dm.has(v)) continue;
+					const via = ds.get(u) + 1 + dm.get(v);
+					if (via >= hs[worst]) continue;
+					if (!best || via < best.via || (via === best.via && e.borderCells.length > best.e.borderCells.length)) best = { e, via };
+				}
+			}
+			if (!best || best.via > hmin + 1 + (round > 3 ? 1 : 0)) break;
+			open(best.e.a, best.e.b, `start ${s} had ${hs[worst]} hops to the middle against ${hmin}, now ${best.via}`);
+			equalised++;
+			// road along the new shortest way
+			const landAdj2 = links(true), prev2 = new Map([[s, -1]]), q2 = [s];
+			for (let h = 0; h < q2.length && !prev2.has(mid); h++) {
+				const c = q2[h];
+				for (const n of (landAdj2.get(c) || []).filter(n => !prev2.has(n) && !(isStart(n) && n !== s)).sort((x, y) => (width.get(key(c, y)) || 0) - (width.get(key(c, x)) || 0))) { prev2.set(n, c); q2.push(n); }
+			}
+			if (prev2.has(mid)) for (let c = mid; prev2.get(c) !== -1; c = prev2.get(c)) {
+				const k = key(c, prev2.get(c));
+				if (out.get(k) !== 'openRoad') { out.set(k, 'openRoad'); opened.push(`${c}-${prev2.get(c)} road for start ${s}`); }
+				roads.add(k);
+			}
+		}
+	}
 	// 4. portals that are no shortcut, or loop inside one start's pocket
 	const pocketOf = new Map();
 	for (const s of starts) {
@@ -1355,8 +1404,25 @@ function startExits(out, edges, seeds, pairs, ctx, isStart) {
 		if ((hops < Infinity && walk < SHORTCUT) || (pocket && hops < Infinity)) dropped++; else pairs.splice(i, 0, save);
 	}
 	out.startRoads = roads;
+	// each start's way to the middle as its link keys (the fewest hops, the widest border first on a tie): plan.js hands them to placeChokeGuards, which guards only
+	// the starts that are short a guard against the others (S277: guarding every start's way added 1.65 stacks a map and took about as many piles)
+	out.startWays = new Map();
+	{
+		const adjW = links(true);
+		for (const s of starts) {
+			const prevW = new Map([[s, -1]]), qW = [s];
+			for (let h = 0; h < qW.length && !prevW.has(mid); h++) {
+				const c = qW[h];
+				for (const n of (adjW.get(c) || []).filter(n => !prevW.has(n) && !(isStart(n) && n !== s)).sort((x, y) => (width.get(key(c, y)) || 0) - (width.get(key(c, x)) || 0))) { prevW.set(n, c); qW.push(n); }
+			}
+			const ks = [];
+			if (prevW.has(mid)) for (let c = mid; prevW.get(c) !== -1; c = prevW.get(c)) ks.push(key(c, prevW.get(c)));
+			out.startWays.set(s, ks);
+		}
+	}
+	out.startHops = starts.map(s => { const d = new Map([[s, 0]]), q = [s], adj = links(true); for (let h = 0; h < q.length; h++) for (const n of adj.get(q[h]) || []) if (!d.has(n) && !(isStart(n) && n !== s)) { d.set(n, d.get(q[h]) + 1); q.push(n); } return d.has(mid) ? d.get(mid) : -1; });
 	out.startExitLog = `middle biome ${mid}; ${opened.length} link(s) opened or roaded for the starts${opened.length ? ' (' + opened.join(', ') + ')' : ''}; `
-		+ `${landed} portal link(s) that were no shortcut made land, ${dropped} portal pair(s) between biomes with no border left out`;
+		+ `${landed} portal link(s) that were no shortcut made land, ${dropped} portal pair(s) between biomes with no border left out; biome hops to the middle ${out.startHops.join('/')}`;
 }
 
 /**

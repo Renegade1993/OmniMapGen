@@ -396,6 +396,8 @@ function roadEnds(M) {
 	const isRoad = (l, x, y) => M.inb(x, y) && M.road[M.idx(l, x, y)];
 	const ringRuns = (l, x, y) => { const r = N8.map(([dx, dy]) => (isRoad(l, x + dx, y + dy) ? 1 : 0)); let n = 0; for (let k = 0; k < 8; k++) if (r[k] && !r[(k + 7) % 8]) n++; return { n: r.reduce((a, b) => a + b, 0), runs: n }; };
 	const near = new Map();
+	const walkerAt = new Set();
+	for (const o of M.objs) if (o.cls === 'monster' || o.pickup) for (const [cx, cy] of o.cells || [o.at]) if (M.inb(cx, cy)) walkerAt.add(M.idx(o.l, cx, cy));
 	for (const o of M.objs) {
 		if (!o.visitable && o.cls !== 'monster') continue;
 		const kind = o.cls === 'other' ? `small building ${o.type}` : o.cls;
@@ -456,6 +458,24 @@ function roadEnds(M) {
 					if (!M.ground(i) || M.blocked[i]) continue;
 					dist.set(i, d + 1); q.push([u, v]);
 				}
+			}
+		}
+		// "short of the door" (K, 2026-11-16, S281, "still seeing improper road terminations": a road ends beside a stack that stands in front of a house,
+		// one or two tiles short of its door; the check called it proper because a door's approach tile lay in the 3x3 round the end): the end serves a
+		// town, mine, monolith or gate only through an approach tile, no entry tile of one lies on the end or beside it on a side, and one does lie within 3
+		if (e.kind === 'proper') {
+			const dests = touch.filter(t => ROAD_DEST.has(t.kind));
+			if (dests.length && !dests.some(t => t.o.entr.some(([ex, ey]) => t.o.l === l && Math.abs(ex - x) + Math.abs(ey - y) <= 1))) {
+				const d = Math.min(...dests.flatMap(t => t.o.entr.map(([ex, ey]) => Math.max(Math.abs(ex - x), Math.abs(ey - y)))));
+				// only where a tile in front of the door, beside the entry on a side, could carry the road: open ground, or a pickup's or a stack's tile
+				// (a road runs under those); a door that can be entered from a corner only (rock below it) has no better end than the corner
+				const front = dests.some(t => t.o.entr.some(([ex, ey]) => [[0, -1], [1, 0], [0, 1], [-1, 0]].some(([dx, dy]) => {
+					const u = ex + dx, v = ey + dy;
+					if (!M.inb(u, v)) return false;
+					const i = M.idx(t.o.l, u, v);
+					return M.ground(i) && (!M.blocked[i] || walkerAt.has(i));
+				})));
+				if (front && d >= 1 && d <= 3) { e.kind = 'short of the door'; e.to = `${dests[0].kind} door ${d} tile(s) off`; }
 			}
 		}
 		if (e.kind === 'proper' && !touch.some(t => ROAD_DEST.has(t.kind)) && !guard) {
@@ -644,6 +664,7 @@ function analyse(file) {
 		road_end_at_nothing: re.filter(e => e.kind === 'at nothing').length,
 		road_end_at_object: re.filter(e => e.kind === 'at an object').length,
 		road_gap: re.filter(e => e.kind === 'gap').length,
+		road_end_short: re.filter(e => e.kind === 'short of the door').length,
 		town_joined: (() => { const k = r.map(x => x.joins.byKind.town || { n: 0, joined: 0 }); const n = k.reduce((a, b) => a + b.n, 0); return n ? k.reduce((a, b) => a + b.joined, 0) / n : null; })(),
 		// zones (or, with no sidecar, regions) without a town that hold neutral dragon dwellings: Coldshadow's central
 		// dragon caches are junction zones like that (K, 2026-10-01: "the non-town coldshadows central dragon cache ones")
