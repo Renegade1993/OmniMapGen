@@ -453,6 +453,28 @@ function placeChokeGuards(openings, zoneClasses, rng, params, edgeInfo, poolFor 
 		const level = creepTier(zoneClasses[o.b], rng, shift + gradLevels(o));
 		guards.push({ cell: mid, level, edge: [o.a, o.b] });
 	}
+	// Fair ways (K, 2026-11-16, S277: tan's way to the middle held four stacks of its own against one for each other start): a start whose way to the middle
+	// (openings.startWays, startExits) has fewer guarded links than another start's gets the link nearest the middle guarded, until none is short. Only the
+	// starts that are short get a guard, so a map with even ways gets none. VMAPGEN_START_WAY_GUARD=0 off, =all guards every start's whole way (plan.js).
+	if (openings.startWays && openings.startWays.size && process.env.VMAPGEN_START_WAY_GUARD !== '0' && process.env.VMAPGEN_START_WAY_GUARD !== 'all') {
+		const keyOf = (a, b) => Math.min(a, b) * 100000 + Math.max(a, b);
+		const byKey = new Map(openings.filter(o => o.kind !== 'portal' && o.hole && o.hole.length).map(o => [keyOf(o.a, o.b), o]));
+		const guarded = new Set(guards.filter(g => g.edge).map(g => keyOf(g.edge[0], g.edge[1])));
+		const count = ks => ks.filter(k => guarded.has(k)).length;
+		const left = new Map(openings.startWays);
+		for (let round = 0; round < 12; round++) {
+			let target = 0;
+			for (const ks of left.values()) target = Math.max(target, count(ks));
+			let best = null;
+			for (const [s, ks] of left) { const c = count(ks); if (c < target && (!best || c < best.c)) best = { s, ks, c }; }
+			if (!best) break;
+			const k = best.ks.find(q => !guarded.has(q) && byKey.has(q));
+			if (k === undefined) { left.delete(best.s); continue; }
+			const o = byKey.get(k);
+			guards.push({ cell: o.hole[(o.hole.length / 2) | 0], level: creepTier(zoneClasses[o.b], rng, shift + gradLevels(o)), edge: [o.a, o.b] });
+			guarded.add(k);
+		}
+	}
 	return guards;
 }
 

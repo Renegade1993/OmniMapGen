@@ -5322,9 +5322,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			const t = bottleneck(levelIndex, a, levelIndex, b);
 			return Math.max(g, Number.isFinite(t) ? t : 0);
 		} : null;
-	// the links on a start's way to the middle (startExits) are all guarded: a way of three links with one stack on it against another start's with
-	// three was tan's "6 stacks against 3" on K's 108x108 seed 125077493 (S277). VMAPGEN_START_WAY_GUARD=0 leaves them to the Bottleneck share.
-	if (connections && connections.startRoads && process.env.VMAPGEN_START_WAY_GUARD !== '0')
+	// each start's way to the middle (startExits): placeChokeGuards guards the links of a start that is short a guard against the others, up to the
+	// most any start has (a way of three links with one stack on it against another start's with three was tan's "6 stacks against 3" on K's 108x108
+	// seed 125077493, S277). VMAPGEN_START_WAY_GUARD=0 leaves them to the Bottleneck share; =all guards every start's whole way (the first build).
+	if (connections && connections.startWays && process.env.VMAPGEN_START_WAY_GUARD !== '0') openings.startWays = connections.startWays;
+	if (connections && connections.startRoads && process.env.VMAPGEN_START_WAY_GUARD === 'all')
 		for (const o of openings) if (o.kind !== 'portal' && connections.startRoads.has(Math.min(o.a, o.b) * 100000 + Math.max(o.a, o.b))) o.startWay = true;
 	const guards = placeChokeGuards(openings, classes, rng, p, edgeInfo,
 		objectPools && objectPools.guards && zoneMeta

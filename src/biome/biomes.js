@@ -1403,6 +1403,22 @@ function startExits(out, edges, seeds, pairs, ctx, isStart) {
 		if ((hops < Infinity && walk < SHORTCUT) || (pocket && hops < Infinity)) dropped++; else pairs.splice(i, 0, save);
 	}
 	out.startRoads = roads;
+	// each start's way to the middle as its link keys (the fewest hops, the widest border first on a tie): plan.js hands them to placeChokeGuards, which guards only
+	// the starts that are short a guard against the others (S277: guarding every start's way added 1.65 stacks a map and took about as many piles)
+	out.startWays = new Map();
+	{
+		const adjW = links(true);
+		for (const s of starts) {
+			const prevW = new Map([[s, -1]]), qW = [s];
+			for (let h = 0; h < qW.length && !prevW.has(mid); h++) {
+				const c = qW[h];
+				for (const n of (adjW.get(c) || []).filter(n => !prevW.has(n) && !(isStart(n) && n !== s)).sort((x, y) => (width.get(key(c, y)) || 0) - (width.get(key(c, x)) || 0))) { prevW.set(n, c); qW.push(n); }
+			}
+			const ks = [];
+			if (prevW.has(mid)) for (let c = mid; prevW.get(c) !== -1; c = prevW.get(c)) ks.push(key(c, prevW.get(c)));
+			out.startWays.set(s, ks);
+		}
+	}
 	out.startHops = starts.map(s => { const d = new Map([[s, 0]]), q = [s], adj = links(true); for (let h = 0; h < q.length; h++) for (const n of adj.get(q[h]) || []) if (!d.has(n) && !(isStart(n) && n !== s)) { d.set(n, d.get(q[h]) + 1); q.push(n); } return d.has(mid) ? d.get(mid) : -1; });
 	out.startExitLog = `middle biome ${mid}; ${opened.length} link(s) opened or roaded for the starts${opened.length ? ' (' + opened.join(', ') + ')' : ''}; `
 		+ `${landed} portal link(s) that were no shortcut made land, ${dropped} portal pair(s) between biomes with no border left out; biome hops to the middle ${out.startHops.join('/')}`;
