@@ -2766,7 +2766,7 @@ async function generateMap(params) {
 			// that guards it). VMAPGEN_ROAD_DOORS=0 skips it.
 			if (roadCells && roadCells.size && process.env.VMAPGEN_ROAD_DOORS !== '0') {
 				const rd = require('../biome/roaddoors').joinRoadEndsToDoors(plans[li], lv.width, lv.height, li, { blockingCells, visitableCells, allowedDirs });
-				if (rd.ends) console.error(`[gen] level ${li}: road ends beside a door: ${rd.ends}, taken on to it: ${rd.joined} (${rd.tiles} tile(s)), left ${rd.left}`);
+				if (rd.ends || rd.corner) console.error(`[gen] level ${li}: road ends beside a door: ${rd.ends}, taken on to it: ${rd.joined} (${rd.tiles} tile(s)), left ${rd.left}; ${rd.corner || 0} more at a door that has a corner way in only`);
 				if (rd.joined) { const th2 = require('../biome/gateroad').thinRoadBlocks(plans[li], lv.width, lv.height, li, { visitableCells }); if (th2.thinned) console.error(`[gen] level ${li}: road tiles taken out of 2x2 blocks after the door joins: ${th2.thinned}`); }
 			}
 			// every start town on the one road network (K, 2026-11-16, S277: green's town on an 11-tile piece of its own, the other three

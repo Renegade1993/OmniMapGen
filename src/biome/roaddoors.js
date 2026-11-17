@@ -45,13 +45,16 @@ function joinRoadEndsToDoors(plan, W, H, l, d) {
 		const near = dests.filter(t => t.entries.some(([x, y]) => Math.max(Math.abs(x - ex), Math.abs(y - ey)) <= 3));
 		if (!near.length) continue;
 		if (near.some(t => t.entries.some(([x, y]) => Math.abs(x - ex) + Math.abs(y - ey) <= 1))) continue;
-		out.ends++;
 		// the entry tile, and the tiles beside it on a side the object is entered from
 		const goal = new Set();
+		let sides = 0;
 		for (const t of near) for (const [x, y] of t.entries) {
 			goal.add(y * W + x);
-			for (const [dx, dy] of t.dirs || []) if (Math.abs(dx) + Math.abs(dy) === 1) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H && !hard[v * W + u]) goal.add(v * W + u); }
+			for (const [dx, dy] of t.dirs || []) if (Math.abs(dx) + Math.abs(dy) === 1) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H && !hard[v * W + u]) { goal.add(v * W + u); sides++; } }
 		}
+		// a door that can be entered from a corner only (rock or a wall below and beside it) has no better end than the corner
+		if (!sides) { out.corner = (out.corner || 0) + 1; continue; }
+		out.ends++;
 		goal.delete(e);
 		const prev = new Map([[e, -1]]), q = [e], depth = new Map([[e, 0]]);
 		let hit = -1;
