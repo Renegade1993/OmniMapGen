@@ -361,7 +361,9 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 					const x = ax + dx, y = ay + dy;
 					if (x < 0 || y < 0 || x >= W || y >= H) continue;
 					for (const b of fullPix.get(y * W + x) || []) {
-						if (b.o.y >= ay) continue;
+						// a piece on the building's own row can be drawn after it too (the stock order is the blocked-tile rule, then the row, then the file order, and the
+						// scenery is written after the buildings): 60 of 123 buildings under scenery on 8 Coldshadow maps had the covering piece on their row
+						if (b.o.y > ay) continue;
 						let n = 0;
 						for (let i = 0; i < 32; i++) { let v = (rows[i] & b.rows[i]) >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); n += (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; }
 						cov.set(b.o, (cov.get(b.o) || 0) + n);
