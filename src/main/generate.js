@@ -2747,6 +2747,20 @@ async function generateMap(params) {
 				if (fs2.cut && process.env.VMAPGEN_FORBID_CUT_TRIM !== '0') { const t2 = require('../biome/gateroad').trimRoadStubs(plf, Wf, Hf, li, visitableCells, blockingCells, allowedDirs); if (t2.cut) console.error(`[gen] level ${li}: road stubs the forbidden-side cut left trimmed: ${t2.cut}`); }
 				if (fs2.cut || fs2.kept) console.error(`[gen] level ${li}: roads onto a gate or monolith across a forbidden side cut back: ${fs2.cut} (${fs2.tiles} tile(s), ${fs2.rerouted} joined again from a side it is entered from, ${fs2.roadless} with no other way in left without a road), left: ${fs2.kept}`);
 			}
+			// every start town on the one road network (K, 2026-11-16, S277: green's town on an 11-tile piece of its own, the other three
+			// starts on one of 698 tiles): the check and the repair, last of the road passes. A start with a walk to the network and no road
+			// to it after the repair is an error, the map is not written. VMAPGEN_START_ROAD=0 skips the pass, VMAPGEN_START_ROAD_FAIL=0 only logs.
+			if (roadCells && roadCells.size && process.env.VMAPGEN_START_ROAD !== '0') {
+				const Wl = lv.width, Hl = lv.height, pl = plans[li], bl = new Uint8Array((li + 1) * Wl * Hl);
+				for (const o of pl.objects || []) if ((o.l || 0) === li && o.template && o.template.mask && !REMOVABLE_TYPES.has(o.type))
+					for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < Wl && fy < Hl) bl[li * Wl * Hl + fy * Wl + fx] = 1;
+				const plm = require('../biome/plan');
+				const anyDecor = o => plm.diagIsDecor(o) || !!(o.template && o.template.mask && !o.template.visitableFrom && !o.template.mask.some(r2 => /[AT]/.test(r2)) && !/^(randomTown|town|mine|abandonedMine|subterraneanGate|monolith|monster|randomMonster)/.test(o.type));
+				const sr = require('../biome/startroads').joinStartRoads(pl, Wl, Hl, li, { blockingCells, visitableCells, isDecor: anyDecor, clearScenery: plm.clearScenery, blocked: bl });
+				if (sr.starts > 1) console.error(`[gen] level ${li}: start towns on the road network: ${sr.starts} start(s), ${sr.pieces} road piece(s) at the end, network ${sr.network} tile(s) before the repair; joined ${sr.joined} (${sr.tiles} tile(s), ${sr.cleared} scenery piece(s) cleared), no walk to the network ${sr.noWalk.length ? sr.noWalk.join(',') : 'none'}, left ${sr.left.length ? sr.left.join(',') : 'none'}`);
+				if (sr.left.length && process.env.VMAPGEN_START_ROAD_FAIL !== '0')
+					throw new Error(`the start town of ${sr.left.join(', ')} has a walk to the other starts but no road to them (level ${li}); the map is not written`);
+			}
 			const roadArt = solveRoadTiles(roadCells, lv.width, lv.height, roadRng);
 
 		// the terrain grid as short codes, which smoothing may adjust

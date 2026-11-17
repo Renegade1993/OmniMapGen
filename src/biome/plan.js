@@ -2234,7 +2234,7 @@ function guardZoneJoins(pl, l, W, H, blocked, p, seed, linkGuardsOff, opts = {})
 		for (let pass = 0; (allowCrowd || sceneryFirst) && todo.length && pass < 3; pass++) {
 			for (const [a, b] of todo.slice()) {
 				if (ring[a] || ring[b] || !walkOn[a] || !walkOn[b]) continue;
-				const pick = [a, b].filter(c => !(blocked[base + c] & OCCUPIED) && !doorOrWay(c) && !(water && water[c]) && !splitsZone(c))
+				const pick = [a, b].filter(c => !(blocked[base + c] & OCCUPIED) && !doorOrWay(c) && !(water && water[c]) && !splitsZone(c) && (process.env.VMAPGEN_JOIN_ROAD_CUT === '1' || !roads.has(c)))   // never a road tile: closing one cut green's road off on K's 108x108 seed 125077493 (S277, the step (5,55)-(6,55): 783 road tiles in one piece before, 68 after); a step with road on both tiles goes to the guard below
 					.sort((u, v) => (roads.has(u) ? 1 : 0) - (roads.has(v) ? 1 : 0))[0];
 				if (pick === undefined) continue;
 				// the second round's scenery keeps the starts' ground too: a step the calm test (825dcaa) left without a guard was closed here with no
@@ -2260,6 +2260,27 @@ function guardZoneJoins(pl, l, W, H, blocked, p, seed, linkGuardsOff, opts = {})
 			}
 			todo = crossings();
 		}
+	}
+	// a step left with road on a tile of it (the scenery above never takes a road tile): a guard stands on the road tile, a road crossing a zone line
+	// being a doorway a guard stands in. No spacing or calm test: the road must stay in one piece, and a step open is a free walk along it (S277)
+	if (process.env.VMAPGEN_JOIN_ROAD_GUARD !== '0' && todo.length) {
+		for (const [a, b] of todo.slice()) {
+			if (ring[a] || ring[b] || !walkOn[a] || !walkOn[b]) continue;
+			const g = [a, b].find(c => roads.has(c) && !(blocked[base + c] & OCCUPIED) && !(water && water[c]) && !door.has(c)
+				&& ![-1, 0, 1].some(ey => [-1, 0, 1].some(ex => door.has(((c / W) | 0) * W + c % W + ey * W + ex))));
+			if (g === undefined) continue;
+			const gx = g % W, gy = (g / W) | 0;
+			pl.objects.push(objectEntry('randomMonsterLevel3', gx, gy, l, OBJECT_TEMPLATES.randomMonster, 'object', monsterOptions(3, p, rng)));
+			reserveCell(blocked, l, W, H, g);
+			markApproach(OBJECT_TEMPLATES.randomMonster, gx, gy, l, W, H, blocked);
+			markRing(gx, gy);
+			walkOn[g] = 0;
+			monAt[g] = 1;
+			out.posted++;
+			out.onRoad = (out.onRoad || 0) + 1;
+			console.error(`[gen] level ${l}: zone join guard on a road tile at (${gx},${gy}), the step's road kept in one piece`);
+		}
+		todo = crossings();
 	}
 	out.left = todo.length;
 	if (out.left && process.env.VMAPGEN_JOIN_TRACE) console.error(`[joins] level ${l}: left ${todo.slice(0, 6).map(([a, b]) => `(${a % W},${(a / W) | 0})z${zone[a]}-(${b % W},${(b / W) | 0})z${zone[b]}`).join(' ')}`);
@@ -5058,6 +5079,9 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			// the layout itself (S035, DMB Dev's preview of the map the settings would make): every cell's zone, the zone table, the links (a land way, with or
 			// without a road, or a sealed border) and the portal pairs between zones, the starts' zones; no objects
 			layout: { W, H, zone: Array.from(zone), classes: Array.from(classes),
+				// S273 (DMB Dev's field, agreed 2026-11-17): the terrain each zone has on this level, parallel to classes (index = zone id), the engine's
+				// terrain identifier (dirt, grass, subterra, lava, a mod terrain's id), as assignTerrains picked it; null where the install lists none
+				terrains: Array.from(biomeTerrain, id => { const t = terrainInfo && terrainInfo.get(id); const n = t && (t.identifier || t.name) ? String(t.identifier || t.name) : null; return n ? n.slice(n.lastIndexOf(':') + 1).toLowerCase() : null; }),
 				zones: seeds.map((s, i) => ({ id: i, x: Math.round(s.x), y: Math.round(s.y), player: s.player ? s.player : null,
 					templateId: tplZones && tplZones[i] ? tplZones[i].id : null, templateType: tplZones && tplZones[i] ? tplZones[i].type : (classes[i] === BIOME_CLASS.PLAYER ? 'playerStart' : 'treasure') })),
 				links: edges.map(e => ({ a: e.a, b: e.b, kind: connections.get(e.a * 100000 + e.b) || 'blocked', cells: e.borderCells.length })).filter(x => x.kind !== 'blocked'),
