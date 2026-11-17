@@ -2098,10 +2098,15 @@ async function generateMap(params) {
 	if (process.env.VMAPGEN_PLAN_ONLY) {
 		// --layout FILE writes the JSON to FILE; --layout 1 leaves it on stdout as the one line that starts {"plan"
 		const emit = s => (process.env.VMAPGEN_LAYOUT_FILE ? fs.writeFileSync(process.env.VMAPGEN_LAYOUT_FILE, s) : process.stdout.write(s));
+		// S299 (DMB Dev's request, agreed 2026-11-17): floorTiles, one flat array of 0 and 1 per level, index y * w + x: 1 the carve left open floor, 0 solid rock
+		// (the abyss in the preview); null for the surface. The same carve the full map makes (plan.js, after the zones and links, before any object).
+		const floorTiles = plans.map(pl => (pl.layout && pl.layout.floor) || null);
+		for (const pl of plans) if (pl.layout) delete pl.layout.floor;
 		emit(JSON.stringify({ plan: plans.map(pl => pl.stats || null),
 			// the layout of each level (plan.js planLevel, S035) and the template's links between levels
 			layout: plans.map(pl => pl.layout || null),
 			crossLinks: zonePlan && zonePlan.connections ? zonePlan.connections.filter(c => c.aRef && c.bRef && c.aRef.l !== c.bRef.l).map(c => ({ a: c.aRef, b: c.bRef, guard: c.guard || 0, type: c.type || 'link' })) : [],
+			...(floorTiles.some(Boolean) && process.env.VMAPGEN_LAYOUT_FLOOR_TILES !== '0' ? { floorTiles } : {}),
 			starts: (starts || []).map(s => ({ x: s.x, y: s.y, color: s.color || s.player || null, level: s.l || 0 })),
 			size: { w: params.mapW, h: params.mapH, levels: levels.length },
 			water: waterPlan ? { shape: waterPlan.shape, coverage: waterPlan.coverage,

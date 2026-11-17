@@ -5074,11 +5074,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	if (process.env.VMAPGEN_LINK_DUMP && !(tplZones && tplZones.length)) { global.__linkDump = global.__linkDump || {}; global.__linkDump[levelIndex] = [...edges.map(e => [e.a, e.b, connections.get(e.a * 100000 + e.b)]).filter(x => x[2] && x[2] !== 'blocked'), ...(unfulfilled || []).map(c => [c.a, c.b, 'pair'])]; }
 	// layout only (VMAPGEN_PLAN_ONLY, for analysis): zones and links are
 	// decided, which is all the water compatibility matrix measures
-	if (p.layoutOnly)
-		return { zone, classes, levelIndex,
+	const layoutOut = (extra = {}) =>
+		({ zone, classes, levelIndex,
 			// the layout itself (S035, DMB Dev's preview of the map the settings would make): every cell's zone, the zone table, the links (a land way, with or
 			// without a road, or a sealed border) and the portal pairs between zones, the starts' zones; no objects
-			layout: { W, H, zone: Array.from(zone), classes: Array.from(classes),
+			layout: { W, H, zone: Array.from(zone), classes: Array.from(classes), ...extra,
 				// S273 (DMB Dev's field, agreed 2026-11-17): the terrain each zone has on this level, parallel to classes (index = zone id), the engine's
 				// terrain identifier (dirt, grass, subterra, lava, a mod terrain's id), as assignTerrains picked it; null where the install lists none
 				terrains: Array.from(biomeTerrain, id => { const t = terrainInfo && terrainInfo.get(id); const n = t && (t.identifier || t.name) ? String(t.identifier || t.name) : null; return n ? n.slice(n.lastIndexOf(':') + 1).toLowerCase() : null; }),
@@ -5087,7 +5087,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				links: edges.map(e => ({ a: e.a, b: e.b, kind: connections.get(e.a * 100000 + e.b) || 'blocked', cells: e.borderCells.length })).filter(x => x.kind !== 'blocked'),
 				pairs: (unfulfilled || []).map(c => ({ a: c.a, b: c.b, type: c.type || 'template', far: c.far === true })) },
 			stats: layoutStats(zone, seeds, tplZones,
-			tplConns, unfulfilled, forced, W, H, water, null, landCells) };
+			tplConns, unfulfilled, forced, W, H, water, null, landCells) });
+	// a surface level, or a level with no carve, stops here; an underground level goes on through the carve and the lava balance (S299, K 2026-11-17:
+	// "underground still looks wrong ... the preview doesn't look anything like the actual underground areas"), which need only the zones, seeds, links
+	// and settings, and returns "floor" (1 carved open, 0 solid rock, as the carve leaves it) and the zones' final terrains
+	if (p.layoutOnly && !(underground && p.undergroundRock !== false)) return layoutOut();
 	// Underground: cut chambers and tunnels out of solid rock, and mark the
 	// rock as occupied so every later pass routes around it without knowing
 	// anything about caves.
@@ -5251,6 +5255,7 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 				+ `(${lavaZones.size} zone(s))`);
 	}
 
+	if (p.layoutOnly) return layoutOut({ floor: openMask ? Array.from(openMask, v => (v ? 1 : 0)) : null });
 	phase('borders');
 	const { barriers, openings, rim } = carvedBounds || carveBoundaries(edges, connections, zone,
 		W, H, { ...p, underground: !!openMask }, rng, edgeInfo);
