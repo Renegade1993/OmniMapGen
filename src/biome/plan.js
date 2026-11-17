@@ -5325,7 +5325,8 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 	// each start's way to the middle (startExits): placeChokeGuards guards the links of a start that is short a guard against the others, up to the
 	// most any start has (a way of three links with one stack on it against another start's with three was tan's "6 stacks against 3" on K's 108x108
 	// seed 125077493, S277). VMAPGEN_START_WAY_GUARD=0 leaves them to the Bottleneck share; =all guards every start's whole way (the first build).
-	if (connections && connections.startWays && process.env.VMAPGEN_START_WAY_GUARD !== '0') openings.startWays = connections.startWays;
+	// OFF by default since 2026-11-17: paired on the Checker's 60 maps it gave 0.7 extra stacks a map and no change in the spread (110 against 110); VMAPGEN_START_WAY_GUARD=1 runs it.
+	if (connections && connections.startWays && process.env.VMAPGEN_START_WAY_GUARD === '1') openings.startWays = connections.startWays;
 	if (connections && connections.startRoads && process.env.VMAPGEN_START_WAY_GUARD === 'all')
 		for (const o of openings) if (o.kind !== 'portal' && connections.startRoads.has(Math.min(o.a, o.b) * 100000 + Math.max(o.a, o.b))) o.startWay = true;
 	const guards = placeChokeGuards(openings, classes, rng, p, edgeInfo,

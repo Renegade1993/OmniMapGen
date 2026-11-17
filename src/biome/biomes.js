@@ -1323,9 +1323,10 @@ function startExits(out, edges, seeds, pairs, ctx, isStart) {
 	// biomes and four stacks of its own, red's, blue's and green's through one, "an extremely unfair disadvantage"). The walk is counted in biome
 	// hops over land links, not through another start's biome; a start more than one hop beyond the nearest start's opens the border that
 	// shortens its way most (a border no link crosses, between biomes neither of which is another start's), as a road link, and is roaded
-	// again along its new shortest way. VMAPGEN_START_EQUAL=0 skips it.
+	// again along its new shortest way. OFF by default since 2026-11-17 (paired on the Checker's 60 maps it cut the spread of stacks to the middle from 110 to 94 and
+	// took 1.3 percent of the piles, t -2.5: K's rule is that a fix may not lose loot); VMAPGEN_START_EQUAL=1 runs it.
 	let equalised = 0;
-	if (process.env.VMAPGEN_START_EQUAL !== '0') {
+	if (process.env.VMAPGEN_START_EQUAL === '1') {
 		const hopsFrom = (from, adj, banned) => {
 			const d = new Map([[from, 0]]), q = [from];
 			for (let h = 0; h < q.length; h++) for (const n of adj.get(q[h]) || []) if (!d.has(n) && !banned(n)) { d.set(n, d.get(q[h]) + 1); q.push(n); }
