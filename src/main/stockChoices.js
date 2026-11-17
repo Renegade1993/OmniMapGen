@@ -117,6 +117,12 @@ function applyWaterContent(biomes, roll, { islandsShape, defaultCoverage }) {
 	if (w < 0) {
 		w = roll.pick([0, 1, 2]);
 		roll.rolled.push(`water ${['none', 'normal', 'islands'][w]}`);
+		// Random water content also draws the amount, 20% to 60% in steps of 5, from the map's seed (K, 2026-11-16, S278: "'Random' water content to also
+		// mean that the 'amount of water' is effectively randomized between 20% and 60%"); the Amount of water lever is not read then
+		if (w > 0 && process.env.VMAPGEN_WATER_RANDOM_AMOUNT !== '0') {
+			biomes.waterCoverage = 0.2 + 0.05 * Math.floor(roll.next() * 9);
+			roll.rolled.push(`water amount ${Math.round(biomes.waterCoverage * 100)}%`);
+		}
 	}
 	biomes.waterContentMode = w;  // what the buttons said (0 None, 1 Normal, 2 Islands): template maps make their water the engine's way from it
 	if (w === 0) { biomes.waterCoverage = 0; return; }
