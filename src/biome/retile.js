@@ -301,6 +301,27 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 	// map seed 1479105351, 8 of the buildings a quarter or more under another picture were under a mountain, a tree or a palm after the
 	// building rule (the Opus Reviewer, 2026-10-23). VMAPGEN_ART_STACK=0 off.
 	let refuse = null;
+	// every opaque pixel of every building's picture by tile, for the whole-picture rule in refuse below (isBuilding: visitable art that is not a pickup, a stack or a town)
+	let fullPix = null;
+	const fullPx = new Map();
+	if (process.env.VMAPGEN_ART_STACK !== '0' && process.env.VMAPGEN_ART_FULL !== '0') {
+		const { isBuilding, artPix } = require('./content');
+		fullPix = new Map();
+		const pcount = x => { let v = x >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); return (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; };
+		for (const o of rest) {
+			if ((o.l || 0) !== l || !isBuilding(o.template)) continue;
+			let px = 0;
+			for (const [dx, dy, rows] of artPix(o.template)) {
+				const x = o.x + dx, y = o.y + dy;
+				if (x < 0 || y < 0 || x >= W || y >= H) continue;
+				for (let i = 0; i < 32; i++) px += pcount(rows[i]);
+				const c = y * W + x;
+				if (!fullPix.has(c)) fullPix.set(c, []);
+				fullPix.get(c).push({ o, rows });
+			}
+			fullPx.set(o, px);
+		}
+	}
 	if (process.env.VMAPGEN_ART_STACK !== '0') {
 		const { isBuilding, artPix } = require('./content');
 		const bodyPix = new Map(), bodyPx = new Map();
@@ -330,6 +351,24 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 				}
 			}
 			for (const [o, n] of over) if (n >= (bodyPx.get(o) || Infinity) / 4) return true;
+			// and the building's whole picture, not its body tiles alone: a tall picture reaches up over tiles that are not its body, and a piece south of it
+			// covers that part (K, 2026-11-17, S298, Coldshadow seed 6: the Alchemist's Lab sharing six of nine picture cells with two dead trees and a crater;
+			// about ten buildings a 144x144 two-level map under scenery by half a tile or more). A piece drawn after the building that covers a tenth of its
+			// opaque pixels is refused, the pass takes another tile or a smaller piece. VMAPGEN_ART_FULL=0 is the body rule only.
+			if (fullPix) {
+				const cov = new Map();
+				for (const [dx, dy, rows] of artPix({ animation: e.animation, mask: e.mask })) {
+					const x = ax + dx, y = ay + dy;
+					if (x < 0 || y < 0 || x >= W || y >= H) continue;
+					for (const b of fullPix.get(y * W + x) || []) {
+						if (b.o.y >= ay) continue;
+						let n = 0;
+						for (let i = 0; i < 32; i++) { let v = (rows[i] & b.rows[i]) >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); n += (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; }
+						cov.set(b.o, (cov.get(b.o) || 0) + n);
+					}
+				}
+				for (const [o, n] of cov) if (n >= (fullPx.get(o) || Infinity) / 10) return true;
+			}
 			return false;
 		};
 	}
