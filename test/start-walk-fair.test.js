@@ -24,7 +24,9 @@ const CASES = [['tb144x2 s7402', '7402', []], ['no144x2 s8307', '8307', NOS], ['
 // the control seed: the one case that reads far over 2.2 with the passes off (2026-11-14, Opus Map Vision's probe on 072de69, in the suite's environment
 // with VMAPGEN_SPRITE_ROOT set: s8302 8.09 with them off and 1.11 on; 8.08 off before the opus-cold-1114 merge). s8307 was the control's one unfair
 // seed (9.80 off on 69e1e80); the merge re-laid its level 1 and it reads 1.70 now, so it stopped being an example, and s7402 and s8312 never were (1.58 and 1.22)
-const CONTROL = ['no144x2 s8303'];
+// S277 (2026-11-17, rel336): the road and scenery changes moved the stream again and s8303 reads 1.58 with the passes off. Probed with the passes off on that tree one map at a time
+// (.tmp\m1117\s277\probe_off1.txt, probe_off2.txt, tools\probe_walk.js): s8302 reads 8.07 off and 1.12 on, the case the control was before S255 (8.09), s8304 to s8310 1.01 to 1.82
+const CONTROL = ['no144x2 s8302'];
 
 // each owned start's ring-free walk, as start-ground.test.js and the playable gate read it; the ratio of the larger to the smaller
 function ratio(seed, extra, tag, env = {}) {
