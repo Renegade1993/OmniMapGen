@@ -105,6 +105,43 @@ function joinStartRoads(plan, W, H, l, d) {
 		return false;
 	};
 	const colour = t => (t.o.options && t.o.options.owner) || '?';
+	// A path out is a road to the rest of the map or a portal (a monolith or a gate) reached from the start's own ground with no stack in the way (K,
+	// 2026-11-17, S294: "not necessarily always a road out, but a path out, yes. Could be also through a portal"). The start's ground: eight-way
+	// walking from its town's door over ground no building stands on and no stack's ring covers; a portal whose visiting tile lies on it counts
+	// (every portal here has its partner elsewhere: the pair passes keep a pair out of one pocket). VMAPGEN_START_PORTAL_OUT=0 counts roads only.
+	const ringOf = new Uint8Array(N);
+	for (const o of plan.objects || []) {
+		if ((o.l || 0) !== l || !/^(monster|randomMonster)/.test(o.type)) continue;
+		for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const u = o.x + dx, v = o.y + dy; if (u >= 0 && v >= 0 && u < W && v < H) ringOf[v * W + u] = 1; }
+	}
+	const portals = [];
+	for (const o of plan.objects || []) {
+		if ((o.l || 0) !== l || !o.template || !/^(monolithTwoWay|monolithOneWayEntrance|subterraneanGate)/.test(o.type)) continue;
+		for (const [x, y] of d.visitableCells(o.template, o.x, o.y)) if (x >= 0 && y >= 0 && x < W && y < H) portals.push(y * W + x);
+	}
+	const portalOut = t => {
+		if (!portals.length || process.env.VMAPGEN_START_PORTAL_OUT === '0') return false;
+		const seen = new Uint8Array(N), q = [];
+		for (const c of t.vis) if (!seen[c]) { seen[c] = 1; q.push(c); }
+		const want = new Set(portals);
+		for (let h = 0; h < q.length; h++) {
+			if (want.has(q[h]) && !ringOf[q[h]]) return true;
+			const x = q[h] % W, y = (q[h] / W) | 0;
+			for (const [dx, dy] of D8) {
+				const u = x + dx, v = y + dy;
+				if (u < 0 || v < 0 || u >= W || v >= H) continue;
+				const m = v * W + u;
+				if (seen[m] || ringOf[m]) continue;
+				// a portal's own visiting tile is body to the hard grid: stand on it as a goal, do not walk on from it
+				if (want.has(m)) { if (!ringOf[m]) return true; continue; }
+				if (hard[m]) continue;
+				seen[m] = 1; q.push(m);
+			}
+		}
+		return false;
+	};
+	out.portal = [];
+	for (const t of towns) if (portalOut(t)) out.portal.push(colour(t));
 	for (let round = 0; round < towns.length + 1; round++) {
 		const free = mk(false), freeDecor = mk(true);
 		const P = roadPieces(R, W, H);
@@ -117,7 +154,7 @@ function joinStartRoads(plan, W, H, l, d) {
 		for (const [k, n] of votes) if (main < 0 || n > votes.get(main) || (n === votes.get(main) && P.list[k].length > P.list[main].length)) main = k;
 		if (main < 0) main = 0;
 		if (round === 0) out.network = P.list[main] ? P.list[main].length : 0;
-		const off = towns.filter((t, i) => !hits[i].has(main) && !out.noWalk.includes(colour(t)) && !out.left.includes(colour(t)));
+		const off = towns.filter((t, i) => !hits[i].has(main) && !out.portal.includes(colour(t)) && !out.noWalk.includes(colour(t)) && !out.left.includes(colour(t)));
 		if (!off.length) break;
 		const goal = new Set(P.list[main]);
 		// the start with the shortest way first, one per round (a join can serve the next)

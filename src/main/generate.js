@@ -2779,7 +2779,7 @@ async function generateMap(params) {
 				const plm = require('../biome/plan');
 				const anyDecor = o => plm.diagIsDecor(o) || !!(o.template && o.template.mask && !o.template.visitableFrom && !o.template.mask.some(r2 => /[AT]/.test(r2)) && !/^(randomTown|town|mine|abandonedMine|subterraneanGate|monolith|monster|randomMonster)/.test(o.type));
 				const sr = require('../biome/startroads').joinStartRoads(pl, Wl, Hl, li, { blockingCells, visitableCells, isDecor: anyDecor, clearScenery: plm.clearScenery, blocked: bl });
-				if (sr.starts > 1) console.error(`[gen] level ${li}: start towns on the road network: ${sr.starts} start(s), ${sr.pieces} road piece(s) at the end, network ${sr.network} tile(s) before the repair; joined ${sr.joined} (${sr.tiles} tile(s), ${sr.cleared} scenery piece(s) cleared), no walk to the network ${sr.noWalk.length ? sr.noWalk.join(',') : 'none'}, left ${sr.left.length ? sr.left.join(',') : 'none'}`);
+				if (sr.starts > 1) console.error(`[gen] level ${li}: start towns on the road network: ${sr.starts} start(s), ${sr.pieces} road piece(s) at the end, network ${sr.network} tile(s) before the repair; joined ${sr.joined} (${sr.tiles} tile(s), ${sr.cleared} scenery piece(s) cleared), no walk to the network ${sr.noWalk.length ? sr.noWalk.join(',') : 'none'}, left ${sr.left.length ? sr.left.join(',') : 'none'}, path out by a portal ${sr.portal && sr.portal.length ? sr.portal.join(',') : 'none'}`);
 				if (sr.left.length && process.env.VMAPGEN_START_ROAD_FAIL !== '0')
 					throw new Error(`the start town of ${sr.left.join(', ')} has a walk to the other starts but no road to them (level ${li}); the map is not written`);
 			}

@@ -57,6 +57,30 @@ test('a start on a road piece of its own is joined to the network (a plan with t
 	assert.strictEqual(roadPieces(plan.roadCells, W, H).list.length, 1, 'one piece after the join');
 });
 
+test('a start with a portal reached from its own ground and no stack in the way has a path out and gets no road; a stack on the portal takes it back (K, S294)', () => {
+	const W = 40, H = 20;
+	const mk = () => {
+		const R = new Set();
+		for (let x = 2; x <= 8; x++) R.add(5 * W + x);
+		for (let x = 20; x <= 30; x++) R.add(5 * W + x);
+		const town = (x, y, owner) => ({ type: 'town', l: 0, x, y, template: { mask: ['x'] }, options: { owner } });
+		const portal = { type: 'monolithTwoWay', l: 0, x: 6, y: 7, template: { mask: ['x'] }, options: {} };
+		return { R, town, portal };
+	};
+	const d = { blockingCells: (t, x, y) => [[x, y]], visitableCells: (t, x, y) => [[x, y]], isDecor: () => false, clearScenery: () => 0, blocked: new Uint8Array(W * H) };
+	const a = mk();
+	const planA = { roadCells: a.R, objects: [a.town(3, 5, 'red'), a.town(28, 5, 'blue'), a.portal], p: {}, openMask: null };
+	const rA = joinStartRoads(planA, W, H, 0, d);
+	assert.ok(rA.portal.includes('red'), 'red has a portal out (the open ground is shared with blue, who has it too)');
+	assert.strictEqual(rA.joined, 0, 'no road is added');
+	const b = mk();
+	const stack = { type: 'randomMonster', l: 0, x: 6, y: 7, template: { mask: ['x'] }, options: {} };
+	const planB = { roadCells: b.R, objects: [b.town(3, 5, 'red'), b.town(28, 5, 'blue'), b.portal, stack], p: {}, openMask: null };
+	const rB = joinStartRoads(planB, W, H, 0, d);
+	assert.deepStrictEqual(rB.portal, [], 'a stack on the portal: no path out by it');
+	assert.strictEqual(rB.joined, 1, 'the road is added');
+});
+
 test('a start walled off from the network by an object no road may cross is reported, not joined', () => {
 	const W = 40, H = 10;
 	const R = new Set();
