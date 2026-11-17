@@ -103,9 +103,10 @@ function card(file, args) {
 		// road ends by the engine's rule (lib/sight.js roadEnds): every end should touch a town, mine, monolith, gate or guard
 		const re = A.roadEnds, bad = re.filter(e => e.kind !== 'proper');
 		const show = e => `(${e.at[0]},${e.at[1]}${e.l ? ',L1' : ''})` + (e.kind === 'gap' ? ` ${Math.max(Math.abs(e.gapTo[0] - e.at[0]), Math.abs(e.gapTo[1] - e.at[1])) - 1} tiles short of the road at (${e.gapTo})`
+			: e.kind === 'short of the door' ? ` stops ${e.to}${e.touch.length ? ', at ' + e.touch.join(' ') : ''}`
 			: ` ${e.arm} tiles from ${e.to}${e.touch.length ? ', at ' + e.touch.join(' ') : ''}`);
-		L.push(`ROAD ENDS ${re.length}: improper ${bad.length} (at nothing ${A.metrics.road_end_at_nothing}, at an object ${A.metrics.road_end_at_object}, gaps ${A.metrics.road_gap}); the engine's maps wider than 72 have none`);
-		for (const k of ['at nothing', 'at an object', 'gap']) {
+		L.push(`ROAD ENDS ${re.length}: improper ${bad.length} (at nothing ${A.metrics.road_end_at_nothing}, at an object ${A.metrics.road_end_at_object}, gaps ${A.metrics.road_gap}, short of the door ${A.metrics.road_end_short}); the engine's maps wider than 72 have none`);
+		for (const k of ['at nothing', 'at an object', 'gap', 'short of the door']) {
 			const xs = bad.filter(e => e.kind === k);
 			if (xs.length) L.push(`  ${k}: ${xs.slice(0, lim(10)).map(show).join('  ')}${xs.length > lim(10) ? ' ...' : ''}`);
 		}

@@ -458,6 +458,16 @@ function roadEnds(M) {
 				}
 			}
 		}
+		// "short of the door" (K, 2026-11-16, S281, "still seeing improper road terminations": a road ends beside a stack that stands in front of a house,
+		// one or two tiles short of its door; the check called it proper because a door's approach tile lay in the 3x3 round the end): the end serves a
+		// town, mine, monolith or gate only through an approach tile, no entry tile of one lies on the end or beside it on a side, and one does lie within 3
+		if (e.kind === 'proper') {
+			const dests = touch.filter(t => ROAD_DEST.has(t.kind));
+			if (dests.length && !dests.some(t => t.o.entr.some(([ex, ey]) => t.o.l === l && Math.abs(ex - x) + Math.abs(ey - y) <= 1))) {
+				const d = Math.min(...dests.flatMap(t => t.o.entr.map(([ex, ey]) => Math.max(Math.abs(ex - x), Math.abs(ey - y)))));
+				if (d >= 1 && d <= 3) { e.kind = 'short of the door'; e.to = `${dests[0].kind} door ${d} tile(s) off`; }
+			}
+		}
 		if (e.kind === 'proper' && !touch.some(t => ROAD_DEST.has(t.kind)) && !guard) {
 			const a = armOf(l, x, y);
 			e.arm = a.arm; e.to = a.to;
@@ -644,6 +654,7 @@ function analyse(file) {
 		road_end_at_nothing: re.filter(e => e.kind === 'at nothing').length,
 		road_end_at_object: re.filter(e => e.kind === 'at an object').length,
 		road_gap: re.filter(e => e.kind === 'gap').length,
+		road_end_short: re.filter(e => e.kind === 'short of the door').length,
 		town_joined: (() => { const k = r.map(x => x.joins.byKind.town || { n: 0, joined: 0 }); const n = k.reduce((a, b) => a + b.n, 0); return n ? k.reduce((a, b) => a + b.joined, 0) / n : null; })(),
 		// zones (or, with no sidecar, regions) without a town that hold neutral dragon dwellings: Coldshadow's central
 		// dragon caches are junction zones like that (K, 2026-10-01: "the non-town coldshadows central dragon cache ones")

@@ -2762,6 +2762,13 @@ async function generateMap(params) {
 				const lc2 = require('../biome/roadsplines').breakLoops(roadCells, Wl, Hl, keepEnd, Number(process.env.VMAPGEN_LATE_LOOP || 40), zl ? c => zl[c] : null, true);
 				if (lc2) console.error(`[gen] level ${li}: small road loops closed by the forbidden-side join broken again: ${lc2} tile(s)`);
 			}
+			// a road that ends beside a door goes on to it (roaddoors.js; K, 2026-11-16, S281: a road stops a tile or two short of a house beside the stack
+			// that guards it). VMAPGEN_ROAD_DOORS=0 skips it.
+			if (roadCells && roadCells.size && process.env.VMAPGEN_ROAD_DOORS !== '0') {
+				const rd = require('../biome/roaddoors').joinRoadEndsToDoors(plans[li], lv.width, lv.height, li, { blockingCells, visitableCells, allowedDirs });
+				if (rd.ends) console.error(`[gen] level ${li}: road ends beside a door: ${rd.ends}, taken on to it: ${rd.joined} (${rd.tiles} tile(s)), left ${rd.left}`);
+				if (rd.joined) { const th2 = require('../biome/gateroad').thinRoadBlocks(plans[li], lv.width, lv.height, li, { visitableCells }); if (th2.thinned) console.error(`[gen] level ${li}: road tiles taken out of 2x2 blocks after the door joins: ${th2.thinned}`); }
+			}
 			// every start town on the one road network (K, 2026-11-16, S277: green's town on an 11-tile piece of its own, the other three
 			// starts on one of 698 tiles): the check and the repair, last of the road passes. A start with a walk to the network and no road
 			// to it after the repair is an error, the map is not written. VMAPGEN_START_ROAD=0 skips the pass, VMAPGEN_START_ROAD_FAIL=0 only logs.
