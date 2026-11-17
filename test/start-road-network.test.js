@@ -30,10 +30,14 @@ function startPieces(file) {
 	});
 }
 
-const gen = (seed, extra = []) => {
+// K's recorded options of that map (the paths, the seed and declaremods dropped: the test install has no mods)
+const K = JSON.parse('{"w":"108","h":"108","players":"4","humans":"4","factions":"random,random,random,random","bio.compOnly":"0","teams":"red,tan;blue,green","humancolors":"red","preset":"nostalgia","bio.artifactDensity":"0.006","bio.artifactRichness":"0.5","bio.biomeWobble":"0.6","bio.bonusDensity":"1","bio.borderSolidity":"1","bio.chokeGuardRatio":"0.7","bio.decorDensity":"1","bio.dragonIslandLayout":"0","bio.dwellingDensity":"1","bio.guardBottlenecks":"1","bio.guardDensity":"1","bio.guardDistance":"0","bio.guardDwellings":"1","bio.guardGradient":"0","bio.guardMines":"1","bio.guardPortals":"2","bio.guardShare":"1","bio.guardTreasure":"1","bio.highLootRatio":"0.25","bio.interconnectPortal":"0.2","bio.interconnectivity":"0.6","bio.islandShape":"1","bio.layoutFamily":"7","bio.lootGuardWeight":"1","bio.lowLootRatio":"0.25","bio.mineDensity":"1","bio.mineGuardWeight":"1","bio.monsterStrength":"0","bio.objectGuardShare":"0.75","bio.openPathNoRoad":"0.55","bio.openPathRoad":"0.26","bio.pickupDensity":"1","bio.resourceDensity":"1","bio.richPlacement":"3","bio.riverAmount":"1","rivers":"1","bio.roadCobblestone":"1","bio.roadDirt":"1","bio.roadGravel":"1","bio.roadNetwork":"1","bio.roadType":"2","bio.stackScale":"1","bio.startZoneShare":"0.5","bio.starterMines":"1","bio.subterraneanGateRatio":"1","bio.subterraneanNarrow":"0.6","bio.subterraneanOpen":"0.57","bio.teams":"1","bio.townRatio":"0.1","bio.undergroundStarts":"4","bio.waterAccess":"2","bio.waterBuildings":"1","bio.waterContent":"0","bio.waterCoverage":"0","bio.waterShape":"8","bio.waterTreasure":"1","bio.zoneCap":"300","bio.zoneCells":"400","bio.zoneSizeVariety":"0"}');
+
+const gen = (seed, extra = [], opts = null) => {
 	const out = path.join(testTmp(), `vmapgen_startroad_${seed}.vmap`);
-	const a = [path.join(__dirname, '../src/main/generate-cli.js'), '--out', out, '--w', '108', '--h', '108', '--players', '4', '--humans', '1',
-		'--declaremods', '0', '--seed', String(seed), ...extra];
+	const a = [path.join(__dirname, '../src/main/generate-cli.js'), '--out', out, '--declaremods', '0', '--seed', String(seed), ...extra];
+	if (opts) for (const [k, v] of Object.entries(opts)) a.push('--' + k, String(v));
+	else a.push('--w', '108', '--h', '108', '--players', '4', '--humans', '1');
 	const r = spawnSync(process.execPath, a, { encoding: 'utf8', timeout: 380000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
 	assert.strictEqual(r.status, 0, (r.stderr || '').slice(-800));
 	return out;
@@ -66,6 +70,15 @@ test('a start walled off from the network by an object no road may cross is repo
 	const r = joinStartRoads(plan, W, H, 0, d);
 	assert.strictEqual(r.joined, 0);
 	assert.deepStrictEqual(r.noWalk.concat(r.left).length, 1, 'the cut-off start is named');
+});
+
+test("K's recorded options, seed 125077493 (108x108 four players, the nostalgia preset): every start town touches one and the same road piece", { timeout: 400000 }, () => {
+	const out = gen(125077493, [], K);
+	const st = startPieces(out);
+	for (const f of [out, out + '.zones.json', out.replace(/\.vmap$/, '.zonedump.json'), out + '.log']) fs.rmSync(f, { force: true });
+	assert.ok(st.length >= 4, 'the starts are read: ' + JSON.stringify(st));
+	const first = new Set(st[0].pieces);
+	assert.ok(st.every(s => s.pieces.some(p => first.has(p))), 'one network: ' + JSON.stringify(st));
 });
 
 for (const seed of [125077493, 7]) {
