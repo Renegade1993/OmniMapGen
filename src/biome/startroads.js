@@ -71,7 +71,7 @@ function joinStartRoads(plan, W, H, l, d) {
 	const towns = startTowns(plan, l, W, H, d.visitableCells);
 	out.starts = towns.length;
 	if (towns.length < 2) return out;
-	const water = plan.p && plan.p.water, om = plan.openMask;
+	const water = l === 0 && plan.p && plan.p.water, om = plan.openMask;   // water lies on the surface only
 	// ground the road may not use at all (a building, a mine, a town, a gate: anything that is not scenery, a pickup or a stack) and
 	// scenery that may go for it
 	const hard = new Uint8Array(N), decor = new Uint8Array(N), decorOf = new Map();

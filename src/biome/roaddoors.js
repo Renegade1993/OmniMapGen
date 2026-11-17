@@ -17,7 +17,8 @@ const DEST = /^(town|randomTown|mine|abandonedMine|monolith|subterraneanGate)/;
 function joinRoadEndsToDoors(plan, W, H, l, d) {
 	const R = plan.roadCells, out = { ends: 0, joined: 0, tiles: 0, left: 0 };
 	if (!R || !R.size) return out;
-	const N = W * H, water = plan.p && plan.p.water, om = plan.openMask;
+	// water lies on the surface only (generate.js reads the mask for level 0 alone)
+	const N = W * H, water = l === 0 && plan.p && plan.p.water, om = plan.openMask;
 	const walkers = new Set(), hard = new Uint8Array(N);
 	for (let c = 0; c < N; c++) if ((water && water[c]) || (om && !om[c])) hard[c] = 1;
 	const dests = [];
