@@ -1403,8 +1403,9 @@ function startExits(out, edges, seeds, pairs, ctx, isStart) {
 		if ((hops < Infinity && walk < SHORTCUT) || (pocket && hops < Infinity)) dropped++; else pairs.splice(i, 0, save);
 	}
 	out.startRoads = roads;
+	out.startHops = starts.map(s => { const d = new Map([[s, 0]]), q = [s], adj = links(true); for (let h = 0; h < q.length; h++) for (const n of adj.get(q[h]) || []) if (!d.has(n) && !(isStart(n) && n !== s)) { d.set(n, d.get(q[h]) + 1); q.push(n); } return d.has(mid) ? d.get(mid) : -1; });
 	out.startExitLog = `middle biome ${mid}; ${opened.length} link(s) opened or roaded for the starts${opened.length ? ' (' + opened.join(', ') + ')' : ''}; `
-		+ `${landed} portal link(s) that were no shortcut made land, ${dropped} portal pair(s) between biomes with no border left out`;
+		+ `${landed} portal link(s) that were no shortcut made land, ${dropped} portal pair(s) between biomes with no border left out; biome hops to the middle ${out.startHops.join('/')}`;
 }
 
 /**
