@@ -2747,6 +2747,21 @@ async function generateMap(params) {
 				if (fs2.cut && process.env.VMAPGEN_FORBID_CUT_TRIM !== '0') { const t2 = require('../biome/gateroad').trimRoadStubs(plf, Wf, Hf, li, visitableCells, blockingCells, allowedDirs); if (t2.cut) console.error(`[gen] level ${li}: road stubs the forbidden-side cut left trimmed: ${t2.cut}`); }
 				if (fs2.cut || fs2.kept) console.error(`[gen] level ${li}: roads onto a gate or monolith across a forbidden side cut back: ${fs2.cut} (${fs2.tiles} tile(s), ${fs2.rerouted} joined again from a side it is entered from, ${fs2.roadless} with no other way in left without a road), left: ${fs2.kept}`);
 			}
+			// The loop pass once more after the forbidden-side cut: it joins a monolith or gate again from a side it is entered from and can close a ring
+			// the loop pass above had broken (K, 2026-11-16, S274, his 108x108 seed 561548685: the road round the monolith (9,60) and the stack in front of
+			// it, left side, the tiles (8,62) to (12,62) and the right side, a closed rectangle of 13 tiles). Same keep set, same limit.
+			// VMAPGEN_LOOPS_AFTER_SIDES=0 skips it.
+			if (roadCells && roadCells.size && process.env.VMAPGEN_LAST_LOOPS !== '0' && process.env.VMAPGEN_LOOPS_AFTER_SIDES !== '0') {
+				const Wl = lv.width, Hl = lv.height, zl = plans[li].zone;
+				const keepEnd = new Set((plans[li].objects || []).filter(o => (o.l || 0) === li && /^(randomMonster|monster)/.test(o.type)).map(o => o.y * Wl + o.x));
+				for (const o of plans[li].objects || []) {
+					if ((o.l || 0) !== li || !o.template || !o.template.mask || !/^(town$|randomTown$|subterraneanGate|monolith)/.test(o.type)) continue;
+					for (const [vx, vy] of visitableCells(o.template, o.x, o.y)) { keepEnd.add(vy * Wl + vx); for (const [dx, dy] of (o.template.visitableFrom ? require('../biome/content').allowedDirs(o.template) : [[0, 1]])) { const sx = vx + dx, sy = vy + dy; if (sx >= 0 && sy >= 0 && sx < Wl && sy < Hl && roadCells.has(sy * Wl + sx)) keepEnd.add(sy * Wl + sx); } }
+				}
+				for (const op of plans[li].openings || []) if (op.kind === 'openRoad') for (const c of op.hole || []) keepEnd.add(c);
+				const lc2 = require('../biome/roadsplines').breakLoops(roadCells, Wl, Hl, keepEnd, Number(process.env.VMAPGEN_LATE_LOOP || 40), zl ? c => zl[c] : null, true);
+				if (lc2) console.error(`[gen] level ${li}: small road loops closed by the forbidden-side join broken again: ${lc2} tile(s)`);
+			}
 			// every start town on the one road network (K, 2026-11-16, S277: green's town on an 11-tile piece of its own, the other three
 			// starts on one of 698 tiles): the check and the repair, last of the road passes. A start with a walk to the network and no road
 			// to it after the repair is an error, the map is not written. VMAPGEN_START_ROAD=0 skips the pass, VMAPGEN_START_ROAD_FAIL=0 only logs.
