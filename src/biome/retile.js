@@ -88,7 +88,7 @@ function shuffle(arr, rng) {
  * `uncovered` are cells no piece could reach without leaving the allowed set;
  * the caller decides what to do with them (the engine leaves them bare).
  */
-function retile({ W, H, allowed, region, groupsFor, rng, refuse = null }) {
+function retile({ W, H, allowed, region, groupsFor, rng, refuse = null, onPlace = null }) {
 	const N = W * H;
 	// 0 = not ours, 1 = waiting for art, 2 = covered
 	const state = new Uint8Array(N);
@@ -157,6 +157,7 @@ function retile({ W, H, allowed, region, groupsFor, rng, refuse = null }) {
 		if (REP) { const k = bkey(ax, ay); if (!bucket.has(k)) bucket.set(k, []); bucket.get(k).push({ anim: e.animation, x: ax, y: ay }); }
 		placed.push({ x: ax, y: ay, type: e.type, animation: e.animation,
 			mask: e.mask, cells, ...(e.subtype ? { subtype: e.subtype } : {}) });
+		if (onPlace) onPlace(e, ax, ay);
 	}
 	return { placed, uncovered };
 }
@@ -304,6 +305,7 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 	// every opaque pixel of every building's picture by tile, for the whole-picture rule in refuse below (isBuilding: visitable art that is not a pickup, a stack or a town)
 	let fullPix = null;
 	const fullPx = new Map();
+	const fullCum = new Map();   // the pixels of each building's picture the pieces placed so far already cover (onPlace)
 	if (process.env.VMAPGEN_ART_STACK !== '0' && process.env.VMAPGEN_ART_FULL !== '0') {
 		const { isBuilding, artPix } = require('./content');
 		fullPix = new Map();
@@ -369,7 +371,9 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 						cov.set(b.o, (cov.get(b.o) || 0) + n);
 					}
 				}
-				for (const [o, n] of cov) if (n >= (fullPx.get(o) || Infinity) / 10) return true;
+				// one piece covering a tenth of the picture, or the pieces together past a budget of 400 pixels (under half a tile, the overlap scanner's own floor is 512) or a
+				// twentieth of it: Coldshadow's big buildings (a Dragon Utopia, 12,000 pixels) sat under three or four pieces of 8 percent each
+				for (const [o, n] of cov) if (n >= (fullPx.get(o) || Infinity) / 10 || n + (fullCum.get(o) || 0) > Math.min(400, (fullPx.get(o) || Infinity) / 20)) return true;
 			}
 			return false;
 		};
@@ -420,7 +424,21 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 			if (process.env.VMAPGEN_DECOR_TRACE) process.on('exit', () => console.error(`[decor] level ${l}: pieces refused over a pickup ${refused}, calls ${calls}, loot ${lootPix.size} tiles, max share ${maxr.toFixed(2)}`));
 		}
 	}
-	const r = retile({ W, H, allowed, region, groupsFor, rng, refuse });
+	// every piece placed adds its overlap to the buildings it lies over, for the budget in refuse
+	const onPlace = fullPix ? (e, ax, ay) => {
+		const { artPix } = require('./content');
+		for (const [dx, dy, rows] of artPix({ animation: e.animation, mask: e.mask })) {
+			const x = ax + dx, y = ay + dy;
+			if (x < 0 || y < 0 || x >= W || y >= H) continue;
+			for (const b of fullPix.get(y * W + x) || []) {
+				if (b.o.y > ay) continue;
+				let n = 0;
+				for (let i = 0; i < 32; i++) { let v = (rows[i] & b.rows[i]) >>> 0; v = v - ((v >>> 1) & 0x55555555); v = (v & 0x33333333) + ((v >>> 2) & 0x33333333); n += (((v + (v >>> 4)) & 0x0f0f0f0f) * 0x01010101) >>> 24; }
+				if (n) fullCum.set(b.o, (fullCum.get(b.o) || 0) + n);
+			}
+		}
+	} : null;
+	const r = retile({ W, H, allowed, region, groupsFor, rng, refuse, onPlace });
 
 	const unc = new Set(r.uncovered);
 	const kept = unc.size ? scenery.filter(o => blockingCells(o.template, o.x, o.y)
