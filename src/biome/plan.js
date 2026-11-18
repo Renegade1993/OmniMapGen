@@ -2266,8 +2266,25 @@ function guardZoneJoins(pl, l, W, H, blocked, p, seed, linkGuardsOff, opts = {})
 	if (process.env.VMAPGEN_JOIN_ROAD_GUARD !== '0' && todo.length) {
 		for (const [a, b] of todo.slice()) {
 			if (ring[a] || ring[b] || !walkOn[a] || !walkOn[b]) continue;
-			const g = [a, b].find(c => roads.has(c) && !(blocked[base + c] & OCCUPIED) && !(water && water[c]) && !door.has(c)
-				&& ![-1, 0, 1].some(ey => [-1, 0, 1].some(ex => door.has(((c / W) | 0) * W + c % W + ey * W + ex))));
+			const okTile = c => !(blocked[base + c] & OCCUPIED) && !(water && water[c]) && !door.has(c)
+				&& ![-1, 0, 1].some(ey => [-1, 0, 1].some(ex => door.has(((c / W) | 0) * W + c % W + ey * W + ex)));
+			// the 2-tile spacing first (the stock rule, the suite's "no stack beside another": the first build put the guard on the road tile with no spacing test and
+			// made stacks beside each other): a free tile within one of the step whose ring covers it, off the road before on it; the road tile itself only when none
+			// keeps the spacing. VMAPGEN_JOIN_ROAD_SPACING=0 is the first build.
+			let g;
+			if (process.env.VMAPGEN_JOIN_ROAD_SPACING !== '0') {
+				const cands = [];
+				for (const s of [a, b]) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+					const u = (s % W) + dx, v = ((s / W) | 0) + dy;
+					if (u < 1 || v < 1 || u >= W - 1 || v >= H - 1) continue;
+					const c = v * W + u;
+					if (cands.includes(c) || !okTile(c) || tightJ(c) || !footprintFits(OBJECT_TEMPLATES.randomMonster, u, v, l, W, H, blocked, true)) continue;
+					cands.push(c);
+				}
+				g = cands.find(c => !roads.has(c));
+				if (g === undefined) g = cands[0];
+			}
+			if (g === undefined) g = [a, b].find(c => roads.has(c) && okTile(c));
 			if (g === undefined) continue;
 			const gx = g % W, gy = (g / W) | 0;
 			pl.objects.push(objectEntry('randomMonsterLevel3', gx, gy, l, OBJECT_TEMPLATES.randomMonster, 'object', monsterOptions(3, p, rng)));

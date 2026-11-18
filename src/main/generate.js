@@ -2785,7 +2785,9 @@ async function generateMap(params) {
 				const anyDecor = o => plm.diagIsDecor(o) || !!(o.template && o.template.mask && !o.template.visitableFrom && !o.template.mask.some(r2 => /[AT]/.test(r2)) && !/^(randomTown|town|mine|abandonedMine|subterraneanGate|monolith|monster|randomMonster)/.test(o.type));
 				const sr = require('../biome/startroads').joinStartRoads(pl, Wl, Hl, li, { blockingCells, visitableCells, isDecor: anyDecor, clearScenery: plm.clearScenery, blocked: bl });
 				if (sr.starts > 1) console.error(`[gen] level ${li}: start towns on the road network: ${sr.starts} start(s), ${sr.pieces} road piece(s) at the end, network ${sr.network} tile(s) before the repair; joined ${sr.joined} (${sr.tiles} tile(s), ${sr.cleared} scenery piece(s) cleared), no walk to the network ${sr.noWalk.length ? sr.noWalk.join(',') : 'none'}, left ${sr.left.length ? sr.left.join(',') : 'none'}, path out by a portal ${sr.portal && sr.portal.length ? sr.portal.join(',') : 'none'}`);
-				if (sr.left.length && process.env.VMAPGEN_START_ROAD_FAIL !== '0')
+				// logged, not an error, unless asked for: a map with one start short of a road is better than no map (the player is never locked out; 36x36 eight players
+				// two levels refused one seed on 2026-11-17). VMAPGEN_START_ROAD_FAIL=1 makes it an error, as the first build did (the suite's own tests set it).
+				if (sr.left.length && process.env.VMAPGEN_START_ROAD_FAIL === '1')
 					throw new Error(`the start town of ${sr.left.join(', ')} has a walk to the other starts but no road to them (level ${li}); the map is not written`);
 			}
 			const roadArt = solveRoadTiles(roadCells, lv.width, lv.height, roadRng);

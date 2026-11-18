@@ -12,7 +12,7 @@
  */
 'use strict';
 
-const { route } = require('./roadnet');
+const { route, addElbows, DIRS8 } = require('./roadnet');
 
 const D8 = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
 const D4 = [[0, -1], [1, 0], [0, 1], [-1, 0]];
@@ -166,6 +166,12 @@ function joinStartRoads(plan, W, H, l, d) {
 			let path = route([...src].filter(c => !hard[c]), goal, W, H, free, l, R, D4);
 			let withScenery = false;
 			if (!path) { path = route([...src].filter(c => !hard[c]), goal, W, H, freeDecor, l, R, D4); withScenery = !!path; }
+			// a way that needs a diagonal step (two tiles meeting at a corner between blocked tiles): the eight-way run, with an elbow tile added where one is free
+			// (36x36 eight players two levels seed 4x: pink's way to the others was corner steps only; the map was refused)
+			if (!path) {
+				const p8 = route([...src].filter(c => !hard[c]), goal, W, H, freeDecor, l, R, DIRS8, null, { elbow: 1.2, corner: 3 });
+				if (p8) { path = addElbows(p8, W, H, freeDecor, l); withScenery = true; }
+			}
 			if (!path) {
 				if (walkTo(src, goal)) out.left.push(colour(t)); else out.noWalk.push(colour(t));
 				continue;
