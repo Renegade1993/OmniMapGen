@@ -438,7 +438,14 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 			}
 		}
 	} : null;
-	const r = retile({ W, H, allowed, region, groupsFor, rng, refuse, onPlace });
+	// a before and after of one scenery rule must differ in the scenery alone: VMAPGEN_RETILE_OWN_RNG=1 gives the retile its own random stream (one draw from the shared one,
+	// whatever the pieces drawn), so a rule that refuses more pieces draws more or fewer numbers without moving the passes after it (S298, K: "they are different map generations"). A proof switch, off by default.
+	let rr = rng;
+	if (process.env.VMAPGEN_RETILE_OWN_RNG === '1') {
+		let s = (rng() * 4294967296) >>> 0;
+		rr = () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+	}
+	const r = retile({ W, H, allowed, region, groupsFor, rng: rr, refuse, onPlace });
 
 	const unc = new Set(r.uncovered);
 	const kept = unc.size ? scenery.filter(o => blockingCells(o.template, o.x, o.y)
@@ -450,6 +457,7 @@ function retileLevel({ objects, zone, biomeTerrain, W, H, l, rng, isScenery,
 		const tally = (list, f) => { const m = new Map(); for (const o of list) { const k = String((o.template && o.template.animation) || o.animation || '?').split('/').pop(); m.set(k, (m.get(k) || 0) + 1); } return [...m].sort((x, y) => y[1] - x[1]).slice(0, 6).map(([k, v]) => `${k}:${v}`).join(' '); };
 		const restScen = rest.filter(o => (o.l || 0) === l && o.template && o.template.mask && !o.template.mask.some(r2 => /[AT]/.test(r2)));
 		console.error(`[decor] level ${l}: retiled ${tally(r.placed)} | kept ${tally(kept)} | untouched non-visitable ${tally(restScen)}`);
+		if (process.env.VMAPGEN_DECOR_TRACE === 'kept') for (const o of kept) console.error(`[decor-kept] L${l} (${o.x},${o.y}) ${o.type} ${String((o.template && o.template.animation) || '').split('/').pop()}`);
 		// where single-tile pieces come from: the blocked clusters handed in (8-way) by size, against the pieces placed by size
 		const seen = new Uint8Array(N), comp = { 1: 0, 2: 0, '3-4': 0, '5-8': 0, '9+': 0 }, pcs = { 1: 0, 2: 0, '3-4': 0, '5-8': 0, '9+': 0 };
 		const bin = n => n === 1 ? 1 : n === 2 ? 2 : n <= 4 ? '3-4' : n <= 8 ? '5-8' : '9+';
