@@ -964,11 +964,18 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 				const wasOver = overFront(mc);
 				let pick = -1, ps = Infinity, pickWall = null, pickReloc = [];
 				const whyNot = [];
+				// a 1x1 pile on a tile beside the stack changes places with it (the pile ends in the new ring, the stack on the tile that rings the whole front): a front tile that is a
+				// corridor cannot be closed ("would cut") and no free tile rings it all (S253, K's Headquarters lines, grid p2_108L2_s1 mine (91,20): front tiles (89,21) open,
+				// (90,21) an artifact, (91,21) the stack). VMAPGEN_GOLD_SWAP_PILE=0 off.
+				let pickSwap = null;
+				const pileAtTile = c => pl.objects.find(q => PICKUP.test(q.type) && (q.l || 0) === l && q.y * W + q.x === c && q.template && q.template.mask && blockingCells(q.template, q.x, q.y).length === 1);
+				const swapPile = (c, from) => process.env.VMAPGEN_GOLD_SWAP_PILE !== '0' && within(c, from, 1) && !!pileAtTile(c);
 				for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
 					const c = at((mc % W) + dx, ((mc / W) | 0) + dy);
 					if (c < 0 || c === mc) continue;
 					const wall = !isFree(c) && land(c) ? pl.objects.find(q => q.__wall && (q.l || 0) === l && q.x === c % W && q.y === ((c / W) | 0)) : null;
-					if ((!isFree(c) && !wall) || pickAt.has(c) || (blocked[base + c] & RESERVED) || roads.has(c) || water && water[c] || (zone[c] !== zone[o.y * W + o.x] && !app.includes(c))) { if (c >= 0) whyNot.push(`(${c % W},${(c / W) | 0}) ${!isFree(c) && !wall ? 'occupied' : pickAt.has(c) ? 'pile' : (blocked[base + c] & RESERVED) ? 'reserved' : roads.has(c) ? 'road' : 'zone'}`); continue; }
+					const swappable = pickAt.has(c) && swapPile(c, mc);
+					if ((!isFree(c) && !wall && !swappable) || (pickAt.has(c) && !swappable) || (blocked[base + c] & RESERVED) || roads.has(c) || water && water[c] || (zone[c] !== zone[o.y * W + o.x] && !app.includes(c))) { if (c >= 0) whyNot.push(`(${c % W},${(c / W) | 0}) ${!isFree(c) && !wall ? 'occupied' : pickAt.has(c) ? 'pile' : (blocked[base + c] & RESERVED) ? 'reserved' : roads.has(c) ? 'road' : 'zone'}`); continue; }
 					const cx = c % W, cy = (c / W) | 0;
 					if (cx < 1 || cy < 1 || cx >= W - 1 || cy >= H - 1 || byStartRoad(c)) { whyNot.push(`(${cx},${cy}) edge/startway`); continue; }
 					// beside a road is allowed (the stock mines' guards stand on the access tile, road or not), never on one or on a start's way; it ranks last
@@ -1021,14 +1028,23 @@ function closeApproaches(pl, l, W, H, blocked, p, d) {
 					// a stack on one of the mine's own front tiles is the stock mine's guard (on the access tile, the way in goes through it); elsewhere its ring must cut no way
 					if (!app.includes(c) && (!simple(c) || cutsWay(c))) { whyNot.push(`(${cx},${cy}) cuts`); continue; }
 					const sc = Math.max(Math.abs(dx), Math.abs(dy)) * 2 + near.length + byRoad * 3 + (wall ? 1 : 0) + reloc.length * 4;
-					if (sc < ps) { ps = sc; pick = c; pickWall = wall; pickReloc = reloc; }
+					if (sc < ps) { ps = sc; pick = c; pickWall = wall; pickReloc = reloc; pickSwap = swappable ? pileAtTile(c) : null; }
 				}
 				if (pick < 0) { if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldresite] mine (${o.x},${o.y}) stack (${mc % W},${(mc / W) | 0}) cannot move: need ${need.map(a => (a % W) + ',' + ((a / W) | 0)).join(' ')}; ` + whyNot.join('; ')); continue; }
 				if (pickWall) { pl.objects.splice(pl.objects.indexOf(pickWall), 1); blocked[base + pick] &= ~OCCUPIED; out.goldWallGave = (out.goldWallGave || 0) + 1; }
+				if (pickSwap) { blocked[base + pick] &= ~OCCUPIED; pickAt.delete(pick); }
 				blocked[base + mc] &= ~OCCUPIED; monsterAt.delete(mc);
 				m.x = pick % W; m.y = (pick / W) | 0; m.instanceName = `${m.type}_${m.x}_${m.y}_${l}`;
 				footprintBlock(d.monsterTpl, m.x, m.y, l, W, H, blocked);
 				monsterAt.add(pick);
+				if (pickSwap) {
+					pickSwap.x = mc % W; pickSwap.y = (mc / W) | 0;
+					if (pickSwap.instanceName) pickSwap.instanceName = `${pickSwap.type}_${pickSwap.x}_${pickSwap.y}_${l}`;
+					footprintBlock(pickSwap.template, pickSwap.x, pickSwap.y, l, W, H, blocked);
+					pickAt.add(mc);
+					out.goldPileSwapped = (out.goldPileSwapped || 0) + 1;
+					if (process.env.VMAPGEN_GOLD_TRACE) console.error(`[goldswap] mine (${o.x},${o.y}): the stack to (${pick % W},${(pick / W) | 0}), the ${pickSwap.type} to (${pickSwap.x},${pickSwap.y})`);
+				}
 				ring.clear(); for (const k of monsterAt) addRing(k);
 				out.goldResited = (out.goldResited || 0) + 1;
 				for (const [q, to] of pickReloc.filter(([q2]) => !PICKUP.test(q2.type))) {
