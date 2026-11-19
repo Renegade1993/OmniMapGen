@@ -8524,7 +8524,8 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			params: anchors && (l > 0 || anchors.some(Boolean))
 				? { ...p, layoutAnchors: anchors, ...(above ? { gateSitesAbove: above } : {}) } : p,
 			terrainShortIds, tileIdsByShort, numTiles, blocked,
-			underground: l > 0, objectPools, terrainInfo,
+			// a mirrored map's second level is an overworld level (template.js mirrorTemplate): no rock, no cave floor, the surface's ground
+			underground: l > 0 && !(p.zonePlan && p.zonePlan.mirrored), objectPools, terrainInfo,
 		}));
 	}
 	setPhaseLevel(0);

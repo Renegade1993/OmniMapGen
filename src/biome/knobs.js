@@ -190,6 +190,10 @@ const KNOBS = [
 	{ key: 'subterraneanOpen', page: 'underground', label: 'Open cave floor',
 		help: 'How much of the underground is open floor rather than solid rock. Real two-level maps leave about 57% open.',
 		min: 0.2, max: 0.9, step: 0.05 },
+	// S341 (K, 2026-11-19: "a map generation tick option somewhere to set the subterranean layer to mimic the overworld")
+	{ key: 'mirrorLevels', page: 'underground', label: 'Second Level Like the Overworld',
+		help: 'The second level is made like the overworld: the same kind of map again, with its own starts and its own centre, joined to the first by portals, and no cave floor or rock. Narrow tunnels and Open cave floor then do nothing. It does nothing on a map of one level or on a template that is one fixed map.',
+		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']] },
 
 	// ---- scenery
 	{ key: 'decorDensity', page: 'scenery', label: 'Scenery',

@@ -38,7 +38,7 @@ const { buildPatterns, assignTerrainViews, smoothForPatterns } = require('../exp
 const { buildRiverNetwork } = require('../biome/rivernet');
 const { buildWaterPlan, buildAdoptedPlan, WATER_SHAPES } = require('../biome/water');
 const { makeMaskChecker } = require('../exporter/maskcheck');
-const { loadTemplate, resolveZones, checkConstraints, buildZonePlan, assignLevels, parseSizeCode, fitZonesToMap, addStartZones, templateSettings }
+const { loadTemplate, resolveZones, checkConstraints, buildZonePlan, assignLevels, parseSizeCode, fitZonesToMap, addStartZones, mirrorTemplate, templateSettings }
 	= require('../rmg/template');
 const { orderStarts } = require('../rmg/startOrder');
 const { pickSpread, permuteOwners } = require('../rmg/startSpread');
@@ -710,11 +710,28 @@ async function generateMap(params) {
 	// The template as this map runs it: on a map far below its sizes, fewer and larger zones (template.js
 	// fitZonesToMap). Every read of the template's zones and links below goes through this.
 	let fitTemplate = null, fitBase = null;
+	// S341, the tick "Second Level Like the Overworld" (lever mirrorLevels): on a template map of two levels each level is the template as a one-level
+	// map runs it. VMAPGEN_MIRROR_LEVELS=0 ignores the lever.
+	const mirrorOn = !!params.template && levels.length === 2 && Number((params.biomes || {}).mirrorLevels) >= 1 && process.env.VMAPGEN_MIRROR_LEVELS !== '0';
 	const loadFitTemplate = () => {
 		if (!fitTemplate) {
 			const t = loadTemplate(params.template);
 			const req = { w: params.mapW, h: params.mapH, levels: levels.length, players: (params.players || []).length,
 				zoneCap: Number((params.biomes || {}).zoneCap) };
+			if (mirrorOn) {
+				// S341: the template as a one-level map runs it, once on each level (template.js mirrorTemplate); the start zones a level needs are
+				// the players that level takes: all of them when every start is on one level, half of them (the larger half first) when they mix
+				const mode = require('./stockChoices').resolveUndergroundStarts((params.biomes || {}).undergroundStarts,
+					{ seed: params.seed || 1, hasTemplate: true, templateForcesStarts: true, levels: 2 }).mode;
+				const n = (params.players || []).length, perLevel = mode === 1 ? Math.ceil(n / 2) : n;
+				const req1 = { ...req, levels: 1, players: perLevel };
+				const more1 = addStartZones(t.raw, req1);
+				const r1 = fitZonesToMap(more1.raw, req1);
+				const m = mirrorTemplate(r1.raw, { seed: params.seed || 1, undergroundStarts: mode });
+				fitBase = { raw: m.raw, req, notes: [...more1.notes, ...r1.notes, ...m.notes] };
+				fitTemplate = { name: t.name, raw: m.raw, notes: fitBase.notes, mirrored: true };
+				return fitTemplate;
+			}
 			const more = addStartZones(t.raw, req);
 			const r = fitZonesToMap(more.raw, req);
 			fitBase = { raw: more.raw, req, notes: more.notes };
@@ -781,7 +798,7 @@ async function generateMap(params) {
 	// Which start zones the players get (src/rmg/startSpread.js; K, 2026-10-03: players should spawn as far from each other as
 	// possible): the template numbers its start zones and the players took the first n, which it often puts side by side. The zones are laid
 	// out free and the n farthest apart take the owners 1..n. VMAPGEN_SPREAD_OWNERS=0 keeps the template's numbering.
-	if (params.template && observerIndex < 0 && (params.players || []).length >= 2 && process.env.VMAPGEN_SPREAD_OWNERS !== '0') {
+	if (params.template && !mirrorOn && observerIndex < 0 && (params.players || []).length >= 2 && process.env.VMAPGEN_SPREAD_OWNERS !== '0') {
 		try {
 			const n = (params.players || []).length, ft = loadFitTemplate();
 			const zonesAll = resolveZones(ft.raw);
@@ -847,7 +864,7 @@ async function generateMap(params) {
 	});
 	const undergroundChoice = require('./stockChoices').resolveUndergroundStarts((params.biomes || {}).undergroundStarts, {
 		seed: params.seed || 1, hasTemplate: !!tplZonesEarly, levels: levels.length,
-		templateForcesStarts: !!(tplZonesEarly && tplZonesEarly.some(z => /start/i.test(String(z.type || '')) && z.forcedLevel)) });
+		templateForcesStarts: !!(tplZonesEarly && tplZonesEarly.some(z => /start/i.test(String(z.type || '')) && (z.forcedLevel || z.mirrorLevel !== undefined))) });
 	if (undergroundChoice.note) console.error('[gen] ' + undergroundChoice.note);
 	const levelReq = { levels: levels.length, seed: params.seed || 1, starts: startNative,
 		undergroundStarts: undergroundChoice.mode };
@@ -855,7 +872,7 @@ async function generateMap(params) {
 	// had nothing to act on, the dragon zones being underground): the template's underground zones come up to the surface islands
 	// (template.js buildZonePlan); Auto keeps them below. Island water: the Islands content, or Normal water in the Islands or Archipelago
 	// layout. VMAPGEN_DRAGONS_UP=0 off.
-	const dragonsUp = process.env.VMAPGEN_DRAGONS_UP !== '0' && levels.length > 1
+	const dragonsUp = process.env.VMAPGEN_DRAGONS_UP !== '0' && levels.length > 1 && !mirrorOn
 		&& [1, 2].includes(Math.round(Number((params.biomes || {}).dragonIslandLayout) || 0))
 		&& (Math.round(Number((params.biomes || {}).waterContentMode)) === 2
 			|| (Math.round(Number((params.biomes || {}).waterContentMode)) === 1 && !!(WATER_SHAPES[Math.round(Number((params.biomes || {}).waterShape))] || {}).islands));

@@ -9,7 +9,9 @@ const test = require('node:test');
 const assert = require('node:assert');
 const path = require('path');
 const fs = require('fs');
-const { testTmp, genEnv } = require('./_vcmi');
+const { testTmp, genEnv: genEnvBase } = require('./_vcmi');
+// these cases' seeds were chosen on Classic's earlier defaults (S320, S340: the band and the feel move the open layout's zone count and start share)
+const genEnv = extra => genEnvBase({ VMAPGEN_CLASSIC_BANDS: '0', VMAPGEN_CLASSIC_FEEL: '0', ...(extra || {}) });
 const { spawnSync } = require('child_process');
 const sight = require('../tools/mapsight/lib/sight');
 

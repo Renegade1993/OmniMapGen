@@ -428,6 +428,8 @@ function checkConstraints(raw, zones, req, accommodations) {
 function assignLevels(zones, req) {
 	const mode = req.undergroundStarts === undefined || req.undergroundStarts === null
 		? 1 : Math.round(Number(req.undergroundStarts));
+	// a mirrored map (mirrorTemplate) names each zone's level itself
+	if (req.levels >= 2 && zones.some(z => z.mirrorLevel !== undefined)) return new Map(zones.map(z => [z.id, z.mirrorLevel ? 1 : 0]));
 	if (req.levels < 2 || mode === 0) return null;
 	let s = ((req.seed || 1) * 2654435761 + 0x9e3779b9) >>> 0;
 	const rnd = () => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
@@ -549,7 +551,7 @@ function finishZonePlan(raw, zones, req, perLevel) {
 	// piles of a smaller map against it
 	const mn = parseSizeCode(raw.minSize);
 	const minTiles = mn ? mn[0] * mn[0] * mn[1] : 0;
-	return { zones, perLevel, connections, indexOf, medianMass, minTiles };
+	return { zones, perLevel, connections, indexOf, medianMass, minTiles, mirrored: zones.some(z => z.mirrorLevel !== undefined) && perLevel.length > 1 };
 }
 
 /**
@@ -804,8 +806,78 @@ function addStartZones(raw, req) {
 	return { raw: out, notes };
 }
 
+/**
+ * S341 (K 2026-11-19: "set the subterranean layer to mimic the overworld ... in coldshadows with this new setting ticked, you would get two layers
+ * with coldshadow dragons, or in jebus cross, you would get two layers with jebus crosses and high loot centers and player and neutral starts").
+ * The template as a ONE-level map runs it (its zones up, the dragon zones among them), twice: a copy on each level, the second copy's zone ids
+ * raised by the first's highest. Each zone carries mirrorLevel (0 or 1), which assignLevels honours before anything else. The start zones of both
+ * copies take the owners 1 to 2S in the order the Starting levels setting asks (0 fills the overworld's first, 2 the second level's first, the
+ * others alternate), within a level in a spread order (opposite arms first), so the players are as far apart as the cross allows and every start
+ * zone with no player keeps its neutral town, as the engine's own templates leave their unused starts. The copies are joined by portal links: one
+ * between the two copies of the most linked zone (the centre of a cross, Coldshadow's hub), guarded as the template's strongest link, and one for
+ * every four zones between the two copies of a treasure zone, guarded as its median link. Returns { raw, notes }.
+ */
+function mirrorTemplate(raw, req) {
+	const notes = [];
+	if (!raw || !raw.zones) return { raw, notes };
+	const ids = Object.keys(raw.zones).map(Number).sort((a, b) => a - b);
+	const off = Math.max(...ids);
+	const isStart = z => /^(playerStart|cpuStart)$/.test(String((z || {}).type || '')) && Number(z.owner) >= 1;
+	const shift = (v, add) => (typeof v === 'string' ? String(Number(v) + add) : Number(v) + add);
+	const copyOf = (id, add, level) => {
+		const z = JSON.parse(JSON.stringify(raw.zones[String(id)]));
+		for (const k of Object.keys(z)) if (k.endsWith('LikeZone')) z[k] = shift(z[k], add);
+		if (z.forcedLevel === 'underground') { delete z.forcedLevel; z.wasUnderground = true; }
+		z.mirrorLevel = level;
+		return z;
+	};
+	const out = { ...raw, zones: {}, connections: [] };
+	for (const id of ids) { out.zones[String(id)] = copyOf(id, 0, 0); out.zones[String(id + off)] = copyOf(id, off, 1); }
+	// the owners: the order the start zones of a level take the players (a bit-reversed index: 0, S/2, S/4, 3S/4 ...: arms far apart first)
+	const starts = ids.filter(id => isStart(raw.zones[String(id)])).sort((a, b) => Number(raw.zones[String(a)].owner) - Number(raw.zones[String(b)].owner));
+	const S = starts.length;
+	if (S) {
+		let bits = 0; while ((1 << bits) < S) bits++;
+		const spread = [];
+		for (let i = 0; i < (1 << bits); i++) { let r = 0; for (let b = 0; b < bits; b++) if (i & (1 << b)) r |= 1 << (bits - 1 - b); if (r < S) spread.push(r); }
+		const A = spread.map(k => starts[k]), B = spread.map(k => starts[k] + off);
+		const mode = req.undergroundStarts === undefined || req.undergroundStarts === null ? 1 : Math.round(Number(req.undergroundStarts));
+		let seq = [];
+		if (mode === 0) seq = [...A, ...B];
+		else if (mode === 2) seq = [...B, ...A];
+		else for (let i = 0; i < S; i++) seq.push(A[i], B[i]);
+		seq.forEach((id, k) => { out.zones[String(id)].owner = k + 1; });
+		notes.push(`mirrored levels: ${S} start zones on each level, the players take them ${mode === 0 ? 'overworld first' : mode === 2 ? 'second level first' : 'level by level in turn'}`);
+	}
+	// the template's links, once for each copy
+	const links = (raw.connections || []).map(c => ({ ...c, a: parseInt(c.a, 10), b: parseInt(c.b, 10) }));
+	for (const c of links) {
+		out.connections.push({ ...c, a: String(c.a), b: String(c.b) });
+		out.connections.push({ ...c, a: String(c.a + off), b: String(c.b + off) });
+	}
+	// the portals between the copies
+	const degree = new Map(ids.map(id => [id, 0]));
+	for (const c of links) if (c.type !== 'repulsive' && c.type !== 'fictive') { degree.set(c.a, (degree.get(c.a) || 0) + 1); degree.set(c.b, (degree.get(c.b) || 0) + 1); }
+	const plain = ids.filter(id => !isStart(raw.zones[String(id)]) && raw.zones[String(id)].type !== 'junction' && !raw.zones[String(id)].wasUnderground && raw.zones[String(id)].forcedLevel !== 'underground');
+	const pool = plain.length ? plain : ids.filter(id => !isStart(raw.zones[String(id)]));
+	const centre = [...pool].sort((a, b) => (degree.get(b) || 0) - (degree.get(a) || 0) || a - b)[0];
+	const guards = links.map(c => Number(c.guard) || 0).filter(g => g > 0).sort((a, b) => a - b);
+	const strongest = guards.length ? guards[guards.length - 1] : 0, median = guards.length ? guards[guards.length >> 1] : 0;
+	const portal = (id, guard) => out.connections.push({ a: String(id), b: String(id + off), guard, type: 'forcePortal', road: 'false' });
+	if (centre !== undefined) portal(centre, strongest);
+	let s = (((req.seed || 1) * 2246822519) ^ 0x3c6ef372) >>> 0 || 1;
+	const rnd = () => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+	rnd(); rnd();
+	const rest = pool.filter(id => id !== centre);
+	for (let i = rest.length - 1; i > 0; i--) { const j = (rnd() * (i + 1)) | 0; [rest[i], rest[j]] = [rest[j], rest[i]]; }
+	const extra = Math.min(rest.length, Math.floor(ids.length / 4));
+	for (const id of rest.slice(0, extra)) portal(id, median);
+	notes.push(`mirrored levels: ${ids.length} zones on each level, ${centre !== undefined ? 1 + extra : 0} portal link(s) between them (centre zone ${centre}${extra ? ', and ' + rest.slice(0, extra).join(', ') : ''})`);
+	return { raw: out, notes };
+}
+
 module.exports = {
-	isOpenLayoutName, openLayoutNames, templateInfoFile, loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan, assignLevels, addStartZones,
+	mirrorTemplate, isOpenLayoutName, openLayoutNames, templateInfoFile, loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan, assignLevels, addStartZones,
 	guardToLevel, zoneTreasureMass, lootScale, pileRate, pileLoot, ZONE_CLASS, MONSTER_BAND,
 	MINE_SUBTYPE, parseSizeCode, parseRange, fitZonesToMap, templateSettings,
 };

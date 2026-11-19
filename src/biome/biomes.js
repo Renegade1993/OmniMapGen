@@ -169,6 +169,8 @@ const BIOME_DEFAULTS = {
 	// The road network that links the towns: 1 on, 0 off. Roads cut through
 	// zone openings follow openPathRoad either way.
 	roadNetwork: 1,
+	// S341: the second level is made like the overworld (template.js mirrorTemplate): 1 on, 0 off
+	mirrorLevels: 0,
 	// Surface water (water.js, queue 25d): the share of the surface under
 	// water, and where it goes (index into WATER_SHAPES: lakes, coastal,
 	// continental, mediterranean, highland). 0 is a dry map, as before.
