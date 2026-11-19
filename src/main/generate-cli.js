@@ -13,7 +13,7 @@ const KNOWN = new Set(['w', 'h', 'players', 'out', 'seed', 'threads', 'perode',
 	'template', 'accommodate', 'listtemplates', 'humans', 'render', 'observer',
 	'aionly', 'preset', 'listknobs', 'vcmiroot', 'vcmiuserdir', 'guardtheme',
 	'guardthemeshare', 'theme', 'dwellingthemeshare', 'bankthemeshare', 'strict', 'factions',
-	'humancolors', 'heroes', 'layout', 'listbands', 'colors']);
+	'humancolors', 'heroes', 'layout', 'listbands', 'colors', 'feel']);
 // --layout: the layout only (S035, DMB Dev's preview of the map the settings would make): plan the zones, links, starts and portal pairs, write
 // one JSON line to stdout, make no map. The other options are the lobby's own (--w --h --players --template --underground --seed, the levers).
 if (process.argv.includes('--layout')) {
@@ -260,6 +260,18 @@ async function main() {
 		const named = Object.keys(band).filter(k => opt['bio.' + k] === undefined);
 		for (const k of named) biomes[k] = band[k];
 		if (named.length) settingsLine += `; Classic band ${Math.round(Math.sqrt(W * H))}: ` + named.map(k => `${k} ${band[k]}`).join(', ');
+		// and then the map's feel (S340): drawn from the seed, between an old-school scenario and the Nostalgia band, lever by lever
+		const feelMod = require('../biome/classicFeel');
+		const d = feelMod.draw(Number(opt.seed) || 1, opt.feel !== undefined ? opt.feel : process.env.VMAPGEN_FEEL);
+		if (d) {
+			const ranges = Object.fromEntries(KNOBS.filter(k => !k.cli && k.min !== undefined && k.max !== undefined).map(k => [k.key, { min: k.min, max: k.max }]));
+			const moved = feelMod.apply(d, { ...leverBase(), ...biomes }, ranges);
+			const set = Object.keys(moved).filter(k => opt['bio.' + k] === undefined);
+			for (const k of set) biomes[k] = moved[k];
+			const line = `feel ${d.f.toFixed(2)} (${Object.entries(d.group).filter(([g]) => feelMod.feelTable().groups[g] && Object.keys(feelMod.feelTable().groups[g]).length).map(([g, v]) => `${g} ${v.toFixed(2)}`).join(', ')})`;
+			roll.rolled.push(line);
+			if (set.length) settingsLine += `; ${line}: ` + set.map(k => `${k} ${moved[k]}`).join(', ');
+		}
 	}
 	if (roll.rolled.length) console.log('random:', roll.rolled.join(', '));
 	// Player towns pinned to quadrant corners for now.
