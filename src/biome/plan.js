@@ -9940,6 +9940,11 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 		const r = ensureSignatureDwelling(plans, W, H, blocked, objectPools, p, rng);
 		if (r) console.error(`[gen] signature dwelling: ${r}`);
 	}
+	// the free layout keeps a few gold mines on every map (ensureGoldMines, S340)
+	{
+		const r = ensureGoldMines(plans, W, H, blocked, p, rng);
+		if (r) console.error(`[gen] gold floor: ${r}`);
+	}
 	// a template's extra dwellings, its own density of one kind (template-settings.json extraDwellings: Golems Aplenty's Golem Factories)
 	if (process.env.VMAPGEN_EXTRA_DWELLINGS !== '0' && p.zonePlan && p.zonePlan.templateSettings && (p.zonePlan.templateSettings.extraDwellings || []).length) {
 		const r = placeExtraDwellings(plans, W, H, blocked, p, rng);
@@ -12032,6 +12037,60 @@ function fillBareWindows(pl, l, W, H, blocked, p) {
 		}
 	}
 	return out;
+}
+
+/**
+ * A few gold mines on every free-layout map (K, 2026-11-19, S340: "No, keep a few gold mines on every Classic map"). The floor is 3 on a map 108 wide
+ * or more and 2 under it (the originals' 10th percentile of gold mines is 3 on maps of 108 and up; 19 of the 161 original files have none and 10 have
+ * one). The Nostalgia band of Classic's lever defaults has almost no mines outside the starts (VCMI's Mini Nostalgia has none, its Nostalgia about 9 at
+ * 144 and 180), so this is the step that keeps gold on the map whatever the mine lever draws. It counts the gold mines the fill made and puts the missing
+ * ones in zones that are not a player's, one at a time, in the zone with the fewest, as far from the others as the room allows, over interior scenery
+ * as the late passes do (sceneryRoom). The guard passes after it guard them as they guard any gold mine. Template maps are left alone.
+ * VMAPGEN_GOLD_FLOOR=0 turns it off (the proof arm).
+ */
+function ensureGoldMines(plans, W, H, blocked, p, rng) {
+	if (process.env.VMAPGEN_GOLD_FLOOR === '0' || p.zonePlan) return null;
+	const floor = Math.sqrt(W * H) >= 108 ? 3 : 2;
+	const gold = [];
+	for (let l = 0; l < plans.length; l++)
+		for (const o of plans[l].objects) if ((o.l || 0) === l && o.type === 'mine' && o.subtype === 'goldMine') gold.push({ l, x: o.x, y: o.y });
+	let need = floor - gold.length;
+	if (need <= 0) return null;
+	const have = new Map(); // "l:zone" -> gold mines in it
+	const zoneAt = (l, x, y) => plans[l].zone[y * W + x];
+	for (const g of gold) { const k = g.l + ':' + zoneAt(g.l, g.x, g.y); have.set(k, (have.get(k) || 0) + 1); }
+	const cands = [];
+	for (let l = 0; l < plans.length; l++) {
+		const pl = plans[l], seen = new Set();
+		if (!pl.zone || !pl.classes) continue;
+		for (let c = 0; c < W * H; c++) { const z = pl.zone[c]; if (z >= 0 && !seen.has(z) && pl.classes[z] !== BIOME_CLASS.PLAYER) { seen.add(z); cands.push({ l, z }); } }
+	}
+	const placed = [];
+	let noRoom = 0;
+	while (need > 0 && cands.length) {
+		// the zone with the fewest gold mines first; ties by the generator's own stream
+		const order = cands.map(c => ({ c, n: have.get(c.l + ':' + c.z) || 0, r: rng() })).sort((a, b) => a.n - b.n || a.r - b.r);
+		let done = false;
+		for (const { c } of order) {
+			const pl = plans[c.l], tpl = mineTemplate('goldMine', pl.biomeTerrain[c.z]);
+			if (!tpl) continue;
+			const far = (x, y) => -Math.min(Infinity, ...gold.filter(g => g.l === c.l).map(g => Math.hypot(g.x - x, g.y - y)));
+			const spot = sceneryRoom(pl, c.l, W, H, blocked, tpl, z => z === c.z, far);
+			if (!spot) continue;
+			clearScenery(pl, c.l, W, H, blocked, spot);
+			pl.objects.push(objectEntry('mine', spot.x, spot.y, c.l, tpl, 'goldMine'));
+			footprintBlock(tpl, spot.x, spot.y, c.l, W, H, blocked);
+			markApproach(tpl, spot.x, spot.y, c.l, W, H, blocked);
+			gold.push({ l: c.l, x: spot.x, y: spot.y });
+			have.set(c.l + ':' + c.z, (have.get(c.l + ':' + c.z) || 0) + 1);
+			placed.push(`L${c.l} (${spot.x},${spot.y})`);
+			done = true;
+			break;
+		}
+		if (!done) { noRoom++; break; }
+		need--;
+	}
+	return `${placed.length} gold mine(s) added to reach ${floor}${noRoom ? ', no room for the rest' : ''}: ${placed.join(' ')}`;
 }
 
 function ensureSignatureDwelling(plans, W, H, blocked, objectPools, p, rng) {
