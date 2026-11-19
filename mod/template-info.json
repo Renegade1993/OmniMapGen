@@ -139,11 +139,11 @@
 			"humansMax": 8,
 			"zones": 0,
 			"zonesByKind": {},
-			"description": "An ordinary random Heroes map, and the place to start if you are new.\n\nWhat makes it different: it has no fixed layout. The map is drawn fresh from its size and number of players, and every setting on the other pages (how regions join, portals, guards, treasure, water) changes it. Every setting starts at its default, and Reset puts it back. Mini Nostalgia and Nostalgia in this list are this map with the settings turned toward those two templates.",
-			"brief": "An ordinary random Heroes map, drawn fresh from its size and number of players. Start here if you are new; every setting on the other pages changes it.",
+			"description": "An ordinary random Heroes map, and the place to start if you are new.\n\nWhat makes it different: it has no fixed layout. The map is drawn fresh from its size and number of players, and every setting on the other pages (how regions join, portals, guards, treasure, water) changes it. The settings follow the size of the map. A Large map starts from what the original Mini Nostalgia makes: big start regions, few treasure regions, wood and ore mines at the starts and almost none elsewhere. A Huge map starts from the original Nostalgia: more regions, a few mines outside the starts, more guards. Sizes in between blend the two. Pick a size and the settings move to its values; Reset puts them back there.",
+			"brief": "An ordinary random Heroes map, drawn fresh from its size and number of players. Its settings follow the map size, from the original Mini Nostalgia on Large maps to the original Nostalgia on Huge ones. Start here if you are new.",
 			"templatePreference": "Classic has no start rule of its own, so this reads as Random.",
 			"originalPreferences": {
-				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Classic: every lever at its Template value, which for Classic is the lever's own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. Mod content stays the player's own choice.",
+				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Classic: every lever at its Template value, which for Classic is the lever's own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. Mod content stays the player's own choice. On Classic the values depend on the map size: the bands entry below contains them, the generator reads it, and the lobby asks the generator for the values of the size picked (generate-cli --listbands 1 --w W --h H --underground 0|1). The levers listed above are the values on maps of 72 tiles a side and smaller.",
 				"levers": {
 					"zoneCells": 400,
 					"zoneCap": 300,
@@ -217,9 +217,61 @@
 					"humansMax": 8
 				},
 				"modContent": "the player decides; the open layout names none",
-				"leversWithNoEffectOnTemplates": []
+				"leversWithNoEffectOnTemplates": [],
+				"bands": {
+					"about": "Classic's lever defaults by map size (S320, 2026-11-17). Each anchor is the values that bring Classic to what VCMI 1.7.5's own Mini Nostalgia (side 108) and Nostalgia (side 180) make on the engine's maps, with the middle anchor halfway between them; sizes between anchors blend in a straight line by the map's side, sizes above 180 keep the 180 values, sizes below 108 fade from the lever's own default (at side 72) to the 108 values. zones is the stock zone count (eight of them starts); the generator turns it into zoneCells for the map. A lever in steps is a choice and takes the nearer anchor's value. Only levers the player has not moved follow the band.",
+					"fade": [
+						72,
+						108
+					],
+					"steps": [
+						"undergroundStarts"
+					],
+					"anchors": [
+						{
+							"side": 108,
+							"zones": 15,
+							"levers": {
+								"startZoneShare": 0.69,
+								"mineDensity": 0.05,
+								"artifactDensity": 0.0105,
+								"guardDensity": 1.3,
+								"dwellingDensity": 1,
+								"undergroundStarts": 1
+							}
+						},
+						{
+							"side": 144,
+							"zones": 19.5,
+							"levers": {
+								"startZoneShare": 0.48,
+								"mineDensity": 0.3,
+								"artifactDensity": 0.011,
+								"guardDensity": 1.2,
+								"dwellingDensity": 1.1,
+								"undergroundStarts": 1
+							}
+						},
+						{
+							"side": 180,
+							"zones": 24,
+							"levers": {
+								"startZoneShare": 0.32,
+								"mineDensity": 0.25,
+								"artifactDensity": 0.0095,
+								"guardDensity": 1.15,
+								"dwellingDensity": 1.2,
+								"undergroundStarts": 1
+							}
+						}
+					]
+				}
 			},
-			"oneLine": "A plain random Heroes map to start with, and DMB's own Nostalgia: every player in a region of their own, treasure between, monsters in the ways."
+			"oneLine": "A plain random Heroes map to start with, and DMB's own Mini Nostalgia and Nostalgia: the settings follow the map size, every player in a region of their own, treasure between, monsters in the ways.",
+			"aliases": [
+				"Mini Nostalgia (approximate)",
+				"Nostalgia (approximate)"
+			]
 		},
 		"Random": {
 			"originalSizeMin": 36,
@@ -314,216 +366,6 @@
 			},
 			"oneLine": "Runs one of the templates in this list at random.",
 			"randomEntry": true
-		},
-		"Mini Nostalgia (approximate)": {
-			"openLayout": true,
-			"originalSizeMin": 108,
-			"originalSizeMax": 144,
-			"originalSizeNames": "Large to Extra Large",
-			"originalLevels": 2,
-			"underground": "One level at Large, two at Extra Large in the original; here one level or two, as the Underground setting says",
-			"playersMin": 2,
-			"playersMax": 8,
-			"humansMax": 8,
-			"zones": 0,
-			"zonesByKind": {},
-			"description": "A map for up to eight players, modelled on the original Mini Nostalgia.\n\nWhat makes it different: in the original players never make an early contact between themselves; the passages out of the AI zones are lightly guarded and lead to rich, but usually small treasure zones, and the player zones are connected through an even richer treasure zone with heavily guarded connections. This entry is approximate. It is the Classic map with its settings turned toward Mini Nostalgia (larger start zones, many portal pairs that carry a hero far across the map, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
-			"brief": "Modelled on the original Mini Nostalgia map, where players never make an early contact. Approximate: it is Classic with its settings turned toward that map, so the layout is not the original's.",
-			"templatePreference": "Mini Nostalgia (approximate) is built on the open layout and has no start rule of its own, so this reads as Random.",
-			"originalPreferences": {
-				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Mini Nostalgia (approximate): the sliders listed below at the values chosen to bring the open layout's numbers toward the original Mini Nostalgia's; every other lever at its own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. This entry is approximate and gets closer as junction zones, wide links and a second town in a start zone are added.",
-				"levers": {
-					"zoneCells": 400,
-					"zoneCap": 300,
-					"startZoneShare": 0.65,
-					"zoneSizeVariety": 0,
-					"richPlacement": 0,
-					"highLootRatio": 0.1,
-					"townRatio": 0.1,
-					"lowLootRatio": 0.25,
-					"borderSolidity": 1,
-					"biomeWobble": 0.6,
-					"interconnectivity": 0.6,
-					"interconnectPortal": 0.6,
-					"openPathNoRoad": 0.55,
-					"openPathRoad": 0.26,
-					"roadNetwork": 1,
-					"roadType": 2,
-					"artifactDensity": 0.002,
-					"artifactRichness": 0.5,
-					"pickupDensity": 1,
-					"resourceDensity": 1,
-					"mineDensity": 1,
-					"starterMines": 1,
-					"dwellingDensity": 0.7,
-					"bonusDensity": 1,
-					"monsterStrength": 0,
-					"stackScale": 1,
-					"guardDensity": 0.3,
-					"guardShare": 1,
-					"guardTreasure": 1,
-					"guardMines": 1,
-					"guardDwellings": 1,
-					"guardBottlenecks": 1,
-					"chokeGuardRatio": 0.7,
-					"guardGradient": 1,
-					"guardDistance": 0,
-					"guardPortals": 2,
-					"lootGuardWeight": 1,
-					"mineGuardWeight": 1,
-					"subterraneanGateRatio": 1,
-					"subterraneanNarrow": 0.6,
-					"undergroundStarts": 4,
-					"subterraneanOpen": 0.57,
-					"decorDensity": 1,
-					"rivers": 1,
-					"riverAmount": 1,
-					"roadDirt": 1,
-					"roadGravel": 1,
-					"roadCobblestone": 1,
-					"waterContent": 0,
-					"waterCoverage": 0,
-					"waterShape": 8,
-					"islandShape": 1,
-					"dragonIslandLayout": 0,
-					"waterAccess": 2,
-					"waterTreasure": 1,
-					"waterBuildings": 1,
-					"layoutFamily": 1
-				},
-				"templateChoices": {
-					"guardPortals": 2,
-					"undergroundStarts": 4,
-					"waterShape": 8
-				},
-				"ranges": {
-					"sizeMin": 36,
-					"sizeMax": 252,
-					"underground": "either",
-					"playersMin": 2,
-					"playersMax": 8,
-					"humansMax": 8
-				},
-				"modContent": "the player decides; the open layout names none",
-				"leversWithNoEffectOnTemplates": [],
-				"approximate": true,
-				"tunedSliders": [
-					"startZoneShare",
-					"interconnectPortal",
-					"guardDensity",
-					"highLootRatio",
-					"artifactDensity",
-					"dwellingDensity",
-					"guardGradient",
-					"layoutFamily"
-				]
-			},
-			"oneLine": "Approximate: the open layout set toward Heroes of Might and Magic HD's Mini Nostalgia, a tree of 15 zones with big start zones."
-		},
-		"Nostalgia (approximate)": {
-			"openLayout": true,
-			"originalSizeMin": 144,
-			"originalSizeMax": 180,
-			"originalSizeNames": "Extra Large to Huge",
-			"originalLevels": 2,
-			"underground": "Two levels in the original; here one level or two, as the Underground setting says",
-			"playersMin": 2,
-			"playersMax": 8,
-			"humansMax": 8,
-			"zones": 0,
-			"zonesByKind": {},
-			"description": "An extra-large map on two levels for up to eight players, modelled on the original Nostalgia, a non-contact template with a simple layout.\n\nWhat makes it different: in the original every player has access to their own half of the map, only the central treasure zone can hold Relics, and every connection has a road. This entry is approximate: it is the Classic map with its settings turned toward Nostalgia (larger zones, many portal pairs that carry a hero far across the map, fewer guards and fewer rich piles), because OmniMapGen cannot yet build the original's exact zones. Every setting can still be changed.",
-			"brief": "Modelled on the original Nostalgia map, on two levels, where every player has access to their own half of the map. Approximate: it is Classic with its settings turned toward that map, so the layout is not the original's.",
-			"templatePreference": "Nostalgia (approximate) is built on the open layout and has no start rule of its own, so this reads as Random.",
-			"originalPreferences": {
-				"about": "What 'Restrict all settings to original template preferences' and the Reset button set for Nostalgia (approximate): the sliders listed below at the values chosen to bring the open layout's numbers toward the original Nostalgia's; every other lever at its own default; the three settings that offer a Template choice (Guards at portals, Split spawns, Water layout) locked to it. Size, players and humans stay anywhere the generator allows. This entry is approximate and gets closer as junction zones, wide links and a second town in a start zone are added.",
-				"levers": {
-					"zoneCells": 1500,
-					"zoneCap": 300,
-					"startZoneShare": 0.5,
-					"zoneSizeVariety": 0,
-					"richPlacement": 0,
-					"highLootRatio": 0.1,
-					"townRatio": 0.1,
-					"lowLootRatio": 0.25,
-					"borderSolidity": 1,
-					"biomeWobble": 0.6,
-					"interconnectivity": 0.6,
-					"interconnectPortal": 0.8,
-					"openPathNoRoad": 0.55,
-					"openPathRoad": 0.26,
-					"roadNetwork": 1,
-					"roadType": 2,
-					"artifactDensity": 0.003,
-					"artifactRichness": 0.5,
-					"pickupDensity": 1,
-					"resourceDensity": 1,
-					"mineDensity": 1,
-					"starterMines": 1,
-					"dwellingDensity": 1.2,
-					"bonusDensity": 1,
-					"monsterStrength": 0,
-					"stackScale": 1,
-					"guardDensity": 0.5,
-					"guardShare": 1,
-					"guardTreasure": 1,
-					"guardMines": 1,
-					"guardDwellings": 1,
-					"guardBottlenecks": 1,
-					"chokeGuardRatio": 0.7,
-					"guardGradient": 1,
-					"guardDistance": 0,
-					"guardPortals": 2,
-					"lootGuardWeight": 1,
-					"mineGuardWeight": 1,
-					"subterraneanGateRatio": 1,
-					"subterraneanNarrow": 0.6,
-					"undergroundStarts": 4,
-					"subterraneanOpen": 0.57,
-					"decorDensity": 1,
-					"rivers": 1,
-					"riverAmount": 1,
-					"roadDirt": 1,
-					"roadGravel": 1,
-					"roadCobblestone": 1,
-					"waterContent": 0,
-					"waterCoverage": 0,
-					"waterShape": 8,
-					"islandShape": 1,
-					"dragonIslandLayout": 0,
-					"waterAccess": 2,
-					"waterTreasure": 1,
-					"waterBuildings": 1,
-					"layoutFamily": 1
-				},
-				"templateChoices": {
-					"guardPortals": 2,
-					"undergroundStarts": 4,
-					"waterShape": 8
-				},
-				"ranges": {
-					"sizeMin": 36,
-					"sizeMax": 252,
-					"underground": "either",
-					"playersMin": 2,
-					"playersMax": 8,
-					"humansMax": 8
-				},
-				"modContent": "the player decides; the open layout names none",
-				"leversWithNoEffectOnTemplates": [],
-				"approximate": true,
-				"tunedSliders": [
-					"zoneCells",
-					"interconnectPortal",
-					"guardDensity",
-					"highLootRatio",
-					"artifactDensity",
-					"dwellingDensity",
-					"guardGradient",
-					"layoutFamily"
-				]
-			},
-			"oneLine": "Approximate: the open layout set toward Heroes of Might and Magic HD's Nostalgia, a mesh of 24 zones on two levels."
 		},
 		"Jebus Cross": {
 			"originalSizeMin": 108,

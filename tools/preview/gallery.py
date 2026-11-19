@@ -81,10 +81,6 @@ PLANS = {
     "classic": ("Classic", None, plan(108, lambda s: F(s, CLASSIC_P[s], 1, 1),   # the still: Large 108, 4 players, as the lobby's own start
         [F(36, 2, 2, 2), F(72, 6, 1, 3, "coastal"), F(108, 3, 2, 4), F(144, 8, 1, 5, "islands"), F(180, 5, 2, 6), F(252, 4, 1, 7, "archipelago"),
          F(72, 2, 1, 8, "continental"), F(108, 4, 1, 9, "mediterranean")]), {}),
-    "mini_nostalgia": ("Mini Nostalgia (approximate)", None, plan(108, lambda s: F(s, 8, 1 if s < 144 else 2, 1),   # Large on one level, Extra Large on two, 8 players
-        [F(36, 2, 1, 2), F(72, 4, 2, 3), F(108, 3, 2, 4, "lakes"), F(144, 6, 1, 5), F(180, 5, 2, 6, "coastal"), F(252, 2, 1, 7)]), levers_of("Mini Nostalgia (approximate)")),
-    "nostalgia": ("Nostalgia (approximate)", None, plan(144, lambda s: F(s, 8, 2, 1),   # Extra Large to Huge, two levels, 8 players
-        [F(36, 2, 1, 2), F(72, 4, 1, 3), F(108, 6, 2, 4, "lakes"), F(144, 3, 1, 5), F(180, 5, 2, 6, "coastal"), F(252, 4, 1, 7)]), levers_of("Nostalgia (approximate)")),
 }
 # the water layouts (template panel, item 18): the open layout with the layout's own water; Highland waits for its fix (item 20, Opus Reviewer 2026-11-04)
 for _id in ("lakes", "coastal", "continental", "mediterranean", "islands", "archipelago"):

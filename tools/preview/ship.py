@@ -16,7 +16,7 @@ import shutil
 
 # gallery slug -> the client's slug (pictureSlug of the template's name in template-info.json)
 SLUGS = {"jebus_cross": "jebus_cross", "coldshadows_fantasy": "coldshadows_fantasy", "headquarters": "headquarters", "golems_aplenty": "golems_aplenty",
-         "classic": "classic", "mini_nostalgia": "mini_nostalgia_approximate", "nostalgia": "nostalgia_approximate",
+         "classic": "classic",
          "water_lakes": "water_lakes", "water_coastal": "water_coastal", "water_continental": "water_continental",
          "water_mediterranean": "water_mediterranean", "water_islands": "water_islands", "water_archipelago": "water_archipelago"}
 OLD = ["open_examples", "open_examples.gif", "captions.json"]   # the 11-03 open-layout gallery, replaced by Classic's frames

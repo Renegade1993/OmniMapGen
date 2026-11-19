@@ -13,7 +13,7 @@ const KNOWN = new Set(['w', 'h', 'players', 'out', 'seed', 'threads', 'perode',
 	'template', 'accommodate', 'listtemplates', 'humans', 'render', 'observer',
 	'aionly', 'preset', 'listknobs', 'vcmiroot', 'vcmiuserdir', 'guardtheme',
 	'guardthemeshare', 'theme', 'dwellingthemeshare', 'bankthemeshare', 'strict', 'factions',
-	'humancolors', 'heroes', 'layout']);
+	'humancolors', 'heroes', 'layout', 'listbands']);
 // --layout: the layout only (S035, DMB Dev's preview of the map the settings would make): plan the zones, links, starts and portal pairs, write
 // one JSON line to stdout, make no map. The other options are the lobby's own (--w --h --players --template --underground --seed, the levers).
 if (process.argv.includes('--layout')) {
@@ -73,7 +73,7 @@ const opt = parseArgs(process.argv.slice(2));
 // output to extmapgen_log.txt): a bug report then says exactly what the tab
 // asked for, and a test can check every widget against the flag it sent.
 // Not for the two listings, whose output is read whole as JSON or lines.
-if (!opt.listknobs && !opt.listtemplates) console.log('options:', JSON.stringify(opt));
+if (!opt.listknobs && !opt.listtemplates && !opt.listbands) console.log('options:', JSON.stringify(opt));
 // the open layout is a named entry of the template list (template-info.json, "openLayout": true): choosing it is choosing no template
 if (opt.template && require('../rmg/template').isOpenLayoutName(opt.template)) delete opt.template;
 
@@ -105,10 +105,16 @@ for (const [k, v] of Object.entries(opt)) {
 }
 // the line written beside the map (its .zones.json "settings", shown on the mapsight card): the template, the base set (the preset) and the
 // levers that differ from the base with their values, e.g. "Coldshadow's Fantasy; base: nostalgia; changed: waterContent 2, waterCoverage 0.45"
-const settingsLine = (() => {
-	// the base value of a lever: the preset's own, else the lever's default, else the generator's built-in one
+// the base value of a lever: the preset's own, else the lever's default, else the generator's built-in one
+const leverBase = () => {
 	const knobDefault = Object.fromEntries(require('../biome/knobs').KNOBS.filter(k => k.default !== undefined).map(k => [k.key, k.default]));
-	const base = { ...require('../biome/biomes').BIOME_DEFAULTS, ...knobDefault, ...PRESETS[presetName].values };
+	return { ...require('../biome/biomes').BIOME_DEFAULTS, ...knobDefault, ...PRESETS[presetName].values };
+};
+// Classic's lever defaults for a W x H map (src/biome/classicBands.js, S320): the values the lobby shows and Reset returns to, and what an untouched lever means
+const classicBandsFor = (W, H, levels) => require('../biome/classicBands').resolve(W, H, levels, leverBase(),
+	Object.fromEntries(require('../biome/knobs').KNOBS.filter(k => !k.cli && k.min !== undefined && k.max !== undefined).map(k => [k.key, { min: k.min, max: k.max }])));
+let settingsLine = (() => {
+	const base = leverBase();
 	const changed = Object.entries(opt).filter(([k]) => k.startsWith('bio.')).map(([k, v]) => [k.slice(4), parseFloat(v)])
 		.filter(([k, v]) => Number.isFinite(v) && (base[k] === undefined || Math.abs(base[k] - v) > 1e-9)).map(([k, v]) => `${k} ${v}`);
 	return `${opt.template || 'open layout'}; base: ${presetName}; changed: ${changed.length ? changed.join(', ') : 'none'}`;
@@ -181,6 +187,12 @@ async function main() {
 		console.log(JSON.stringify({ pages: PAGES, knobs: KNOBS, presets }, null, 1));
 		return;
 	}
+	// --listbands 1 --w 144 --h 144 --underground 1: Classic's lever values for that map as JSON ({"levers": {...}}), for the lobby's sliders and its Reset
+	if (opt.listbands) {
+		const bw = parseInt(opt.w || '64', 10), bh = parseInt(opt.h || '64', 10);
+		console.log(JSON.stringify({ levers: classicBandsFor(bw, bh, opt.underground === '1' || opt.underground === 'true' ? 2 : 1) }));
+		return;
+	}
 	let W = parseInt(opt.w || '64', 10);
 	let H = parseInt(opt.h || '64', 10);
 	const RANDOM_SIZE = stock.isRandomSize(opt.w) || stock.isRandomSize(opt.h);
@@ -232,6 +244,13 @@ async function main() {
 		return !tplMod.checkConstraints(tpl.raw, tplMod.resolveZones(tpl.raw), req, new Set()).violations.length;
 	}, roll);
 	const template = picked && tplMod.isOpenLayoutName(picked) ? undefined : picked;
+	// Classic follows the map's size (S320): every lever the player did not name takes the value of the band this map is in
+	if (!template) {
+		const band = classicBandsFor(W, H, underground ? 2 : 1);
+		const named = Object.keys(band).filter(k => opt['bio.' + k] === undefined);
+		for (const k of named) biomes[k] = band[k];
+		if (named.length) settingsLine += `; Classic band ${Math.round(Math.sqrt(W * H))}: ` + named.map(k => `${k} ${band[k]}`).join(', ');
+	}
 	if (roll.rolled.length) console.log('random:', roll.rolled.join(', '));
 	// Player towns pinned to quadrant corners for now.
 	const corners = [[4,4],[W-5,H-5],[4,H-5],[W-5,4],[4,(H/2)|0],[W-5,(H/2)|0],[(W/2)|0,4],[(W/2)|0,H-5]];

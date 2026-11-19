@@ -163,20 +163,33 @@ let approvedSet; // undefined: not read yet; null: no filter
  * two json files; no code reads the name.
  */
 let openNames; // normalized name -> the name as written
+/** The template-info.json beside approved-templates.json in the module the generator runs from (mod/ in the repository). */
+function templateInfoFile() {
+	const a = approvedFile();
+	return a ? path.join(path.dirname(a), 'template-info.json') : path.resolve(__dirname, '..', '..', 'mod', 'template-info.json');
+}
 function openLayoutIndex() {
 	if (openNames === undefined) {
 		openNames = new Map();
-		const a = approvedFile();
-		const f = a ? path.join(path.dirname(a), 'template-info.json') : path.resolve(__dirname, '..', '..', 'mod', 'template-info.json');
+		const f = templateInfoFile();
 		try {
 			const j = JSON.parse(fs.readFileSync(f, 'utf8')).templates || {};
-			for (const [k, v] of Object.entries(j)) if (v && v.openLayout === true) openNames.set(k.toLowerCase().replace(/[^a-z0-9]+/g, ''), k);
+			for (const [k, v] of Object.entries(j)) {
+				if (!v || v.openLayout !== true) continue;
+				openNames.set(k.toLowerCase().replace(/[^a-z0-9]+/g, ''), k);
+				// names the entry used to answer to (S320: "Mini Nostalgia (approximate)" and "Nostalgia (approximate)" are part of Classic now): a saved
+				// setting or a script that still names one runs the open layout, as Classic, and is never "template not found". Not listed in the picker.
+				for (const old of Array.isArray(v.aliases) ? v.aliases : []) openAliases.set(String(old).toLowerCase().replace(/[^a-z0-9]+/g, ''), k);
+			}
 		} catch { /* no info file: no open entry */ }
 	}
 	return openNames;
 }
+const openAliases = new Map(); // normalized old name -> the entry's current name
 function isOpenLayoutName(name) {
-	return !!name && openLayoutIndex().has(String(name).toLowerCase().replace(/[^a-z0-9]+/g, ''));
+	if (!name) return false;
+	const n = String(name).toLowerCase().replace(/[^a-z0-9]+/g, '');
+	return openLayoutIndex().has(n) || openAliases.has(n);
 }
 /** The open layout's entry name(s) as written, for the template listing (the picker shows them first). */
 function openLayoutNames() {
@@ -792,7 +805,7 @@ function addStartZones(raw, req) {
 }
 
 module.exports = {
-	isOpenLayoutName, openLayoutNames, loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan, assignLevels, addStartZones,
+	isOpenLayoutName, openLayoutNames, templateInfoFile, loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan, assignLevels, addStartZones,
 	guardToLevel, zoneTreasureMass, lootScale, pileRate, pileLoot, ZONE_CLASS, MONSTER_BAND,
 	MINE_SUBTYPE, parseSizeCode, parseRange, fitZonesToMap, templateSettings,
 };

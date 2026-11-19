@@ -17,12 +17,13 @@ const { isOpenLayoutName } = require('../src/rmg/template');
 const OPEN_NAME = JSON.parse(fs.readFileSync(path.join(ROOT, 'mod', 'open-template-name.json'), 'utf8')).name;
 const open = Object.entries(info).filter(([, v]) => v.openLayout === true);
 
-test('the open layout is the entry named in open-template-name.json, and it is approved; any other open entry is an approximate one of a template', () => {
+test('the open layout is the one entry named in open-template-name.json, and it is approved; the two old approximate names still open it', () => {
+	assert.strictEqual(open.length, 1, 'Nostalgia and Mini Nostalgia are part of Classic (S320): the open layout is one entry');
 	assert.strictEqual(open[0][0], OPEN_NAME, "the open layout's name is written once, in mod/open-template-name.json");
 	assert.ok(approved[open[0][0]], 'the open entry is not in approved-templates.json');
-	for (const [name] of open.slice(1)) {
-		assert.match(name, /\(approximate\)$/, `${name} is an open layout that does not say it is approximate`);
-		assert.ok(approved[name], `${name} is not in approved-templates.json`);
+	for (const old of ['Mini Nostalgia (approximate)', 'Nostalgia (approximate)']) {
+		assert.ok(!approved[old] && !info[old], `${old} is gone from the list`);
+		assert.ok(isOpenLayoutName(old), `${old}, saved in a player's settings, opens Classic and is never "template not found"`);
 	}
 });
 
