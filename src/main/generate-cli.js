@@ -13,7 +13,7 @@ const KNOWN = new Set(['w', 'h', 'players', 'out', 'seed', 'threads', 'perode',
 	'template', 'accommodate', 'listtemplates', 'humans', 'render', 'observer',
 	'aionly', 'preset', 'listknobs', 'vcmiroot', 'vcmiuserdir', 'guardtheme',
 	'guardthemeshare', 'theme', 'dwellingthemeshare', 'bankthemeshare', 'strict', 'factions',
-	'humancolors', 'heroes', 'layout', 'listbands']);
+	'humancolors', 'heroes', 'layout', 'listbands', 'colors']);
 // --layout: the layout only (S035, DMB Dev's preview of the map the settings would make): plan the zones, links, starts and portal pairs, write
 // one JSON line to stdout, make no map. The other options are the lobby's own (--w --h --players --template --underground --seed, the levers).
 if (process.argv.includes('--layout')) {
@@ -228,10 +228,20 @@ async function main() {
 		if (!COLORS.includes(c.toLowerCase()) || !hero) fail(`--heroes: "${pair}" is not colour=hero (colours: ${COLORS.join(', ')}; a hero as scope:name, core:solmyr)`);
 		pickedHeroes.push(hero.includes(':') ? hero : `core:${hero}`);
 	}
-	const nPlayers = humanColors ? Math.max(counts.nPlayers, humanColors.length) : counts.nPlayers;
-	if (RANDOM_SIZE) { W = H = stock.randomSize(humanColors ? Math.max(counts.nPlayers, humanColors.length) : counts.nPlayers, roll); }
+	// --colors purple,teal (DMB at Begin, S303; K: "swap any color out for any player seat, regardless of how many seats are present"): every
+	// player's colour in seat order. The map has exactly those seats, in that order, so its player slots and its start zones take those colours
+	// and none other. Two seats never share a colour. --humanColors stays the seated humans' subset of it.
+	const seatColors = opt.colors ? String(opt.colors).split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : null;
+	if (seatColors) {
+		for (const c of seatColors) if (!COLORS.includes(c)) fail(`--colors: "${c}" is no player colour; colours: ${COLORS.join(', ')}`);
+		if (new Set(seatColors).size !== seatColors.length) fail(`--colors ${opt.colors}: two seats never share a colour`);
+		if (!seatColors.length) fail('--colors needs at least one colour');
+		for (const c of humanColors || []) if (!seatColors.includes(c)) fail(`--humanColors: "${c}" is not one of the --colors seats (${seatColors.join(', ')})`);
+	}
+	const nPlayers = seatColors ? seatColors.length : humanColors ? Math.max(counts.nPlayers, humanColors.length) : counts.nPlayers;
+	if (RANDOM_SIZE) { W = H = stock.randomSize(seatColors ? seatColors.length : humanColors ? Math.max(counts.nPlayers, humanColors.length) : counts.nPlayers, roll); }
 	const humans = humanColors ? humanColors.length : counts.humans;
-	const mapColors = humanColors
+	const mapColors = seatColors ? seatColors : humanColors
 		? COLORS.filter(c => humanColors.includes(c)
 			|| COLORS.filter(k => !humanColors.includes(k)).indexOf(c) < nPlayers - humanColors.length)
 		: COLORS.slice(0, nPlayers);
