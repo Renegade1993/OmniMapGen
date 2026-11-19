@@ -16,7 +16,7 @@ const ROOT = path.join(__dirname, '..');
 const CLI = path.join(ROOT, 'src', 'main', 'generate-cli.js');
 const bands = JSON.parse(fs.readFileSync(path.join(ROOT, 'mod', 'template-info.json'), 'utf8')).templates.Classic.originalPreferences.bands;
 
-const cli = (args, extraEnv) => spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8', cwd: ROOT, env: { ...genEnv(), ...extraEnv }, windowsHide: true, timeout: 240000 });
+const cli = (args, extraEnv) => spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8', cwd: ROOT, env: { ...genEnv(), VMAPGEN_CLASSIC_FEEL: '0', ...extraEnv }, windowsHide: true, timeout: 240000 });
 const listBands = (side, levels) => JSON.parse(cli(['--listbands', '1', '--w', String(side), '--h', String(side), '--underground', levels === 2 ? '1' : '0']).stdout).levers;
 const zonesOf = out => JSON.parse(out.trim().split('\n').find(l => l.startsWith('{"plan"'))).plan.reduce((n, p) => n + p.zoneLand.length, 0);
 

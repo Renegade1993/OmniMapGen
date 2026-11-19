@@ -267,7 +267,7 @@
 					]
 				},
 				"feel": {
-					"about": "How Classic draws each map's feel (S340, 2026-11-19). A map draws a feel f from its seed: 0 an old-school scenario, 1 the Nostalgia band (bands above). Each group of levers takes f plus its own offset, and a lever's value is its band value blended toward its old-school value by one minus the group's feel. A lever's old-school value is drawn between the two numbers listed, the values that put the map at the 10th and the 90th percentile of the original scenarios on the property the lever moves (per ground tile, S226). Levers the player moved are never touched. ends: the share of maps drawn at the old-school end, at the Nostalgia end, and how wide an end is; the rest are drawn anywhere between. offset: how far a group may stray from f.",
+					"about": "How Classic draws each map's feel (S340, 2026-11-19). A map draws a feel f from its seed: 0 an old-school scenario, 1 the Nostalgia band (bands above). Each group of levers takes f plus its own offset, and a lever's value is its band value blended toward its old-school value by one minus the group's feel. A lever's old-school value is drawn between the two numbers listed, the values that put the map at the 10th and the 90th percentile of the original scenarios on the property the lever moves (per ground tile, S226). Levers the player moved are never touched. ends: the share of maps drawn at the old-school end, at the Nostalgia end, and how wide an end is; the rest are drawn anywhere between. offset: how far a group may stray from f. The layout group reads the originals through a stand-in for zones (they have no zone data): a region is a connected patch of one terrain of 100 tiles or more, which on VCMI's own Mini Nostalgia and Nostalgia maps matches their zones (patches per 1,000 ground tiles 1.2 against 15 zones, median patch 773 against 778, start patches 974 tiles against 967). Over the 123 original scenarios a map has 0.4 to 2.0 patches per 1,000 ground tiles (10th to 90th percentile at 108 wide) and 0.33 to 1.0 of its ground in the patches that hold a start town; zonesPer1000 is the first, startZoneShare the second (an eight-player value, scaled by players over eight, not above the slider's 0.8).",
 					"ends": {
 						"oldSchool": 0.2,
 						"nostalgia": 0.2,
@@ -321,7 +321,16 @@
 								1.8
 							]
 						},
-						"layout": {}
+						"layout": {
+							"startZoneShare": [
+								0.33,
+								0.8
+							],
+							"zonesPer1000": [
+								0.5,
+								1.9
+							]
+						}
 					}
 				}
 			},

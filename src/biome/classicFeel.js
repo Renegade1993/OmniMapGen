@@ -52,28 +52,44 @@ function draw(seed, forced) {
 		const off = (rnd() * 2 - 1) * (t.offset === undefined ? 0.25 : t.offset);
 		group[g] = forced !== undefined && forced !== null && Number.isFinite(Number(forced)) ? f : clamp01(f + off);
 		for (const k of Object.keys(t.groups[g])) u[k] = rnd();
-	}
-	// keymaster pockets: a smattering, about one map in four (two in five near old school, one in ten near Nostalgia); 1 to 3 colours, mostly 1
+	}	// keymaster pockets: a smattering, about one map in four (two in five near old school, one in ten near Nostalgia); 1 to 3 colours, mostly 1
 	const rk = rnd(), rn = rnd();
 	const pockets = rk < (f < 0.5 ? 0.4 : 0.1) ? (rn < 0.6 ? 1 : rn < 0.9 ? 2 : 3) : 0;
 	return { f, group, u, pockets };
 }
 
 /** The levers the draw moves, given the draw and the values the levers have now (band or default): { lever: value }. */
-function apply(d, current, range) {
+function apply(d, current, range, ctx) {
 	const t = feelTable(), out = {};
 	if (!t || !d) return out;
+	const area = ctx ? ctx.W * ctx.H * Math.max(1, ctx.levels || 1) : 0, players = ctx ? Math.max(1, Math.min(8, ctx.players || 8)) : 8;
 	for (const [g, levers] of Object.entries(t.groups)) {
 		const wOld = 1 - d.group[g];
 		for (const [k, pole] of Object.entries(levers)) {
+			// zonesPer1000 is not a lever: the old-school zone count per 1,000 tiles, which becomes zoneCells below
+			if (k === 'zonesPer1000') continue;
 			const now = Number(current[k]);
 			if (!Number.isFinite(now)) continue;
-			const old = pole[0] + (pole[1] - pole[0]) * d.u[k];
+			let old = pole[0] + (pole[1] - pole[0]) * d.u[k];
+			// a start zone keeps its size when fewer play (classicBands.js): the old-school share is for eight players
+			if (k === 'startZoneShare') old *= players / 8;
 			let v = now * (1 - wOld) + old * wOld;
 			const r = range && range[k];
 			if (r) v = Math.max(r.min, Math.min(r.max, v));
 			out[k] = Math.round(v * 1e4) / 1e4;
 		}
+	}
+	// the zone count: the band's now (the land the starts leave over zoneCells, and the starts), blended toward the originals' count per 1,000 tiles
+	const lz = t.groups.layout && t.groups.layout.zonesPer1000;
+	if (lz && area && Number.isFinite(Number(current.zoneCells))) {
+		const share = Math.max(0.01, Math.min(0.95, out.startZoneShare !== undefined ? out.startZoneShare : Number(current.startZoneShare) || 0.5));
+		const zonesNow = players + (area * (1 - Number(current.startZoneShare || 0.5))) / Number(current.zoneCells);
+		const zonesOld = (lz[0] + (lz[1] - lz[0]) * d.u.zonesPer1000) * area / 1000 * 0.85; // about 85 percent of the tiles are ground
+		const zones = Math.max(players + 2, zonesNow * d.group.layout + zonesOld * (1 - d.group.layout));
+		let cells = (area * (1 - share)) / Math.max(1, zones - players);
+		const r = range && range.zoneCells;
+		if (r) cells = Math.max(r.min, Math.min(r.max, cells));
+		out.zoneCells = Math.round(cells * 100) / 100;
 	}
 	return out;
 }

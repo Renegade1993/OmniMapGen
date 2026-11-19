@@ -265,7 +265,7 @@ async function main() {
 		const d = feelMod.draw(Number(opt.seed) || 1, opt.feel !== undefined ? opt.feel : process.env.VMAPGEN_FEEL);
 		if (d) {
 			const ranges = Object.fromEntries(KNOBS.filter(k => !k.cli && k.min !== undefined && k.max !== undefined).map(k => [k.key, { min: k.min, max: k.max }]));
-			const moved = feelMod.apply(d, { ...leverBase(), ...biomes }, ranges);
+			const moved = feelMod.apply(d, { ...leverBase(), ...biomes }, ranges, { W, H, levels: underground ? 2 : 1, players: nPlayers });
 			const set = Object.keys(moved).filter(k => opt['bio.' + k] === undefined);
 			for (const k of set) biomes[k] = moved[k];
 			const line = `feel ${d.f.toFixed(2)} (${Object.entries(d.group).filter(([g]) => feelMod.feelTable().groups[g] && Object.keys(feelMod.feelTable().groups[g]).length).map(([g, v]) => `${g} ${v.toFixed(2)}`).join(', ')})`;
