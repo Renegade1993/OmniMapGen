@@ -10915,18 +10915,21 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
  */
 function objectCover(pl, l, W, H) {
 	const isScen = o => (DECOR_TYPES_SET.has(o.type) || (o.template && require('./decor').isTerrainDecorAnimation(o.template.animation))) && o.template && o.template.mask && !o.template.mask.some(r2 => /[AT]/.test(r2));
-	const scenAt = new Map(), other = new Set();
+	// scenAt names one piece a cell is under (the last); scenAll names every one: two scenery pieces may share a cell (the engine's own maps have
+	// such pairs), and a footprint put over the cell takes out all of them (S249, seed 12 of Coldshadow's 144 two-level: a start's ore pit moved
+	// onto a cell under a swamp pond and a lake, only the pond and the trees were cleared and the lake stayed under the mine)
+	const scenAt = new Map(), scenAll = new Map(), other = new Set();
 	for (const o of pl.objects) {
 		if ((o.l || 0) !== l || !o.template) continue;
 		const sc = isScen(o);
 		for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) {
 			if (fx < 0 || fy < 0 || fx >= W || fy >= H) continue;
 			const c = fy * W + fx;
-			if (sc) scenAt.set(c, o); else other.add(c);
+			if (sc) { scenAt.set(c, o); if (scenAll.has(c)) scenAll.get(c).push(o); else scenAll.set(c, [o]); } else other.add(c);
 		}
 	}
-	for (const c of other) scenAt.delete(c);
-	return { scenAt, other };
+	for (const c of other) { scenAt.delete(c); scenAll.delete(c); }
+	return { scenAt, scenAll, other };
 }
 
 /**
@@ -12220,7 +12223,12 @@ function sceneryRoom(pl, l, W, H, blocked, tpl, zoneOk, score, waysOk = null, fo
 			if ((blocked[base + c] & OCCUPIED) || cover.scenAt.has(c) || cover.other.has(c)) {
 				const o = scenAt.get(c);
 				if (!o) { ok = false; break; }
-				if (!gone.has(o)) { gone.add(o); cost += blockingCells(o.template, o.x, o.y).length; }
+				for (const q of (process.env.VMAPGEN_ROOM_ALL_SCENERY !== '0' && cover.scenAll && cover.scenAll.get(c)) || [o]) {
+					// every piece over the cell goes, and none that touches a zone line may
+					if (q !== o && blockingCells(q.template, q.x, q.y).some(([fx2, fy2]) => fx2 >= 0 && fy2 >= 0 && fx2 < W && fy2 < H && onLine(fy2 * W + fx2))) { ok = false; break; }
+					if (!gone.has(q)) { gone.add(q); cost += blockingCells(q.template, q.x, q.y).length; }
+				}
+				if (!ok) break;
 			}
 		}
 		if (!ok) continue;
