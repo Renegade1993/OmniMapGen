@@ -60,6 +60,34 @@ test('Classic with the lever on: level 1 is overworld ground, and each level has
 	for (const l of [0, 1]) assert.ok(gold.filter(o => o.l === l).length >= 3, `level ${l}: ${gold.filter(o => o.l === l).length} gold mines`);
 });
 
+test('a template whose entry lists mirrorLevels among the levers it ignores is not mirrored (a fixed map, K: "for arrogance, this option should/would do nothing")', () => {
+	const cfg = fs.mkdtempSync(path.join(dir, 'cfg-'));
+	fs.writeFileSync(path.join(cfg, 'approved-templates.json'), JSON.stringify({ approved: { 'Jebus Cross': '2026-11-19' } }));
+	fs.writeFileSync(path.join(cfg, 'template-info.json'), JSON.stringify({ templates: { 'Jebus Cross': { originalPreferences: { leversWithNoEffectOnTemplates: ['mirrorLevels'] } } } }));
+	const m = make('fixed3', ['--seed', '3', '--bio.mirrorLevels', '1'], { VMAPGEN_APPROVED_TEMPLATES: path.join(cfg, 'approved-templates.json') });
+	assert.ok(!/mirrored levels/.test(m.log), 'not mirrored');
+	assert.ok(terrains(m.out, 1).has('sb'), 'level 1 keeps its cave floor');
+});
+
+test('the layout output names each level\'s kind: surface and mirror with the lever on, surface and underground without it', () => {
+	const kinds = args => {
+		const r = spawnSync(process.execPath, [CLI, '--w', '48', '--h', '48', '--underground', '1', '--players', '4', '--seed', '3', ...args, '--out', path.join(dir, 'p.vmap')],
+			{ encoding: 'utf8', cwd: ROOT, env: genEnv({ VMAPGEN_PLAN_ONLY: '1' }), windowsHide: true, timeout: 280000 });
+		assert.strictEqual(r.status, 0, r.stderr);
+		const line = r.stdout.split('\n').find(l => l.startsWith('{"plan"'));
+		assert.ok(line, 'a layout line');
+		const j = JSON.parse(line);
+		return { kinds: j.levelKinds, floor: j.floorTiles || null, layouts: j.layout.filter(Boolean).length };
+	};
+	for (const base of [['--template', 'Jebus Cross'], []]) {
+		const on = kinds([...base, '--bio.mirrorLevels', '1']);
+		assert.deepStrictEqual(on.kinds, ['surface', 'mirror']);
+		assert.strictEqual(on.layouts, 2, 'both levels are planned');
+		assert.strictEqual(on.floor, null, 'a mirror level has no cave floor');
+		assert.deepStrictEqual(kinds(base).kinds, ['surface', 'underground']);
+	}
+});
+
 test('Off, a two-level Jebus Cross has its cave floor as before; the lever on a one-level map does nothing', () => {
 	const off = make('off3', ['--seed', '3']);
 	assert.ok(terrains(off.out, 1).has('sb'), 'level 1 is cave floor');

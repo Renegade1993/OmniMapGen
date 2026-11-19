@@ -38,7 +38,7 @@ const { buildPatterns, assignTerrainViews, smoothForPatterns } = require('../exp
 const { buildRiverNetwork } = require('../biome/rivernet');
 const { buildWaterPlan, buildAdoptedPlan, WATER_SHAPES } = require('../biome/water');
 const { makeMaskChecker } = require('../exporter/maskcheck');
-const { loadTemplate, resolveZones, checkConstraints, buildZonePlan, assignLevels, parseSizeCode, fitZonesToMap, addStartZones, mirrorTemplate, templateSettings }
+const { loadTemplate, resolveZones, checkConstraints, buildZonePlan, assignLevels, parseSizeCode, fitZonesToMap, addStartZones, mirrorTemplate, canMirror, templateSettings }
 	= require('../rmg/template');
 const { orderStarts } = require('../rmg/startOrder');
 const { pickSpread, permuteOwners } = require('../rmg/startSpread');
@@ -712,7 +712,8 @@ async function generateMap(params) {
 	let fitTemplate = null, fitBase = null;
 	// S341, the tick "Second Level Like the Overworld" (lever mirrorLevels): on a template map of two levels each level is the template as a one-level
 	// map runs it. VMAPGEN_MIRROR_LEVELS=0 ignores the lever.
-	const mirrorOn = !!params.template && levels.length === 2 && Number((params.biomes || {}).mirrorLevels) >= 1 && process.env.VMAPGEN_MIRROR_LEVELS !== '0';
+	const mirrorOn = !!params.template && levels.length === 2 && Number((params.biomes || {}).mirrorLevels) >= 1 && process.env.VMAPGEN_MIRROR_LEVELS !== '0'
+		&& canMirror(params.template);
 	const loadFitTemplate = () => {
 		if (!fitTemplate) {
 			const t = loadTemplate(params.template);
@@ -2126,6 +2127,9 @@ async function generateMap(params) {
 			...(floorTiles.some(Boolean) && process.env.VMAPGEN_LAYOUT_FLOOR_TILES !== '0' ? { floorTiles } : {}),
 			starts: (starts || []).map(s => ({ x: s.x, y: s.y, color: s.color || s.player || null, level: s.l || 0 })),
 			size: { w: params.mapW, h: params.mapH, levels: levels.length },
+			// S341: what each level is, for the picture's palette: "surface", "underground" (the carved cave) or "mirror" (a level made like the overworld,
+			// Second Level Like the Overworld); a mirror level is drawn with the surface's palette and has no floorTiles
+			levelKinds: levels.map((lv, i) => (i === 0 ? 'surface' : (zonePlan ? !!zonePlan.mirrored : (Number(biomeParams.mirrorLevels) >= 1 && process.env.VMAPGEN_MIRROR_LEVELS !== '0')) ? 'mirror' : 'underground')),
 			water: waterPlan ? { shape: waterPlan.shape, coverage: waterPlan.coverage,
 				moved: waterPlan.starts.filter(s => s.moved).length } : null,
 			// S035 (DMB Dev's lobby preview, K's rows 35.1 and 35.3): the water tile by tile, one flat array of 0 and 1 per level, index y * w + x as the

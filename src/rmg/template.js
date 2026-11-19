@@ -191,6 +191,21 @@ function isOpenLayoutName(name) {
 	const n = String(name).toLowerCase().replace(/[^a-z0-9]+/g, '');
 	return openLayoutIndex().has(n) || openAliases.has(n);
 }
+/**
+ * Whether a template's map can have its second level made like the overworld (S341, K: "note that for arrogance, this option should/would do nothing"): false
+ * when the template's entry in template-info.json lists mirrorLevels in originalPreferences.leversWithNoEffectOnTemplates, the list of levers a template
+ * ignores (the lobby greys them). A template with no entry can be mirrored.
+ */
+function canMirror(name) {
+	try {
+		const j = JSON.parse(fs.readFileSync(templateInfoFile(), 'utf8')).templates || {};
+		const n = String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+		for (const [k, v] of Object.entries(j))
+			if (k.toLowerCase().replace(/[^a-z0-9]+/g, '') === n)
+				return !((((v || {}).originalPreferences || {}).leversWithNoEffectOnTemplates || []).includes('mirrorLevels'));
+	} catch { /* no info file: no flag */ }
+	return true;
+}
 /** The open layout's entry name(s) as written, for the template listing (the picker shows them first). */
 function openLayoutNames() {
 	return [...openLayoutIndex().values()];
@@ -877,7 +892,7 @@ function mirrorTemplate(raw, req) {
 }
 
 module.exports = {
-	mirrorTemplate, isOpenLayoutName, openLayoutNames, templateInfoFile, loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan, assignLevels, addStartZones,
+	mirrorTemplate, canMirror, isOpenLayoutName, openLayoutNames, templateInfoFile, loadTemplate, listTemplates, resolveZones, checkConstraints, buildZonePlan, assignLevels, addStartZones,
 	guardToLevel, zoneTreasureMass, lootScale, pileRate, pileLoot, ZONE_CLASS, MONSTER_BAND,
 	MINE_SUBTYPE, parseSizeCode, parseRange, fitZonesToMap, templateSettings,
 };
