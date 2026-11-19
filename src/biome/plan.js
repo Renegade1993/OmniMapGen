@@ -8525,7 +8525,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				? { ...p, layoutAnchors: anchors, ...(above ? { gateSitesAbove: above } : {}) } : p,
 			terrainShortIds, tileIdsByShort, numTiles, blocked,
 			// a mirrored map's second level is an overworld level (template.js mirrorTemplate): no rock, no cave floor, the surface's ground
-			underground: l > 0 && !(p.zonePlan && p.zonePlan.mirrored), objectPools, terrainInfo,
+			underground: l > 0 && !(p.zonePlan ? p.zonePlan.mirrored : (Number(p.mirrorLevels) >= 1 && process.env.VMAPGEN_MIRROR_LEVELS !== '0')), objectPools, terrainInfo,
 		}));
 	}
 	setPhaseLevel(0);
@@ -12055,7 +12055,10 @@ function ensureGoldMines(plans, W, H, blocked, p, rng) {
 	const gold = [];
 	for (let l = 0; l < plans.length; l++)
 		for (const o of plans[l].objects) if ((o.l || 0) === l && o.type === 'mine' && o.subtype === 'goldMine') gold.push({ l, x: o.x, y: o.y });
-	let need = floor - gold.length;
+	// a mirrored map's levels are each a map of their own (S341, K and the lead 2026-11-19: 3 per level): the floor counts level by level
+	const mirrored = Number(p.mirrorLevels) >= 1 && plans.length > 1 && process.env.VMAPGEN_MIRROR_LEVELS !== '0';
+	const short = l => (mirrored ? floor - gold.filter(g => g.l === l).length : floor - gold.length);
+	let need = mirrored ? plans.reduce((s, _, l) => s + Math.max(0, short(l)), 0) : floor - gold.length;
 	if (need <= 0) return null;
 	const have = new Map(); // "l:zone" -> gold mines in it
 	const zoneAt = (l, x, y) => plans[l].zone[y * W + x];
@@ -12073,6 +12076,7 @@ function ensureGoldMines(plans, W, H, blocked, p, rng) {
 		const order = cands.map(c => ({ c, n: have.get(c.l + ':' + c.z) || 0, r: rng() })).sort((a, b) => a.n - b.n || a.r - b.r);
 		let done = false;
 		for (const { c } of order) {
+			if (mirrored && short(c.l) <= 0) continue;
 			const pl = plans[c.l], tpl = mineTemplate('goldMine', pl.biomeTerrain[c.z]);
 			if (!tpl) continue;
 			const far = (x, y) => -Math.min(Infinity, ...gold.filter(g => g.l === c.l).map(g => Math.hypot(g.x - x, g.y - y)));

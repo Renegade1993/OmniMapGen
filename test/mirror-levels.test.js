@@ -49,6 +49,17 @@ test('Second Level Like the Overworld: both levels are Jebus Crosses on overworl
 	}
 });
 
+test('Classic with the lever on: level 1 is overworld ground, and each level has its 3 gold mines whatever the mine lever says', () => {
+	const sight = require(path.join(ROOT, 'tools', 'mapsight', 'lib', 'sight'));
+	const out = path.join(dir, 'classic.vmap');
+	const r = spawnSync(process.execPath, [CLI, '--w', '108', '--h', '108', '--underground', '1', '--players', '4', '--seed', '3', '--bio.mirrorLevels', '1', '--bio.mineDensity', '0', '--out', out],
+		{ encoding: 'utf8', cwd: ROOT, env: genEnv(), windowsHide: true, timeout: 280000 });
+	assert.strictEqual(r.status, 0, r.stderr);
+	assert.ok(!terrains(out, 1).has('sb'), 'no cave floor on level 1');
+	const gold = sight.load(out).objs.filter(o => o.type === 'mine' && o.subtype === 'goldMine');
+	for (const l of [0, 1]) assert.ok(gold.filter(o => o.l === l).length >= 3, `level ${l}: ${gold.filter(o => o.l === l).length} gold mines`);
+});
+
 test('Off, a two-level Jebus Cross has its cave floor as before; the lever on a one-level map does nothing', () => {
 	const off = make('off3', ['--seed', '3']);
 	assert.ok(terrains(off.out, 1).has('sb'), 'level 1 is cave floor');
