@@ -68,12 +68,18 @@ function traceRiver(W, H, rng, cells, budget = Infinity) {
  * 176 river ends in the open, 52% of river tiles under an object (the engine's own maps: 76 of 119 and 9%; K's rule is stricter).
  * Returns the set of river cells.
  */
-function routeRivers(W, H, rng, share, { forbid = null, water = null, open = null, under = null, nodes = null } = {}) {
+function routeRivers(W, H, rng, share, { forbid = null, water = null, open = null, under = null, nodes = null, road = null } = {}) {
 	const cells = new Set();
 	const target = Math.round(W * H * share);
 	if (target < 4) return cells;
 	const N = W * H;
 	const free = c => (!forbid || !forbid[c]) && (!open || open[c]) && !(water && water[c]);
+	// S345 (K, 2026-11-19: "rivers should generally avoid roads, or perhaps run under them, but they should never run longwise under a road, that looks awful"):
+	// a river may cross a road, one tile of it at a time, and never goes from a road tile to the next (that is a run along it), and no river starts or ends on a road.
+	// The roads are laid before the rivers (generate.js), so `road` is the finished road layer. VMAPGEN_RIVER_ROAD=0 gives the earlier routing.
+	if (process.env.VMAPGEN_RIVER_ROAD === '0') road = null;
+	const onRoad = c => !!(road && road[c]);
+	const alongRoad = (c, n) => onRoad(c) && onRoad(n);
 	// a coarse value noise, 0..1, one knot every 6 tiles
 	const G = 6, gw = Math.ceil(W / G) + 2, gh = Math.ceil(H / G) + 2, knots = new Float32Array(gw * gh);
 	for (let i = 0; i < knots.length; i++) knots[i] = rng();
@@ -105,9 +111,9 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 	const riverBeside = c => { const x = c % W, y = (c / W) | 0; return N4.some(([dx, dy]) => { const u = x + dx, v = y + dy; return u >= 0 && v >= 0 && u < W && v < H && cells.has(v * W + u); }); };
 	// an end: free ground on the edge, beside water, or beside a river already laid
 	// an end is in view: not under scenery
-	const isEnd = c => free(c) && !(under && under[c]) && (onEdge(c) || wetBeside(c) || riverBeside(c));
+	const isEnd = c => free(c) && !onRoad(c) && !(under && under[c]) && (onEdge(c) || wetBeside(c) || riverBeside(c));
 	const starts = [];
-	for (let c = 0; c < N; c++) if (free(c) && !(under && under[c]) && (onEdge(c) || wetBeside(c))) starts.push(c);
+	for (let c = 0; c < N; c++) if (free(c) && !onRoad(c) && !(under && under[c]) && (onEdge(c) || wetBeside(c))) starts.push(c);
 	const T = process.env.VMAPGEN_RIVER_TRACE ? { starts: starts.length, target, nogoal: 0, toolong: 0, laid: 0, skip: 0 } : null;
 	if (!starts.length) { if (T) console.error("[river] " + JSON.stringify(T)); return cells; }
 	let failed = 0;
@@ -117,7 +123,7 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 	// is the free ground beside one object; the cheapest way from any of it to an end (edge, water, a river) is laid, of any length.
 	let nodeRivers = 0;
 	for (const group of nodes || []) {
-		const src = group.filter(c => free(c) && !cells.has(c));
+		const src = group.filter(c => free(c) && !cells.has(c) && !onRoad(c));
 		if (!src.length || group.some(c => cells.has(c))) continue;
 		dist.fill(Infinity); prev.fill(-1);
 		const hp = [];
@@ -128,9 +134,9 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 		while (hp.length) {
 			const [d, c] = hpop();
 			if (d > dist[c]) continue;
-			if (onEdge(c) || wetBeside(c) || riverBeside(c)) { goal = c; break; }
+			if ((onEdge(c) || wetBeside(c) || riverBeside(c)) && !onRoad(c)) { goal = c; break; }
 			const cx = c % W, cy = (c / W) | 0;
-			for (const [dx, dy] of N4) { const u = cx + dx, v = cy + dy; if (u < 0 || v < 0 || u >= W || v >= H) continue; const n = v * W + u; if (!free(n) || cells.has(n)) continue; const nd = d + cost[n]; if (nd < dist[n]) { dist[n] = nd; prev[n] = c; hpush(nd, n); } }
+			for (const [dx, dy] of N4) { const u = cx + dx, v = cy + dy; if (u < 0 || v < 0 || u >= W || v >= H) continue; const n = v * W + u; if (!free(n) || cells.has(n) || alongRoad(c, n)) continue; const nd = d + cost[n]; if (nd < dist[n]) { dist[n] = nd; prev[n] = c; hpush(nd, n); } }
 		}
 		if (goal < 0) continue;
 		for (let c = goal; c >= 0; c = prev[c]) cells.add(c);
@@ -160,7 +166,7 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 				const u = cx + dx, v = cy + dy;
 				if (u < 0 || v < 0 || u >= W || v >= H) continue;
 				const n = v * W + u;
-				if (!free(n) || cells.has(n)) continue;
+				if (!free(n) || cells.has(n) || alongRoad(c, n)) continue;
 				// short of the goal, a tile on the edge, beside water or beside a river is a way along it, not into it
 				const along = (onEdge(n) || wetBeside(n) || riverBeside(n)) && Math.max(Math.abs(u - sx), Math.abs(v - sy)) < minLen ? 8 : 0;
 				const nd = d + cost[n] + along;

@@ -2972,6 +2972,9 @@ async function generateMap(params) {
 		// K, 2026-10-07: no river under an object or its guard's ring, and none that ends in the open. The router (rivernet.js routeRivers)
 		// keeps off every object's tiles and every monster's 3x3, runs on open ground only, and ends at the map's edge, at water or at another river.
 		const riverForbid = new Uint8Array(lv.width * lv.height), riverUnder = new Uint8Array(lv.width * lv.height);
+		// the finished roads of this level (laid above): a river may cross one, never run along or under it (rivernet.js, S345)
+		const riverRoad = new Uint8Array(lv.width * lv.height);
+		for (const c of roadArt.keys()) riverRoad[c] = 1;
 		for (const o of objects) {
 			if ((o.l || 0) !== li || !o.template || !o.template.mask) continue;
 			const mark = (x, y) => { if (x >= 0 && y >= 0 && x < lv.width && y < lv.height) riverForbid[y * lv.width + x] = 1; };
@@ -2995,7 +2998,7 @@ async function generateMap(params) {
 		let riverCells = params.rivers === false ? new Set()
 			: buildRiverNetwork(lv.width, lv.height, riverRng,
 				params.riverShare !== undefined ? params.riverShare : 0.018,
-				{ forbid: riverForbid, under: riverUnder, water: li === 0 ? water : null, open: openMask || null, nodes: riverNodes });
+				{ forbid: riverForbid, under: riverUnder, water: li === 0 ? water : null, open: openMask || null, nodes: riverNodes, road: riverRoad });
 		// a river through solid rock is not a river. Underground, keep the
 		// water inside the carved chambers and tunnels.
 		if (openMask)
