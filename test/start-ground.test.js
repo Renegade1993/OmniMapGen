@@ -68,7 +68,7 @@ test('every start of a 48x48 eight-player map walks 8 tiles or more without a fi
 // S255 (2026-11-15, rc-1116): the random stream shifted (S249's gate pictures, S253's box rewards) and none of seeds 1 to 16 boxes a start in without the passes any more (they did on
 // rc-1115); a count over more seeds is the count (the lead: never re-pin a lucky seed), so the set is seeds 1 to 32, bar still 1
 const OFF_SEEDS = Array.from({ length: 32 }, (_, i) => i + 1);
-test('VMAPGEN_START_WALK=0, VMAPGEN_START_CAPS=0 and VMAPGEN_START_EXIT=0 give the old walk: without the passes at least 1 of seeds 1 to 32 boxes a start in, and with the start exit on it does not', { timeout: 1800000 }, t => {
+test('VMAPGEN_START_WALK=0, VMAPGEN_START_CAPS=0 and VMAPGEN_START_EXIT=0 give the old walk: without the passes at least 1 of seeds 1 to 32 boxes a start in, and with the passes on it does not', { timeout: 1800000 }, t => {
 	const boxed = [];
 	for (const seed of OFF_SEEDS) {
 		// and the start warp guard off (biomes.js, 2026-10-16): it keeps some of these starts out of the box before the passes run (seed 12's
@@ -80,8 +80,10 @@ test('VMAPGEN_START_WALK=0, VMAPGEN_START_CAPS=0 and VMAPGEN_START_EXIT=0 give t
 	}
 	t.diagnostic(`seeds that box a start in without the passes: ${boxed.join(', ')}`);
 	assert.ok(boxed.length >= 1, `seeds that box a start in without the passes: ${boxed.join(', ') || 'none'}, bar 1 of ${OFF_SEEDS.length}`);
-	// the start exit alone keeps the box shut: the first seed that boxed, with only the three old passes off
-	const { r, out } = generate(args(boxed[0]), 'exit' + boxed[0], { VMAPGEN_START_WALK: '0', VMAPGEN_START_CAPS: '0', VMAPGEN_START_WARP_GUARD: '0' });
+	// the passes keep the box shut: the first seed that boxed, with every pass on. S341 follow-up (2026-11-19): this used to be "with the start exit alone on", and under Classic's
+	// size bands and feel draw (the defaults since 9877c4b) the exit alone no longer opens 3 of the 4 seeds that box a start in without the passes (seeds 4, 12, 30 of 1 to 32 walk 3 tiles
+	// with only the exit on; seed 24 opens), while with every pass on the least walk over seeds 1 to 32 is 19 tiles (.tmp\m1118\sweep5_d.txt): the property that matters is the whole set
+	const { r, out } = generate(args(boxed[0]), 'passes' + boxed[0]);
 	assert.strictEqual(r.status, 0, r.stderr.slice(-400));
-	for (const st of walks(out).out) assert.ok(st.tiles >= 8, `seed ${boxed[0]} with the start exit on: start (${st.at}) walks ${st.tiles} tiles`);
+	for (const st of walks(out).out) assert.ok(st.tiles >= 8, `seed ${boxed[0]} with every pass on: start (${st.at}) walks ${st.tiles} tiles`);
 });

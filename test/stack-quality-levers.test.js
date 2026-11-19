@@ -13,10 +13,14 @@ const { spawnSync } = require('child_process');
 const { genEnv, testTmp } = require('./_vcmi');
 const { readVmap } = require('../src/preview/render');
 
-function make(tag, extra) {
+// S341 follow-up (2026-11-19): seed 1 moved to seed 4. Classic's size bands and feel draw (the defaults since 9877c4b) give a 72x72 map 2 to 26 random
+// artifacts, and a share of 2 to 5 objects is no measure; checked on seeds 2 to 11 under the new defaults the lever moves the share both ways on 8 of the 10
+// (the two that do not carry 3 to 14 artifacts), and seed 4 carries 19 to 26 (0.05, 0.35 and 0.63 at 0, default and 1)
+const ART_SEED = 4;
+function make(tag, extra, seed = 1) {
 	const out = path.join(testTmp(), `vmapgen_levers_${tag}.vmap`);
 	const r = spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'), '--out', out, '--declaremods', '0',
-		'--w', '72', '--h', '72', '--players', '4', '--seed', '1', '--factions', 'random,random,random,random',
+		'--w', '72', '--h', '72', '--players', '4', '--seed', String(seed), '--factions', 'random,random,random,random',
 		'--accommodate', 'size,players,humans,underground', ...extra],
 	{ encoding: 'utf8', timeout: 120000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
 	assert.strictEqual(r.status, 0, r.stderr.slice(-600));
@@ -40,9 +44,9 @@ test('Artifact quality moves the major and relic share of a free layout both way
 		const a = o.filter(x => /^randomArtifact(Minor|Major|Relic|Treasure)$/.test(x.type));
 		return a.filter(x => /Major|Relic/.test(x.type)).length / a.length;
 	};
-	const lo = share(make('art_lo', ['--bio.artifactRichness', '0']));
-	const one = share(make('art_one', []));
-	const hi = share(make('art_hi', ['--bio.artifactRichness', '1']));
+	const lo = share(make('art_lo', ['--bio.artifactRichness', '0'], ART_SEED));
+	const one = share(make('art_one', [], ART_SEED));
+	const hi = share(make('art_hi', ['--bio.artifactRichness', '1'], ART_SEED));
 	assert.ok(lo < one - 0.1, `0 ${lo} against default ${one}`);
 	assert.ok(hi > one + 0.1, `1 ${hi} against default ${one}`);
 });
