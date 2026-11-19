@@ -38,7 +38,7 @@ const clamp01 = v => Math.max(0, Math.min(1, v));
  * `base` is the lever defaults (preset on the generator's own) the fade starts from; `range` the slider range of a lever ({min, max}), which a
  * default never leaves (the zone size of a huge map stops at the slider's end; a player can still move it by hand).
  */
-function resolve(W, H, levels, base, range) {
+function resolve(W, H, levels, base, range, players) {
 	const b = bandTable();
 	if (!b || process.env.VMAPGEN_CLASSIC_BANDS === '0') return {};
 	const side = Math.sqrt(W * H), A = [...b.anchors].sort((x, y) => x.side - y.side);
@@ -52,10 +52,15 @@ function resolve(W, H, levels, base, range) {
 		if (a === undefined || c === undefined) continue;
 		out[k] = steps.has(k) ? (t < 0.5 ? a : c) : a + (c - a) * t;
 	}
+	// The engine's two templates keep their eight start zones and their zone count whatever the player count (measured 2026-11-19 on 4 and on 8
+	// players: 967 tiles a start and 15 zones at 108, 2,570 and 24 at 180, the same at both counts). So a start zone keeps its size when fewer
+	// play: the share is the anchor's times players over eight, and the zones that are not starts are the stock count less the players.
+	const pl = Math.max(1, Math.min(STOCK_STARTS, Math.round(Number(players) || STOCK_STARTS)));
+	if (out.startZoneShare !== undefined) out.startZoneShare *= pl / STOCK_STARTS;
 	if (lo.zones !== undefined && hi.zones !== undefined) {
 		const zones = lo.zones + (hi.zones - lo.zones) * t;
-		const share = out.startZoneShare !== undefined ? out.startZoneShare : (base && Number(base.startZoneShare)) || 0.5;
-		out.zoneCells = (W * H * Math.max(1, levels) * (1 - share)) / Math.max(1, zones - STOCK_STARTS);
+		const share = out.startZoneShare !== undefined ? Math.max(range && range.startZoneShare ? range.startZoneShare.min : 0, out.startZoneShare) : (base && Number(base.startZoneShare)) || 0.5;
+		out.zoneCells = (W * H * Math.max(1, levels) * (1 - share)) / Math.max(1, zones - pl);
 	}
 	// under the first anchor the values fade in from the lever's own default
 	const fade = b.fade || [A[0].side, A[0].side];

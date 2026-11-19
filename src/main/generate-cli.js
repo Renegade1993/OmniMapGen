@@ -111,8 +111,8 @@ const leverBase = () => {
 	return { ...require('../biome/biomes').BIOME_DEFAULTS, ...knobDefault, ...PRESETS[presetName].values };
 };
 // Classic's lever defaults for a W x H map (src/biome/classicBands.js, S320): the values the lobby shows and Reset returns to, and what an untouched lever means
-const classicBandsFor = (W, H, levels) => require('../biome/classicBands').resolve(W, H, levels, leverBase(),
-	Object.fromEntries(require('../biome/knobs').KNOBS.filter(k => !k.cli && k.min !== undefined && k.max !== undefined).map(k => [k.key, { min: k.min, max: k.max }])));
+const classicBandsFor = (W, H, levels, players) => require('../biome/classicBands').resolve(W, H, levels, leverBase(),
+	Object.fromEntries(require('../biome/knobs').KNOBS.filter(k => !k.cli && k.min !== undefined && k.max !== undefined).map(k => [k.key, { min: k.min, max: k.max }])), players);
 let settingsLine = (() => {
 	const base = leverBase();
 	const changed = Object.entries(opt).filter(([k]) => k.startsWith('bio.')).map(([k, v]) => [k.slice(4), parseFloat(v)])
@@ -190,7 +190,7 @@ async function main() {
 	// --listbands 1 --w 144 --h 144 --underground 1: Classic's lever values for that map as JSON ({"levers": {...}}), for the lobby's sliders and its Reset
 	if (opt.listbands) {
 		const bw = parseInt(opt.w || '64', 10), bh = parseInt(opt.h || '64', 10);
-		console.log(JSON.stringify({ levers: classicBandsFor(bw, bh, opt.underground === '1' || opt.underground === 'true' ? 2 : 1) }));
+		console.log(JSON.stringify({ levers: classicBandsFor(bw, bh, opt.underground === '1' || opt.underground === 'true' ? 2 : 1, parseInt(opt.players || '8', 10)) }));
 		return;
 	}
 	let W = parseInt(opt.w || '64', 10);
@@ -246,7 +246,7 @@ async function main() {
 	const template = picked && tplMod.isOpenLayoutName(picked) ? undefined : picked;
 	// Classic follows the map's size (S320): every lever the player did not name takes the value of the band this map is in
 	if (!template) {
-		const band = classicBandsFor(W, H, underground ? 2 : 1);
+		const band = classicBandsFor(W, H, underground ? 2 : 1, nPlayers);
 		const named = Object.keys(band).filter(k => opt['bio.' + k] === undefined);
 		for (const k of named) biomes[k] = band[k];
 		if (named.length) settingsLine += `; Classic band ${Math.round(Math.sqrt(W * H))}: ` + named.map(k => `${k} ${band[k]}`).join(', ');

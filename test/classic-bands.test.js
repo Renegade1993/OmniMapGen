@@ -55,6 +55,15 @@ test('the zone count is the stock count: 15 on a 108 map, 24 on a 180 map on two
 	assert.strictEqual(zonesOf(c.stdout), 24);
 });
 
+test('a start zone keeps the stock size when fewer play: the share scales with the players over eight, and the zone count stays the stock count', () => {
+	const at = n => JSON.parse(cli(['--listbands', '1', '--w', '108', '--h', '108', '--players', String(n)]).stdout).levers;
+	assert.strictEqual(at(8).startZoneShare, 0.69);
+	assert.ok(Math.abs(at(4).startZoneShare - 0.345) < 1e-9, 'four players take half the share of eight');
+	assert.strictEqual(at(2).startZoneShare, 0.2, 'not below the slider\'s own minimum');
+	const four = zonesOf(cli(['--layout', '1', '--w', '108', '--h', '108', '--players', '4', '--seed', '1']).stdout);
+	assert.strictEqual(four, 15, 'the stock zone count, starts included');
+});
+
 test('a lever the player moved is never overwritten', () => {
 	const r = cli(['--layout', '1', '--w', '108', '--h', '108', '--players', '8', '--seed', '1', '--bio.zoneCells', '400']);
 	assert.ok(zonesOf(r.stdout) > 15, 'zoneCells 400 by hand keeps the earlier zone count');
