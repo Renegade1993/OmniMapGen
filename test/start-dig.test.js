@@ -16,7 +16,9 @@ const { blockingCells, visitableCells, REMOVABLE_TYPES } = require('../src/biome
 const generate = args => {
 	const out = path.join(testTmp(), `vmapgen_dig_${process.pid}_${args.join('_').replace(/[^a-z0-9_.]/gi, '')}.vmap`);
 	const r = spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'), ...args, '--out', out],
-		{ encoding: 'utf8', timeout: 200000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
+		{ encoding: 'utf8', timeout: 200000, cwd: path.join(__dirname, '..'), windowsHide: true,
+			// the seeds below were found on Classic's earlier defaults (S320 and S340 move the defaults with the map size and draw each map's feel), so the case runs on those
+			env: { ...genEnv(), VMAPGEN_CLASSIC_BANDS: '0', VMAPGEN_CLASSIC_FEEL: '0' } });
 	return { r, out };
 };
 
