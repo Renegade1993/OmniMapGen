@@ -29,7 +29,9 @@ const OPT = ['--w', '144', '--h', '144', '--players', '7', '--humans', '2', '--s
 function startZones(tag, env = {}) {
 	const out = path.join(testTmp(), `vmapgen_zonejoin_${process.pid}_${tag}.vmap`);
 	const r = spawnSync(process.execPath, [path.join(__dirname, '../src/main/generate-cli.js'), ...OPT, '--out', out],
-		{ encoding: 'utf8', timeout: 600000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv(env) });
+		{ encoding: 'utf8', timeout: 600000, cwd: path.join(__dirname, '..'), windowsHide: true,
+		// the case was found on Classic's earlier defaults (S320 and S340 move them with the map size and draw each map's feel), so it runs on those
+		env: genEnv({ VMAPGEN_CLASSIC_BANDS: '0', VMAPGEN_CLASSIC_FEEL: '0', ...env }) });
 	assert.strictEqual(r.status, 0, (r.stderr || '').slice(-400));
 	const sight = require('../tools/mapsight/lib/sight');
 	const M = sight.load(out), st = sight.starts(M), Z = JSON.parse(fs.readFileSync(out + '.zones.json', 'utf8')).levels;
