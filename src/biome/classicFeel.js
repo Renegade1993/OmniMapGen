@@ -52,9 +52,10 @@ function draw(seed, forced) {
 		const off = (rnd() * 2 - 1) * (t.offset === undefined ? 0.25 : t.offset);
 		group[g] = forced !== undefined && forced !== null && Number.isFinite(Number(forced)) ? f : clamp01(f + off);
 		for (const k of Object.keys(t.groups[g])) u[k] = rnd();
-	}	// keymaster pockets: a smattering, about one map in four (two in five near old school, one in ten near Nostalgia); 1 to 3 colours, mostly 1
+	}	// keymaster pockets: one map in five (K, S343; S340 had one in four): about a third of the old-school half, a twelfth of the Nostalgia half; 1 to 3 colours, mostly 1.
+	// Today only a one-level map gets one (keymaster.js), so over all maps the rate is lower until two levels are covered.
 	const rk = rnd(), rn = rnd();
-	const pockets = rk < (f < 0.5 ? 0.4 : 0.1) ? (rn < 0.6 ? 1 : rn < 0.9 ? 2 : 3) : 0;
+	const pockets = rk < (f < 0.5 ? 0.32 : 0.08) ? (rn < 0.6 ? 1 : rn < 0.9 ? 2 : 3) : 0;
 	return { f, group, u, pockets };
 }
 
