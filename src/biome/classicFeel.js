@@ -53,7 +53,10 @@ function draw(seed, forced) {
 		group[g] = forced !== undefined && forced !== null && Number.isFinite(Number(forced)) ? f : clamp01(f + off);
 		for (const k of Object.keys(t.groups[g])) u[k] = rnd();
 	}
-	return { f, group, u };
+	// keymaster pockets: a smattering, about one map in four (two in five near old school, one in ten near Nostalgia); 1 to 3 colours, mostly 1
+	const rk = rnd(), rn = rnd();
+	const pockets = rk < (f < 0.5 ? 0.4 : 0.1) ? (rn < 0.6 ? 1 : rn < 0.9 ? 2 : 3) : 0;
+	return { f, group, u, pockets };
 }
 
 /** The levers the draw moves, given the draw and the values the levers have now (band or default): { lever: value }. */

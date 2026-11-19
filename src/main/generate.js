@@ -3267,6 +3267,16 @@ async function generateMap(params) {
 			console.error(`[gen] scenery over rock or sea taken off at the end: ${rockOff} over underground rock, ${seaOff} across a shoreline`);
 		}
 	}
+	// keymaster pockets (S340): the free layout's closed areas shut by border guards, a tent elsewhere; after every pass that judges reach, so none opens one
+	{
+		const pockets = Math.round(Number((params.biomes || {}).keymasterPockets) || 0);
+		if (pockets >= 1 && !params.template) {
+			let ks = (((params.seed || 1) * 2654435761) ^ 0x6b65796d) >>> 0;
+			const rk = () => { ks = (ks + 0x6D2B79F5) >>> 0; let t = ks; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+			const r = require('../biome/keymaster').addKeymasterPockets({ objects, plans, W: params.mapW, H: params.mapH, starts, rng: rk, count: pockets });
+			if (r) console.error(`[gen] keymaster pockets: ${r}`);
+		}
+	}
 	phase('ink');
 	const header = makeHeader({
 		width: params.mapW, height: params.mapH,

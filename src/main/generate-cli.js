@@ -269,6 +269,7 @@ async function main() {
 			const set = Object.keys(moved).filter(k => opt['bio.' + k] === undefined);
 			for (const k of set) biomes[k] = moved[k];
 			const line = `feel ${d.f.toFixed(2)} (${Object.entries(d.group).filter(([g]) => feelMod.feelTable().groups[g] && Object.keys(feelMod.feelTable().groups[g]).length).map(([g, v]) => `${g} ${v.toFixed(2)}`).join(', ')})`;
+			if (opt['bio.keymasterPockets'] === undefined && d.pockets) { biomes.keymasterPockets = d.pockets; roll.rolled.push(`keymaster pockets ${d.pockets}`); }
 			roll.rolled.push(line);
 			if (set.length) settingsLine += `; ${line}: ` + set.map(k => `${k} ${moved[k]}`).join(', ');
 		}
