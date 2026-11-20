@@ -3273,7 +3273,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const perGround = rate => { const n = ground * rate; return Math.floor(n) + (rng() < n - Math.floor(n) ? 1 : 0); };
 		// each building draws its own guard ask here, at the originals' share thinned by the Monster count and guard pulls, and holds the guard's tile when it is
 		// placed, as stock lays a pile with its guard (S350: drawn at the guard pass, 32 to 41 percent of the asks found no tile left under the stock spacing rules)
-		const guardP = type => Math.min(1, SPECBLD.GUARD_SHARE[type] * Math.min(1, p.guardDensity) * guardContextWeight(type, p));
+		const guardP = type => process.env.VMAPGEN_SPECIAL_OWN_GUARD === '0' ? 0 : Math.min(1, SPECBLD.GUARD_SHARE[type] * Math.min(1, p.guardDensity) * guardContextWeight(type, p));
 		for (const s of SPECBLD.draw({ rare: perGround, rng, lever: p.specialDensity, underground: l > 0 && !mirrored, terrain: tn, seed: (p.layoutSeed || p.seed || 1) + W * 7919, guardP }))
 			landmark.push(s);
 	}
