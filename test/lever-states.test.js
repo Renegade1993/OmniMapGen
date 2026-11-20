@@ -131,3 +131,24 @@ test('a non-drawn numeric slider and a slider with names: Template gives the lev
 		assert.ok(s.settings.includes('changed: ') && s.settings.includes(shown), `${key} set: ${s.settings}`);
 	}
 });
+
+test('after Reset the lobby sends every stored number and the lean still draws: Template is below the range, so nothing counts as set (S385 proof)', { timeout: 900000 }, () => {
+	const fs = require('fs'), os = require('os');
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lever-reset-'));
+	const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'gen_vcmi_ui.js'), 'build', '--pager', '--classic', '--atbegin', '--api4', '--out', dir], { encoding: 'utf8', cwd: ROOT, windowsHide: true, timeout: 120000 });
+	assert.strictEqual(r.status, 0, r.stderr);
+	const tab = JSON.parse(fs.readFileSync(path.join(dir, 'config', 'widgets', 'mapGen', 'mapGenTab.json'), 'utf8'));
+	// what MapGenTab.cpp:1619 to 1630 sends after Reset: every number stored under params, as --bio.<name> <value> (rivers as --rivers); the lobby's own extras are left out
+	const args = [];
+	for (const [k, v] of Object.entries(tab.reset.params)) if (typeof v === 'number' && k !== 'rivers' && k !== 'teams' && k !== 'compOnly' && k !== 'waterContent') args.push('--bio.' + k, String(v));
+	const reset = plan(0, args), fresh = plan(0, []);
+	const handed = (reset.random.match(/handed to the lean: ([^|]*)$/) || [, ''])[1].split(', ').map(s => s.trim()).filter(Boolean);
+	for (const key of ['mineDensity', 'resourceDensity', 'pickupDensity', 'artifactDensity', 'artifactRichness', 'highLootRatio', 'dwellingDensity', 'bonusDensity', 'guardDensity', 'decorDensity', 'startZoneShare', 'zoneCells', 'specialDensity'])
+		assert.ok(handed.includes(key), `${key} reaches the generator as Template: ${reset.random}`);
+	assert.ok(handed.length >= 40, `${handed.length} levers handed over`);
+	// the same lean as a map made with nothing sent: the lean's own draws, lever by lever
+	const lean = s => s.split('; feel')[1];
+	assert.strictEqual(lean(reset.settings), lean(fresh.settings), 'Reset gives the map the lean draws for it');
+	assert.ok(/changed: none/.test(reset.settings), reset.settings);
+	fs.rmSync(dir, { recursive: true, force: true });
+});
