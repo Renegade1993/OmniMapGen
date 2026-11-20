@@ -92,3 +92,42 @@ test('the lobby page of Special buildings has a Template notch below the range a
 	assert.strictEqual(JSON.parse(fs.readFileSync(path.join(dir, 'config', 'omnimapgen', 'english.json'), 'utf8'))['vcmi.mapGen.specialDensity.stopTemplate'], 'Template');
 	fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('every slider on the lobby pages has a Template notch below its range and starts on it; toggles, choosers with a Template stop and the map page have none (S385)', () => {
+	const fs = require('fs'), os = require('os');
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lever-pages2-'));
+	const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'gen_vcmi_ui.js'), 'build', '--pager', '--classic', '--atbegin', '--api4', '--out', dir], { encoding: 'utf8', cwd: ROOT, windowsHide: true, timeout: 120000 });
+	assert.strictEqual(r.status, 0, r.stderr);
+	const w = path.join(dir, 'config', 'widgets', 'mapGen');
+	const tab = JSON.parse(fs.readFileSync(path.join(w, 'mapGenTab.json'), 'utf8'));
+	const sliders = [];
+	for (const f of fs.readdirSync(w).filter(n => /^page_/.test(n)))
+		for (const it of JSON.parse(fs.readFileSync(path.join(w, f), 'utf8')).items) if (it.type === 'slider') sliders.push(it);
+	assert.ok(sliders.length >= 43, `${sliders.length} sliders`);
+	for (const s of sliders) {
+		const key = s.name.replace('slider_', ''), k = KNOBS.find(q => q.key === key);
+		const T = Math.min(-1, Math.round((k.min - k.step) * 1e6) / 1e6);
+		assert.strictEqual(s.valueMin, Math.round((k.min - k.step) * 1e6) / 1e6, `${key}: the first notch is one step below the range`);
+		assert.strictEqual(s.itemsTotal, Math.round((k.max - k.min) / k.step) + 1, `${key}: one more notch`);
+		assert.strictEqual(s.valueDefault, T, `${key}: the page starts on Template`);
+		assert.strictEqual(tab.defaults.params[key], T, `${key}: defaults store Template`);
+		assert.strictEqual(tab.reset.params[key], T, `${key}: Reset returns to Template`);
+		assert.deepStrictEqual(s.valueNames[0], [T, `vcmi.mapGen.${key}.stopTemplate`]);
+		assert.ok(T < k.min, `${key}: Template is below the range, which the generator reads as deferred`);
+		assert.ok(defer({ [key]: String(T) }, KNOBS, true, LEAN).handed.includes(key), `${key}: the generator hands it over`);
+		assert.ok(!defer({ [key]: String(k.default) }, KNOBS, true, LEAN).handed.includes(key) || k.stops && k.stops.some(([v, l]) => v === k.default && /template/i.test(l)), `${key}: its own default number is set`);
+	}
+	for (const key of ['roadNetwork', 'starterMines', 'guardTreasure', 'guardMines', 'guardDwellings', 'guardBottlenecks', 'mirrorLevels', 'teams', 'compOnly', 'waterContent', 'roadType', 'guardPortals', 'undergroundStarts', 'waterShape'])
+		assert.ok(!sliders.some(s => s.name === 'slider_' + key), `${key} has no Template notch slider`);
+	assert.ok(tab.defaults.params.teams > 0 && tab.defaults.params.roadNetwork === 1, 'toggles and the map page keep their default numbers');
+	fs.rmSync(dir, { recursive: true, force: true });
+});
+
+test('a non-drawn numeric slider and a slider with names: Template gives the lever\'s default, a number stays law (S385)', { timeout: 900000 }, () => {
+	for (const [key, below, set, shown] of [['stackScale', '-1', '2', 'stackScale 2'], ['monsterStrength', '-3', '2', 'monsterStrength 2'], ['borderSolidity', '-1', '0.5', 'borderSolidity 0.5']]) {
+		const t = plan(0, ['--bio.' + key, below]), s = plan(0, ['--bio.' + key, set]);
+		assert.ok(/handed to the lean: /.test(t.random) && t.random.includes(key), `${key}: ${t.random}`);
+		assert.ok(/changed: none/.test(t.settings), `${key} at Template changes nothing: ${t.settings}`);
+		assert.ok(s.settings.includes('changed: ') && s.settings.includes(shown), `${key} set: ${s.settings}`);
+	}
+});

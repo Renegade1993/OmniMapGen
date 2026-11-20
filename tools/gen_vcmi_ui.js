@@ -161,8 +161,14 @@ const SIZE_STOPS = [[36, 'S'], [72, 'M'], [108, 'L'], [144, 'XL'], [180, 'H'], [
 // moves 1560 a day (config/gameConfig.json, movementPointsLand).
 const SIZE_NAMES = { S: 'Small', M: 'Medium', L: 'Large', XL: 'Extra large', H: 'Huge', XH: 'Extra huge', G: 'Giant' };
 const crossingDays = v => Math.round(141 * (v - 1) / 1560);
-// what the lobby stores for Template on a lever with templateBelow (knobs.js): below its range, which the generator reads as the lean's or the template's own
-const TEMPLATE_VALUE = -1;
+// S385 (K: "Put it back to Template, so the lean works again (each slider gets a Template notch)"): a slider's first notch is Template, one step below its range, and
+// is what the page starts on and Reset returns to. The lobby stores templateValue(k); the generator reads any value below a lever's range as Template (src/main/leverStates.js):
+// Classic's lean draws the lever, a named template keeps its own. No notch on an on/off toggle (no state between On and Off), on a chooser that has its own Template stop
+// (Guards at portals, Starting levels, Water layout), on the game's own Random Map Setup choices (stock) or on a flag of the generator's own (cli).
+const isToggle = k => !!(k.stops && k.stops.length === 2 && k.min === 0 && k.max === 1);
+const templateNotch = k => !k.cli && !k.stock && k.page !== 'map' && !isToggle(k) && !(CLASSIC && CLASSIC_ON_MAP.has(k.key)) && !(CHOOSERS.has(k.key) && k.stops)
+	&& !(k.stops || []).some(([, label]) => /template/i.test(label));
+const templateValue = k => Math.min(-1, Math.round((k.min - k.step) * 1e6) / 1e6);
 
 // how a value reads on the page: every step shows as a change, so a value
 // takes as many decimals as its step has (0.25 steps read 1.25x, not 1.3x)
@@ -242,12 +248,14 @@ function knobRow(k, y) {
 				{ ...checkbox(k.key, setting, y, k.default), position: { x: 67, y } }];
 		return [helpButton(k.key, y), rowLabel(k.key, y), checkbox(k.key, setting, y, k.default)];
 	}
-	// a lever with templateBelow (S365, DMB Dev's spec): one notch below the range reads "Template" and is stored as -1 (the generator reads any
-	// number below the range as Template); the range's own notches show as numbers
-	if (k.templateBelow !== undefined)
+	// a slider with a Template notch (S365 and S385, DMB Dev's spec): one notch below the range reads "Template" and is stored as templateValue(k); the range's own
+	// notches show as numbers, or as their own names where the lever has stops
+	if (templateNotch(k)) {
+		const T = templateValue(k), names = display(k).valueNames;
 		return [helpButton(k.key, y), rowLabel(k.key, y),
-			...slider(k.key, setting, y, Math.round((k.min - k.step) * 1e6) / 1e6, k.step, Math.round((k.max - k.min) / k.step) + 1, TEMPLATE_VALUE,
-				{ ...display(k), valueNames: [[TEMPLATE_VALUE, `vcmi.mapGen.${k.key}.stopTemplate`], [k.min, '']] })];
+			...slider(k.key, setting, y, Math.round((k.min - k.step) * 1e6) / 1e6, k.step, Math.round((k.max - k.min) / k.step) + 1, T,
+				{ ...display(k), valueNames: [[T, `vcmi.mapGen.${k.key}.stopTemplate`], ...(names || [[k.min, '']])] })];
+	}
 	return [helpButton(k.key, y), rowLabel(k.key, y),
 		...slider(k.key, setting, y, k.min, k.step, Math.round((k.max - k.min) / k.step), k.default, display(k))];
 }
@@ -519,11 +527,13 @@ function tabJson() {
 	const params = {};
 	// the released tab leaves the stock choices unset, so the generator never
 	// sees a computer-only count beside that tab's own player count
-	for (const k of KNOBS) if (CLASSIC || !k.stock) params[k.key] = k.templateBelow !== undefined ? TEMPLATE_VALUE : k.default;
+	for (const k of KNOBS) if (CLASSIC || !k.stock) params[k.key] = templateNotch(k) ? templateValue(k) : k.default;
 	// a setting's Reset value: its Random choice where it has one (a stop named Random, or computer-only players' -1), else its default
 	const resetParams = { ...params };
 	for (const k of KNOBS) {
 		if (!(k.key in resetParams)) continue;
+		// S385 (K: "Put it back to Template, so the lean works again"): a slider with a Template notch resets to it, Random stops included (they reset to Random before)
+		if (templateNotch(k)) { resetParams[k.key] = templateValue(k); continue; }
 		// the starting levels reset to Template preference (K, 2026-10-05: "default player spawns to template with a settings reset")
 		const rnd = ['undergroundStarts', 'waterShape', 'waterContent'].includes(k.key) ? null : (k.stops || []).find(([, label]) => /random/i.test(label));
 		if (rnd) resetParams[k.key] = rnd[0];
@@ -728,7 +738,7 @@ function stringsJson() {
 		s[`vcmi.mapGen.${k.key}.hover`] = k.label;
 		s[`vcmi.mapGen.${k.key}.help`] = `{${k.label}}\n\n${k.help}`;
 		(k.stops || []).forEach(([, name], i) => { s[`vcmi.mapGen.${k.key}.stop${i}`] = name; });
-		if (k.templateBelow !== undefined) s[`vcmi.mapGen.${k.key}.stopTemplate`] = 'Template';
+		if (templateNotch(k)) s[`vcmi.mapGen.${k.key}.stopTemplate`] = 'Template';
 	}
 	return { ...s, ...classicLabels };
 }
