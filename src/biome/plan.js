@@ -5597,7 +5597,11 @@ function planLevel({ W, H, levelIndex, playerStarts, alignPlayers, towns,
 			acres = 0;
 			for (let c = 0; c < W * H; c++) if (openMask[c]) acres++;
 		}
-		const extra = Math.max(0, Math.round(acres / 1000 * perK)
+		// S351 (2026-11-19, K: a lever that does nothing is a bug): the per-acre rate follows the Neutral town biomes slider against its default, as a fixed template's
+		// count does (neutralTownScale), so 0 gives no neutral town, 1x the usual count and more of them more; before, the rate was the floor under every setting
+		// and the slider moved the count only above it (S340 measured no change). VMAPGEN_TOWN_SLIDER=0 is the earlier count.
+		const townScale = process.env.VMAPGEN_TOWN_SLIDER === '0' ? 1 : neutralTownScale(p);
+		const extra = Math.max(0, Math.round(acres / 1000 * perK * townScale)
 			- playerStarts.length - townZones.length);
 		if (extra) {
 			const far = b => playerStarts.reduce((m, s) =>
