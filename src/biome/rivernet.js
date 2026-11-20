@@ -79,7 +79,21 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 	// The roads are laid before the rivers (generate.js), so `road` is the finished road layer. VMAPGEN_RIVER_ROAD=0 gives the earlier routing.
 	if (process.env.VMAPGEN_RIVER_ROAD === '0') road = null;
 	const onRoad = c => !!(road && road[c]);
-	const alongRoad = (c, n) => onRoad(c) && onRoad(n);
+	// a road tile is also refused when another river already crosses the road on the tile beside it: two rivers each crossing once, side by side where the road
+	// steps, join into a river that runs two tiles along the road (the 8 runs of two on the 80-map grid, S345 follow-up, 2026-11-19)
+	const roadRiverBeside = n => {
+		if (!onRoad(n)) return false;
+		const x = n % W, y = (n / W) | 0;
+		for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H && onRoad(v * W + u) && cells.has(v * W + u)) return true; }
+		return false;
+	};
+	const alongRoad = (c, n) => (onRoad(c) && onRoad(n)) || roadRiverBeside(n);
+	// a path that doubles back across the road beside its own crossing (a U round the road's step) is no crossing either: refused when laid
+	const touchesItself = path => {
+		const on = new Set(path.filter(onRoad));
+		for (const c of on) { const x = c % W, y = (c / W) | 0; for (const [dx, dy] of [[1, 0], [0, 1]]) { const u = x + dx, v = y + dy; if (u < W && v < H && on.has(v * W + u)) return true; } }
+		return false;
+	};
 	// a coarse value noise, 0..1, one knot every 6 tiles
 	const G = 6, gw = Math.ceil(W / G) + 2, gh = Math.ceil(H / G) + 2, knots = new Float32Array(gw * gh);
 	for (let i = 0; i < knots.length; i++) knots[i] = rng();
@@ -139,6 +153,7 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 			for (const [dx, dy] of N4) { const u = cx + dx, v = cy + dy; if (u < 0 || v < 0 || u >= W || v >= H) continue; const n = v * W + u; if (!free(n) || cells.has(n) || alongRoad(c, n)) continue; const nd = d + cost[n]; if (nd < dist[n]) { dist[n] = nd; prev[n] = c; hpush(nd, n); } }
 		}
 		if (goal < 0) continue;
+		{ const p0 = []; for (let c = goal; c >= 0; c = prev[c]) p0.push(c); if (touchesItself(p0)) continue; }
 		for (let c = goal; c >= 0; c = prev[c]) cells.add(c);
 		nodeRivers++;
 	}
@@ -178,6 +193,7 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 		for (let c = goal; c >= 0; c = prev[c]) path.push(c);
 		// the river the network asked for, not much more: a river longer than what is left (and a quarter) is passed over and the next try is shorter
 		if (cells.size + path.length > target * 1.25 + 4) { failed++; if (T) T.toolong++; continue; }
+		if (touchesItself(path)) { failed++; if (T) T.nogoal++; continue; }
 		for (const c of path) cells.add(c);
 		if (T) T.laid++;
 	}
