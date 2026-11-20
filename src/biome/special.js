@@ -62,14 +62,16 @@ const enabled = () => process.env.VMAPGEN_SPECIAL_BUILDINGS !== '0';
  * rare(rate): the fill's stochastic count for a rate per 1,000 usable cells; lever: the Special buildings slider; underground: the level is a cave level
  * (not a mirrored one); terrain: the zone's ground by lowercase name; rng: the fill's stream.
  */
-function draw({ rare, rng, lever, underground, terrain, seed }) {
+function draw({ rare, rng, lever, underground, terrain, seed, guardP }) {
 	if (!enabled() || !(lever > 0)) return [];
 	const out = [];
 	const lvl = underground ? 1 : 0;
 	const mk = (c, n) => {
 		const tpl = baseTpl(c.type, c.subtype || 'object');
 		if (!tpl) return;
-		for (let i = 0; i < n; i++) out.push({ type: c.type, subtype: c.subtype || 'object', tpl, special: true, ...(c.rewardable ? { rewardable: true } : {}) });
+		// guardP(type): the chance this kind stands a guard of its own; the ask is drawn here so the fill holds the guard's tile when it places the building
+		for (let i = 0; i < n; i++) out.push({ type: c.type, subtype: c.subtype || 'object', tpl, special: true, ...(c.rewardable ? { rewardable: true } : {}),
+			...(guardP && GUARD_SHARE[c.type] !== undefined && rng() < guardP(c.type) ? { guardAsk: true } : {}) });
 	};
 	// the count of one kind in this fill: none when the map does not have the kind, else the rate over the maps that do
 	const count = (key, rate) => (hasKind(seed, key) ? rare(rate * lever / SHARE[key]) : 0);

@@ -2354,7 +2354,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// follows the lever instead of stopping where the first tries run out (the Reviewer, 2026-10-22: 25% and 0% gave byte-identical template maps).
 	const roam = (type, tpl, opts) => { roamStrict = process.env.VMAPGEN_ROAM_SPACING !== '0'; roamStats.asked++; try { const r = put(type, tpl, opts, undefined, guardShare < OBJECT_GUARD_SHARE ? 128 : 32); if (r) roamStats.placed++; return r; } finally { roamStrict = false; } };
 	const put = (type, tpl, opts, subtype, tryBudget = 32, pickFrom = null,
-			noEdge = false, onlyPick = false) => {
+			noEdge = false, onlyPick = false, wantHold = false) => {
 		// the art real maps put on this zone's ground, or none: a frost well or a lean-to never stands
 		// on dirt or lava (terrainArt.js; VMAPGEN_TERRAIN_ART=0 turns it off)
 		if (TERRAIN_ART) {
@@ -2483,7 +2483,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// a held guard tile stays free; a must-guard object takes its guard tile with it (heldGuard above)
 			if (heldGuard.size && blockingCells(tpl, x, y).some(([a, b]) => heldGuard.has(b * W + a))) { rej('heldGuard'); continue; }
 			let heldTile = -1, exitTile = -1;
-			if (STOCK_HOLD && (STOCK_HOLD_TYPES.test(type) || STOCK_HOLD_SOFT.test(type))) {
+			if (STOCK_HOLD && (STOCK_HOLD_TYPES.test(type) || STOCK_HOLD_SOFT.test(type) || wantHold)) {
 				const foot = new Set(blockingCells(tpl, x, y).map(([a, b]) => b * W + a));
 				for (const [vx, vy] of visitableCells(tpl, x, y)) {
 					for (const [dx, dy] of allowedDirs(tpl)) {
@@ -3271,7 +3271,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		// the originals' rate is per 1,000 ground tiles: the zone's own tiles (its open ground in a cave), not the cells the scenery passes left free
 		const ground = (openMask ? area : cells.length) / 1000;
 		const perGround = rate => { const n = ground * rate; return Math.floor(n) + (rng() < n - Math.floor(n) ? 1 : 0); };
-		for (const s of SPECBLD.draw({ rare: perGround, rng, lever: p.specialDensity, underground: l > 0 && !mirrored, terrain: tn, seed: (p.layoutSeed || p.seed || 1) + W * 7919 }))
+		// each building draws its own guard ask here, at the originals' share thinned by the Monster count and guard pulls, and holds the guard's tile when it is
+		// placed, as stock lays a pile with its guard (S350: drawn at the guard pass, 32 to 41 percent of the asks found no tile left under the stock spacing rules)
+		const guardP = type => Math.min(1, SPECBLD.GUARD_SHARE[type] * Math.min(1, p.guardDensity) * guardContextWeight(type, p));
+		for (const s of SPECBLD.draw({ rare: perGround, rng, lever: p.specialDensity, underground: l > 0 && !mirrored, terrain: tn, seed: (p.layoutSeed || p.seed || 1) + W * 7919, guardP }))
 			landmark.push(s);
 	}
 	// A draw paid for in one biome does not have to die there: the big
@@ -3314,9 +3317,9 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				o.type === 'seerHut' ? seerHutOptions(rng)
 					: (o.type === 'crypt' || o.type === 'redwoodObservatory' || o.generic || o.rewardable)
 						? emptyRewardable() : undefined,
-				o.subtype, 40, anchors, true);
+				o.subtype, 40, anchors, true, false, !!o.guardAsk);
 		if (!e) owed.push(o);
-		else { if (!spaced.has(o.type)) spaced.set(o.type, []); spaced.get(o.type).push([l, e.x, e.y]); }
+		else { if (!spaced.has(o.type)) spaced.set(o.type, []); spaced.get(o.type).push([l, e.x, e.y]); if (o.guardAsk) e.__askGuard = true; }
 	}
 	objectPools.__landmarkDebt = owed;
 
@@ -5242,7 +5245,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		}
 		// the special buildings' own guards, at the originals' share (the Monster count slider below 1x thins them), not counted against the budget
 		for (const g of specialGuardable) {
-			const asked = rng() < Math.min(1, SPECBLD.GUARD_SHARE[g.entry.type] * Math.min(1, p.guardDensity) * guardContextWeight(g.entry.type, p));
+			const asked = !!g.entry.__askGuard;   // drawn with the building (above), its guard tile held when it was placed
 			const posted = asked && postGuard(g);
 			// VMAPGEN_TRACE_SPECIAL=1: one line per special building, whether its own guard was asked for and whether one stands (S350, the guarded-share gap)
 			if (process.env.VMAPGEN_TRACE_SPECIAL === '1') console.error(`[special guard] ${g.entry.type} asked ${asked ? 1 : 0} posted ${posted ? 1 : 0} shared ${asked && !posted && guardedTargets.has(g.entry) ? 1 : 0}`);
