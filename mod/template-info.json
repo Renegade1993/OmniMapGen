@@ -122,9 +122,7 @@
 					"humansMax": 2
 				},
 				"modContent": "the player decides; the template names none",
-				"leversWithNoEffectOnTemplates": [
-					"interconnectivity"
-				]
+				"leversWithNoEffectOnTemplates": []
 			}
 		},
 		"Classic": {

@@ -53,7 +53,7 @@ test('1x lands near the originals\' rate and 3x about three times as many', { ti
 	let g1 = 0, n1 = 0, g3 = 0, n3 = 0, g1s = 0, n1s = 0;
 	const seen = {};
 	for (const s of seeds) {
-		const c = count(make('x1_' + s, s, []));
+		const c = count(make('x1_' + s, s, ['--bio.specialDensity', '1']));   // 1x is set by hand: left out is Template, which the lean draws (S365)
 		g1 += c.ground; n1 += c.total;
 		if (seeds3.includes(s)) { g1s += c.ground; n1s += c.total; }
 		for (const k of Object.keys(c.by)) seen[k] = (seen[k] || 0) + c.by[k];
