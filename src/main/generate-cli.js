@@ -262,7 +262,7 @@ async function main() {
 		if (named.length) settingsLine += `; Classic band ${Math.round(Math.sqrt(W * H))}: ` + named.map(k => `${k} ${band[k]}`).join(', ');
 		// and then the map's feel (S340): drawn from the seed, between an old-school scenario and the Nostalgia band, lever by lever
 		const feelMod = require('../biome/classicFeel');
-		const d = feelMod.draw(Number(opt.seed) || 1, opt.feel !== undefined ? opt.feel : process.env.VMAPGEN_FEEL);
+		const d = feelMod.draw(Number(opt.seed) || 1, opt.feel !== undefined ? opt.feel : process.env.VMAPGEN_FEEL, Math.sqrt(W * H));
 		if (d) {
 			const ranges = Object.fromEntries(KNOBS.filter(k => !k.cli && k.min !== undefined && k.max !== undefined).map(k => [k.key, { min: k.min, max: k.max }]));
 			const moved = feelMod.apply(d, { ...leverBase(), ...biomes }, ranges, { W, H, levels: underground ? 2 : 1, players: nPlayers });

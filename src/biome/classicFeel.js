@@ -35,7 +35,7 @@ function stream(seed) {
 const clamp01 = v => Math.max(0, Math.min(1, v));
 
 /** The draw for a seed: { f, group: { name: feel }, u: { lever: 0..1 } }. forced fixes f and drops the group offsets (pictures, tests). */
-function draw(seed, forced) {
+function draw(seed, forced, side) {
 	const t = feelTable();
 	if (!t || process.env.VMAPGEN_CLASSIC_FEEL === '0') return null;
 	const rnd = stream(seed);
@@ -55,7 +55,10 @@ function draw(seed, forced) {
 	}	// keymaster pockets: one map in five (K, S343; S340 had one in four): about a third of the old-school half, a twelfth of the Nostalgia half; 1 to 3 colours, mostly 1.
 	// Today only a one-level map gets one (keymaster.js), so over all maps the rate is lower until two levels are covered.
 	const rk = rnd(), rn = rnd();
-	const pockets = rk < (f < 0.5 ? 0.32 : 0.08) ? (rn < 0.6 ? 1 : rn < 0.9 ? 2 : 3) : 0;
+	// K's one map in five is the pockets placed, not drawn (the lead, 2026-11-19): on 200 seeds at 108 wide 23.0 percent drawn and 21.5 placed, at 72 wide 23.0 drawn and 13.5 placed (a 72 map has few
+	// neutral zones to shut), so the draw is raised on a map under 108 wide, by half at 72 and by one more half at 36 (keymaster.js drops what it cannot place)
+	const boost = side && side < 108 ? 1 + 0.5 * (108 - side) / 36 : 1;
+	const pockets = rk < (f < 0.5 ? 0.32 : 0.08) * boost ? (rn < 0.6 ? 1 : rn < 0.9 ? 2 : 3) : 0;
 	return { f, group, u, pockets };
 }
 
