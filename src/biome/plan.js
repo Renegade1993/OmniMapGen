@@ -9966,6 +9966,11 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const r = unsealZones(plans[l], l, W, H, blocked);
 			if (r.opened || r.left || r.removed) console.error(`[gen] level ${l}: sealed objects opened: ${r.opened}, ${r.cleared} scenery piece(s) cleared, ${r.removed} removed, ${r.left} left sealed`);
 		}
+	// the sealed-objects pass can take a floor gold mine out (Classic mirrored, 108x108 two levels seed 3: level 0 ended with 2 of its 3, S341 test): the floor is asked again after it
+	{
+		const r = ensureGoldMines(plans, W, H, blocked, p, rng);
+		if (r) console.error(`[gen] gold floor after the sealed objects pass: ${r}`);
+	}
 	// Scenery art, chosen the way the engine chooses it (retile.js): every
 	// earlier pass decided WHICH cells are blocked; here the decor on them is
 	// replaced by the zone's own obstacle sets, largest piece first. Measured
