@@ -161,6 +161,8 @@ const SIZE_STOPS = [[36, 'S'], [72, 'M'], [108, 'L'], [144, 'XL'], [180, 'H'], [
 // moves 1560 a day (config/gameConfig.json, movementPointsLand).
 const SIZE_NAMES = { S: 'Small', M: 'Medium', L: 'Large', XL: 'Extra large', H: 'Huge', XH: 'Extra huge', G: 'Giant' };
 const crossingDays = v => Math.round(141 * (v - 1) / 1560);
+// what the lobby stores for Template on a lever with templateBelow (knobs.js): below its range, which the generator reads as the lean's or the template's own
+const TEMPLATE_VALUE = -1;
 
 // how a value reads on the page: every step shows as a change, so a value
 // takes as many decimals as its step has (0.25 steps read 1.25x, not 1.3x)
@@ -240,6 +242,12 @@ function knobRow(k, y) {
 				{ ...checkbox(k.key, setting, y, k.default), position: { x: 67, y } }];
 		return [helpButton(k.key, y), rowLabel(k.key, y), checkbox(k.key, setting, y, k.default)];
 	}
+	// a lever with templateBelow (S365, DMB Dev's spec): one notch below the range reads "Template" and is stored as -1 (the generator reads any
+	// number below the range as Template); the range's own notches show as numbers
+	if (k.templateBelow !== undefined)
+		return [helpButton(k.key, y), rowLabel(k.key, y),
+			...slider(k.key, setting, y, Math.round((k.min - k.step) * 1e6) / 1e6, k.step, Math.round((k.max - k.min) / k.step) + 1, TEMPLATE_VALUE,
+				{ ...display(k), valueNames: [[TEMPLATE_VALUE, `vcmi.mapGen.${k.key}.stopTemplate`], [k.min, '']] })];
 	return [helpButton(k.key, y), rowLabel(k.key, y),
 		...slider(k.key, setting, y, k.min, k.step, Math.round((k.max - k.min) / k.step), k.default, display(k))];
 }
@@ -511,7 +519,7 @@ function tabJson() {
 	const params = {};
 	// the released tab leaves the stock choices unset, so the generator never
 	// sees a computer-only count beside that tab's own player count
-	for (const k of KNOBS) if (CLASSIC || !k.stock) params[k.key] = k.default;
+	for (const k of KNOBS) if (CLASSIC || !k.stock) params[k.key] = k.templateBelow !== undefined ? TEMPLATE_VALUE : k.default;
 	// a setting's Reset value: its Random choice where it has one (a stop named Random, or computer-only players' -1), else its default
 	const resetParams = { ...params };
 	for (const k of KNOBS) {
@@ -720,6 +728,7 @@ function stringsJson() {
 		s[`vcmi.mapGen.${k.key}.hover`] = k.label;
 		s[`vcmi.mapGen.${k.key}.help`] = `{${k.label}}\n\n${k.help}`;
 		(k.stops || []).forEach(([, name], i) => { s[`vcmi.mapGen.${k.key}.stop${i}`] = name; });
+		if (k.templateBelow !== undefined) s[`vcmi.mapGen.${k.key}.stopTemplate`] = 'Template';
 	}
 	return { ...s, ...classicLabels };
 }

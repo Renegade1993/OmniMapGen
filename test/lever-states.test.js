@@ -74,3 +74,21 @@ test('Special buildings: Template (left out, or one below the range) lets the le
 	const set = plan(1, ['--bio.specialDensity', '2']);
 	assert.ok(/changed: specialDensity 2;/.test(set.settings) && !/; specialDensity/.test(set.settings), `2x is law even on a Nostalgia map: ${set.settings}`);
 });
+
+test('the lobby page of Special buildings has a Template notch below the range and stores -1 (S365, DMB Dev\'s spec)', () => {
+	const fs = require('fs'), os = require('os');
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lever-pages-'));
+	const r = spawnSync(process.execPath, [path.join(ROOT, 'tools', 'gen_vcmi_ui.js'), 'build', '--pager', '--classic', '--atbegin', '--api4', '--out', dir], { encoding: 'utf8', cwd: ROOT, windowsHide: true, timeout: 120000 });
+	assert.strictEqual(r.status, 0, r.stderr);
+	const w = path.join(dir, 'config', 'widgets', 'mapGen');
+	const slider = JSON.parse(fs.readFileSync(path.join(w, 'page_treasure.json'), 'utf8')).items.find(i => i.name === 'slider_specialDensity');
+	assert.strictEqual(slider.valueMin, -0.1);
+	assert.strictEqual(slider.itemsTotal, 31);
+	assert.strictEqual(slider.valueDefault, -1);
+	assert.deepStrictEqual(slider.valueNames, [[-1, 'vcmi.mapGen.specialDensity.stopTemplate'], [0, '']]);
+	const tab = JSON.parse(fs.readFileSync(path.join(w, 'mapGenTab.json'), 'utf8'));
+	assert.strictEqual(tab.defaults.params.specialDensity, -1);
+	assert.strictEqual(tab.reset.params.specialDensity, -1);
+	assert.strictEqual(JSON.parse(fs.readFileSync(path.join(dir, 'config', 'omnimapgen', 'english.json'), 'utf8'))['vcmi.mapGen.specialDensity.stopTemplate'], 'Template');
+	fs.rmSync(dir, { recursive: true, force: true });
+});
