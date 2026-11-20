@@ -13645,7 +13645,10 @@ function startGroundCells(pl, l, W, H, blocked, opts = null) {
 		// s8307 on 66413a5)
 		// (at most 0.6 of its own open ground, and above the fixed floor the piece stays in its own zone, so the guards it moves are its zone's,
 		// never a link's on the zone line beyond)
-		const peerCap = process.env.VMAPGEN_START_PEER_CAP !== undefined ? Number(process.env.VMAPGEN_START_PEER_CAP) : 0.6;
+		// S277 (2026-11-19): 0.8, was 0.6. Under Classic's size bands and feel draw a cave start's zone is small and the cap of 0.6 of its own open ground let the peer floor stop at 910 to 980
+		// tiles against a best start's 2,230 (ratio 2.28 to 2.32, over the 2.2 the start-walk-fair test asks; no144x2 s8307, s8314); at 0.8 and at 1.0 s8307 reads 1.73 and s8314 1.68, with the
+		// same six seeds all under 2.2 but s8306 (2.32 at 0.6, 0.8 and 1.0: its stacks sit on the zone line, which the cutters leave)
+		const peerCap = process.env.VMAPGEN_START_PEER_CAP !== undefined ? Number(process.env.VMAPGEN_START_PEER_CAP) : 0.8;
 		const floor = Math.max(limit, Math.round(share * open), Math.min(peer, Math.round(peerCap * open)));
 		const z0 = zone[from[0]], own = floor > limit;
 		// from the first guard pass on (opts.always, startWayCells) only a start that does not yet walk 200 tiles (or its floor, where that is
