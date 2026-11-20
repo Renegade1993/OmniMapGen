@@ -28,6 +28,9 @@ const {
 } = require('./economy');
 const { zoneTownTypes, townTemplate, townMods } = require('./zoneTowns');
 const { artFor } = require('./terrainArt');
+const SPECBLD = require('./special');
+// the least Chebyshev distance between a one-way monolith's entrance and its exit while the placement tries last
+const ONE_WAY_HOP = 12;
 const TERRAIN_ART = process.env.VMAPGEN_TERRAIN_ART !== '0';
 // the weights of the core bank and dwelling pools, which fill.banks and
 // fill.dwellings are calibrated against (the banks proper and the utopia; the
@@ -578,6 +581,8 @@ const GUARD_CHANCE = {
 	// pockets (SEAL_POCKETS): the engine guards its scroll and placed-artifact piles too
 	spellScroll: 0.40,
 	artifact: 0.50,
+	// the special buildings (special.js, S350): the share of each the originals stand a monster beside
+	...SPECBLD.GUARD_SHARE,
 };
 
 /**
@@ -2630,7 +2635,9 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// subtype into a two-way portal network, so a pair is the smallest unit
 	// that does anything. B is validated against the world before A lands and
 	// again after; their footprints may not share a blocked cell.
-	const putPair = (u, tries = 24) => {
+	// v: the other end when it is another object (a one-way monolith's exit); its two ends stand at least ONE_WAY_HOP tiles apart while
+	// the tries last, so the hop is worth taking (the S350 special buildings)
+	const putPair = (u, tries = 24, v = u) => {
 		for (let t = 0; t < tries && free.length; t++) {
 			const iA = free[(rng() * free.length) | 0];
 			if (iA === undefined) break;
@@ -2643,15 +2650,16 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				if (iB === undefined) break;
 				if (iB === iA) continue;
 				const xB = iB % W, yB = (iB / W) | 0;
-				if (blockingCells(u.tpl, xB, yB)
+				if (v !== u && t2 < tries - 8 && Math.max(Math.abs(xA - xB), Math.abs(yA - yB)) < ONE_WAY_HOP) continue;
+				if (blockingCells(v.tpl, xB, yB)
 						.some(([a, b]) => aCells.has(b * W + a))) continue;
-				if (!fitsAt(u.tpl, xB, yB, false)) continue;
+				if (!fitsAt(v.tpl, xB, yB, false)) continue;
 				// B asked again with A standing: each passed the connectivity and entrance tests alone, and the two
 				// together can wall off ground neither cuts alone, or B can stand on A's approach. A failed B takes A
 				// back off the world (its blocked bits, its entry, its free tile) and the search goes on.
 				const snap = blocked.slice(), fiA = free.indexOf(iA), outLen = out.length, gLen = guardable.length;
 				const ea = commit(u.type, u.tpl, xA, yA, u.subtype);
-				if (!fitsAt(u.tpl, xB, yB, false)) {
+				if (!fitsAt(v.tpl, xB, yB, false)) {
 					blocked.set(snap);
 					if (fiA >= 0) free.splice(fiA, 0, iA);
 					out.length = outLen;
@@ -2662,8 +2670,8 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				// the pairId ties the ends together for the stranded sweep:
 				// if one end lands sealed and is dropped, the other goes too
 				// instead of standing alone as a dead portal
-				const eb = commit(u.type, u.tpl, xB, yB, u.subtype);
-				ea.pairId = eb.pairId = `mono_${u.subtype}_${xA}_${yA}`;
+				const eb = commit(v.type, v.tpl, xB, yB, v.subtype);
+				ea.pairId = eb.pairId = `${v === u ? 'mono' : 'oneway'}_${u.subtype}_${xA}_${yA}`;
 				return true;
 			}
 		}
@@ -3255,6 +3263,17 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		}
 		landmark.push(b);
 	}
+	// The special buildings (S350: trading posts, universities, sanctuaries, hill forts, cartographers, signs, one-way monolith pairs) at the originals' rate
+	// times the Special buildings slider, on the open layout only; a template zone keeps its own rules (special.js)
+	if (!zoneMeta && p.specialDensity > 0 && SPECBLD.enabled()) {
+		const tn = String(((objectPools.terrainNames && objectPools.terrainNames.get(terrain)) || {}).name || '').toLowerCase();
+		const mirrored = Number(p.mirrorLevels) >= 1 && process.env.VMAPGEN_MIRROR_LEVELS !== '0';
+		// the originals' rate is per 1,000 ground tiles: the zone's own tiles (its open ground in a cave), not the cells the scenery passes left free
+		const ground = (openMask ? area : cells.length) / 1000;
+		const perGround = rate => { const n = ground * rate; return Math.floor(n) + (rng() < n - Math.floor(n) ? 1 : 0); };
+		for (const s of SPECBLD.draw({ rare: perGround, rng, lever: p.specialDensity, underground: l > 0 && !mirrored, terrain: tn, seed: (p.layoutSeed || p.seed || 1) + W * 7919 }))
+			landmark.push(s);
+	}
 	// A draw paid for in one biome does not have to die there: the big
 	// masks (schoolOfWar's 8-cell L, dragonUtopia's 7x7) fit nowhere in
 	// most pockets, so an unplaced landmark is owed to the next biome's
@@ -3281,6 +3300,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		return all.filter(i => { const x = i % W, y = (i / W) | 0; return had.every(([pl, px, py]) => pl !== l || Math.max(Math.abs(px - x), Math.abs(py - y)) >= gap); });
 	};
 	for (const o of landmark) {
+		if (o.oneWay) { if (!putPair(o, 24, o.exit)) owed.push(o); continue; }
 		if (o.pair) { putPair(o); continue; }
 		const anchors = spacedAnchors(o);
 		// owed only when the gap emptied the list: an empty list from fitAnchors goes to put as it always did
@@ -3292,7 +3312,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 				o.subtype, 40, anchors, true)
 			: put(o.type, o.tpl,
 				o.type === 'seerHut' ? seerHutOptions(rng)
-					: (o.type === 'crypt' || o.type === 'redwoodObservatory' || o.generic)
+					: (o.type === 'crypt' || o.type === 'redwoodObservatory' || o.generic || o.rewardable)
 						? emptyRewardable() : undefined,
 				o.subtype, 40, anchors, true);
 		if (!e) owed.push(o);

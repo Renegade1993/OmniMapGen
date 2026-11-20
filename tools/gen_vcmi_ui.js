@@ -231,8 +231,15 @@ function knobRow(k, y) {
 				items: [{ name: `value_${k.key}`, type: 'label', font: 'small', alignment: 'center', color: 'yellow',
 					setting, valueTexts: texts, emptyText: texts[String(k.default)] }] }];
 	}
-	if (k.stops && k.stops.length === 2 && k.min === 0 && k.max === 1)
+	if (k.stops && k.stops.length === 2 && k.min === 0 && k.max === 1) {
+		// a label wider than the label column (138 px: "Second Level Like the Overworld" ran under the box at 800x600, DMB Dev 2026-11-19) puts the box left of it,
+		// as the "Use mod content" row does; its help rect starts right of the box so the box never loses the click
+		if (String(k.label || '').length > 22)
+			return [{ name: `help_${k.key}`, type: 'hoverHelp', rect: { x: 100, y, w: 278, h: 22 }, help: { hover: `vcmi.mapGen.${k.key}.hover`, help: `vcmi.mapGen.${k.key}.help` } },
+				{ ...rowLabel(k.key, y), position: { x: 102, y: y + 5 } },
+				{ ...checkbox(k.key, setting, y, k.default), position: { x: 67, y } }];
 		return [helpButton(k.key, y), rowLabel(k.key, y), checkbox(k.key, setting, y, k.default)];
+	}
 	return [helpButton(k.key, y), rowLabel(k.key, y),
 		...slider(k.key, setting, y, k.min, k.step, Math.round((k.max - k.min) / k.step), k.default, display(k))];
 }

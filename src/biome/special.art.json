@@ -1,0 +1,543 @@
+{
+ "_provenance": "Harvested 2026-11-19 (S350) from 127 converted original scenarios: the art of the hill fort, sign, cartographer and one-way monolith kinds and the core grounds each stood on. Same shape as objectTerrains.json art.",
+ "art": {
+  "AVXmn1y0": {
+   "type": "monolithOneWayEntrance",
+   "subtype": "monolith3",
+   "n": 22,
+   "terrains": {
+    "snow": 3,
+    "subterra": 4,
+    "rough": 4,
+    "grass": 1,
+    "lava": 4,
+    "sand": 5,
+    "swamp": 1
+   },
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXsnsn0": {
+   "type": "sign",
+   "subtype": "object",
+   "n": 15,
+   "terrains": {
+    "snow": 15
+   },
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmx1y0": {
+   "type": "monolithOneWayExit",
+   "subtype": "monolith3",
+   "n": 21,
+   "terrains": {
+    "subterra": 5,
+    "dirt": 1,
+    "lava": 3,
+    "rough": 2,
+    "grass": 1,
+    "snow": 3,
+    "swamp": 3,
+    "sand": 3
+   },
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXhild0": {
+   "type": "hillFort",
+   "subtype": "object",
+   "n": 47,
+   "terrains": {
+    "subterra": 6,
+    "dirt": 34,
+    "grass": 5,
+    "sand": 1,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmapw0": {
+   "type": "cartographer",
+   "subtype": "cartographerWater",
+   "n": 46,
+   "terrains": {},
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmaps0": {
+   "type": "cartographer",
+   "subtype": "cartographerLand",
+   "n": 22,
+   "terrains": {
+    "sand": 5,
+    "grass": 7,
+    "dirt": 2,
+    "swamp": 2,
+    "lava": 2,
+    "rough": 1,
+    "snow": 1,
+    "subterra": 2
+   },
+   "mask": [
+    "VV",
+    "VV",
+    "AB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn1r0": {
+   "type": "monolithOneWayEntrance",
+   "subtype": "monolith2",
+   "n": 38,
+   "terrains": {
+    "dirt": 2,
+    "swamp": 4,
+    "rough": 3,
+    "sand": 8,
+    "lava": 5,
+    "snow": 1,
+    "subterra": 11,
+    "grass": 4
+   },
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmx1r0": {
+   "type": "monolithOneWayExit",
+   "subtype": "monolith2",
+   "n": 43,
+   "terrains": {
+    "lava": 4,
+    "dirt": 7,
+    "rough": 2,
+    "subterra": 12,
+    "sand": 8,
+    "grass": 6,
+    "swamp": 3,
+    "snow": 1
+   },
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmx1b0": {
+   "type": "monolithOneWayExit",
+   "subtype": "monolith1",
+   "n": 34,
+   "terrains": {
+    "lava": 2,
+    "dirt": 9,
+    "sand": 7,
+    "subterra": 4,
+    "grass": 8,
+    "rough": 1,
+    "swamp": 3
+   },
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn1b0": {
+   "type": "monolithOneWayEntrance",
+   "subtype": "monolith1",
+   "n": 46,
+   "terrains": {
+    "rough": 4,
+    "dirt": 10,
+    "sand": 15,
+    "subterra": 3,
+    "snow": 4,
+    "swamp": 3,
+    "grass": 3,
+    "lava": 4
+   },
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXsndg0": {
+   "type": "sign",
+   "subtype": "object",
+   "n": 183,
+   "terrains": {
+    "grass": 64,
+    "dirt": 70,
+    "swamp": 8,
+    "lava": 6,
+    "sand": 10,
+    "rough": 12,
+    "subterra": 10,
+    "snow": 2
+   },
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXhilg0": {
+   "type": "hillFort",
+   "subtype": "object",
+   "n": 73,
+   "terrains": {
+    "lava": 4,
+    "dirt": 10,
+    "swamp": 3,
+    "rough": 4,
+    "grass": 42,
+    "subterra": 5,
+    "sand": 3,
+    "snow": 2
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VBA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn5o0": {
+   "type": "monolithOneWayExit",
+   "subtype": "monolith5",
+   "n": 10,
+   "terrains": {
+    "sand": 4,
+    "lava": 1,
+    "subterra": 1,
+    "grass": 4
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn5i0": {
+   "type": "monolithOneWayEntrance",
+   "subtype": "monolith5",
+   "n": 18,
+   "terrains": {
+    "rough": 5,
+    "swamp": 2,
+    "lava": 2,
+    "grass": 8,
+    "sand": 1
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXsnds0": {
+   "type": "sign",
+   "subtype": "object",
+   "n": 39,
+   "terrains": {
+    "sand": 12,
+    "rough": 20,
+    "swamp": 1,
+    "subterra": 4,
+    "dirt": 1,
+    "lava": 1
+   },
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn6o0": {
+   "type": "monolithOneWayExit",
+   "subtype": "monolith6",
+   "n": 6,
+   "terrains": {
+    "grass": 2,
+    "rough": 3,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn6i0": {
+   "type": "monolithOneWayEntrance",
+   "subtype": "monolith6",
+   "n": 10,
+   "terrains": {
+    "swamp": 1,
+    "dirt": 1,
+    "grass": 6,
+    "sand": 1,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn7i0": {
+   "type": "monolithOneWayEntrance",
+   "subtype": "monolith7",
+   "n": 4,
+   "terrains": {
+    "subterra": 3,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn7o0": {
+   "type": "monolithOneWayExit",
+   "subtype": "monolith7",
+   "n": 2,
+   "terrains": {
+    "subterra": 1,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn8i0": {
+   "type": "monolithOneWayEntrance",
+   "subtype": "monolith8",
+   "n": 4,
+   "terrains": {
+    "lava": 1,
+    "sand": 1,
+    "dirt": 1,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VVA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn8o0": {
+   "type": "monolithOneWayExit",
+   "subtype": "monolith8",
+   "n": 3,
+   "terrains": {
+    "subterra": 1,
+    "lava": 1,
+    "rough": 1
+   },
+   "mask": [
+    "VVV",
+    "VVA"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmapu0": {
+   "type": "cartographer",
+   "subtype": "cartographerSubterranean",
+   "n": 12,
+   "terrains": {
+    "subterra": 10,
+    "grass": 1,
+    "dirt": 1
+   },
+   "mask": [
+    "VVV",
+    "VVV",
+    "VAB"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXsnsw0": {
+   "type": "sign",
+   "subtype": "object",
+   "n": 6,
+   "terrains": {
+    "swamp": 6
+   },
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXsnlv0": {
+   "type": "sign",
+   "subtype": "object",
+   "n": 26,
+   "terrains": {
+    "lava": 22,
+    "rough": 1,
+    "subterra": 1,
+    "grass": 1,
+    "dirt": 1
+   },
+   "mask": [
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn4i0": {
+   "type": "monolithOneWayEntrance",
+   "subtype": "monolith4",
+   "n": 3,
+   "terrains": {
+    "rough": 1,
+    "snow": 2
+   },
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  },
+  "AVXmn4o0": {
+   "type": "monolithOneWayExit",
+   "subtype": "monolith4",
+   "n": 2,
+   "terrains": {
+    "dirt": 1,
+    "snow": 1
+   },
+   "mask": [
+    "V",
+    "A"
+   ],
+   "visitableFrom": [
+    "---",
+    "+-+",
+    "+++"
+   ]
+  }
+ }
+}

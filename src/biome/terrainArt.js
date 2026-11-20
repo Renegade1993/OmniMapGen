@@ -15,7 +15,10 @@
 'use strict';
 
 const FILE = require('./objectTerrains.json');
-const DATA = FILE.art;
+// the special buildings' art (S350, tools/harvest_special_art.js: hill forts, signs, cartographers, one-way monoliths) joins the table, new animations only
+let SPECIAL_ART = {};
+try { SPECIAL_ART = require('./special.art.json').art || {}; } catch (e) { /* the file is optional */ }
+const DATA = { ...SPECIAL_ART, ...FILE.art };
 const TOTAL = Object.values(FILE.totals || {}).reduce((a, b) => a + b, 0) || 1;
 
 // the two-letter codes of the core terrains (config/terrains.json shortIdentifier)
@@ -259,4 +262,10 @@ function kinSwap(objects, groundAt, mineArt, freeTile = null) {
 	return n;
 }
 
-module.exports = { artFor, violates, CORE, artNeutral, essential, setKin, kinOf, kinSwap };
+/** The arts of one type and subtype, the one real maps stand most often first: [{ anim, mask, visitableFrom, n, terrains }] or null (special.js). */
+function artsOf(type, subtype) {
+	const a = byType.get(`${type}|${subtype || 'object'}`);
+	return a ? [...a].sort((x, y) => y.n - x.n) : null;
+}
+
+module.exports = { artFor, violates, CORE, artNeutral, essential, setKin, kinOf, kinSwap, artsOf };

@@ -107,6 +107,7 @@ const BIOME_DEFAULTS = {
 	dwellingDensity: 1.0,
 	guardDensity: 1.0,
 	bonusDensity: 1.0,
+	specialDensity: 1.0,
 	biomeWobble: 0.6,
 	undergroundRock: true,
 	decorDensity: 1.0,

@@ -129,6 +129,10 @@ const KNOBS = [
 	{ key: 'bonusDensity', page: 'treasure', label: 'Shrines and bonuses',
 		help: 'How many shrines, schools and buildings that raise a skill, luck or morale: 1x is the usual amount, 0 none.',
 		min: 0, max: 3, step: 0.1, unit: 'x' },
+	// S350 (K, 2026-11-19: "Special buildings (slider on the Treasure page)"): the buildings the original scenarios have and no shrine slider covers
+	{ key: 'specialDensity', page: 'treasure', label: 'Special buildings',
+		help: 'How many trading posts, universities, sanctuaries, hill forts, cartographers, signs and one-way portals stand on the map: 1x is the amount the original scenarios have, 0 none. Only the Classic layout has them; a named template keeps its own buildings.',
+		min: 0, max: 3, step: 0.1, unit: 'x' },
 
 	// ---- monsters (K, 2026-09-24: a tier control, one stack-size scale that
 	// moves the whole curve, and a guard switch per placement context)
