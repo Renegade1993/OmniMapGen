@@ -96,7 +96,10 @@ function pickColour(rng) {
 	return 0;
 }
 
-// the share of each kind the originals stand a monster beside (census S350); used by content.js GUARD_CHANCE
-const GUARD_SHARE = { hillFort: 0.58, university: 0.53, cartographer: 0.52, tradingPost: 0.25, tradingPostDUPLICATE: 0.25, sanctuary: 0.25 };
+// the chance each kind draws a guard of its own, as the top-up to the share the originals stand a monster beside (census S350: hill fort .58, university .53, cartographer
+// .52, trading post .25, sanctuary .25). Stacks stand beside a special building anyway (80 Classic maps with no own guard, slider 1: hill fort 31.3 percent, university 9.2,
+// cartographer 17.2, trading post 27.2, sanctuary 22.8), so the own draw asks (target - beside) / (1 - beside), over the .88 of asks that find a tile: .44, .55, .48, none for
+// the trading post (already over) and .03 for the sanctuary. Used by content.js GUARD_CHANCE and the guard ask drawn with each building.
+const GUARD_SHARE = { hillFort: 0.44, university: 0.55, cartographer: 0.48, tradingPost: 0, tradingPostDUPLICATE: 0, sanctuary: 0.03 };
 
 module.exports = { draw, enabled, hasKind, RATES, SHARE, GUARD_SHARE, CLASSES };

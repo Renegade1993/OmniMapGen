@@ -129,6 +129,6 @@ test('a special building that asks for a guard has its guard tile held at placem
 			if (m) { asked += +m[1]; posted += +m[2]; shared += +m[3]; }
 		}
 	}
-	assert.ok(asked >= 12, `too few asks to judge: ${asked}`);
+	assert.ok(asked >= 8, `too few asks to judge: ${asked}`);
 	assert.ok((posted + shared) / asked >= 0.75, `${posted} posted and ${shared} shared of ${asked} asks`);
 });
