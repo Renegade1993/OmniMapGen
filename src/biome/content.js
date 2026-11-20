@@ -4338,7 +4338,11 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const guardWeight = g => (STOCK_GUARDS && g.entry.type === 'prison' && !prisonGuarded(g.entry, p) ? 0 : (GUARD_CHANCE[g.entry.type] || 0.1))
 		* guardContextWeight(g.entry.type, p);
 	if (SEAL_TRACE) for (const g of guardable) SEAL_TRACE['guardable ' + g.entry.type] = (SEAL_TRACE['guardable ' + g.entry.type] || 0) + 1;
+	// the special buildings (special.js) keep a guard of their own at the originals' guarded share, outside the budget the other objects draw from: inside it they took guards from the
+	// dwellings (the 10-seed dwelling-front test read 26.0 percent open with them, 16.7 with VMAPGEN_SPECIAL_BUILDINGS=0)
+	const specialGuardable = guardable.filter(g => SPECBLD.GUARD_SHARE[g.entry.type] !== undefined);
 	const ranked = guardable
+		.filter(g => SPECBLD.GUARD_SHARE[g.entry.type] === undefined)
 		.map(g => ({ ...g, key: -Math.log(rng() || 1e-9) / guardWeight(g) }))
 		.filter(g => Number.isFinite(g.key))
 		.sort((a, b) => a.key - b.key);
@@ -5236,6 +5240,9 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			if (guardedHere.has(g)) continue;
 			if (postGuard(g)) posted++;
 		}
+		// the special buildings' own guards, at the originals' share (the Monster count slider below 1x thins them), not counted against the budget
+		for (const g of specialGuardable)
+			if (rng() < Math.min(1, SPECBLD.GUARD_SHARE[g.entry.type] * Math.min(1, p.guardDensity) * guardContextWeight(g.entry.type, p))) postGuard(g);
 		// the part of the budget that roams (none at the default share); a guard the pass could not place is left out, where it used to roam
 		// to keep the count on the budget (VMAPGEN_OPEN_ROAM=1)
 		// K, 2026-09-30: "high tier monsters standing by serving no purpose". A real map's monster of level 5 to 7
