@@ -96,6 +96,16 @@ const biomes = { ...PRESETS[presetName].values };
 // --bio.<key> random: the lever rolled in its own range from the map's seed (stockChoices.randomLever), before anything reads it; the rolls join
 // the map's "random:" line and its settings line shows the value rolled
 const leverRolls = [];
+// S358 (K: "the sliders always dominate and rule. The exception is random or Template, those defer, and allow the template to lean"): a lever given as
+// Template, as a number below its range, or as Random where the map's lean draws it, is handed to the lean (Classic) or to the template's own value, as if it
+// were absent (src/main/leverStates.js); every other value is law
+const handedToLean = [];
+{
+	const bio = Object.fromEntries(Object.entries(opt).filter(([k]) => k.startsWith('bio.')).map(([k, v]) => [k.slice(4), v]));
+	const st = require('./leverStates').defer(bio, require('../biome/knobs').KNOBS,
+		!opt.template || require('./stockChoices').isRandomTemplate(opt.template), require('../biome/classicFeel').leaning());
+	for (const k of st.handed) { delete opt['bio.' + k]; handedToLean.push(k); }
+}
 for (const [k, v] of Object.entries(opt)) {
 	if (!k.startsWith('bio.') || !require('./stockChoices').isRandomLever(v)) continue;
 	const knob = require('../biome/knobs').KNOBS.find(q => q.key === k.slice(4) && !q.cli);
@@ -111,8 +121,10 @@ const leverBase = () => {
 	return { ...require('../biome/biomes').BIOME_DEFAULTS, ...knobDefault, ...PRESETS[presetName].values };
 };
 // Classic's lever defaults for a W x H map (src/biome/classicBands.js, S320): the values the lobby shows and Reset returns to, and what an untouched lever means
-const classicBandsFor = (W, H, levels, players) => require('../biome/classicBands').resolve(W, H, levels, leverBase(),
-	Object.fromEntries(require('../biome/knobs').KNOBS.filter(k => !k.cli && k.min !== undefined && k.max !== undefined).map(k => [k.key, { min: k.min, max: k.max }])), players);
+const classicBandsFor = (W, H, levels, players, named) => require('../biome/classicBands').resolve(W, H, levels, leverBase(),
+	Object.fromEntries(require('../biome/knobs').KNOBS.filter(k => !k.cli && k.min !== undefined && k.max !== undefined).map(k => [k.key, { min: k.min, max: k.max }])), players, named);
+// the levers the player set, as numbers: the lean works its zone count from them (S358)
+const namedLevers = () => Object.fromEntries(Object.entries(opt).filter(([k, v]) => k.startsWith('bio.') && Number.isFinite(parseFloat(v))).map(([k, v]) => [k.slice(4), parseFloat(v)]));
 let settingsLine = (() => {
 	const base = leverBase();
 	const changed = Object.entries(opt).filter(([k]) => k.startsWith('bio.')).map(([k, v]) => [k.slice(4), parseFloat(v)])
@@ -256,7 +268,7 @@ async function main() {
 	const template = picked && tplMod.isOpenLayoutName(picked) ? undefined : picked;
 	// Classic follows the map's size (S320): every lever the player did not name takes the value of the band this map is in
 	if (!template) {
-		const band = classicBandsFor(W, H, underground ? 2 : 1, nPlayers);
+		const band = classicBandsFor(W, H, underground ? 2 : 1, nPlayers, namedLevers());
 		const named = Object.keys(band).filter(k => opt['bio.' + k] === undefined);
 		for (const k of named) biomes[k] = band[k];
 		if (named.length) settingsLine += `; Classic band ${Math.round(Math.sqrt(W * H))}: ` + named.map(k => `${k} ${band[k]}`).join(', ');
@@ -265,16 +277,20 @@ async function main() {
 		const d = feelMod.draw(Number(opt.seed) || 1, opt.feel !== undefined ? opt.feel : process.env.VMAPGEN_FEEL, Math.sqrt(W * H));
 		if (d) {
 			const ranges = Object.fromEntries(KNOBS.filter(k => !k.cli && k.min !== undefined && k.max !== undefined).map(k => [k.key, { min: k.min, max: k.max }]));
-			const moved = feelMod.apply(d, { ...leverBase(), ...biomes }, ranges, { W, H, levels: underground ? 2 : 1, players: nPlayers });
+			const moved = feelMod.apply(d, { ...leverBase(), ...biomes }, ranges, { W, H, levels: underground ? 2 : 1, players: nPlayers, named: namedLevers() });
 			const set = Object.keys(moved).filter(k => opt['bio.' + k] === undefined);
 			for (const k of set) biomes[k] = moved[k];
+			// Special buildings on Template (S365): the lean draws the count, 1x on an old-school map down to none on a Nostalgia one
+			if (opt['bio.specialDensity'] === undefined) { biomes.specialDensity = feelMod.specialLean(d); settingsLine += `; specialDensity ${biomes.specialDensity}`; }
 			const line = `feel ${d.f.toFixed(2)} (${Object.entries(d.group).filter(([g]) => feelMod.feelTable().groups[g] && Object.keys(feelMod.feelTable().groups[g]).length).map(([g, v]) => `${g} ${v.toFixed(2)}`).join(', ')})`;
 			if (opt['bio.keymasterPockets'] === undefined && d.pockets) { biomes.keymasterPockets = d.pockets; roll.rolled.push(`keymaster pockets ${d.pockets}`); }
 			roll.rolled.push(line);
 			if (set.length) settingsLine += `; ${line}: ` + set.map(k => `${k} ${moved[k]}`).join(', ');
 		}
 	}
+	if (handedToLean.length) roll.rolled.push('handed to the lean: ' + handedToLean.join(', '));
 	if (roll.rolled.length) console.log('random:', roll.rolled.join(', '));
+	console.log('settings:', settingsLine);
 	// Player towns pinned to quadrant corners for now.
 	const corners = [[4,4],[W-5,H-5],[4,H-5],[W-5,4],[4,(H/2)|0],[W-5,(H/2)|0],[(W/2)|0,4],[(W/2)|0,H-5]];
 	// --observer red (or --observer 1, which means red, the conventional human

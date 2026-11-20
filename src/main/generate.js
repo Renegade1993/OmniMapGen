@@ -710,7 +710,7 @@ async function generateMap(params) {
 	// The template as this map runs it: on a map far below its sizes, fewer and larger zones (template.js
 	// fitZonesToMap). Every read of the template's zones and links below goes through this.
 	let fitTemplate = null, fitBase = null;
-	// S341, the tick "Second Level Like the Overworld" (lever mirrorLevels): on a template map of two levels each level is the template as a one-level
+	// S341, the tick "Subterranean Like Overworld" (lever mirrorLevels): on a template map of two levels each level is the template as a one-level
 	// map runs it. VMAPGEN_MIRROR_LEVELS=0 ignores the lever.
 	const mirrorOn = !!params.template && levels.length === 2 && Number((params.biomes || {}).mirrorLevels) >= 1 && process.env.VMAPGEN_MIRROR_LEVELS !== '0'
 		&& canMirror(params.template);
@@ -2128,7 +2128,7 @@ async function generateMap(params) {
 			starts: (starts || []).map(s => ({ x: s.x, y: s.y, color: s.color || s.player || null, level: s.l || 0 })),
 			size: { w: params.mapW, h: params.mapH, levels: levels.length },
 			// S341: what each level is, for the picture's palette: "surface", "underground" (the carved cave) or "mirror" (a level made like the overworld,
-			// Second Level Like the Overworld); a mirror level is drawn with the surface's palette and has no floorTiles
+			// Subterranean Like Overworld); a mirror level is drawn with the surface's palette and has no floorTiles
 			levelKinds: levels.map((lv, i) => (i === 0 ? 'surface' : (zonePlan ? !!zonePlan.mirrored : (Number(biomeParams.mirrorLevels) >= 1 && process.env.VMAPGEN_MIRROR_LEVELS !== '0')) ? 'mirror' : 'underground')),
 			water: waterPlan ? { shape: waterPlan.shape, coverage: waterPlan.coverage,
 				moved: waterPlan.starts.filter(s => s.moved).length } : null,

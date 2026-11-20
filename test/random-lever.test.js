@@ -27,7 +27,7 @@ test('every lever rolls inside its range and on its step', () => {
 });
 
 test('the same seed rolls the same value; seeds spread over the range', () => {
-	const k = KNOBS.find(q => q.key === 'decorDensity');
+	const k = KNOBS.find(q => q.key === 'subterraneanNarrow');
 	assert.strictEqual(randomLever(k, 42), randomLever(k, 42));
 	const vals = new Set();
 	for (let seed = 1; seed <= 40; seed++) vals.add(randomLever(k, seed));
@@ -39,16 +39,16 @@ test('the word is read as random, a number is not', () => {
 	assert.ok(!isRandomLever('0.5') && !isRandomLever(0.5));
 });
 
-test('a map made with --bio.decorDensity random reports the value it rolled', { timeout: 600000 }, () => {
+test('a map made with --bio.subterraneanNarrow random reports the value it rolled', { timeout: 600000 }, () => {
 	const dir = fs.mkdtempSync(path.join(testTmp(), 'rlever-'));
 	const out = path.join(dir, 'm.vmap');
 	const r = spawnSync(process.execPath, [path.join(__dirname, '..', 'src', 'main', 'generate-cli.js'), '--out', out, '--w', '36', '--h', '36', '--players', '2', '--seed', '7',
-		'--declaremods', '0', '--bio.decorDensity', 'random'], { encoding: 'utf8', timeout: 540000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
+		'--declaremods', '0', '--bio.subterraneanNarrow', 'random'], { encoding: 'utf8', timeout: 540000, cwd: path.join(__dirname, '..'), windowsHide: true, env: genEnv() });
 	assert.strictEqual(r.status, 0, (r.stderr || '').slice(-1500));
-	const want = randomLever(KNOBS.find(q => q.key === 'decorDensity'), 7);
-	assert.ok(r.stdout.includes(`lever decorDensity ${want}`), `the random line names the roll: ${r.stdout.slice(0, 400)}`);
+	const want = randomLever(KNOBS.find(q => q.key === 'subterraneanNarrow'), 7);
+	assert.ok(r.stdout.includes(`lever subterraneanNarrow ${want}`), `the random line names the roll: ${r.stdout.slice(0, 400)}`);
 	const side = JSON.parse(fs.readFileSync(out + '.zones.json', 'utf8'));
-	assert.ok(side.rolled.includes(`lever decorDensity ${want}`));
-	if (Math.abs(want - 1) > 1e-9) assert.ok(side.settings.includes(`decorDensity ${want}`), side.settings);
+	assert.ok(side.rolled.includes(`lever subterraneanNarrow ${want}`));
+	if (Math.abs(want - 1) > 1e-9) assert.ok(side.settings.includes(`subterraneanNarrow ${want}`), side.settings);
 	fs.rmSync(dir, { recursive: true, force: true });
 });

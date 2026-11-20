@@ -1,6 +1,6 @@
 /**
  * mirror-levels.test.js - the second level made like the overworld (S341, K 2026-11-19: "set the subterranean layer to mimic the overworld ... in jebus
- * cross, you would get two layers with jebus crosses and high loot centers and player and neutral starts"). With the lever Second Level Like the
+ * cross, you would get two layers with jebus crosses and high loot centers and player and neutral starts"). With the lever Subterranean Like
  * Overworld (mirrorLevels) on, a template map of two levels is the template as a one-level map runs it, once on each level: every zone on its own
  * level, no cave floor or rock on level 1, a start zone for each of the template's starts on each level (the players take them level by level, the
  * rest keep a neutral town), and a gate pair between the two centres. Off, the map is what it was.
@@ -34,7 +34,7 @@ const terrains = (file, level) => {
 };
 const zoneInfo = file => JSON.parse(fs.readFileSync(file + '.zones.json', 'utf8'));
 
-test('Second Level Like the Overworld: both levels are Jebus Crosses on overworld ground', () => {
+test('Subterranean Like Overworld: both levels are Jebus Crosses on overworld ground', () => {
 	for (const seed of [3, 7]) {
 		const m = make('on' + seed, ['--seed', String(seed), '--bio.mirrorLevels', '1']);
 		assert.ok(/mirrored levels: 4 start zones on each level/.test(m.log), 'the template is mirrored: ' + m.log.split('\n').filter(l => /mirror/.test(l)).join(' | '));

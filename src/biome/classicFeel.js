@@ -67,11 +67,15 @@ function apply(d, current, range, ctx) {
 	const t = feelTable(), out = {};
 	if (!t || !d) return out;
 	const area = ctx ? ctx.W * ctx.H * Math.max(1, ctx.levels || 1) : 0, players = ctx ? Math.max(1, Math.min(8, ctx.players || 8)) : 8;
+	// a lever the player set stands as it is, and it is the value the zone count below is worked from (S358: a start share set by hand was blended toward the old-school share first)
+	const named = (ctx && ctx.named) || {};
+	const isNamed = k => named[k] !== undefined && Number.isFinite(Number(named[k]));
 	for (const [g, levers] of Object.entries(t.groups)) {
 		const wOld = 1 - d.group[g];
 		for (const [k, pole] of Object.entries(levers)) {
 			// zonesPer1000 is not a lever: the old-school zone count per 1,000 tiles, which becomes zoneCells below
 			if (k === 'zonesPer1000') continue;
+			if (isNamed(k)) { out[k] = Number(named[k]); continue; }
 			const now = Number(current[k]);
 			if (!Number.isFinite(now)) continue;
 			let old = pole[0] + (pole[1] - pole[0]) * d.u[k];
@@ -85,7 +89,7 @@ function apply(d, current, range, ctx) {
 	}
 	// the zone count: the band's now (the land the starts leave over zoneCells, and the starts), blended toward the originals' count per 1,000 tiles
 	const lz = t.groups.layout && t.groups.layout.zonesPer1000;
-	if (lz && area && Number.isFinite(Number(current.zoneCells))) {
+	if (lz && area && Number.isFinite(Number(current.zoneCells)) && !isNamed('zoneCells')) {
 		const share = Math.max(0.01, Math.min(0.95, out.startZoneShare !== undefined ? out.startZoneShare : Number(current.startZoneShare) || 0.5));
 		const zonesNow = players + (area * (1 - Number(current.startZoneShare || 0.5))) / Number(current.zoneCells);
 		const zonesOld = (lz[0] + (lz[1] - lz[0]) * d.u.zonesPer1000) * area / 1000 * 0.85; // about 85 percent of the tiles are ground
@@ -98,4 +102,22 @@ function apply(d, current, range, ctx) {
 	return out;
 }
 
-module.exports = { draw, apply, feelTable };
+/** The levers the lean draws on a Classic map: the feel's levers, the band's, and the zone size they both reach (S358: what Random and Template hand over). */
+function leaning() {
+	const out = new Set(['zoneCells']);
+	const t = feelTable();
+	if (t) for (const levers of Object.values(t.groups)) for (const k of Object.keys(levers)) if (k !== 'zonesPer1000') out.add(k);
+	const b = require('./classicBands').bandTable();
+	if (b) for (const a of b.anchors) for (const k of Object.keys(a.levers || {})) out.add(k);
+	return out;
+}
+
+/**
+ * The Special buildings count on Template (S365, K: "probably default this one to Template"): the lean draws it. An old-school map (dressing feel 0) gets the originals'
+ * own rate, 1x; a Nostalgia map (feel 1) none, as the engine's own maps have none of these buildings. Returns the multiplier, 0 to 1.
+ */
+function specialLean(d) {
+	return Math.round(Math.max(0, Math.min(1, 1 - d.group.dressing)) * 100) / 100;
+}
+
+module.exports = { draw, apply, feelTable, leaning, specialLean };

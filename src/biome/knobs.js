@@ -131,8 +131,8 @@ const KNOBS = [
 		min: 0, max: 3, step: 0.1, unit: 'x' },
 	// S350 (K, 2026-11-19: "Special buildings (slider on the Treasure page)"): the buildings the original scenarios have and no shrine slider covers
 	{ key: 'specialDensity', page: 'treasure', label: 'Special buildings',
-		help: 'How many trading posts, universities, sanctuaries, hill forts, cartographers, signs and one-way portals stand on the map: 1x is the amount the original scenarios have, 0 none. Only the Classic layout has them; a named template keeps its own buildings.',
-		min: 0, max: 3, step: 0.1, unit: 'x' },
+		help: 'How many trading posts, universities, sanctuaries, hill forts, cartographers, signs and one-way portals stand on the map: 1x is the amount the original scenarios have, 0 none. Template (the default) leaves it to the map: Classic draws the amount from its feel, from the originals\' own down to none on a map that feels like the game\'s Nostalgia, and a named template keeps its own buildings. Only the Classic layout has them for now.',
+		min: 0, max: 3, step: 0.1, unit: 'x', templateBelow: 0 },   // S365: a value below the range (the lobby sends -1) is Template; so is the lever left out
 
 	// ---- monsters (K, 2026-09-24: a tier control, one stack-size scale that
 	// moves the whole curve, and a guard switch per placement context)
@@ -195,8 +195,8 @@ const KNOBS = [
 		help: 'How much of the underground is open floor rather than solid rock. Real two-level maps leave about 57% open.',
 		min: 0.2, max: 0.9, step: 0.05 },
 	// S341 (K, 2026-11-19: "a map generation tick option somewhere to set the subterranean layer to mimic the overworld")
-	{ key: 'mirrorLevels', page: 'underground', label: 'Second Level Like the Overworld',
-		help: 'The second level is made like the overworld: the same kind of map again, with its own starts and its own centre, joined to the first by portals, and no cave floor or rock. Narrow tunnels and Open cave floor then do nothing. It does nothing on a map of one level or on a template that is one fixed map.',
+	{ key: 'mirrorLevels', page: 'underground', label: 'Subterranean Like Overworld',
+		help: 'Makes the underground a second map like the overworld: its own starting positions and its own centre, joined to the top level by portals, with no cave floor or rock. Narrow tunnels and Open cave floor do nothing while it is on. It does nothing on a one-level map, or on a template that is one fixed map.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']] },
 
 	// ---- scenery

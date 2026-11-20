@@ -38,7 +38,7 @@ const clamp01 = v => Math.max(0, Math.min(1, v));
  * `base` is the lever defaults (preset on the generator's own) the fade starts from; `range` the slider range of a lever ({min, max}), which a
  * default never leaves (the zone size of a huge map stops at the slider's end; a player can still move it by hand).
  */
-function resolve(W, H, levels, base, range, players) {
+function resolve(W, H, levels, base, range, players, named) {
 	const b = bandTable();
 	if (!b || process.env.VMAPGEN_CLASSIC_BANDS === '0') return {};
 	const side = Math.sqrt(W * H), A = [...b.anchors].sort((x, y) => x.side - y.side);
@@ -57,6 +57,8 @@ function resolve(W, H, levels, base, range, players) {
 	// play: the share is the anchor's times players over eight, and the zones that are not starts are the stock count less the players.
 	const pl = Math.max(1, Math.min(STOCK_STARTS, Math.round(Number(players) || STOCK_STARTS)));
 	if (out.startZoneShare !== undefined) out.startZoneShare *= pl / STOCK_STARTS;
+	// a start share the player set is the one the zone count is worked from (S358), not the band's
+	if (named && named.startZoneShare !== undefined && Number.isFinite(Number(named.startZoneShare))) out.startZoneShare = Number(named.startZoneShare);
 	if (lo.zones !== undefined && hi.zones !== undefined) {
 		const zones = lo.zones + (hi.zones - lo.zones) * t;
 		const share = out.startZoneShare !== undefined ? Math.max(range && range.startZoneShare ? range.startZoneShare.min : 0, out.startZoneShare) : (base && Number(base.startZoneShare)) || 0.5;
