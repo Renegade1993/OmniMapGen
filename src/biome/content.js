@@ -5241,8 +5241,12 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			if (postGuard(g)) posted++;
 		}
 		// the special buildings' own guards, at the originals' share (the Monster count slider below 1x thins them), not counted against the budget
-		for (const g of specialGuardable)
-			if (rng() < Math.min(1, SPECBLD.GUARD_SHARE[g.entry.type] * Math.min(1, p.guardDensity) * guardContextWeight(g.entry.type, p))) postGuard(g);
+		for (const g of specialGuardable) {
+			const asked = rng() < Math.min(1, SPECBLD.GUARD_SHARE[g.entry.type] * Math.min(1, p.guardDensity) * guardContextWeight(g.entry.type, p));
+			const posted = asked && postGuard(g);
+			// VMAPGEN_TRACE_SPECIAL=1: one line per special building, whether its own guard was asked for and whether one stands (S350, the guarded-share gap)
+			if (process.env.VMAPGEN_TRACE_SPECIAL === '1') console.error(`[special guard] ${g.entry.type} asked ${asked ? 1 : 0} posted ${posted ? 1 : 0} shared ${asked && !posted && guardedTargets.has(g.entry) ? 1 : 0}`);
+		}
 		// the part of the budget that roams (none at the default share); a guard the pass could not place is left out, where it used to roam
 		// to keep the count on the budget (VMAPGEN_OPEN_ROAM=1)
 		// K, 2026-09-30: "high tier monsters standing by serving no purpose". A real map's monster of level 5 to 7
