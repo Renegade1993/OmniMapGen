@@ -288,6 +288,18 @@ async function main() {
 			if (set.length) settingsLine += `; ${line}: ` + set.map(k => `${k} ${moved[k]}`).join(', ');
 		}
 	}
+	else {
+		// S386 (K: the number on a slider in its Template state is what the template gives at this size, and moving it raises or lowers that): on a named template Biome size and
+		// Start biome size are ratios to what the template makes by itself at this map size and player count (src/biome/neutral.js, the table in template-info.json). Left out or
+		// Template they are that neutral, the template's own map; a number set by hand is law relative to it. No table for the size: the levers read as they did (400 and 0.5).
+		const nv = require('../biome/neutral').neutralFor(template, W, H, nPlayers);
+		if (nv) {
+			const note = [];
+			if (nv.zoneCells !== undefined) { biomes.neutralZoneCells = nv.zoneCells; if (opt['bio.zoneCells'] === undefined) biomes.zoneCells = nv.zoneCells; note.push(`Biome size ${nv.zoneCells}`); }
+			if (nv.startZoneShare !== undefined) { biomes.neutralStartShare = nv.startZoneShare; if (opt['bio.startZoneShare'] === undefined) biomes.startZoneShare = nv.startZoneShare; note.push(`Start biome size ${nv.startZoneShare}`); }
+			settingsLine += `; template neutral at ${Math.round(Math.sqrt(W * H))}: ` + note.join(', ');
+		}
+	}
 	if (handedToLean.length) roll.rolled.push('handed to the lean: ' + handedToLean.join(', '));
 	if (roll.rolled.length) console.log('random:', roll.rolled.join(', '));
 	console.log('settings:', settingsLine);

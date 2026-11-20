@@ -3730,7 +3730,8 @@ function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = 
 	// so the setting moves land between them. 400 cells a biome is the template's own sizes; bigger biomes give the neutral zones more of the land
 	// and the starts less, smaller the other way, each non-start zone's size weight scaled by the square root of the ratio, 0.6 to 1.8.
 	{
-		const q = p && Number.isFinite(Number(p.zoneCells)) ? Number(p.zoneCells) / 400 : 1;
+		// the template's own size at this map size and player count (neutral.js, S386) is what the number is a ratio to; with no table 400, as before
+		const q = p && Number.isFinite(Number(p.zoneCells)) ? Number(p.zoneCells) / (Number(p.neutralZoneCells) > 0 ? Number(p.neutralZoneCells) : 400) : 1;
 		if (Math.abs(q - 1) > 1e-9) {
 			const f = Math.max(0.6, Math.min(1.8, Math.sqrt(q)));
 			tplZones = tplZones.map(z => (z.type === 'playerStart' || z.type === 'cpuStart' ? z : { ...z, size: (z.size || 10) * f }));
@@ -3740,7 +3741,7 @@ function chooseTemplateLayout({ tplZones, tplConns, W, H, playerStarts, water = 
 	// engine's 181 templates): 0.5 is the template's own start zones; away from it each start zone's size weight scales by share / 0.5, so
 	// the starts take more or less of the land and the neutral zones the rest. VMAPGEN_START_SHARE_TPL=0 off.
 	{
-		const s = p && Number.isFinite(Number(p.startZoneShare)) ? Number(p.startZoneShare) / 0.5 : 1;
+		const s = p && Number.isFinite(Number(p.startZoneShare)) ? Number(p.startZoneShare) / (Number(p.neutralStartShare) > 0 ? Number(p.neutralStartShare) : 0.5) : 1;
 		if (Math.abs(s - 1) > 1e-9 && process.env.VMAPGEN_START_SHARE_TPL !== '0')
 			tplZones = tplZones.map(z => (z.type === 'playerStart' || z.type === 'cpuStart' ? { ...z, size: (z.size || 10) * s } : z));
 	}
