@@ -1,0 +1,66 @@
+{
+	"_about": "The lobby controls the generator does not act on yet, per layout (S414, K: \"instead of having sliders that don't do anything, we should grey out the ones that don't do anything yet\"). { lever: { \"<template name>\" | \"*named\" | \"*classic\" | \"*random\": \"one plain line: what it does not do here, and what it will do once built\" } }. Measured on 2026-11-21 by making a map at the bottom and at the top of each control on each layout (72 x 72 and 108 x 108, two levels, four players, water on) and comparing the objects, monster stacks, terrain and roads; a control that changed nothing on a layout is listed for it, and one that only scales a template's own value is not. Only a layout where the reason holds for every size and player count is listed (a Jebus Cross has one neutral zone whatever the size). tools/gen_vcmi_ui.js writes it into mapGenTab.json (\"inert\") and the sentences into english.json; DMB's lobby greys the control and shows the sentence in its right-click text. test/inert-controls.test.js.",
+	"layoutFamily": {
+		"*named": "Does nothing on a template yet: a template joins its biomes by its own links. Once built, it will rejoin the template's biomes in the family you pick."
+	},
+	"zoneCells": {
+		"Jebus Cross": "Does nothing on this template yet: its biomes keep the sizes its file gives them. Once built, it will make its neutral biomes bigger or smaller against the starts.",
+		"Golems Aplenty": "Does nothing on this template yet: its biomes keep the sizes its file gives them. Once built, it will make its neutral biomes bigger or smaller against the starts.",
+		"Headquarters": "Does nothing on this template yet: its biomes keep the sizes its file gives them. Once built, it will make its neutral biomes bigger or smaller against the starts."
+	},
+	"startZoneShare": {
+		"Jebus Cross": "Does nothing on this template yet: its start biomes keep the sizes its file gives them. Once built, it will give the starts more or less of the land.",
+		"Golems Aplenty": "Does nothing on this template yet: its start biomes keep the sizes its file gives them. Once built, it will give the starts more or less of the land.",
+		"Headquarters": "Does nothing on this template yet: its start biomes keep the sizes its file gives them. Once built, it will give the starts more or less of the land."
+	},
+	"richPlacement": {
+		"Jebus Cross": "Does nothing on this template yet: it has one rich biome, the middle one. Once built, it will move the richest treasure to the place you pick."
+	},
+	"zoneCap": {
+		"Jebus Cross": "Does nothing on this template yet: it has one neutral biome and nothing to merge. Once built, it will merge its smallest neutral biomes to stay under the number."
+	},
+	"zoneSizeVariety": {
+		"Jebus Cross": "Does nothing on this template yet: it has one neutral biome. Once built, it will make its neutral biomes more or less unequal in size."
+	},
+	"interconnectPortal": {
+		"Jebus Cross": "Does nothing on this template yet: every way between its biomes leaves a start, and those never become portals. Once built, it will turn a share of the other ways into portal pairs."
+	},
+	"interconnectivity": {
+		"Jebus Cross": "Does nothing on this template yet: every way between its biomes leaves a start. Once built, it will add or close ways between its neutral biomes.",
+		"Headquarters": "Does nothing on this template yet: its biomes touch only where its file joins them. Once built, it will add or close ways between its neutral biomes."
+	},
+	"openPathNoRoad": {
+		"Jebus Cross": "Does nothing on this template yet: every way between its biomes leaves a start, and those keep their roads. Once built, it will take the road off a share of the ways."
+	},
+	"openPathRoad": {
+		"Jebus Cross": "Does nothing on this template yet: every way between its biomes leaves a start, and those keep their roads. Once built, it will put a road on a share of the ways."
+	},
+	"chokeGuardRatio": {
+		"Jebus Cross": "Does nothing on this template yet: every way between its biomes leaves a start, and those are always guarded. Once built, it will guard fewer or more of the ways."
+	},
+	"guardGradient": {
+		"Jebus Cross": "Does nothing on this template yet: every guarded way leaves a start. Once built, it will make the guards weaker near the starts and stronger far from them."
+	},
+	"guardDistance": {
+		"Jebus Cross": "Does nothing on this template yet. Once built, it will make guards stronger the farther they stand from the starts.",
+		"Headquarters": "Does nothing on this template yet. Once built, it will make guards stronger the farther they stand from the starts."
+	},
+	"guardPortals": {
+		"Jebus Cross": "Does nothing on this template yet: it has no portals. Once built, it will put a monster in front of every portal end."
+	},
+	"lowLootRatio": {
+		"Jebus Cross": "Does nothing on this template yet: it has no open low-loot biomes. Once built, it will make a share of its biomes open ground with light loot.",
+		"Golems Aplenty": "Does nothing on this template yet: it has no open low-loot biomes. Once built, it will make a share of its biomes open ground with light loot.",
+		"Headquarters": "Does nothing on this template yet: it has no open low-loot biomes. Once built, it will make a share of its biomes open ground with light loot."
+	},
+	"guardDwellings": {
+		"Coldshadow's Fantasy": "Does nothing on this template yet: its dwellings stand where its file puts them. Once built, it will take the guards off its dwellings or keep them.",
+		"Jebus Cross": "Does nothing on this template yet: its dwellings stand where its file puts them. Once built, it will take the guards off its dwellings or keep them.",
+		"Headquarters": "Does nothing on this template yet: its dwellings stand where its file puts them. Once built, it will take the guards off its dwellings or keep them."
+	},
+	"dwellingDensity": {
+		"Coldshadow's Fantasy": "Does nothing on this template yet: its dwellings stand where its file puts them. Once built, it will give it more or fewer dwellings.",
+		"Jebus Cross": "Does nothing on this template yet: its dwellings stand where its file puts them. Once built, it will give it more or fewer dwellings.",
+		"Headquarters": "Does nothing on this template yet: its dwellings stand where its file puts them. Once built, it will give it more or fewer dwellings."
+	}
+}

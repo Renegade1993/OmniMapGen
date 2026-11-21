@@ -165,6 +165,18 @@ const crossingDays = v => Math.round(141 * (v - 1) / 1560);
 // is what the page starts on and Reset returns to. The lobby stores templateValue(k); the generator reads any value below a lever's range as Template (src/main/leverStates.js):
 // Classic's lean draws the lever, a named template keeps its own. No notch on an on/off toggle (no state between On and Off), on a chooser that has its own Template stop
 // (Guards at portals, Starting levels, Water layout), on the game's own Random Map Setup choices (stock) or on a flag of the generator's own (cli).
+// the inert list (src/biome/inert.json, measured by comparing a map at the bottom and at the top of a control on each layout; test/inert-controls.test.js)
+const INERT = require('../src/biome/inert.json');
+const inertSlug = kind => (kind.startsWith('*') ? kind.slice(1) : kind.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''));
+const inertId = (key, kind) => `vcmi.mapGen.${key}.inert.${inertSlug(kind)}`;
+function inertBlock() {
+	const out = {};
+	for (const [key, kinds] of Object.entries(INERT)) {
+		if (key.startsWith('_') || !KNOBS.some(k => k.key === key)) continue;
+		out[key] = Object.fromEntries(Object.keys(kinds).map(kind => [kind, inertId(key, kind)]));
+	}
+	return out;
+}
 const isToggle = k => !!(k.stops && k.stops.length === 2 && k.min === 0 && k.max === 1);
 const templateNotch = k => !k.cli && !k.stock && k.page !== 'map' && !isToggle(k) && !(CLASSIC && CLASSIC_ON_MAP.has(k.key)) && !(CHOOSERS.has(k.key) && k.stops)
 	&& !(k.stops || []).some(([, label]) => /template/i.test(label));
@@ -545,6 +557,9 @@ function tabJson() {
 		...(PAGE_WIDGET ? {} : { pages: ALL_PAGES.map(p => `config/widgets/mapGen/page_${p.id}.json`) }),
 		// the preset Defaults returns to, which the client no longer assumes
 		defaults: { params, map: MAP_DEFAULTS, preset: 'nostalgia' },
+		// the controls the generator does not act on yet, per layout (S414, K: "instead of having sliders that don't do anything, we should grey out the ones that don't do anything yet"):
+		// { lever: { "<template name>" | "*named" | "*classic" | "*random": "<text id>" } }, DMB's lobby greys the control and shows the sentence in its right-click text
+		inert: inertBlock(),
 		// what the Reset button returns to (K, 2026-10-04: "reset should default all settings to the open template, with the most widest
 		// and varying settings we offer"): no template (the open layout), a random size, and every setting that has a Random choice on
 		// Random; settings with no Random keep their default. `defaults` stays what a first run starts from. A client that does not know
@@ -739,6 +754,10 @@ function stringsJson() {
 		s[`vcmi.mapGen.${k.key}.help`] = `{${k.label}}\n\n${k.help}`;
 		(k.stops || []).forEach(([, name], i) => { s[`vcmi.mapGen.${k.key}.stop${i}`] = name; });
 		if (templateNotch(k)) s[`vcmi.mapGen.${k.key}.stopTemplate`] = 'Template';
+	}
+	for (const [key, kinds] of Object.entries(INERT)) {
+		if (key.startsWith('_') || !KNOBS.some(k => k.key === key)) continue;
+		for (const [kind, sentence] of Object.entries(kinds)) s[inertId(key, kind)] = sentence;
 	}
 	return { ...s, ...classicLabels };
 }

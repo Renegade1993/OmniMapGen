@@ -134,7 +134,7 @@ const KNOBS = [
 	{ key: 'specialMode', page: 'treasure', label: 'Special buildings',
 		help: 'Trading posts, universities, sanctuaries, hill forts, cartographers, signs and one-way portals, as the original scenarios have them. Template (the default): the layout decides. Classic draws the amount from its feel, none on a map that feels like the game\'s Nostalgia, and a template map has none of its own; moving the amount below counts as On. Random: the map decides from its seed, none on three maps in ten, else an amount between 0.5x and 2x. Off: none, on every layout. On: always, on every layout; on a template they stand in its neutral zones, never in a start zone.',
 		min: 0, max: 3, step: 1, stops: [[0, 'Template'], [1, 'Random'], [2, 'Off'], [3, 'On']], default: 0 },
-	{ key: 'specialDensity', page: 'treasure', label: 'Amount of special buildings',
+	{ key: 'specialDensity', page: 'treasure', label: 'Special amount',
 		help: 'How many special buildings stand on the map: 1x is the amount the original scenarios have, 0 none, up to 3x. Left on Template it follows the choice above; set by hand it counts as On at that amount, on a template map too, unless the choice above is Off.',
 		min: 0, max: 3, step: 0.1, unit: 'x' },   // S365: a value below the range (the lobby sends -1) is Template; so is the lever left out (every slider has the notch since S385, tools/gen_vcmi_ui.js)
 
@@ -200,7 +200,7 @@ const KNOBS = [
 		min: 0.2, max: 0.9, step: 0.05 },
 	// S341 (K, 2026-11-19: "a map generation tick option somewhere to set the subterranean layer to mimic the overworld")
 	{ key: 'mirrorLevels', page: 'underground', label: 'Subterranean Like Overworld',
-		help: 'Makes the underground a second map like the overworld: its own starting positions and its own centre, joined to the top level by portals, with no cave floor or rock. Narrow tunnels and Open cave floor do nothing while it is on. It does nothing on a one-level map, or on a template that is one fixed map.',
+		help: 'Makes the underground a second map like the overworld: its own starting positions and its own centre, joined to the top level by portals, with no cave floor or rock. Which level each player starts on still follows Starting levels (on Mixed, only a player whose town belongs underground, a Dungeon, starts down there). Narrow tunnels and Open cave floor do nothing while it is on. It does nothing on a one-level map, or on a template that is one fixed map.',
 		min: 0, max: 1, step: 1, stops: [[0, 'Off'], [1, 'On']] },
 
 	// ---- scenery
