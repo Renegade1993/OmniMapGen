@@ -104,31 +104,33 @@ test('every special building has a door a hero can walk to from a start town, an
 	}
 });
 
-test('a named template has no special buildings of the slider\'s: Coldshadow\'s Fantasy is the same map at 0x and 3x', { timeout: 600000 }, () => {
+test('a named template: Coldshadow\'s Fantasy has none at 0x and on Template, and the slider sets it (S366: a number counts as On)', { timeout: 600000 }, () => {
 	const at = (tag, v) => {
 		const out = path.join(dir, tag + '.vmap');
-		const r = spawnSync(process.execPath, [CLI, '--w', '72', '--h', '72', '--players', '4', '--seed', '2', '--template', "Coldshadow's Fantasy", '--bio.specialDensity', v, '--out', out],
+		const r = spawnSync(process.execPath, [CLI, '--w', '72', '--h', '72', '--players', '4', '--seed', '2', '--template', "Coldshadow's Fantasy", ...(v === undefined ? [] : ['--bio.specialDensity', v]), '--out', out],
 			{ encoding: 'utf8', cwd: ROOT, env: genEnv(), windowsHide: true, timeout: 280000 });
 		assert.strictEqual(r.status, 0, r.stderr.slice(-600));
 		return count(out).objs.map(o => `${o.type}:${o.subtype}@${o.l},${o.at[0]},${o.at[1]}`).sort();
 	};
-	assert.deepStrictEqual(at('cs3', '3'), at('cs0', '0'));
+	assert.deepStrictEqual(at('cs0', '0'), at('csT'), 'Template and 0x are the same map: none');
+	assert.strictEqual(at('csT').length, 0);
+	assert.ok(at('cs3', '3').length > 0, '3x puts buildings in its neutral zones');
 });
 
-test('a special building that asks for a guard has its guard tile held at placement: 12 maps, at least 75 percent of the asks stand guarded', { timeout: 2400000 }, () => {
+test('a special building that asks for a guard has its guard tile held at placement: 12 maps, every kind asked, at least 78 percent of the asks stand guarded', { timeout: 2400000 }, () => {
 	// the ask is drawn with the building and the guard's tile is held when it is placed, as stock lays a pile (S350); drawn at the guard pass 32 to 41 percent of
 	// the asks found no tile under the stock spacing rules. VMAPGEN_TRACE_SPECIAL=1 prints one line a building: asked, posted, shared.
 	let asked = 0, posted = 0, shared = 0;
 	for (let seed = 1; seed <= 12; seed++) {
 		const out = path.join(dir, 'ask' + seed + '.vmap');
 		const r = spawnSync(process.execPath, [CLI, '--w', '108', '--h', '108', '--players', '4', '--seed', String(seed), '--bio.specialDensity', '1', '--out', out],
-			{ encoding: 'utf8', cwd: ROOT, env: { ...genEnv(), VMAPGEN_TRACE_SPECIAL: '1' }, windowsHide: true, timeout: 280000 });
+			{ encoding: 'utf8', cwd: ROOT, env: { ...genEnv(), VMAPGEN_TRACE_SPECIAL: '1', VMAPGEN_SPECIAL_ASK_ALL: '1' }, windowsHide: true, timeout: 280000 });
 		assert.strictEqual(r.status, 0, r.stderr.slice(-600));
 		for (const l of r.stderr.split('\n')) {
 			const m = /^\[special guard\] \w+ asked (\d) posted (\d) shared (\d)/.exec(l);
 			if (m) { asked += +m[1]; posted += +m[2]; shared += +m[3]; }
 		}
 	}
-	assert.ok(asked >= 8, `too few asks to judge: ${asked}`);
-	assert.ok((posted + shared) / asked >= 0.75, `${posted} posted and ${shared} shared of ${asked} asks`);
+	assert.ok(asked >= 25, `too few asks to judge: ${asked}`);
+	assert.ok((posted + shared) / asked >= 0.78, `${posted} posted and ${shared} shared of ${asked} asks`);
 });
