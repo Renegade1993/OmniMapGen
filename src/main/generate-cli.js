@@ -266,6 +266,7 @@ async function main() {
 		return !tplMod.checkConstraints(tpl.raw, tplMod.resolveZones(tpl.raw), req, new Set()).violations.length;
 	}, roll);
 	const template = picked && tplMod.isOpenLayoutName(picked) ? undefined : picked;
+	let specialLean;
 	// Classic follows the map's size (S320): every lever the player did not name takes the value of the band this map is in
 	if (!template) {
 		const band = classicBandsFor(W, H, underground ? 2 : 1, nPlayers, namedLevers());
@@ -280,13 +281,24 @@ async function main() {
 			const moved = feelMod.apply(d, { ...leverBase(), ...biomes }, ranges, { W, H, levels: underground ? 2 : 1, players: nPlayers, named: namedLevers() });
 			const set = Object.keys(moved).filter(k => opt['bio.' + k] === undefined);
 			for (const k of set) biomes[k] = moved[k];
-			// Special buildings on Template (S365): the lean draws the count, 1x on an old-school map down to none on a Nostalgia one
-			if (opt['bio.specialDensity'] === undefined) { biomes.specialDensity = feelMod.specialLean(d); settingsLine += `; specialDensity ${biomes.specialDensity}`; }
+			// Special buildings on Template (S365): the lean draws the count, 1x on an old-school map down to none on a Nostalgia one (resolved with the mode below)
+			specialLean = feelMod.specialLean(d);
 			const line = `feel ${d.f.toFixed(2)} (${Object.entries(d.group).filter(([g]) => feelMod.feelTable().groups[g] && Object.keys(feelMod.feelTable().groups[g]).length).map(([g, v]) => `${g} ${v.toFixed(2)}`).join(', ')})`;
 			if (opt['bio.keymasterPockets'] === undefined && d.pockets) { biomes.keymasterPockets = d.pockets; roll.rolled.push(`keymaster pockets ${d.pockets}`); }
 			roll.rolled.push(line);
 			if (set.length) settingsLine += `; ${line}: ` + set.map(k => `${k} ${moved[k]}`).join(', ');
 		}
+	}
+	// Special buildings (S365, S366, S388): the mode (Template, Random, Off, On) and the amount, on every layout
+	{
+		const sp = require('../biome/special');
+		const mode = opt['bio.specialMode'] !== undefined ? parseFloat(opt['bio.specialMode']) : 0;
+		const amount = opt['bio.specialDensity'] !== undefined ? parseFloat(opt['bio.specialDensity']) : undefined;
+		const res = sp.resolveMode({ mode, amount, template: !!template, lean: specialLean, seed: Number(opt.seed) || 1 });
+		biomes.specialDensity = res.amount;
+		biomes.specialForce = res.force ? 1 : 0;
+		if (res.mode === 0 && amount === undefined && !template && specialLean !== undefined) settingsLine += `; specialDensity ${res.amount}`;
+		else if (res.mode !== 0 || amount !== undefined) settingsLine += `; special buildings ${sp.MODE_NAMES[res.mode]}, amount ${res.amount}`;
 	}
 	if (handedToLean.length) roll.rolled.push('handed to the lean: ' + handedToLean.join(', '));
 	if (roll.rolled.length) console.log('random:', roll.rolled.join(', '));

@@ -3264,8 +3264,9 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		landmark.push(b);
 	}
 	// The special buildings (S350: trading posts, universities, sanctuaries, hill forts, cartographers, signs, one-way monolith pairs) at the originals' rate
-	// times the Special buildings slider, on the open layout only; a template zone keeps its own rules (special.js)
-	if (!zoneMeta && p.specialDensity > 0 && SPECBLD.enabled()) {
+	// times the Special buildings amount, on the open layout, and in the neutral zones of a named template when the mode puts them there (S366, S388: On, Random on,
+	// or an amount set by hand: p.specialForce; the start zones are left alone so the starts' fairness does not move; special.js)
+	if (SPECBLD.zoneAllows(zoneMeta, p.specialForce) && p.specialDensity > 0 && SPECBLD.enabled()) {
 		const tn = String(((objectPools.terrainNames && objectPools.terrainNames.get(terrain)) || {}).name || '').toLowerCase();
 		const mirrored = Number(p.mirrorLevels) >= 1 && process.env.VMAPGEN_MIRROR_LEVELS !== '0';
 		// the originals' rate is per 1,000 ground tiles: the zone's own tiles (its open ground in a cave), not the cells the scenery passes left free
@@ -3273,7 +3274,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 		const perGround = rate => { const n = ground * rate; return Math.floor(n) + (rng() < n - Math.floor(n) ? 1 : 0); };
 		// each building draws its own guard ask here, at the originals' share thinned by the Monster count and guard pulls, and holds the guard's tile when it is
 		// placed, as stock lays a pile with its guard (S350: drawn at the guard pass, 32 to 41 percent of the asks found no tile left under the stock spacing rules)
-		const guardP = type => process.env.VMAPGEN_SPECIAL_OWN_GUARD === '0' ? 0 : Math.min(1, SPECBLD.GUARD_SHARE[type] * Math.min(1, p.guardDensity) * guardContextWeight(type, p));
+		const guardP = type => process.env.VMAPGEN_SPECIAL_OWN_GUARD === '0' ? 0 : Math.min(1, SPECBLD.GUARD_SHARE[type] * Math.min(1, zoneMeta ? userGuardDensity : p.guardDensity) * guardContextWeight(type, p));   // a template zone's own monster scale does not thin them (S366)
 		for (const s of SPECBLD.draw({ rare: perGround, rng, lever: p.specialDensity, underground: l > 0 && !mirrored, terrain: tn, seed: (p.layoutSeed || p.seed || 1) + W * 7919, guardP }))
 			landmark.push(s);
 	}

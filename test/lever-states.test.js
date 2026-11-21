@@ -67,10 +67,10 @@ test('a start share set by hand is the one the zone count is worked from', { tim
 
 test('Special buildings: Template (left out, or one below the range) lets the lean draw the count, a number is law', { timeout: 900000 }, () => {
 	const old = plan(0, []), nostalgia = plan(1, []);
-	assert.ok(/specialDensity 1(;|$)/.test(old.settings.replace(/(; feel.*)$/, '')), `an old-school map gets the originals' rate: ${old.settings}`);
-	assert.ok(/specialDensity 0(;|$)/.test(nostalgia.settings.replace(/(; feel.*)$/, '')), `a Nostalgia map gets none: ${nostalgia.settings}`);
+	assert.ok(/specialDensity 1(;|$)/.test(old.settings), `an old-school map gets the originals' rate: ${old.settings}`);
+	assert.ok(/specialDensity 0(;|$)/.test(nostalgia.settings), `a Nostalgia map gets none: ${nostalgia.settings}`);
 	const t = plan(0, ['--bio.specialDensity', '-1']);
-	assert.ok(/handed to the lean: specialDensity/.test(t.random) && /specialDensity 1(;|$)/.test(t.settings.replace(/(; feel.*)$/, '')), t.settings);
+	assert.ok(/handed to the lean: specialDensity/.test(t.random) && /specialDensity 1(;|$)/.test(t.settings), t.settings);
 	const set = plan(1, ['--bio.specialDensity', '2']);
 	assert.ok(/changed: specialDensity 2;/.test(set.settings) && !/; specialDensity/.test(set.settings), `2x is law even on a Nostalgia map: ${set.settings}`);
 });
@@ -117,7 +117,7 @@ test('every slider on the lobby pages has a Template notch below its range and s
 		assert.ok(defer({ [key]: String(T) }, KNOBS, true, LEAN).handed.includes(key), `${key}: the generator hands it over`);
 		assert.ok(!defer({ [key]: String(k.default) }, KNOBS, true, LEAN).handed.includes(key) || k.stops && k.stops.some(([v, l]) => v === k.default && /template/i.test(l)), `${key}: its own default number is set`);
 	}
-	for (const key of ['roadNetwork', 'starterMines', 'guardTreasure', 'guardMines', 'guardDwellings', 'guardBottlenecks', 'mirrorLevels', 'teams', 'compOnly', 'waterContent', 'roadType', 'guardPortals', 'undergroundStarts', 'waterShape'])
+	for (const key of ['specialMode', 'roadNetwork', 'starterMines', 'guardTreasure', 'guardMines', 'guardDwellings', 'guardBottlenecks', 'mirrorLevels', 'teams', 'compOnly', 'waterContent', 'roadType', 'guardPortals', 'undergroundStarts', 'waterShape'])
 		assert.ok(!sliders.some(s => s.name === 'slider_' + key), `${key} has no Template notch slider`);
 	assert.ok(tab.defaults.params.teams > 0 && tab.defaults.params.roadNetwork === 1, 'toggles and the map page keep their default numbers');
 	fs.rmSync(dir, { recursive: true, force: true });

@@ -56,6 +56,45 @@ function hasKind(seed, key) {
 }
 const enabled = () => process.env.VMAPGEN_SPECIAL_BUILDINGS !== '0';
 
+// The four states of the Special buildings control (S388, K: "Template, Random, Off and On/Forced ... the player can leave it to the template, make it completely random, have it off
+// always, or have it on always", with the amount slider as Water content has Amount of water). specialMode: 0 Template, 1 Random, 2 Off, 3 On.
+const MODE_NAMES = ['Template', 'Random', 'Off', 'On'];
+/** Whether a fill may draw special buildings: any open-layout biome (no zoneMeta), and on a named template only a neutral zone when the mode forces them (never a start zone). */
+function zoneAllows(zoneMeta, force) {
+	if (!zoneMeta) return true;
+	if (!force) return false;
+	return !/^(playerStart|cpuStart)$/.test(String((zoneMeta.spec && zoneMeta.spec.type) || '')) && !zoneMeta.ownerColor;
+}
+const unit = (seed, tag) => {   // a number in [0, 1) from the seed and a tag, its own hash so no stream of the map moves
+	let h = Math.imul((Number(seed) | 0) + 7, 2654435761);
+	for (let i = 0; i < tag.length; i++) h = Math.imul(h ^ tag.charCodeAt(i), 16777619);
+	h = Math.imul(h ^ (h >>> 16), 2246822507) >>> 0;
+	h = Math.imul(h ^ (h >>> 13), 3266489909) >>> 0;
+	return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+};
+/**
+ * What the mode and the amount make of a map: { amount, force, mode }. amount is the slider's number when the player set one (0 to 3x), else undefined; lean is Classic's
+ * draw for the map (classicFeel.specialLean) or undefined; template is true on a named template.
+ *   Off       none, on every layout, whatever the amount says.
+ *   On        the amount (1x when it was never moved), on every layout: on a named template in its neutral zones (force).
+ *   Random    from the seed: none on 3 maps in 10, else the amount (an amount drawn from 0.5x to 2.0x in steps of 0.1 when it was never moved), on every layout.
+ *   Template  an amount set by hand counts as On at that amount; else Classic draws the count from its feel, and a named template has none (Coldshadow's Fantasy and Jebus
+ *             Cross have none of their own).
+ */
+function resolveMode({ mode, amount, template, lean, seed }) {
+	const m = Number.isFinite(Number(mode)) ? Math.max(0, Math.min(3, Math.round(Number(mode)))) : 0;
+	const set = Number.isFinite(Number(amount)) && Number(amount) >= 0 ? Math.round(Number(amount) * 100) / 100 : undefined;
+	if (m === 2) return { amount: 0, force: false, mode: m };
+	if (m === 3) return { amount: set !== undefined ? set : 1, force: true, mode: m };
+	if (m === 1) {
+		if (unit(seed, 'specialRandomOn') < 0.3) return { amount: 0, force: false, mode: m };
+		return { amount: set !== undefined ? set : Math.round((0.5 + Math.floor(unit(seed, 'specialRandomAmount') * 16) / 10) * 10) / 10, force: true, mode: m };
+	}
+	if (set !== undefined) return { amount: set, force: true, mode: m };
+	if (template) return { amount: 0, force: false, mode: m };
+	return { amount: lean !== undefined ? lean : 1, force: false, mode: m };
+}
+
 /**
  * The landmarks one fill adds, as the fill's landmark list takes them: { type, subtype, tpl, special: true } and, for a one-way pair,
  * { oneWay: true, type, subtype, tpl, exit: { type, subtype, tpl } }.
@@ -102,4 +141,4 @@ function pickColour(rng) {
 // the trading post (already over) and .03 for the sanctuary. Used by content.js GUARD_CHANCE and the guard ask drawn with each building.
 const GUARD_SHARE = { hillFort: 0.44, university: 0.55, cartographer: 0.48, tradingPost: 0, tradingPostDUPLICATE: 0, sanctuary: 0.03 };
 
-module.exports = { draw, enabled, hasKind, RATES, SHARE, GUARD_SHARE, CLASSES };
+module.exports = { draw, enabled, hasKind, resolveMode, zoneAllows, MODE_NAMES, RATES, SHARE, GUARD_SHARE, CLASSES };

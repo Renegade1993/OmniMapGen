@@ -108,6 +108,7 @@ const BIOME_DEFAULTS = {
 	guardDensity: 1.0,
 	bonusDensity: 1.0,
 	specialDensity: 1.0,
+	specialMode: 0,    // 0 Template, 1 Random, 2 Off, 3 On (special.js resolveMode, S388)
 	biomeWobble: 0.6,
 	undergroundRock: true,
 	decorDensity: 1.0,

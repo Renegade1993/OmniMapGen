@@ -72,7 +72,7 @@ const PAGE_WIDGET = PAGER && !CLASSIC && !AT_BEGIN;
 // buttons should have a unified margin with their containing bounding box"). Implies --api4.
 const API6 = process.argv.includes('--api6');
 const API4 = API6 || process.argv.includes('--api4');
-const CHOOSERS = new Set(API4 ? ['waterShape', 'undergroundStarts', 'guardPortals'] : []);
+const CHOOSERS = new Set(API4 ? ['waterShape', 'undergroundStarts', 'guardPortals', 'specialMode'] : []);
 const GOLD_WORD = API4 ? { style: 'engraved' } : { color: [0, 0, 0, 255] };
 const outArg = process.argv.indexOf('--out');
 const STAGE = PAGER ? path.resolve(outArg > 0 ? process.argv[outArg + 1]
@@ -535,7 +535,7 @@ function tabJson() {
 		// S385 (K: "Put it back to Template, so the lean works again"): a slider with a Template notch resets to it, Random stops included (they reset to Random before)
 		if (templateNotch(k)) { resetParams[k.key] = templateValue(k); continue; }
 		// the starting levels reset to Template preference (K, 2026-10-05: "default player spawns to template with a settings reset")
-		const rnd = ['undergroundStarts', 'waterShape', 'waterContent'].includes(k.key) ? null : (k.stops || []).find(([, label]) => /random/i.test(label));
+		const rnd = ['undergroundStarts', 'waterShape', 'waterContent', 'specialMode'].includes(k.key) ? null : (k.stops || []).find(([, label]) => /random/i.test(label));
 		if (rnd) resetParams[k.key] = rnd[0];
 		else if (k.key === 'compOnly') resetParams[k.key] = -1;
 	}
