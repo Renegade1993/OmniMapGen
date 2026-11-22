@@ -38,8 +38,9 @@ const TURN = Number(process.env.VMAPGEN_ROAD_TURN ?? 0.3);
 // S428 second measure (72 wide x30, 108 two-level x10, run limit 13 and 0.4 a tile): the longest run's median stayed 16 and 21 against the originals' 12 and 13, because two edges that each end under 13 meet in
 // line (a zone's link edge and the tree edge it joins) and the run limit counts each alone; limit 5 at 0.8 a tile gave 12 and 14, 90th percentile 18 and 17, runs of 20 or more 3 and 0 percent (originals 8 and 11).
 const RUN = Number(process.env.VMAPGEN_ROAD_RUN ?? 5), RUNPEN = Number(process.env.VMAPGEN_ROAD_RUN_PEN ?? 0.8);
-const RC = RUN > 0 ? RUN + 3 : 4;   // run lengths tracked up to RC (4 when the rule is off)
+// S428 applies to the free layout only (opts.free, set by roadplan.js where the plan has no template zones): a named template keeps the routing 0.3.37 drew
 function routeEdge(from, to, opts) {
+	const RUNL = opts.free === true ? RUN : 0, RC = RUNL > 0 ? RUNL + 3 : 4;   // run lengths tracked up to RC (4 when the rule is off)
 	const { W, H, open } = opts;
 	const cost = opts.cost || (() => 1);
 	const goal = to instanceof Set ? to : new Set(to);
@@ -67,7 +68,7 @@ function routeEdge(from, to, opts) {
 		// zone's ground, so an arc that left the open ground (a start in a map corner, the arc pushed past the rim) was followed to the edge of the open ground and ran there
 		// dead straight for the whole overshoot. The drawn side stands when its arc leaves no more of the curve off open ground than the straight line does; else the other
 		// side; else no bow. The draws are taken as before, so no later draw moves. VMAPGEN_ROAD_FIT=0 gives the earlier routing.
-		if ((m1 || m2) && process.env.VMAPGEN_ROAD_FIT !== '0') {
+		if ((m1 || m2) && opts.free === true && process.env.VMAPGEN_ROAD_FIT !== '0') {
 			const offOpen = ct => bezier([fx, fy], ct[0], ct[1], [tx, ty], 32).filter(([px, py]) => {
 				const x = Math.round(px), y = Math.round(py), c = y * W + x;
 				return x < 0 || y < 0 || x >= W || y >= H || (c !== from && !goal.has(c) && !open(c));
@@ -108,7 +109,7 @@ function routeEdge(from, to, opts) {
 		if (goal.has(c) && c !== from) { end = s; break; }
 		const x = c % W, y = (c / W) | 0;
 		for (let nd = 0; nd < 4; nd++) {
-			if (r > 0 && nd === (d + 2) % 4) continue;   // a step straight back is never part of a road (with the run cost it would reset the run)
+			if (RUNL > 0 && r > 0 && nd === (d + 2) % 4) continue;   // a step straight back is never part of a road (with the run cost it would reset the run)
 			const nx = x + DIRS[nd][0], ny = y + DIRS[nd][1];
 			if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
 			const m = ny * W + nx;
@@ -119,7 +120,7 @@ function routeEdge(from, to, opts) {
 			// beside the road it is joining but not on it: join now rather than run alongside (a two-wide road)
 			if (!goal.has(m) && DIRS.some(([ax, ay]) => goal.has((ny + ay) * W + nx + ax))) w += opts.besidePenalty ?? 2;
 			if (nb.diag && nr > 3) w += stair;
-			if (RUN > 0 && nr > RUN) w += RUNPEN;
+			if (RUNL > 0 && nr > RUNL) w += RUNPEN;
 			// a turn costs a little, so a diagonal steps two or three tiles at a time as the engine's roads do (mean straight
 			// run 2.6-2.8 on Coldshadow; ours turned every tile, 1.7-2.0, 2026-10-04). VMAPGEN_ROAD_TURN sets it (0 off).
 			if (nd !== d && r > 0) w += TURN;
