@@ -12,7 +12,7 @@
    "water": "archipelago",
    "preferred": true,
    "caption": "Archipelago, Medium 72x72: 4 players, 1 level",
-   "drawHash": "b8db2ae030bdec677839965c2b8a7d2cb7addb6d27c7fe42b39449cca93794f8",
+   "drawHash": "584c22ac1026e84b650a68ba170bacf2c38b895974dd86aefbb17a91263c21db",
    "zones": 10,
    "lanes": 0,
    "portals": 0,
@@ -29,13 +29,13 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "84b51c9e3e0761292493c91478c66f4c390b14f2f685ce22b68f7fc1ba2ac5c3"
+     "contentSha256": "9962bc31d15926fb8a5eb010e01054afb6dd9f10b4f44f7416a3c840b047d78d"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/water_archipelago/01",
    "seconds": 3.0,
-   "contentSha256": "957c4b4462444ace5c35ac59cf37049b3b91d934ee827343a6d3c089f1bce5f1",
+   "contentSha256": "fdb50127a7eafaedd9727700239ac0c0cf508c0b76b3369561bcdb0507d6b690",
    "legendSha256": "d18cee6ed1b409b34369d0a09489888e4090985319580e2121f27a7678db199e"
   },
   {
@@ -48,15 +48,16 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Large 108x108: 4 players, 1 level",
-   "drawHash": "f0c8746f22517141bf2ddfef7b2626ab8d03222ccad128fcaf6d953804a7f768",
+   "drawHash": "92a08075751f654b229b7c2e98b9c46639b4594fcd5a485939ce5e2ccd355d78",
    "zones": 14,
-   "lanes": 0,
+   "lanes": 1,
    "portals": 0,
    "starts": 4,
    "towns": 8,
    "legend": [
     "Player start",
     "Neutral town",
+    "Passage",
     "Start zone",
     "Treasure zone",
     "Water"
@@ -65,14 +66,14 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "96633a05b5b0548c7524601c76b3811d0e99bf337d12d215be65e7246185ca72"
+     "contentSha256": "0950cb306d666cebf678488d9219aaa557a002d9f61682bf74cd10f78dc80ff6"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/water_archipelago/02",
    "seconds": 3.0,
-   "contentSha256": "faa33acdc185ed48590d16ebd89553b09e41fc12fe6bf3b2d6e7f2ca2c78fdf5",
-   "legendSha256": "d18cee6ed1b409b34369d0a09489888e4090985319580e2121f27a7678db199e"
+   "contentSha256": "3ef7d3997ef6cc1f5840c1a890146a6aa870b7b61a56cf1fb82b9ae9ec4ea080",
+   "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
    "order": 3,
@@ -84,9 +85,9 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Extra Large 144x144: 6 players, 1 level",
-   "drawHash": "7287c11470391b839974379f919c7087697ac68a638d24663dc243e8acb51ea1",
-   "zones": 25,
-   "lanes": 2,
+   "drawHash": "3cc0becfa21840164c4e9390838a6394c6d6c0810ffe171b964b76e1ce806369",
+   "zones": 20,
+   "lanes": 1,
    "portals": 0,
    "starts": 6,
    "towns": 8,
@@ -102,13 +103,13 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "2176081d71a0fc0a4572871a592185e3363f74100888db69a2faa38f5d8ea376"
+     "contentSha256": "23fb842a0dd2d0e0acd596a3b4073279400a42986e37f14265e2214f1559c09f"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/water_archipelago/03",
    "seconds": 3.0,
-   "contentSha256": "061fbe5302e0e86b799679af4fd2cc88f8800415f5de45521084ed41f8ee12fb",
+   "contentSha256": "7f187245790c01bf702032ac6b37859aa2b0be0b9f0ae27ebf7e939847a269df",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -121,16 +122,15 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Huge 180x180: 8 players, 1 level",
-   "drawHash": "bf078819295b331b96eac1f8f003cc610b02b4e99a05b23ebc681192f8ad3cfd",
-   "zones": 36,
-   "lanes": 4,
+   "drawHash": "50c4018d95bf8843db311a44bed41869c1a77031674d4d28f1a4b10e4343f645",
+   "zones": 27,
+   "lanes": 0,
    "portals": 0,
    "starts": 8,
-   "towns": 11,
+   "towns": 10,
    "legend": [
     "Player start",
     "Neutral town",
-    "Passage",
     "Start zone",
     "Treasure zone",
     "Water"
@@ -139,14 +139,14 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "01ac4fea847a968af03c587e8eac2ffec981002e50427b3f047d3d417a465c1e"
+     "contentSha256": "5fe3c1e1798bb3a04c791e2e6fd448c65a8ee726734247d3b0a8b551bdd9d9c2"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/water_archipelago/04",
    "seconds": 3.0,
-   "contentSha256": "af1d8ab0e9736990c2e4291946d93c55946c0ef7c2fe3ab0d9d50440bacd1f0b",
-   "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
+   "contentSha256": "74373ae1571dae43c61c455a1fd286afe353d98126a6a61c1f0bc762adfae0ae",
+   "legendSha256": "d18cee6ed1b409b34369d0a09489888e4090985319580e2121f27a7678db199e"
   },
   {
    "order": 5,
@@ -158,9 +158,9 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Extra Huge 216x216: 8 players, 1 level",
-   "drawHash": "25cb388cd52e081a5d25f93f63152308cf6954736d286d12721df7bf4df6763f",
-   "zones": 42,
-   "lanes": 6,
+   "drawHash": "1928cfa60fd54f16718602a2f79897bbde12ec4b9be3a4781d67e6ac706bb1d3",
+   "zones": 27,
+   "lanes": 2,
    "portals": 0,
    "starts": 8,
    "towns": 13,
@@ -176,13 +176,13 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "090b11fb5ccab20a13a636ac434c9b1e9f4e1cdacde910e8825e2a6ed2efc11e"
+     "contentSha256": "f8ce81ed2b58b067b562de731382cfb8d33d2c00ceed6d2f30ffe0fd921f63aa"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/water_archipelago/05",
    "seconds": 3.0,
-   "contentSha256": "f8b5e02b419f17d54549ecf4d9d9fb8304f0b6e19277ddc88c493a81e820faff",
+   "contentSha256": "11246e999cff08dd0a9ad82269628a4126354f3166832495ac37154a7178fad5",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -195,9 +195,9 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Giant 252x252: 8 players, 1 level",
-   "drawHash": "4981505ac5dbcbeea818faecc36a0ee12a116d90087a4a4319c60769acc0e341",
-   "zones": 53,
-   "lanes": 10,
+   "drawHash": "ec26fa3cd5b85eb4655952a75098c63c6db5867f2d201e00f4fbb22429525371",
+   "zones": 27,
+   "lanes": 2,
    "portals": 0,
    "starts": 8,
    "towns": 18,
@@ -213,13 +213,13 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "b1978ebd65582dd3bfb3b8afa44f416984842f098f397b207703f2c716bbb0f9"
+     "contentSha256": "26679d92e8a60ee29ea3eadd6b84781be71ab1602a402045b23de86369efeed9"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/water_archipelago/06",
    "seconds": 3.0,
-   "contentSha256": "1d9eb1de3dc1fa44c8c4f1f617c5fe9a2bacda2f879bea9d426636cda70af921",
+   "contentSha256": "57162e28aa40c15baefd994df090018f36158339bb4d35a93f35db908a6fe0c0",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -254,7 +254,7 @@
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/water_archipelago/07",
    "seconds": 3.0,
-   "contentSha256": "1ad9a0dfc8be1abfdbb1530c14a960dfcbfab4b22cf8eecfcab58d6f1794a7ce",
+   "contentSha256": "98e2c439c438cb2dcd8c71ecfa0cd2fecd4e6677c4b8c5464314f306311cc772",
    "legendSha256": "2cc7f045030f1a7f5702e601c9d923e50a56383e950b0e2361e751f41978307a"
   },
   {
@@ -267,7 +267,7 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Small 36x36: 4 players, 1 level",
-   "drawHash": "dcd9b4ff59348945b9717f1219ab51f03e8480f5f8eb2c934cb3857e41e136ba",
+   "drawHash": "4397c96f23bbe6a4011da720da782156e936276add45840e08431364c8c24ff4",
    "zones": 7,
    "lanes": 2,
    "portals": 0,
@@ -284,13 +284,13 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "0d0dcff66dd3bbc107ecf04d3d6380b77e355ddec4e0aa85b9b2791b59d27c9f"
+     "contentSha256": "18a912cedc98acd3d7e3ca88d2948b0060dad4562cb9c3f46f26e9aa6a0e082e"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/water_archipelago/08",
    "seconds": 3.0,
-   "contentSha256": "95d8d502c7125bde2e3e813a076b187c7b1c118a896c928d71a214049527f5eb",
+   "contentSha256": "04ddf193f32704d17f8cb6cce432911113b6bb1b3f60ff0c8b8686e6e479b077",
    "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
   },
   {
@@ -303,17 +303,16 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Medium 72x72: 2 players, 2 levels",
-   "drawHash": "7566dcab7536c6dee80d90bf32166c0e059588be6c77064008feacd49c5eb288",
-   "zones": 22,
-   "lanes": 19,
-   "portals": 5,
+   "drawHash": "36902e433f57a48176574ab5773ac27e91da9e41319d0233196bbb9baab3dc5e",
+   "zones": 10,
+   "lanes": 3,
+   "portals": 0,
    "starts": 2,
-   "towns": 7,
+   "towns": 6,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Water"
@@ -322,19 +321,19 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "560f8f8f488f723733f3f168434cb29306f2d63240d50d2036baadabf6813b64"
+     "contentSha256": "a36cfaa7aa0403347af220de4bf0168d8efc00f91dab5a28d0bbc06565a0e752"
     },
     {
      "file": "09-underground.png",
      "label": "Underground",
-     "contentSha256": "d7ac941ab936d59d2922e2c638155d274b0956dfef8df144a03dc55cb7c4f2eb"
+     "contentSha256": "9e85dcedd9ff3fd5924e70275573f691e9f8f221c26b414cc901d1f55ec4fee3"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/water_archipelago/09",
    "seconds": 3.0,
-   "contentSha256": "17b2f43ea396f2756f5df7651d1d004ff63b32e80f471755d948864205f2bcb6",
-   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
+   "contentSha256": "6238be83280be0cc5b3985c9ed7c674eac8ef8772ed9bc4c9a12d15882a50ecb",
+   "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
    "order": 10,
@@ -346,9 +345,9 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Large 108x108: 6 players, 1 level",
-   "drawHash": "3a87989108280b76a574345f033a85901ee32f6081ab491c2d3e8e438a1b9551",
-   "zones": 21,
-   "lanes": 3,
+   "drawHash": "72e3256e7d558bc088956502aac0cd6aa734f7571cfb194748ceb2b620ccf212",
+   "zones": 17,
+   "lanes": 1,
    "portals": 0,
    "starts": 6,
    "towns": 8,
@@ -364,13 +363,13 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "5522e84e8ca568c0f6d3bf680bd1033b0b0c5c8c504326ad1a44ebf53ac96f22"
+     "contentSha256": "25510d71ad881ef447dcfa49a71f50871da2e549604ee92b24bc2682083600fe"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/water_archipelago/10",
    "seconds": 3.0,
-   "contentSha256": "91874fa05309c26d9894232df6eb6c94b61299124c4940f91cc2ef206fd08a01",
+   "contentSha256": "34f721460ffc7bb3cb8768afb14b1b25d934889de4696a562897b53c3b7b4e0d",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -382,11 +381,11 @@
    "seed": 15,
    "water": "archipelago",
    "preferred": false,
-   "caption": "Archipelago, Extra Large 144x144: 3 players, 2 levels",
-   "drawHash": "258df2923e2eb9952c305c52ff8fdd0001cb590397e771884ea0cc8f026b21de",
-   "zones": 66,
-   "lanes": 90,
-   "portals": 5,
+   "caption": "Archipelago, Extra Large 144x144: 3 players, 2 levels, starts on both levels",
+   "drawHash": "a28e918015a42c03dbb1b79144d3b963019bc3ea3d8e0bdd88b8d30c22121428",
+   "zones": 35,
+   "lanes": 42,
+   "portals": 4,
    "starts": 3,
    "towns": 14,
    "legend": [
@@ -401,18 +400,18 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "1f909b4d72a2a1b3bcba067ba50ae4eb9e85a2bae9d7c15283aefc13f22ba3e5"
+     "contentSha256": "50a3f5a133793a9648b57b1832473736b02cd1b6270854778ab39c60d1fca77e"
     },
     {
      "file": "11-underground.png",
      "label": "Underground",
-     "contentSha256": "7dd5521bb2e71d72952e20d522eae5610e8c714d3832220258a0c4dfc6aa1083"
+     "contentSha256": "c5eb31016a6726d789a7e9b36253da00c47df7c176df19557ecfd47d3687fab7"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/water_archipelago/11",
    "seconds": 3.0,
-   "contentSha256": "7b4c3431182da578996365088766283745145518836bb3265b7ebe4a76255194",
+   "contentSha256": "66c685daf0016b829f781679a5aecb7765d12759bc2869447fb913bdc9be5802",
    "legendSha256": "51a5626fd3859cdfed0f19f778a6db9404d2216696a0b84994ecdcdee9b76c16"
   },
   {
@@ -425,9 +424,9 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Archipelago, Huge 180x180: 4 players, 1 level",
-   "drawHash": "66b2527c33f735b8cddf2e91407668b08fbcc1751624eb7a32a4e10f9e512894",
-   "zones": 29,
-   "lanes": 9,
+   "drawHash": "f0c2fcb15db210a3b9e14eee271799e6851ed253d65ddc9794d49c7c5a6a9182",
+   "zones": 28,
+   "lanes": 6,
    "portals": 0,
    "starts": 4,
    "towns": 9,
@@ -443,13 +442,13 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "9efe2dc870205c7a5211a3e57ac245a656d52fbfe483eb59e5b4011cf5cabd9d"
+     "contentSha256": "7ef994805ff6d33958cdf227db99f2adc8fd7615b13099ac35cf007779aff78f"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/water_archipelago/12",
    "seconds": 3.0,
-   "contentSha256": "e986ff5301a8ade433aeb64c4373ed314eedbaca686c9379ff3f6c8c47ad9e6b",
+   "contentSha256": "c2b3b039ab75873d7bf51a0e4f1d9ec4048eb2b4945c760debfe5c2c32f474bc",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   }
  ],
