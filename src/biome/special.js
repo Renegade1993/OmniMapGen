@@ -140,6 +140,7 @@ function pickColour(rng) {
 // cartographer 17.2, trading post 27.2, sanctuary 22.8), so the own draw asks (target - beside) / (1 - beside), over the .88 of asks that find a tile: .44, .55, .48, none for
 // the trading post (already over) and .03 for the sanctuary. Used by content.js GUARD_CHANCE and the guard ask drawn with each building.
 // S350 (the ring ruler, the lead 11-21: a stack on the door tile or one of its eight neighbours is what a hero meets): beside by the ring with no own guard (48 Classic maps): hill fort 12.7, university 5.8, cartographer 4.9, trading post 11.1, sanctuary 6.8 percent; the originals by the ring: 50.8, 51.5, 52.9, 17.6, 15.1; own ask (target - beside) / ((1 - beside) x .88 that find a tile): .50, .55, .57, .08, .10.
-const GUARD_SHARE = { hillFort: 0.50, university: 0.55, cartographer: 0.57, tradingPost: 0.08, tradingPostDUPLICATE: 0.08, sanctuary: 0.10 };
+// measured with these asks (48 Classic maps, ring ruler, originals in brackets): hill fort 46.9 (50.8), university 49.1 (51.5), cartographer 64.6 (52.9), trading post 20.1 (17.6), sanctuary 14.5 (15.1); so the hill fort goes to .55 and the cartographer back to .50 (it read 50.0 at .48)
+const GUARD_SHARE = { hillFort: 0.55, university: 0.55, cartographer: 0.50, tradingPost: 0.08, tradingPostDUPLICATE: 0.08, sanctuary: 0.10 };
 
 module.exports = { draw, enabled, hasKind, resolveMode, zoneAllows, MODE_NAMES, RATES, SHARE, GUARD_SHARE, CLASSES };
