@@ -81,7 +81,11 @@ function apply(d, current, range, ctx) {
 			if (isNamed(k)) { out[k] = Number(named[k]); continue; }
 			const now = Number(current[k]);
 			if (!Number.isFinite(now)) continue;
-			let old = pole[0] + (pole[1] - pole[0]) * d.u[k];
+			// a pole of three numbers [low, high, share]: that share of the maps has none (the old-school value is 0), the rest draw between low and high (S442: Portal share, the originals have no
+			// portal pair on 51 percent of their maps and between 0.12 and 1.2 pairs per 1,000 land tiles on the others)
+			let old;
+			if (pole.length > 2 && d.u[k] < pole[2]) old = 0;
+			else old = pole[0] + (pole[1] - pole[0]) * (pole.length > 2 ? (d.u[k] - pole[2]) / (1 - pole[2]) : d.u[k]);
 			// a start zone keeps its size when fewer play (classicBands.js): the old-school share is for eight players
 			if (k === 'startZoneShare') old *= players / 8;
 			let v = now * (1 - wOld) + old * wOld;
