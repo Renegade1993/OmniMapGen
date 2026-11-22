@@ -42,10 +42,13 @@ test('feel 1 is the Nostalgia band as it is and feel 0 moves levers to the origi
 test('a lever the player named is never touched, and --feel is in the settings of the map', () => {
 	const a = layout(['--feel', '0', '--bio.zoneCells', '400']);
 	assert.strictEqual(a.status, 0, a.stderr);
-	assert.ok(zonesOf(a.stdout) > 20, 'zoneCells 400 by hand keeps its own zone count');
+	// 18 to 19 zones on seeds 5 to 7 since S442 added a lever to the draw (the later levers' draws moved, the pinned seed 5 gave 21 before); the Nostalgia band's own count is 15
+	assert.ok(zonesOf(a.stdout) > 15, 'zoneCells 400 by hand keeps its own zone count');
 	const b = layout(['--feel', '0']);
 	assert.ok(/feel 0\.00/.test(b.stdout), 'the draw is in the random line');
-	assert.notStrictEqual(zonesOf(b.stdout), 15, 'at feel 0 the zone count is not the Nostalgia band\'s 15');
+	// the zone count at feel 0 is drawn between the Nostalgia band's 15 and the originals' count, so one pinned seed can land on 15 (seed 5 does since S442 moved the draws): any of three seeds off 15 is the proof
+	const counts = [zonesOf(b.stdout), zonesOf(layout(['--feel', '0', '--seed', '6']).stdout), zonesOf(layout(['--feel', '0', '--seed', '7']).stdout)];
+	assert.ok(counts.some(c => c !== 15), 'at feel 0 the zone count is not the Nostalgia band\'s 15: ' + counts);
 	assert.strictEqual(zonesOf(layout(['--feel', '1']).stdout), 15, 'at feel 1 it is');
 });
 
