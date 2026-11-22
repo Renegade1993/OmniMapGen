@@ -13403,7 +13403,7 @@ function townDoorCells(objects, l, W, H, blocked, only = null) {
 }
 
 /**
- * S432: the stack beside each free-layout Pandora's box (within one tile of it) is worth at least the box: a stack with no count written is read at the middle of its creature's range (a random-level stack at
+ * S432: the stack beside each free-layout Pandora box (within two tiles of it) is worth at least the box: a stack with no count written is read at the middle of its creature's range (a random-level stack at
  * the middle of its level's), and one worth less is given the creature and count lootGuard gives the box's value (never under it). Returns { checked, upgraded }.
  */
 function ensureBoxGuards(pl, l, seed) {
@@ -13426,7 +13426,7 @@ function ensureBoxGuards(pl, l, seed) {
 		if ((o.l || 0) !== l || o.type !== 'pandoraBox') continue;
 		const v = C.pandoraBoxValue(o);
 		if (!(v > 0)) continue;
-		const near = stacks.filter(m => Math.max(Math.abs(m.x - o.x), Math.abs(m.y - o.y)) <= 1);
+		const near = stacks.filter(m => Math.max(Math.abs(m.x - o.x), Math.abs(m.y - o.y)) <= 2);
 		if (!near.length) continue;
 		out.checked++;
 		near.sort((x, y) => strength(y) - strength(x));
