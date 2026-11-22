@@ -19,7 +19,8 @@ test('Classic has a neutral at every size and player count the lobby offers, equ
 	for (const s of SIDES) for (const p of PLAYERS) {
 		const row = info.neutral[String(s)] && info.neutral[String(s)][String(p)];
 		assert.ok(row, `${s} wide, ${p} players`);
-		assert.deepStrictEqual(row, middle(s, p), `${s} wide, ${p} players: the table is the lean's middle (run node tools/neutral_classic.js)`);
+		const want = middle(s, p);   // the block also carries every other slider's neutral (tools/neutral_blocks.js, S434); the lean's levers must still be the middle
+		assert.deepStrictEqual(Object.fromEntries(Object.keys(want).map(k => [k, row[k]])), want, `${s} wide, ${p} players: the table is the lean's middle (run node tools/neutral_blocks.js)`);
 	}
 });
 

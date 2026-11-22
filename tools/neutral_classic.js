@@ -3,7 +3,8 @@
  * neutral_classic.js - Classic's neutral value for every lever its lean draws, at each map size and player count (S401, K: "Yes, use the middle of the lean."; S402: "it should always
  * start with the template neutral value, and let the player adjust up or down from the middle of the bar slider").
  *
- *   node tools/neutral_classic.js        writes mod/template-info.json, templates.Classic.neutral = { "<side>": { "<players>": { lever: value } } }
+ *   node tools/neutral_classic.js        writes mod/template-info.json, templates.Classic.neutral = { "<side>": { "<players>": { lever: value } } }  (the lean's levers only; S434: tools/neutral_blocks.js
+ *                                        writes every slider's neutral and the ranges, and calls middle() from here; run that one, this one's output lacks the rest)
  *
  * The middle of the lean: the feel 0.5 in every group and every lever halfway between its old-school ends (src/biome/classicFeel.js apply with u 0.5), on the size band of that map
  * (classicBands.resolve), one level. Special buildings are 0.5x (the lean's middle, classicFeel.specialLean at feel 0.5). The lobby reads this block for a slider in its Template state on
