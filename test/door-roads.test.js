@@ -72,9 +72,9 @@ const K = { w: '108', h: '108', players: '4', humans: '4', seed: '1219140137', f
 	'bio.guardMines': '1', 'bio.guardPortals': '2', 'bio.guardShare': '1', 'bio.guardTreasure': '1', 'bio.highLootRatio': '0.25', 'bio.interconnectPortal': '0.2', 'bio.interconnectivity': '0.6',
 	'bio.islandShape': '1', 'bio.layoutFamily': '7', 'bio.lootGuardWeight': '1', 'bio.lowLootRatio': '0.25', 'bio.mineDensity': '1', 'bio.mineGuardWeight': '1', 'bio.monsterStrength': '0',
 	'bio.objectGuardShare': '0.75', 'bio.openPathNoRoad': '0.55', 'bio.openPathRoad': '0.26', 'bio.pickupDensity': '1', 'bio.resourceDensity': '1', 'bio.richPlacement': '3', 'bio.riverAmount': '1',
-	rivers: '1', 'bio.roadCobblestone': '1', 'bio.roadDirt': '1', 'bio.roadGravel': '1', 'bio.roadNetwork': '1', 'bio.roadType': '2', 'bio.stackScale': '1', 'bio.startZoneShare': '0.5',
+	rivers: '1', 'bio.roadCobblestone': '1', 'bio.roadDirt': '1', 'bio.roadGravel': '1', 'bio.roadNetwork': '1', 'bio.roadType': '2', 'bio.stackScale': '1', 'bio.startZoneShare': '-1',
 	'bio.starterMines': '1', 'bio.subterraneanGateRatio': '1', 'bio.subterraneanNarrow': '0.6', 'bio.subterraneanOpen': '0.57', 'bio.teams': '1', 'bio.townRatio': '0.1', 'bio.undergroundStarts': '4',
-	'bio.waterAccess': '2', 'bio.waterBuildings': '1', 'bio.waterContent': '0', 'bio.waterCoverage': '0', 'bio.waterShape': '8', 'bio.zoneCap': '300', 'bio.zoneCells': '400', 'bio.zoneSizeVariety': '0' };
+	'bio.waterAccess': '2', 'bio.waterBuildings': '1', 'bio.waterContent': '0', 'bio.waterCoverage': '0', 'bio.waterShape': '8', 'bio.zoneCap': '300', 'bio.zoneCells': '-1', 'bio.zoneSizeVariety': '0' };
 
 test("K's seed 1219140137: Green's road crosses the link door to the middle, and the road net is one piece", { timeout: 290000 }, () => {
 	const out = path.join(testTmp(), 'vmapgen_door_road.vmap');

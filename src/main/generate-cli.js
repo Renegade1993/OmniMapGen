@@ -289,6 +289,19 @@ async function main() {
 			if (set.length) settingsLine += `; ${line}: ` + set.map(k => `${k} ${moved[k]}`).join(', ');
 		}
 	}
+	else {
+		// S386 (K: the number on a slider in its Template state is what the template gives at this size, and moving it raises or lowers that): on a named template Biome size and
+		// Start biome size set by hand are ratios to what the template makes by itself at this map size and player count (src/biome/neutral.js, the table in template-info.json).
+		// Converted here to the plan's own reading (400 cells a biome and 0.5 for the starts are the template's own), so a lever left out or on Template reaches the plan exactly
+		// as before (the first version changed the lever's default and moved two pinned maps) and a number set equal to the neutral gives the template's own map. No table for the size: as before.
+		const nv = require('../biome/neutral').neutralFor(template, W, H, nPlayers);
+		if (nv) {
+			const note = [];
+			if (nv.zoneCells > 0 && opt['bio.zoneCells'] !== undefined && Number.isFinite(biomes.zoneCells)) { const v = biomes.zoneCells; biomes.zoneCells = v / nv.zoneCells * 400; note.push(`Biome size ${v} of ${nv.zoneCells}`); }
+			if (nv.startZoneShare > 0 && opt['bio.startZoneShare'] !== undefined && Number.isFinite(biomes.startZoneShare)) { const v = biomes.startZoneShare; biomes.startZoneShare = v / nv.startZoneShare * 0.5; note.push(`Start biome size ${v} of ${nv.startZoneShare}`); }
+			if (note.length) settingsLine += `; template neutral at ${Math.round(Math.sqrt(W * H))}: ` + note.join(', ');
+		}
+	}
 	// Special buildings (S365, S366, S388): the mode (Template, Random, Off, On) and the amount, on every layout
 	{
 		const sp = require('../biome/special');

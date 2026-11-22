@@ -123,6 +123,162 @@
 				},
 				"modContent": "the player decides; the template names none",
 				"leversWithNoEffectOnTemplates": []
+			},
+			"neutral": {
+				"36": {
+					"2": {
+						"zoneCells": 170,
+						"startZoneShare": 0.476,
+						"zoneCap": 6
+					},
+					"4": {
+						"zoneCells": 256,
+						"startZoneShare": 0.802,
+						"zoneCap": 5
+					},
+					"6": {
+						"zoneCells": 875,
+						"startZoneShare": 0.325,
+						"zoneCap": 7
+					},
+					"8": {
+						"zoneCells": 567,
+						"startZoneShare": 0.563,
+						"zoneCap": 9
+					}
+				},
+				"72": {
+					"2": {
+						"zoneCells": 154,
+						"startZoneShare": 0.614,
+						"zoneCap": 21
+					},
+					"4": {
+						"zoneCells": 170,
+						"startZoneShare": 0.573,
+						"zoneCap": 21
+					},
+					"6": {
+						"zoneCells": 168,
+						"startZoneShare": 0.579,
+						"zoneCap": 21
+					},
+					"8": {
+						"zoneCells": 147,
+						"startZoneShare": 0.632,
+						"zoneCap": 21
+					}
+				},
+				"108": {
+					"2": {
+						"zoneCells": 342,
+						"startZoneShare": 0.619,
+						"zoneCap": 21
+					},
+					"4": {
+						"zoneCells": 439,
+						"startZoneShare": 0.511,
+						"zoneCap": 21
+					},
+					"6": {
+						"zoneCells": 353,
+						"startZoneShare": 0.607,
+						"zoneCap": 21
+					},
+					"8": {
+						"zoneCells": 298,
+						"startZoneShare": 0.667,
+						"zoneCap": 21
+					}
+				},
+				"144": {
+					"2": {
+						"zoneCells": 779,
+						"startZoneShare": 0.512,
+						"zoneCap": 21
+					},
+					"4": {
+						"zoneCells": 819,
+						"startZoneShare": 0.486,
+						"zoneCap": 21
+					},
+					"6": {
+						"zoneCells": 651,
+						"startZoneShare": 0.592,
+						"zoneCap": 21
+					},
+					"8": {
+						"zoneCells": 559,
+						"startZoneShare": 0.649,
+						"zoneCap": 21
+					}
+				},
+				"180": {
+					"2": {
+						"zoneCells": 1081,
+						"startZoneShare": 0.566,
+						"zoneCap": 21
+					},
+					"4": {
+						"zoneCells": 1273,
+						"startZoneShare": 0.489,
+						"zoneCap": 21
+					},
+					"6": {
+						"zoneCells": 1152,
+						"startZoneShare": 0.538,
+						"zoneCap": 21
+					},
+					"8": {
+						"zoneCells": 900,
+						"startZoneShare": 0.639,
+						"zoneCap": 21
+					}
+				},
+				"216": {
+					"2": {
+						"zoneCells": 1348,
+						"startZoneShare": 0.624,
+						"zoneCap": 21
+					},
+					"4": {
+						"zoneCells": 1629,
+						"startZoneShare": 0.546,
+						"zoneCap": 21
+					},
+					"6": {
+						"zoneCells": 1481,
+						"startZoneShare": 0.587,
+						"zoneCap": 21
+					},
+					"8": {
+						"zoneCells": 1317,
+						"startZoneShare": 0.633,
+						"zoneCap": 21
+					}
+				},
+				"252": {
+					"2": {
+						"zoneCells": 1874,
+						"startZoneShare": 0.616,
+						"zoneCap": 21
+					},
+					"4": {
+						"zoneCells": 2335,
+						"startZoneShare": 0.522,
+						"zoneCap": 21
+					},
+					"6": {
+						"zoneCells": 2316,
+						"startZoneShare": 0.526,
+						"zoneCap": 21
+					},
+					"8": {
+						"zoneCells": 1741,
+						"startZoneShare": 0.644,
+						"zoneCap": 21
+					}
+				}
 			}
 		},
 		"Classic": {
@@ -167,8 +323,8 @@
 					"starterMines": 1,
 					"dwellingDensity": 1,
 					"bonusDensity": 1,
-"specialDensity": 1,
-"specialMode": 0,
+					"specialDensity": 1,
+					"specialMode": 0,
 					"monsterStrength": 0,
 					"stackScale": 1,
 					"guardDensity": 1,
@@ -187,7 +343,7 @@
 					"subterraneanNarrow": 0.6,
 					"undergroundStarts": 4,
 					"subterraneanOpen": 0.57,
-"mirrorLevels": 0,
+					"mirrorLevels": 0,
 					"decorDensity": 1,
 					"rivers": 1,
 					"riverAmount": 1,
@@ -382,8 +538,8 @@
 					"starterMines": 1,
 					"dwellingDensity": 1,
 					"bonusDensity": 1,
-"specialDensity": 1,
-"specialMode": 0,
+					"specialDensity": 1,
+					"specialMode": 0,
 					"monsterStrength": 0,
 					"stackScale": 1,
 					"guardDensity": 1,
@@ -402,7 +558,7 @@
 					"subterraneanNarrow": 0.6,
 					"undergroundStarts": 4,
 					"subterraneanOpen": 0.57,
-"mirrorLevels": 0,
+					"mirrorLevels": 0,
 					"decorDensity": 1,
 					"rivers": 1,
 					"riverAmount": 1,
@@ -454,7 +610,163 @@
 			},
 			"description": "Up to four players each start in a big, poorly guarded and rich zone, set up symmetrically around one extra-rich central zone. To reach the middle they must defeat strong passage guards.\n\nWhat makes it different: players need to reach the middle as soon as possible, even in the first week.\n\nIn construction: the middle zone carries far too much treasure.",
 			"brief": "Up to four players each start in a big, rich zone and must defeat strong passage guards to reach the extra-rich middle zone. The middle holds too much treasure for now.",
-			"templatePreference": "Jebus Cross starts every player above ground; on two levels only the middle zone goes below."
+			"templatePreference": "Jebus Cross starts every player above ground; on two levels only the middle zone goes below.",
+			"neutral": {
+				"36": {
+					"2": {
+						"zoneCells": 387,
+						"startZoneShare": 0.701,
+						"zoneCap": 5
+					},
+					"4": {
+						"zoneCells": 375,
+						"startZoneShare": 0.711,
+						"zoneCap": 5
+					},
+					"6": {
+						"zoneCells": 201,
+						"startZoneShare": 0.845,
+						"zoneCap": 7
+					},
+					"8": {
+						"zoneCells": 130,
+						"startZoneShare": 0.9,
+						"zoneCap": 9
+					}
+				},
+				"72": {
+					"2": {
+						"zoneCells": 2173,
+						"startZoneShare": 0.581,
+						"zoneCap": 5
+					},
+					"4": {
+						"zoneCells": 1705,
+						"startZoneShare": 0.671,
+						"zoneCap": 5
+					},
+					"6": {
+						"zoneCells": 1093,
+						"startZoneShare": 0.789,
+						"zoneCap": 7
+					},
+					"8": {
+						"zoneCells": 577,
+						"startZoneShare": 0.889,
+						"zoneCap": 9
+					}
+				},
+				"108": {
+					"2": {
+						"zoneCells": 4430,
+						"startZoneShare": 0.62,
+						"zoneCap": 5
+					},
+					"4": {
+						"zoneCells": 4136,
+						"startZoneShare": 0.645,
+						"zoneCap": 5
+					},
+					"6": {
+						"zoneCells": 2475,
+						"startZoneShare": 0.788,
+						"zoneCap": 7
+					},
+					"8": {
+						"zoneCells": 2244,
+						"startZoneShare": 0.808,
+						"zoneCap": 9
+					}
+				},
+				"144": {
+					"2": {
+						"zoneCells": 6102,
+						"startZoneShare": 0.706,
+						"zoneCap": 5
+					},
+					"4": {
+						"zoneCells": 7681,
+						"startZoneShare": 0.63,
+						"zoneCap": 5
+					},
+					"6": {
+						"zoneCells": 4596,
+						"startZoneShare": 0.778,
+						"zoneCap": 7
+					},
+					"8": {
+						"zoneCells": 4724,
+						"startZoneShare": 0.772,
+						"zoneCap": 9
+					}
+				},
+				"180": {
+					"2": {
+						"zoneCells": 10076,
+						"startZoneShare": 0.689,
+						"zoneCap": 5
+					},
+					"4": {
+						"zoneCells": 7263,
+						"startZoneShare": 0.776,
+						"zoneCap": 5
+					},
+					"6": {
+						"zoneCells": 7467,
+						"startZoneShare": 0.77,
+						"zoneCap": 7
+					},
+					"8": {
+						"zoneCells": 5133,
+						"startZoneShare": 0.842,
+						"zoneCap": 9
+					}
+				},
+				"216": {
+					"2": {
+						"zoneCells": 12604,
+						"startZoneShare": 0.73,
+						"zoneCap": 5
+					},
+					"4": {
+						"zoneCells": 10724,
+						"startZoneShare": 0.77,
+						"zoneCap": 5
+					},
+					"6": {
+						"zoneCells": 10877,
+						"startZoneShare": 0.767,
+						"zoneCap": 7
+					},
+					"8": {
+						"zoneCells": 10578,
+						"startZoneShare": 0.773,
+						"zoneCap": 9
+					}
+				},
+				"252": {
+					"2": {
+						"zoneCells": 17316,
+						"startZoneShare": 0.727,
+						"zoneCap": 5
+					},
+					"4": {
+						"zoneCells": 14945,
+						"startZoneShare": 0.765,
+						"zoneCap": 5
+					},
+					"6": {
+						"zoneCells": 15154,
+						"startZoneShare": 0.761,
+						"zoneCap": 7
+					},
+					"8": {
+						"zoneCells": 10181,
+						"startZoneShare": 0.84,
+						"zoneCap": 9
+					}
+				}
+			}
 		},
 		"Headquarters": {
 			"originalSizeMin": 108,
@@ -472,7 +784,163 @@
 			},
 			"description": "A template for 2 to 7 players, on a Large map (108x108), with or without an underground.\n\nIt has 9 zones: 7 start zones and 2 treasure zones. Each start zone has a castle for its player, one neutral town and a set of mines (two wood, two ore, and one each of mercury, sulfur, crystal and gems), and each is limited to one town type: Rampart, Tower, Castle (two zones), Dungeon, Necropolis and Conflux. Every start zone has two roads out, each guarded at 45,000: one into a large treasure zone of rough ground with two neutral castles (Stronghold or Fortress), two wood mines, two ore mines and a gold mine, and one into a smaller treasure zone of sand with a mine of each rare resource and a gold mine. Both treasure zones have strong monsters, and they join each other with a guard of 45,000.\n\nIn construction: an approximate version, not yet playtested.",
 			"brief": "Up to seven players on a Large map. 9 zones: 7 start zones, each limited to one town type, and 2 treasure zones that every start zone joins by a guarded road. An approximate version, not yet playtested.",
-			"templatePreference": "Headquarters starts every player above ground; on two levels both treasure zones go below."
+			"templatePreference": "Headquarters starts every player above ground; on two levels both treasure zones go below.",
+			"neutral": {
+				"36": {
+					"2": {
+						"zoneCells": 361,
+						"startZoneShare": 0.443,
+						"zoneCap": 6
+					},
+					"4": {
+						"zoneCells": 256,
+						"startZoneShare": 0.802,
+						"zoneCap": 5
+					},
+					"6": {
+						"zoneCells": 717,
+						"startZoneShare": 0.447,
+						"zoneCap": 7
+					},
+					"8": {
+						"zoneCells": 523,
+						"startZoneShare": 0.596,
+						"zoneCap": 9
+					}
+				},
+				"72": {
+					"2": {
+						"zoneCells": 1652,
+						"startZoneShare": 0.363,
+						"zoneCap": 9
+					},
+					"4": {
+						"zoneCells": 1420,
+						"startZoneShare": 0.452,
+						"zoneCap": 9
+					},
+					"6": {
+						"zoneCells": 1292,
+						"startZoneShare": 0.502,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 1003,
+						"startZoneShare": 0.613,
+						"zoneCap": 10
+					}
+				},
+				"108": {
+					"2": {
+						"zoneCells": 3771,
+						"startZoneShare": 0.353,
+						"zoneCap": 9
+					},
+					"4": {
+						"zoneCells": 2928,
+						"startZoneShare": 0.498,
+						"zoneCap": 9
+					},
+					"6": {
+						"zoneCells": 2966,
+						"startZoneShare": 0.492,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 2520,
+						"startZoneShare": 0.568,
+						"zoneCap": 10
+					}
+				},
+				"144": {
+					"2": {
+						"zoneCells": 6561,
+						"startZoneShare": 0.367,
+						"zoneCap": 9
+					},
+					"4": {
+						"zoneCells": 5776,
+						"startZoneShare": 0.443,
+						"zoneCap": 9
+					},
+					"6": {
+						"zoneCells": 5499,
+						"startZoneShare": 0.47,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 4653,
+						"startZoneShare": 0.551,
+						"zoneCap": 10
+					}
+				},
+				"180": {
+					"2": {
+						"zoneCells": 10229,
+						"startZoneShare": 0.369,
+						"zoneCap": 9
+					},
+					"4": {
+						"zoneCells": 9076,
+						"startZoneShare": 0.44,
+						"zoneCap": 9
+					},
+					"6": {
+						"zoneCells": 8793,
+						"startZoneShare": 0.457,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 7306,
+						"startZoneShare": 0.549,
+						"zoneCap": 10
+					}
+				},
+				"216": {
+					"2": {
+						"zoneCells": 14667,
+						"startZoneShare": 0.371,
+						"zoneCap": 9
+					},
+					"4": {
+						"zoneCells": 13541,
+						"startZoneShare": 0.42,
+						"zoneCap": 9
+					},
+					"6": {
+						"zoneCells": 12754,
+						"startZoneShare": 0.453,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 10848,
+						"startZoneShare": 0.535,
+						"zoneCap": 10
+					}
+				},
+				"252": {
+					"2": {
+						"zoneCells": 21997,
+						"startZoneShare": 0.307,
+						"zoneCap": 9
+					},
+					"4": {
+						"zoneCells": 18408,
+						"startZoneShare": 0.42,
+						"zoneCap": 9
+					},
+					"6": {
+						"zoneCells": 16913,
+						"startZoneShare": 0.467,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 15170,
+						"startZoneShare": 0.522,
+						"zoneCap": 10
+					}
+				}
+			}
 		},
 		"Golems Aplenty": {
 			"originalSizeMin": 36,
@@ -490,7 +958,163 @@
 			},
 			"description": "Up to four players.\n\nWhat makes it different: Golem Factories. In the original scenario the wizards to the south have finally left their valley after a millennium of experimenting with golems. This leaves the local warring lords an opportunity to move in and grab the generators. If you can become the first lord to amass enough golems, you will have a definite advantage. Here the neutral zones hold Golem Factories, with golems among the guards.\n\nIn construction: about 50 percent built; the Golem Factories and the golem guards are new and not yet played.",
 			"brief": "Up to four players. The original scenario says: 'This leaves the local warring lords an opportunity to move in and grab the generators.' This one is full of Golem Factories and golem guards. In construction.",
-			"templatePreference": "Golems Aplenty starts every player above ground."
+			"templatePreference": "Golems Aplenty starts every player above ground.",
+			"neutral": {
+				"36": {
+					"2": {
+						"zoneCells": 267,
+						"startZoneShare": 0.381,
+						"zoneCap": 7
+					},
+					"4": {
+						"zoneCells": 248,
+						"startZoneShare": 0.425,
+						"zoneCap": 7
+					},
+					"6": {
+						"zoneCells": 627,
+						"startZoneShare": 0.516,
+						"zoneCap": 7
+					},
+					"8": {
+						"zoneCells": 507,
+						"startZoneShare": 0.609,
+						"zoneCap": 9
+					}
+				},
+				"72": {
+					"2": {
+						"zoneCells": 1040,
+						"startZoneShare": 0.398,
+						"zoneCap": 7
+					},
+					"4": {
+						"zoneCells": 1174,
+						"startZoneShare": 0.321,
+						"zoneCap": 7
+					},
+					"6": {
+						"zoneCells": 790,
+						"startZoneShare": 0.543,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 828,
+						"startZoneShare": 0.521,
+						"zoneCap": 11
+					}
+				},
+				"108": {
+					"2": {
+						"zoneCells": 2656,
+						"startZoneShare": 0.317,
+						"zoneCap": 7
+					},
+					"4": {
+						"zoneCells": 2712,
+						"startZoneShare": 0.303,
+						"zoneCap": 7
+					},
+					"6": {
+						"zoneCells": 1856,
+						"startZoneShare": 0.523,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 1984,
+						"startZoneShare": 0.49,
+						"zoneCap": 11
+					}
+				},
+				"144": {
+					"2": {
+						"zoneCells": 4007,
+						"startZoneShare": 0.42,
+						"zoneCap": 7
+					},
+					"4": {
+						"zoneCells": 4979,
+						"startZoneShare": 0.28,
+						"zoneCap": 7
+					},
+					"6": {
+						"zoneCells": 3445,
+						"startZoneShare": 0.502,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 2794,
+						"startZoneShare": 0.596,
+						"zoneCap": 11
+					}
+				},
+				"180": {
+					"2": {
+						"zoneCells": 6147,
+						"startZoneShare": 0.431,
+						"zoneCap": 7
+					},
+					"4": {
+						"zoneCells": 5761,
+						"startZoneShare": 0.467,
+						"zoneCap": 7
+					},
+					"6": {
+						"zoneCells": 5470,
+						"startZoneShare": 0.494,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 4533,
+						"startZoneShare": 0.58,
+						"zoneCap": 11
+					}
+				},
+				"216": {
+					"2": {
+						"zoneCells": 10233,
+						"startZoneShare": 0.342,
+						"zoneCap": 7
+					},
+					"4": {
+						"zoneCells": 8479,
+						"startZoneShare": 0.455,
+						"zoneCap": 7
+					},
+					"6": {
+						"zoneCells": 7261,
+						"startZoneShare": 0.533,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 6883,
+						"startZoneShare": 0.557,
+						"zoneCap": 11
+					}
+				},
+				"252": {
+					"2": {
+						"zoneCells": 12090,
+						"startZoneShare": 0.429,
+						"zoneCap": 7
+					},
+					"4": {
+						"zoneCells": 11550,
+						"startZoneShare": 0.454,
+						"zoneCap": 7
+					},
+					"6": {
+						"zoneCells": 11068,
+						"startZoneShare": 0.477,
+						"zoneCap": 9
+					},
+					"8": {
+						"zoneCells": 9388,
+						"startZoneShare": 0.557,
+						"zoneCap": 11
+					}
+				}
+			}
 		}
 	},
 	"waterLayouts": {

@@ -59,6 +59,6 @@
  "bio.waterShape": "8",
  "bio.waterTreasure": "1",
  "bio.zoneCap": "300",
- "bio.zoneCells": "400",
+ "bio.zoneCells": "-1",
  "underground": "1"
 }
