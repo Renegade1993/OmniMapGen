@@ -2207,6 +2207,13 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	const PRISON_SPACING = process.env.VMAPGEN_PRISON_SPACING !== undefined ? Number(process.env.VMAPGEN_PRISON_SPACING) : 8;
 	const PRISON_RATE = process.env.VMAPGEN_PRISON_RATE !== undefined ? Number(process.env.VMAPGEN_PRISON_RATE) : 0.77;
 	const prisonsHere = (objectPools.__prisons || (objectPools.__prisons = {}))[l] || (objectPools.__prisons[l] = []);
+	// the mines placed on this level (every biome's fill shares the list): MINE_GAP, the pictures of two mines of one kind at least that many tiles apart (Chebyshev, closest cells)
+	const MINE_GAP = process.env.VMAPGEN_MINE_GAP !== undefined ? Number(process.env.VMAPGEN_MINE_GAP) : 4;
+	const minesHere = (objectPools.__mines || (objectPools.__mines = {}))[l] || (objectPools.__mines[l] = []);
+	const mineNear = (sub, tpl, x, y) => {
+		const mine = footprintCells(tpl, x, y);
+		return minesHere.some(m => m.sub === sub && m.cells.some(([a, b]) => mine.some(([c, d]) => Math.max(Math.abs(a - c), Math.abs(b - d)) < MINE_GAP)));
+	};
 	const prisonBlocked = (x, y) => (PRISON_RATE > 0 && prisonsHere.length >= Math.ceil(PRISON_RATE * W * H / 1000))
 		|| (PRISON_SPACING > 0 && prisonsHere.some(([a, b]) => Math.max(Math.abs(a - x), Math.abs(b - y)) < PRISON_SPACING));
 	// Guard spacing (the lead, 2026-10-08: close the gap on monsters, blockers and loot). The engine's stacks stand 4 or more tiles apart
@@ -2454,6 +2461,9 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			// pocket has little left to wall (K, 2026-10-04: "loot out in the open without guards being appropriately backed by
 			// blocker art").
 			if (zoneMeta && POCKET_LOOT.test(type) && tries < tryBudget * 0.75 && closable(x, y) < 0) { rej('nook'); if (process.env.VMAPGEN_NOOK_TRACE) { const k = 'L' + l + (openMask ? 'cave' : ''); NOOK_T[k] = (NOOK_T[k] || 0) + 1; } continue; }
+			// S432 audit (K via S433: "Meg found 2 alchemist labs right next to each other"): two mines of one kind keep MINE_GAP tiles between their pictures for the first three quarters of the tries (stock:
+			// 2 same-kind mine pairs within 3 tiles over 7 maps, none over 5 at 144; ours 0.9 a 72-wide map). VMAPGEN_MINE_GAP=0 off.
+			if (type === 'mine' && MINE_GAP > 0 && tries < tryBudget * 0.75 && mineNear(subtype || 'mine', tpl, x, y)) { rej('mineGap'); continue; }
 			if (type === 'prison' && PRISON_GAP > 0 && nearBuilding(tpl, x, y, PRISON_GAP)) { rej('prisonGap'); continue; }
 			if (type === 'prison' && nearTownPic(tpl, x, y)) { rej('prisonTown'); continue; }
 			if (/^(town|randomTown)$/.test(type) && townNearPrison(x, y)) { rej('townPrison'); continue; }
@@ -2570,6 +2580,7 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			markApproach(tpl, x, y, l, W, H, blocked); addFront(blocked, l, W, H, type, tpl, x, y);
 			registerBuilding(type, tpl, x, y);
 			if (type === 'prison') prisonsHere.push([x, y]);
+			if (type === 'mine') minesHere.push({ sub: subtype || 'mine', cells: footprintCells(tpl, x, y) });
 			if (MONSTER_TYPE.test(type)) holdGuard(x, y);
 			// the held tile is OCCUPIED, as the guard standing there would make it (stock places the guard with its object), so scenery, walls and
 			// later objects keep off it: marked RESERVED, 146 of seed 1's Coldshadow held tiles were still covered by scenery passes that read only
