@@ -88,6 +88,23 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 		return false;
 	};
 	const alongRoad = (c, n) => (onRoad(c) && onRoad(n)) || roadRiverBeside(n);
+	// S449 (K, 2026-11-21: "IT CAN CROSS, BUT RUNNING UNDER IT, ACTUALLY UNDER IT AND PARALLEL WITH IT SHOULD NEVER HAPPEN"; S345 the same on 11-19): a river never runs parallel with a road. roadNear marks a tile on a
+	// road or within one tile of it (eight ways); a path is refused when it has a run of roadNear tiles of more than two, or, when the run crosses the road (one road tile at most), of more than four: a crossing
+	// is the approach, the road tile and the way out. The tiles cost more, so a river keeps off roads and crosses them only where it must. VMAPGEN_RIVER_PARALLEL=0 gives the S345 routing.
+	const PARALLEL = !!road && process.env.VMAPGEN_RIVER_PARALLEL !== '0';
+	const roadNear = new Uint8Array(PARALLEL ? W * H : 0);
+	if (PARALLEL) for (let c = 0; c < W * H; c++) if (road[c]) { const x = c % W, y = (c / W) | 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const u = x + dx, v = y + dy; if (u >= 0 && v >= 0 && u < W && v < H) roadNear[v * W + u] = 1; } }
+	const NEAR_COST = 10;
+	const parallelRun = path => {
+		if (!PARALLEL) return false;
+		let run = 0, roads = 0;
+		for (const c of path) {
+			if (!roadNear[c]) { run = 0; roads = 0; continue; }
+			run++; if (onRoad(c)) roads++;
+			if (roads > 1 || run > (roads ? 4 : 2)) return true;
+		}
+		return false;
+	};
 	// a path that doubles back across the road beside its own crossing (a U round the road's step) is no crossing either: refused when laid
 	const touchesItself = path => {
 		const on = new Set(path.filter(onRoad));
@@ -150,10 +167,10 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 			if (d > dist[c]) continue;
 			if ((onEdge(c) || wetBeside(c) || riverBeside(c)) && !onRoad(c)) { goal = c; break; }
 			const cx = c % W, cy = (c / W) | 0;
-			for (const [dx, dy] of N4) { const u = cx + dx, v = cy + dy; if (u < 0 || v < 0 || u >= W || v >= H) continue; const n = v * W + u; if (!free(n) || cells.has(n) || alongRoad(c, n)) continue; const nd = d + cost[n]; if (nd < dist[n]) { dist[n] = nd; prev[n] = c; hpush(nd, n); } }
+			for (const [dx, dy] of N4) { const u = cx + dx, v = cy + dy; if (u < 0 || v < 0 || u >= W || v >= H) continue; const n = v * W + u; if (!free(n) || cells.has(n) || alongRoad(c, n)) continue; const nd = d + cost[n] + (PARALLEL && roadNear[n] ? NEAR_COST : 0); if (nd < dist[n]) { dist[n] = nd; prev[n] = c; hpush(nd, n); } }
 		}
 		if (goal < 0) continue;
-		{ const p0 = []; for (let c = goal; c >= 0; c = prev[c]) p0.push(c); if (touchesItself(p0)) continue; }
+		{ const p0 = []; for (let c = goal; c >= 0; c = prev[c]) p0.push(c); if (touchesItself(p0) || parallelRun(p0)) continue; }
 		for (let c = goal; c >= 0; c = prev[c]) cells.add(c);
 		nodeRivers++;
 	}
@@ -184,7 +201,7 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 				if (!free(n) || cells.has(n) || alongRoad(c, n)) continue;
 				// short of the goal, a tile on the edge, beside water or beside a river is a way along it, not into it
 				const along = (onEdge(n) || wetBeside(n) || riverBeside(n)) && Math.max(Math.abs(u - sx), Math.abs(v - sy)) < minLen ? 8 : 0;
-				const nd = d + cost[n] + along;
+				const nd = d + cost[n] + along + (PARALLEL && roadNear[n] ? NEAR_COST : 0);
 				if (nd < dist[n]) { dist[n] = nd; prev[n] = c; push(nd, n); }
 			}
 		}
@@ -193,7 +210,7 @@ function routeRivers(W, H, rng, share, { forbid = null, water = null, open = nul
 		for (let c = goal; c >= 0; c = prev[c]) path.push(c);
 		// the river the network asked for, not much more: a river longer than what is left (and a quarter) is passed over and the next try is shorter
 		if (cells.size + path.length > target * 1.25 + 4) { failed++; if (T) T.toolong++; continue; }
-		if (touchesItself(path)) { failed++; if (T) T.nogoal++; continue; }
+		if (touchesItself(path) || parallelRun(path)) { failed++; if (T) T.nogoal++; continue; }
 		for (const c of path) cells.add(c);
 		if (T) T.laid++;
 	}
