@@ -276,8 +276,8 @@ function addRimBand(zone, W, H, connections, edgeInfo, barriers, openings, water
 		for (let c = end; c >= 0; c = prev[c]) cut.push(c);
 		if (!cut.length) return [from];
 		// S428 (the 72-wide straight roads): the shortest way through the band is a straight line, and a road in it ran straight for the band's whole thickness and on into the zone's own road (a run of 17 to
-		// 25). A passage of three cells or more steps one cell sideways part-way: the cells nearer the exit shift by one, and one cell joins the two parts. VMAPGEN_PASSAGE_JOG=0 keeps it straight.
-		if (jog && !template && process.env.VMAPGEN_PASSAGE_JOG !== '0' && cut.length >= 3) {
+		// 25). A passage of three cells or more steps one cell sideways part-way: the cells nearer the exit shift by one, and one cell joins the two parts. Off unless VMAPGEN_PASSAGE_JOG=1 (S428: with the run limit it raised the dwelling fronts open on K's settings from 13 to 21.5 percent, seeds 20 to 39, for a median run 17 to 16 alone).
+		if (jog && !template && process.env.VMAPGEN_PASSAGE_JOG === '1' && cut.length >= 3) {
 			const k = cut.length - 1, hsh = (Math.imul(from + 1, 2654435761) >>> 0), m = 1 + (hsh % (k - 1));
 			const along = Math.abs(cut[1] - cut[0]) === 1 ? [0, 1] : [1, 0];   // the line runs along x when neighbours differ by 1, so the sideways step is a row; else a column
 			for (const sgn of [((hsh >>> 8) & 1) ? 1 : -1, ((hsh >>> 8) & 1) ? -1 : 1]) {
