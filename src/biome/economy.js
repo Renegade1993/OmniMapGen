@@ -596,7 +596,13 @@ function pandoraSpellList(item, rng) {
  * their observed corpus frequency, and a spell reward is a list of 12, 15 or
  * 60 core spell identifiers.
  */
-function pandoraOptions(rng, item) {
+function pandoraOptions(rng, item, capValue) {
+	// S432: capValue (a free-layout start zone) keeps the corpus draw's experience and gold under that value (experience is worth 1.2 times itself); the draw itself still takes one roll
+	const capped = (w, worth) => {
+		if (!(capValue > 0)) return w;
+		const kept = Object.fromEntries(Object.entries(w).filter(([k]) => worth(+k) <= capValue));
+		return Object.keys(kept).length ? kept : Object.fromEntries([Object.entries(w).sort((a, b) => +a[0] - +b[0])[0]]);
+	};
 	const S = SPECIALS.pandoraBox;
 	const reward = {
 		creatures: [], creaturesChange: [], heroExperience: 0, heroLevel: 0,
@@ -616,9 +622,9 @@ function pandoraOptions(rng, item) {
 	else if (byPile && kind === 'creatures' && item.creature) reward.creatures = [{ type: 'core:' + item.creature, amount: item.amount }];
 	else if (byPile && kind === 'spells') reward.spells = pandoraSpellList(item, rng);
 	else if (kind === 'experience')
-		reward.heroExperience = +weightedKey(S.expWeights, rng);
+		reward.heroExperience = +weightedKey(capped(S.expWeights, v => v * 1.2), rng);
 	else if (kind === 'gold')
-		reward.resources = { gold: +weightedKey(S.goldWeights, rng) };
+		reward.resources = { gold: +weightedKey(capped(S.goldWeights, v => v), rng) };
 	else if (kind === 'creatures')
 		reward.creatures = [pandoraCreature(rng)];
 	else if (kind === 'spells') {

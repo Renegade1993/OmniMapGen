@@ -421,7 +421,10 @@ function guardFitter(pl, o) {
 	const need = GUARD_FIT * targetValue(o), pool = pl.objectPools.guards;
 	return m => {
 		const c = m.guardCreature && pool.find(q => q.id === m.guardCreature);
-		const n = m.options && m.options.amount;
+		// S432: a stack with no count written has its count rolled when the map loads, from the creature's own range (CGCreature.cpp setCount(nextInt(advMapAmountMin, advMapAmountMax))): the free layout
+		// writes none, so every one of its stacks fitted every box. Its strength is the creature's value times the middle of that range. VMAPGEN_GUARD_FIT_EXPECTED=0 is the earlier rule.
+		let n = m.options && m.options.amount;
+		if (!(n > 0) && c && process.env.VMAPGEN_GUARD_FIT_EXPECTED !== '0' && c.advMax > 0) n = ((c.advMin || 0) + c.advMax) / 2;
 		return !c || !(n > 0) ? true : c.aiValue * n >= need;
 	};
 }
@@ -593,6 +596,12 @@ const GUARD_CHANCE = {
  * are guarded first, each with that chance, and the rest of the budget goes on as before.
  */
 const HIGH_LOOT_GUARDED = { randomArtifactRelic: 0.69, randomArtifactMajor: 0.65, pandoraBox: 0.58 };
+// S432: Pandora's boxes in the free layout. The originals hold 0.046 boxes per 1,000 ground tiles (37 boxes on the 127 maps; per 1,000 tiles of any kind 0.024; 13 percent of the maps have one);
+// the free layout drew 0.718 per 1,000 tiles on 100 Classic maps at 72 wide (and 0.856 on 40 at 108 with two levels), every map with several. The yardstick is ground tiles because a Classic map is all
+// ground and the originals are 47 percent water and rock. VMAPGEN_PANDORA_PARITY=0 gives the earlier count.
+const PANDORA_FREE_RATE = 0.046 / 0.718;
+// a start zone's box is worth under 20,000 as in the template zones (S253: a start zone's top band is under 20,000): experience 15,000 (worth 18,000) or less, gold 15,000 or less. VMAPGEN_PANDORA_START_CAP=0 off.
+const PANDORA_START_CAP = 18000;
 
 /** Share of the monster budget spent guarding objects rather than roaming. */
 const OBJECT_GUARD_SHARE = 0.75;
@@ -4296,8 +4305,12 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// S253: each box holds what its pile entry is worth (economy.js pandoraOptions), the way the engine builds it; a lever that thins the count keeps the cheaper boxes
 	const pandoraDrawn = pileMan ? (pileMan.get('pandoraBox') || []).slice().sort((a, b) => a.value - b.value) : [];
 	let pandoraAt = 0;
-	for (let i = pileMan ? manCount('pandoraBox') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].pandoraBox * lootMul * ((lootKind === 'other' && STOCK_GUARD_LAND.pandoraBox) || 1)) : rare(fill.pandoras * (uMul ? uMul.pandora : 1)); i > 0; i--)
-		putLoot('pandoraBox', pandoraTpl, pandoraOptions(rng, pileMan && pandoraDrawn.length ? pandoraDrawn[pandoraAt++ % pandoraDrawn.length] : undefined));
+	// S432 (K 2026-11-21: "lot of high xp pandoras....we already solved so many of these issues in the other map templates...make sure they carry over"): the free layout has no pile list, so it
+	// drew the corpus count and the corpus contents. The count follows the originals (PANDORA_FREE_RATE) and a start zone's box is capped below 20,000 (PANDORA_START_CAP).
+	const pandoraFree = !p.zonePlan && process.env.VMAPGEN_PANDORA_PARITY !== '0' ? PANDORA_FREE_RATE : 1;
+	const pandoraCap = !pileMan && startHere && process.env.VMAPGEN_PANDORA_START_CAP !== '0' ? PANDORA_START_CAP : 0;
+	for (let i = pileMan ? manCount('pandoraBox') : stockLoot ? stockRare(STOCK_LOOT_DENSITY[lootKind].pandoraBox * lootMul * pandoraFree * ((lootKind === 'other' && STOCK_GUARD_LAND.pandoraBox) || 1)) : rare(fill.pandoras * (uMul ? uMul.pandora : 1) * pandoraFree); i > 0; i--)
+		putLoot('pandoraBox', pandoraTpl, pandoraOptions(rng, pileMan && pandoraDrawn.length ? pandoraDrawn[pandoraAt++ % pandoraDrawn.length] : undefined, pandoraCap));
 	if (!prisonsEarly) placePrisons();
 	const obeliskTpl = obeliskTemplate(terrain);
 	for (let i = pileMan ? manCount('obelisk') : rare(fill.obelisks * (uMul ? uMul.obelisk : 1)); i > 0; i--)
