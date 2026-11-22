@@ -10622,7 +10622,7 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 				if (cut || !sg.short) break;
 				cut = true;
 				let gone = 0;
-				for (const [g, k] of keep) if (!k.players && !(peerOf && k.dear) && (sg.boxed || (!k.link && !k.mine)) && plans[l].objects.includes(g)) { clearScenery(plans[l], l, W, H, blocked, { gone: new Set([g]) }); keep.delete(g); gone++; }
+				for (const [g, k] of keep) if (!k.players && !(peerOf && k.dear) && (sg.boxed || (!k.link && (!k.mine || sg.cut))) && plans[l].objects.includes(g)) { clearScenery(plans[l], l, W, H, blocked, { gone: new Set([g]) }); keep.delete(g); gone++; }
 				if (!gone) break;
 				console.error(`[gen] level ${l}: ${gone} stack(s) that could not move cut a start off its floor and were taken away`);
 			}
@@ -13664,7 +13664,12 @@ function startGroundCells(pl, l, W, H, blocked, opts = null) {
 		// more) with no ring is held: the hold on every start changed maps with no short start at all (K's seed 2042393645: 374 guards against
 		// 0.3.10's 378; the Opus Reviewer, pass 56, and the lead's ruling, 2026-10-14: a start with 200 or more ring-free must be untouched)
 		const need = opts && opts.always ? Math.max(floor, 200) : floor;
-		if (grow(from, c => passable(c) && !ring[c], need).length >= need) continue;
+		const freeWalk = grow(from, c => passable(c) && !ring[c], need).length;
+		if (freeWalk >= need) continue;
+		// S370 (2026-11-22, no144x2 s8303: red walked 170 tiles against blue's 1,990, ratio 11.71): a seat whose ring-free ground is under a quarter of the
+		// best start's (the late pass's peer is half of it; fairness asks 2.2) is cut off, and a mine's stack that cannot move and sits on its only way out
+		// may go (below), as a boxed-in start's does: the engine leaves a start's near mines unguarded. VMAPGEN_START_MINE_CUT=0 keeps them.
+		if (opts && opts.peer && freeWalk * 2 < opts.peer && process.env.VMAPGEN_START_MINE_CUT !== '0') out.cut = true;
 		// The late pass, where the floor is the zone's share: only the guards that cut the start off are cleared, one at a time, each the one
 		// whose ring freed opens the most ground beyond the ring itself (20 tiles at least), until the floor is met or none does. The compact
 		// piece below took every ring inside several hundred tiles, and the guards it moved crowded other stacks (the pairwise grid's pw_000,
