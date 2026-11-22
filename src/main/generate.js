@@ -3170,6 +3170,16 @@ async function generateMap(params) {
 		objects.length = 0; objects.push(...kept, ...added);
 		if (gone || added.length) console.error(`[gen] objects the export's passes took off or added, written as they stand: ${gone} off, ${added.length} added`);
 	}
+	// Guards at portals Off: nothing stands in front of a portal end, whatever placed it, also after the late passes that move a pile with its guard (portalends.js; the old red of
+	// test/portal-guards.test.js on Coldshadow 72x72 seed 2). VMAPGEN_PORTAL_LATE=0 skips it.
+	if (Number((params.biomes || {}).guardPortals) === 0 && process.env.VMAPGEN_PORTAL_LATE !== '0') {
+		const drop = require('../biome/portalends').monstersInPortalZone(objects, params.mapW, params.mapH, { blockingCells, visitableCells, allowedDirs });
+		if (drop.size) {
+			const keep = objects.filter(o => !drop.has(o)); objects.length = 0; objects.push(...keep);
+			for (const pl of plans) if (pl.objects) { const k2 = pl.objects.filter(o => !drop.has(o)); pl.objects.length = 0; pl.objects.push(...k2); }
+			console.error(`[gen] guards at portals Off: ${drop.size} monster(s) beside a portal end taken away after the late passes`);
+		}
+	}
 	// The same building twice in sight of itself (K, 2026-11-02, items 8 and 12), after placement so nothing else moves (the lead, 11-03: done
 	// at placement it moved about 2,500 objects): a building that shows tiles when visited (the object data's revealTiles radius: the
 	// observatory's 20, a mod's own) or a bonus building (economy.js BONUS_POOL: Tree of Knowledge, schools, shrines...) that stands nearer
