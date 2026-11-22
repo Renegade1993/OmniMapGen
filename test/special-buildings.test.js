@@ -117,11 +117,13 @@ test('a named template: Coldshadow\'s Fantasy has none at 0x and on Template, an
 	assert.ok(at('cs3', '3').length > 0, '3x puts buildings in its neutral zones');
 });
 
-test('a special building that asks for a guard has its guard tile held at placement: 12 maps, every kind asked, at least 78 percent of the asks stand guarded', { timeout: 2400000 }, () => {
+test('a special building that asks for a guard has its guard tile held at placement: 60 maps, every kind asked, at least 78 percent of the asks stand guarded', { timeout: 3600000 }, () => {
 	// the ask is drawn with the building and the guard's tile is held when it is placed, as stock lays a pile (S350); drawn at the guard pass 32 to 41 percent of
 	// the asks found no tile under the stock spacing rules. VMAPGEN_TRACE_SPECIAL=1 prints one line a building: asked, posted, shared.
+	// S428 (2026-11-22): a rate, not a pinned dozen. The first 12 seeds read 93.3 percent (83 of 89) on 3355da1 and 76.8 (73 of 95) on 0b4c9bd, the two heads of the road-bend merge; seeds 13 to 60 read
+	// 81.3 (291 of 358) and 83.0 (288 of 347) on the same two, so the roads moved which maps the dozen drew and not the rate (the lead: a pinned seed's red is decided by a rate over seeds). The bar stays 78.
 	let asked = 0, posted = 0, shared = 0;
-	for (let seed = 1; seed <= 12; seed++) {
+	for (let seed = 1; seed <= 60; seed++) {
 		const out = path.join(dir, 'ask' + seed + '.vmap');
 		const r = spawnSync(process.execPath, [CLI, '--w', '108', '--h', '108', '--players', '4', '--seed', String(seed), '--bio.specialDensity', '1', '--out', out],
 			{ encoding: 'utf8', cwd: ROOT, env: { ...genEnv(), VMAPGEN_TRACE_SPECIAL: '1', VMAPGEN_SPECIAL_ASK_ALL: '1' }, windowsHide: true, timeout: 280000 });
