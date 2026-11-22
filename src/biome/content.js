@@ -414,7 +414,8 @@ function pandoraBoxValue(o) {
 const GUARD_BY_VALUE = process.env.VMAPGEN_GUARD_BY_VALUE !== '0';
 const DEAR_TARGET = /^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact)$/;
 const targetValue = e => { const b = e.type === 'pandoraBox' ? pandoraBoxValue(e) : undefined; return Number.isFinite(b) && b > 0 ? b : spentValue(e); };
-const GUARD_FIT = Number(process.env.VMAPGEN_GUARD_FIT) || 0.8;
+// S432 (the lead 2026-11-21 on K's "lot of high xp pandoras": no box under 1.0 of its value; stock's lowest is 1.27): a box is never guarded by a stack worth less than itself, 1.0, where it was 0.8
+const GUARD_FIT = Number(process.env.VMAPGEN_GUARD_FIT) || 1.0;
 /** A test of whether a placed stack is worth guarding dear object o (strength, AI value x amount, at least GUARD_FIT of o's value), or null when the rule is off or o is no dear target. */
 function guardFitter(pl, o) {
 	if (!GUARD_BY_VALUE || !o || !DEAR_TARGET.test(o.type) || !pl || !pl.objectPools || !pl.objectPools.guards) return null;
@@ -436,12 +437,13 @@ function lootGuard(kind, p, rng, pool = GUARD_POOL, value) {
 	const i = Math.max(0, Math.min(4, 1 + Math.max(-2, Math.min(2, Math.round(Number(p && p.monsterStrength) || 0)))));
 	// a Pandora's box with a known value is guarded at the engine's strength for that value (ObjectManager::chooseGuard, sAt), not the kind's flat median (VMAPGEN_PANDORA_GUARD_VALUE=0 off)
 	const byValue = kind === 'pandoraBox' && Number.isFinite(value) && value > 0 && process.env.VMAPGEN_PANDORA_GUARD_VALUE !== '0';
-	const s = byValue ? Math.floor(sAt(value, i) * (0.8 + 0.4 * rng())) : Math.floor(base * (0.6 + 0.8 * rng()) * (sAt(20000, i) / sAt(20000, 1)));
+	// S432: the engine's strength for the value and up to a fifth more, never less (it was 0.8 to 1.2 times, and the count a quarter lower again: guards of 0.85 to 0.9 of the box's value on K's seeds; stock's lowest is 1.27)
+	const s = byValue ? Math.floor(Math.max(sAt(value, i), value) * (1 + 0.2 * rng())) : Math.floor(base * (0.6 + 0.8 * rng()) * (sAt(20000, i) / sAt(20000, 1)));
 	if (s < MIN_GUARD_STRENGTH) return null;
 	const ok = pool.filter(c => Math.floor(c.aiValue * (c.advMin + c.advMax) / 2) < s && s < c.aiValue * 100);
 	const c = ok.length ? ok[(rng() * ok.length) | 0] : AZURE;
-	let amount = Math.floor(s / c.aiValue);
-	if (amount >= 4) amount = Math.floor(amount * (0.75 + rng() * 0.5));
+	let amount = byValue ? Math.ceil(s / c.aiValue) : Math.floor(s / c.aiValue);
+	if (amount >= 4) amount = byValue ? Math.floor(amount * (1 + rng() * 0.25)) : Math.floor(amount * (0.75 + rng() * 0.5));
 	return { level: Math.min(7, c.level), amount: Math.max(1, amount), creature: c.id, strength: s };
 }
 /** A template link's guard strength times p.linkGuardScale (plan.js linkGuardScale: a map smaller than the
@@ -4381,11 +4383,19 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// targets that must carry a guard (a pile's, a pocket's, a dear pickup's chosen by share) and the targets that got one
 	const requiredTargets = new Set(), guardedTargets = new Set();
 	const postGuard = ({ entry, tpl }, preset = null, seal = false, gather = 0, retried = false) => {
+		// S432: the free layout posted a box's guard by the zone class (a random level, its count rolled at load), so a 12,000 box stood beside a stack worth 0.85 of it. A box with a value takes the guard the
+		// engine's rule gives that value (lootGuard: creature and count, never under the value), as a template zone's box does. VMAPGEN_PANDORA_GUARD_VALUE=0 off.
+		if (!preset && !zoneMeta && entry.type === 'pandoraBox' && process.env.VMAPGEN_PANDORA_GUARD_VALUE !== '0') {
+			const v = pandoraBoxValue(entry);
+			const g = Number.isFinite(v) && v > 0 ? lootGuard('pandoraBox', p, rng, objectPools.guards && objectPools.guards.length ? objectPools.guards : GUARD_POOL, v) : null;
+			if (g) preset = { level: g.level, amount: g.amount, creature: g.creature, concrete: true, strength: g.strength };
+		}
 		if (seal && /^(creatureGenerator\w*|creatureBank|dragonUtopia|crypt|randomArtifactRelic|randomArtifactMajor|artifact|pandoraBox|prison)$/.test(entry.type)) requiredTargets.add(entry);
 		if (preset && !entry.__wantGuard) entry.__wantGuard = preset;
 		// a guard already stands beside its visiting tile (another pile's, a mine's): this one goes to the next object (a dwelling keeps its own: its
 		// approach is five tiles wide and one neighbour's ring left most of it open, 25 to 39% of dwellings on K's maps)
-		if (entry.__stockGuard === undefined && !(entry.__guardAt && entry.__walled) && !/^creatureGenerator/.test(entry.type) && !(entry.type === 'prison' && entry.options && entry.options.experience >= 90000) && (guardBeside(tpl, entry.x, entry.y) || pileGuarded(entry, l))) { guardedTargets.add(entry); if (SEAL_TRACE) SEAL_TRACE['guard shared'] = (SEAL_TRACE['guard shared'] || 0) + 1; return false; }
+		// a free-layout box with a value takes its own fitted guard (preset above), never a neighbour's stack of any strength (the 0.29 of a 20,000 box beside an automaton)
+		if (!(preset && !zoneMeta && entry.type === 'pandoraBox') && entry.__stockGuard === undefined && !(entry.__guardAt && entry.__walled) && !/^creatureGenerator/.test(entry.type) && !(entry.type === 'prison' && entry.options && entry.options.experience >= 90000) && (guardBeside(tpl, entry.x, entry.y) || pileGuarded(entry, l))) { guardedTargets.add(entry); if (SEAL_TRACE) SEAL_TRACE['guard shared'] = (SEAL_TRACE['guard shared'] || 0) + 1; return false; }
 		// A guard watches the approach its target's visitableFrom permits.
 		// Standing on a forbidden side of a front-facing building guards
 		// nothing: the engine will not let a hero come at it that way anyway.
@@ -5262,7 +5272,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			for (const g of ranked) {
 				const share = HIGH_LOOT_GUARDED[g.entry.type];
 				if (!share || guardContextWeight(g.entry.type, p) <= 0) continue;
-				if (rng() < Math.min(1, share * guardContextWeight(g.entry.type, p)) && (requiredTargets.add(g.entry), postGuard(g))) { posted++; guardedHere.add(g); }
+				// S432 (K: "lot of high xp pandoras"; the lead: every 20,000-plus box has a guard worth its value): in the free layout a box worth 20,000 or more is always guarded, where the originals' share (0.58) left
+				// 42 percent of them bare; the guard is the lootGuard one above, an explicit count. VMAPGEN_PANDORA_ALWAYS=0 off.
+				const dear = g.entry.type === 'pandoraBox' && !zoneMeta && process.env.VMAPGEN_PANDORA_ALWAYS !== '0' && pandoraBoxValue(g.entry) >= 20000;
+				if ((dear || rng() < Math.min(1, share * guardContextWeight(g.entry.type, p))) && (requiredTargets.add(g.entry), postGuard(g))) { posted++; guardedHere.add(g); }
 			}
 		for (const g of ranked) {
 			if (posted >= wantGuards) break;
