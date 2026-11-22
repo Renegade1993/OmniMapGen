@@ -2603,6 +2603,23 @@ async function generateMap(params) {
 		throw new Error('water was asked for but the install has no core water terrain');
 
 	phase('shores');
+	// What the last scenery pass (below, "No scenery over rock or sea") will take off an object: 'sea' for a waterfall with a cell on water or a piece across a shoreline, 'rock' for a piece with a
+	// cell on rock underground, else null. One rule for both: the gate and monolith roads laid before it (the export's, above) treat such a piece as already gone, so a way it opens carries a road.
+	const sceneryEndFate = (o, li) => {
+		if (process.env.VMAPGEN_SCENERY_ON_GROUND === '0' || (o.l || 0) !== li || !o.template || !o.template.mask) return null;
+		const pl = plans[li], Wl = levels[li].width, Hl = levels[li].height, wet = pl.p && (pl.p.waterMask || pl.p.water), om = pl.openMask;
+		if (!wet && !om) return null;
+		if (wet && /waterfall/i.test(`${o.type} ${o.subtype || ''}`)) {
+			const fc = blockingCells(o.template, o.x, o.y).concat(visitableCells(o.template, o.x, o.y), [[o.x, o.y]]).filter(([fx, fy]) => fx >= 0 && fy >= 0 && fx < Wl && fy < Hl);
+			return fc.some(([fx, fy]) => wet[fy * Wl + fx]) ? 'sea' : null;
+		}
+		if (o.template.visitableFrom || o.template.mask.some(r => /[AT]/.test(r))) return null;
+		if (/^(randomTown|town|mine|abandonedMine|subterraneanGate|monolith|monster|randomMonster|reef|kelp)/.test(o.type)) return null;
+		const cells = blockingCells(o.template, o.x, o.y).filter(([fx, fy]) => fx >= 0 && fy >= 0 && fx < Wl && fy < Hl);
+		if (om && cells.some(([fx, fy]) => !om[fy * Wl + fx])) return 'rock';
+		if (wet && cells.some(([fx, fy]) => wet[fy * Wl + fx]) && cells.some(([fx, fy]) => !wet[fy * Wl + fx])) return 'sea';
+		return null;
+	};
 	const tilesByLevel = {};
 	for (let li = 0; li < levels.length; li++) {
 		const lv = levels[li];
@@ -2810,6 +2827,18 @@ async function generateMap(params) {
 				// two levels refused one seed on 2026-11-17). VMAPGEN_START_ROAD_FAIL=1 makes it an error, as the first build did (the suite's own tests set it).
 				if (sr.left.length && process.env.VMAPGEN_START_ROAD_FAIL === '1')
 					throw new Error(`the start town of ${sr.left.join(', ')} has a walk to the other starts but no road to them (level ${li}); the map is not written`);
+			}
+			// the gates and monoliths once more, after the export's road passes above: they take scenery and pickups off the ground after planMap's last teleport-road run (plan.js), and the
+			// scenery pass at the end takes off the pieces over rock; a pocket either opens leaves a monolith with a free way to a road and none laid (test/teleport-road-late.test.js, 72x72
+			// four players two levels seed 12: monolithTwoWay (68,37) on level 1; on 0b4c9bd 2 of seeds 1 to 48 had one, on 3355da1 none). The blocked grid is the objects as they stand, less
+			// the pieces the last scenery pass will take off. VMAPGEN_TELEPORT_EXPORT=0 skips it.
+			if (roadCells && process.env.VMAPGEN_TELEPORT_ROADS !== '0' && process.env.VMAPGEN_TELEPORT_LATE !== '0' && process.env.VMAPGEN_TELEPORT_EXPORT !== '0') {
+				const Wl = lv.width, Hl = lv.height, pl = plans[li], bl = new Uint8Array((li + 1) * Wl * Hl);
+				for (const o of pl.objects || []) if ((o.l || 0) === li && o.template && o.template.mask && !sceneryEndFate(o, li))
+					for (const [fx, fy] of blockingCells(o.template, o.x, o.y)) if (fx >= 0 && fy >= 0 && fx < Wl && fy < Hl) bl[li * Wl * Hl + fy * Wl + fx] |= OCCUPIED;
+				const tr = require('../biome/gateroad').teleportRoads(pl, Wl, Hl, li, bl, OCCUPIED, visitableCells, blockingCells, { reach: 150 });
+				if (tr.joined || tr.none) console.error(`[gen] level ${li}: gates and monoliths after the export's road passes: ${tr.joined} run to the road net, ${tr.none} not reached`);
+				if (tr.joined) { const th3 = require('../biome/gateroad').thinRoadBlocks(pl, Wl, Hl, li, { visitableCells }); if (th3.thinned) console.error(`[gen] level ${li}: road tiles taken out of 2x2 blocks after the late gate roads: ${th3.thinned}`); }
 			}
 			const roadArt = solveRoadTiles(roadCells, lv.width, lv.height, roadRng);
 
@@ -3276,25 +3305,9 @@ async function generateMap(params) {
 	if (process.env.VMAPGEN_SCENERY_ON_GROUND !== '0') {
 		let rockOff = 0, seaOff = 0;
 		const gone = new Set();
-		for (let li = 0; li < levels.length; li++) {
-			const pl = plans[li], Wl = levels[li].width, Hl = levels[li].height;
-			const wet = pl.p && (pl.p.waterMask || pl.p.water), om = pl.openMask;
-			if (!wet && !om) continue;
-			for (const o of objects) {
-				if ((o.l || 0) !== li || !o.template || !o.template.mask) continue;
-				// a waterfall with any cell, or its anchor, on water goes whole: K's "random waterfall in the water"
-				if (wet && /waterfall/i.test(`${o.type} ${o.subtype || ''}`)) {
-					const fc = blockingCells(o.template, o.x, o.y).concat(visitableCells(o.template, o.x, o.y), [[o.x, o.y]]).filter(([fx, fy]) => fx >= 0 && fy >= 0 && fx < Wl && fy < Hl);
-					if (fc.some(([fx, fy]) => wet[fy * Wl + fx])) { gone.add(o); seaOff++; }
-					continue;
-				}
-				if (o.template.visitableFrom || o.template.mask.some(r => /[AT]/.test(r))) continue;
-				if (/^(randomTown|town|mine|abandonedMine|subterraneanGate|monolith|monster|randomMonster|reef|kelp)/.test(o.type)) continue;
-				const cells = blockingCells(o.template, o.x, o.y).filter(([fx, fy]) => fx >= 0 && fy >= 0 && fx < Wl && fy < Hl);
-				if (om && cells.some(([fx, fy]) => !om[fy * Wl + fx])) { gone.add(o); rockOff++; }
-				else if (wet && cells.some(([fx, fy]) => wet[fy * Wl + fx]) && cells.some(([fx, fy]) => !wet[fy * Wl + fx])) { gone.add(o); seaOff++; }
-			}
-		}
+		// the rule is sceneryEndFate above (a waterfall with any cell, or its anchor, on water goes whole: K's "random waterfall in the water")
+		for (let li = 0; li < levels.length; li++)
+			for (const o of objects) { const fate = sceneryEndFate(o, li); if (fate) { gone.add(o); if (fate === 'sea') seaOff++; else rockOff++; } }
 		if (gone.size) {
 			for (let i = objects.length - 1; i >= 0; i--) if (gone.has(objects[i])) objects.splice(i, 1);
 			for (const pl of plans) if (pl.objects) for (let i = pl.objects.length - 1; i >= 0; i--) if (gone.has(pl.objects[i])) pl.objects.splice(i, 1);
