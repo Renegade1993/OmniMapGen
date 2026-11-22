@@ -105,6 +105,13 @@ const handedToLean = [];
 	const st = require('./leverStates').defer(bio, require('../biome/knobs').KNOBS,
 		!opt.template || require('./stockChoices').isRandomTemplate(opt.template), require('../biome/classicFeel').leaning());
 	for (const k of st.handed) { delete opt['bio.' + k]; handedToLean.push(k); }
+	// the overhauled monster controls (src/biome/monsterKeys.js, S387) stand for earlier keys; translated before anything reads them
+	const mk = require('../biome/monsterKeys');
+	if (Object.keys(mk.NEW_KEYS).some(k => opt['bio.' + k] !== undefined)) {
+		const t = mk.translate(Object.fromEntries(Object.entries(opt).filter(([k]) => k.startsWith('bio.')).map(([k, v]) => [k.slice(4), v])));
+		for (const k of Object.keys(opt)) if (k.startsWith('bio.')) delete opt[k];
+		for (const [k, v] of Object.entries(t.bio)) opt['bio.' + k] = v;
+	}
 }
 for (const [k, v] of Object.entries(opt)) {
 	if (!k.startsWith('bio.') || !require('./stockChoices').isRandomLever(v)) continue;

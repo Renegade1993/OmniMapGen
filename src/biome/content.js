@@ -493,7 +493,8 @@ const DWELLING_GUARD_TYPES = new Set(['randomDwelling', 'creatureGeneratorCommon
 const onOff = v => (v === undefined || v === null || Number(v) !== 0) ? 1 : 0;
 function guardContextWeight(type, p) {
 	if (type === 'mine') return p.mineGuardWeight * onOff(p.guardMines);
-	if (DWELLING_GUARD_TYPES.has(type)) return p.lootGuardWeight * onOff(p.guardDwellings);
+	// a dwelling takes the treasure pull unless the Dwelling guards control gave it a pull of its own (monsterKeys.js, S387)
+	if (DWELLING_GUARD_TYPES.has(type)) return (Number.isFinite(p.dwellingGuardWeight) ? p.dwellingGuardWeight : p.lootGuardWeight) * onOff(p.guardDwellings);
 	return p.lootGuardWeight * onOff(p.guardTreasure);
 }
 

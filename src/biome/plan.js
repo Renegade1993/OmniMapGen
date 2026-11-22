@@ -11477,7 +11477,7 @@ function guardDearLoot(pl, l, W, H, blocked, p, rng) {
 	}
 	// a creature dwelling with no monster on or beside its footprint gets one on a free tile beside its entrance, as a dear pile does
 	// (DMB Dev's picture pass: the crystal cavern at (54,26), 72x72 one level four players seed 1, guard 3 tiles off)
-	if (Number(p.guardDwellings) !== 0 && Number(p.lootGuardWeight) !== 0 && Number(p.guardTreasure) !== 0)
+	if (Number(p.guardDwellings) !== 0 && (Number.isFinite(p.dwellingGuardWeight) ? Number(p.dwellingGuardWeight) !== 0 : Number(p.lootGuardWeight) !== 0 && Number(p.guardTreasure) !== 0))
 		for (const o of pl.objects.slice()) {
 			if ((o.l || 0) !== l || !/^creatureGenerator/.test(o.type) || !o.template || !o.template.mask) continue;
 			const foot = new Set(blockingCells(o.template, o.x, o.y).map(([x, y]) => y * W + x));
