@@ -139,6 +139,7 @@ function pickColour(rng) {
 // .52, trading post .25, sanctuary .25). Stacks stand beside a special building anyway (80 Classic maps with no own guard, slider 1: hill fort 31.3 percent, university 9.2,
 // cartographer 17.2, trading post 27.2, sanctuary 22.8), so the own draw asks (target - beside) / (1 - beside), over the .88 of asks that find a tile: .44, .55, .48, none for
 // the trading post (already over) and .03 for the sanctuary. Used by content.js GUARD_CHANCE and the guard ask drawn with each building.
-const GUARD_SHARE = { hillFort: 0.44, university: 0.55, cartographer: 0.48, tradingPost: 0, tradingPostDUPLICATE: 0, sanctuary: 0.03 };
+// S350 (the ring ruler, the lead 11-21: a stack on the door tile or one of its eight neighbours is what a hero meets): beside by the ring with no own guard (48 Classic maps): hill fort 12.7, university 5.8, cartographer 4.9, trading post 11.1, sanctuary 6.8 percent; the originals by the ring: 50.8, 51.5, 52.9, 17.6, 15.1; own ask (target - beside) / ((1 - beside) x .88 that find a tile): .50, .55, .57, .08, .10.
+const GUARD_SHARE = { hillFort: 0.50, university: 0.55, cartographer: 0.57, tradingPost: 0.08, tradingPostDUPLICATE: 0.08, sanctuary: 0.10 };
 
 module.exports = { draw, enabled, hasKind, resolveMode, zoneAllows, MODE_NAMES, RATES, SHARE, GUARD_SHARE, CLASSES };
