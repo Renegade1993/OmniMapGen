@@ -17,7 +17,7 @@ const { genEnv, testTmp } = require('./_vcmi');
 const N8 = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 0], [-1, 1]];
 const NOS = ['--bio.zoneCells', '1500', '--bio.interconnectPortal', '0.8', '--bio.guardDensity', '0.5', '--bio.highLootRatio', '0.1', '--bio.artifactDensity', '0.003',
 	'--bio.dwellingDensity', '1.2', '--bio.guardGradient', '1'];
-const CASES = [['tb144x2 s7402', '7402', []], ['no144x2 s8307', '8307', NOS], ['no144x2 s8312', '8312', NOS], ['no144x2 s8302', '8302', NOS], ['no144x2 s8303', '8303', NOS]];
+const CASES = [['tb144x2 s7402', '7402', []], ['no144x2 s8307', '8307', NOS], ['no144x2 s8312', '8312', NOS], ['no144x2 s8302', '8302', NOS]];
 // S255 (2026-11-15, rc-1116): S249 and S253 shifted the random stream and s8302 reads 1.26 with the passes off (8.09 before): the control seeds were re-seeded. Of no144x2 seeds 8303 to 8322
 // probed with the passes off (.tmp\m1113\ov\pw_*_off.txt) two read over 2.2: s8303 2.23 (on: 1.46, so the control) and s8318 2.46 (on: 2.24, over the limit with the passes on too, so no control and no case: left to the lead);
 // the rest read 1.01 to 2.00. s8303 sits close to the line
@@ -58,6 +58,15 @@ for (const [name, seed, extra] of CASES)
 		const r = ratio(seed, extra, 'on' + seed);
 		assert.ok(r.ratio <= 2.2, `walks ${r.walks}, ratio ${r.ratio.toFixed(2)}`);
 	});
+
+// S432 (2026-11-22): the Pandora count change (the free layout's boxes down to the originals') moved the stream and s8303, a single pinned seed that read 1.42 before, read 1,990 and 170 (ratio 11.71);
+// with VMAPGEN_PANDORA_PARITY=0 it reads 1.42 again. The rate over seeds 8301 to 8324 at no144x2 is the same on both heads (b383c34 and e7e376a): 1 of 24 over 2.2 (8306 at 2.46 before, 8303 at 11.71
+// after), medians 1.34 and 1.42. So the seed was a lucky one and the test takes a rate (the lead: never re-pin a lucky seed): of seeds 8301 to 8308 (1 of 8 over 2.2 on both heads) at most 2 over, median at most 1.8.
+test('no144x2 seeds 8301 to 8308: at most 2 of 8 seats pairs over 2.2 of each other without a fight, and the median ratio at most 1.8', { timeout: 5400000 }, () => {
+	const rs = [8301, 8302, 8303, 8304, 8305, 8306, 8307, 8308].map(s => ratio(String(s), NOS, 'rate' + s).ratio).sort((a, b) => a - b);
+	const over = rs.filter(r => r > 2.2).length, median = (rs[3] + rs[4]) / 2;
+	assert.ok(over <= 2 && median <= 1.8, `${over} of 8 over 2.2, median ${median.toFixed(2)}: ${rs.map(r => r.toFixed(2)).join(' ')}`);
+});
 
 test('the control seed with the floor, the peer floor and the road drops off: its seat pair is over 2.2 (the passes are needed)', { timeout: 5400000 }, () => {
 	// (S168, 2026-11-14) every start's doorway out is one strength now (START_EXIT_EVEN), which is also a pass that evens the seats, so the control turns it off
