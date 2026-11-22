@@ -414,7 +414,8 @@ function pandoraBoxValue(o) {
 const GUARD_BY_VALUE = process.env.VMAPGEN_GUARD_BY_VALUE !== '0';
 const DEAR_TARGET = /^(randomArtifactRelic|randomArtifactMajor|pandoraBox|artifact)$/;
 const targetValue = e => { const b = e.type === 'pandoraBox' ? pandoraBoxValue(e) : undefined; return Number.isFinite(b) && b > 0 ? b : spentValue(e); };
-const GUARD_FIT = Number(process.env.VMAPGEN_GUARD_FIT) || 0.8;
+// S432 (the lead 2026-11-21 on K's "lot of high xp pandoras": no box under 1.0 of its value; stock's lowest is 1.27): a box is never guarded by a stack worth less than itself, 1.0, where it was 0.8
+const GUARD_FIT = Number(process.env.VMAPGEN_GUARD_FIT) || 1.0;
 /** A test of whether a placed stack is worth guarding dear object o (strength, AI value x amount, at least GUARD_FIT of o's value), or null when the rule is off or o is no dear target. */
 function guardFitter(pl, o) {
 	if (!GUARD_BY_VALUE || !o || !DEAR_TARGET.test(o.type) || !pl || !pl.objectPools || !pl.objectPools.guards) return null;
@@ -436,12 +437,13 @@ function lootGuard(kind, p, rng, pool = GUARD_POOL, value) {
 	const i = Math.max(0, Math.min(4, 1 + Math.max(-2, Math.min(2, Math.round(Number(p && p.monsterStrength) || 0)))));
 	// a Pandora's box with a known value is guarded at the engine's strength for that value (ObjectManager::chooseGuard, sAt), not the kind's flat median (VMAPGEN_PANDORA_GUARD_VALUE=0 off)
 	const byValue = kind === 'pandoraBox' && Number.isFinite(value) && value > 0 && process.env.VMAPGEN_PANDORA_GUARD_VALUE !== '0';
-	const s = byValue ? Math.floor(sAt(value, i) * (0.8 + 0.4 * rng())) : Math.floor(base * (0.6 + 0.8 * rng()) * (sAt(20000, i) / sAt(20000, 1)));
+	// S432: the engine's strength for the value and up to a fifth more, never less (it was 0.8 to 1.2 times, and the count a quarter lower again: guards of 0.85 to 0.9 of the box's value on K's seeds; stock's lowest is 1.27)
+	const s = byValue ? Math.floor(Math.max(sAt(value, i), value) * (1 + 0.2 * rng())) : Math.floor(base * (0.6 + 0.8 * rng()) * (sAt(20000, i) / sAt(20000, 1)));
 	if (s < MIN_GUARD_STRENGTH) return null;
 	const ok = pool.filter(c => Math.floor(c.aiValue * (c.advMin + c.advMax) / 2) < s && s < c.aiValue * 100);
 	const c = ok.length ? ok[(rng() * ok.length) | 0] : AZURE;
-	let amount = Math.floor(s / c.aiValue);
-	if (amount >= 4) amount = Math.floor(amount * (0.75 + rng() * 0.5));
+	let amount = byValue ? Math.ceil(s / c.aiValue) : Math.floor(s / c.aiValue);
+	if (amount >= 4) amount = byValue ? Math.floor(amount * (1 + rng() * 0.25)) : Math.floor(amount * (0.75 + rng() * 0.5));
 	return { level: Math.min(7, c.level), amount: Math.max(1, amount), creature: c.id, strength: s };
 }
 /** A template link's guard strength times p.linkGuardScale (plan.js linkGuardScale: a map smaller than the
