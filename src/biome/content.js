@@ -5261,7 +5261,10 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 			for (const g of ranked) {
 				const share = HIGH_LOOT_GUARDED[g.entry.type];
 				if (!share || guardContextWeight(g.entry.type, p) <= 0) continue;
-				if (rng() < Math.min(1, share * guardContextWeight(g.entry.type, p)) && (requiredTargets.add(g.entry), postGuard(g))) { posted++; guardedHere.add(g); }
+				// S432 (K: "lot of high xp pandoras"; the lead: every 20,000-plus box has a guard worth its value): in the free layout a box worth 20,000 or more is always guarded, where the originals' share (0.58) left
+				// 42 percent of them bare; the guard is the lootGuard one above, an explicit count. VMAPGEN_PANDORA_ALWAYS=0 off.
+				const dear = g.entry.type === 'pandoraBox' && !zoneMeta && process.env.VMAPGEN_PANDORA_ALWAYS !== '0' && pandoraBoxValue(g.entry) >= 20000;
+				if ((dear || rng() < Math.min(1, share * guardContextWeight(g.entry.type, p))) && (requiredTargets.add(g.entry), postGuard(g))) { posted++; guardedHere.add(g); }
 			}
 		for (const g of ranked) {
 			if (posted >= wantGuards) break;

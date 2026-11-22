@@ -10286,6 +10286,12 @@ function planMap({ W, H, levels, playerStarts, params, terrainShortIds,
 			const s = require('./lootswap').swapLoot(plans[l], W, H, l, blocked, OCCUPIED, REMOVABLE_TYPES, blockingCells, visitableCells, { anyZone: true });
 			if (s.swapped || s.moved) console.error(`[gen] level ${l}: after the last guard moves, ${s.swapped} open dear pickup(s) traded places with guarded cheap ones, ${s.moved || 0} moved into a guarded pocket`);
 		}
+		// S432: the trades above put a dear box beside the weak stack of the cheap pile it traded with (a 24,000 box beside a stack worth 0.5 of it): a free-layout box whose nearest stack is worth less than the box
+		// takes that stack's place with the guard the engine's rule gives its value. VMAPGEN_PANDORA_ALWAYS=0 off.
+		if (process.env.VMAPGEN_PANDORA_ALWAYS !== '0' && !(plans[l].p && plans[l].p.zonePlan)) {
+			const r = ensureBoxGuards(plans[l], l, params.seed);
+			if (r.upgraded) console.error(`[gen] level ${l}: ${r.upgraded} Pandora's box guard(s) below the box's value made worth it (${r.checked} boxes read)`);
+		}
 	};
 	// the gold mines' guards first (approachclose.js, 'goldfront'): a stack that rings part of a mine's front moves to the tile that rings all of it while that tile is free
 	if (process.env.VMAPGEN_GOLD_FRONT_EARLY !== '0' && process.env.VMAPGEN_DEAR_GUARD !== '0' && (params.guardTreasure === undefined || Number(params.guardTreasure) !== 0)
@@ -13394,6 +13400,47 @@ function townDoorCells(objects, l, W, H, blocked, only = null) {
 			}
 	}
 	return door;
+}
+
+/**
+ * S432: the stack beside each free-layout Pandora's box (within one tile of it) is worth at least the box: a stack with no count written is read at the middle of its creature's range (a random-level stack at
+ * the middle of its level's), and one worth less is given the creature and count lootGuard gives the box's value (never under it). Returns { checked, upgraded }.
+ */
+function ensureBoxGuards(pl, l, seed) {
+	const C = require('./content'), out = { checked: 0, upgraded: 0 };
+	const pool = pl.objectPools && pl.objectPools.guards;
+	if (!pool || !pool.length) return out;
+	let a = ((Number(seed) || 1) * 2654435761 + 0x9e3779b9) >>> 0;
+	const rnd = () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+	const levelMean = lv => { const cs = pool.filter(c => c.level === lv); return cs.length ? cs.reduce((s, c) => s + c.aiValue * (((c.advMin || 0) + (c.advMax || 0)) / 2 || 1), 0) / cs.length : 0; };
+	const strength = m => {
+		const n = m.options && m.options.amount > 0 ? m.options.amount : 0;
+		const c = m.guardCreature && pool.find(q => q.id === m.guardCreature);
+		if (c) return c.aiValue * (n || (((c.advMin || 0) + (c.advMax || 0)) / 2 || 1));
+		const lv = /^randomMonsterLevel(\d)$/.exec(m.type);
+		if (lv) { const cs = pool.filter(q => q.level === +lv[1]); const mean = cs.length ? cs.reduce((s, q) => s + q.aiValue, 0) / cs.length : 0; return n ? mean * n : levelMean(+lv[1]); }
+		return 0;
+	};
+	const stacks = pl.objects.filter(m => (m.l || 0) === l && /^(monster|randomMonster\w*)$/.test(m.type));
+	for (const o of pl.objects) {
+		if ((o.l || 0) !== l || o.type !== 'pandoraBox') continue;
+		const v = C.pandoraBoxValue(o);
+		if (!(v > 0)) continue;
+		const near = stacks.filter(m => Math.max(Math.abs(m.x - o.x), Math.abs(m.y - o.y)) <= 1);
+		if (!near.length) continue;
+		out.checked++;
+		near.sort((x, y) => strength(y) - strength(x));
+		if (strength(near[0]) >= v) continue;
+		const g = C.lootGuard('pandoraBox', pl.p, rnd, pool, v);
+		if (!g) continue;
+		const m = near[0];
+		if (/^randomMonsterLevel\d$/.test(m.type) && m.instanceName) m.instanceName = m.instanceName.replace(/^randomMonsterLevel\d/, 'randomMonsterLevel' + g.level);
+		m.type = 'randomMonsterLevel' + g.level;
+		m.options = { ...(m.options || {}), character: (m.options && m.options.character) || 'hostile', amount: g.amount };
+		m.guardCreature = g.creature;
+		out.upgraded++;
+	}
+	return out;
 }
 
 /**
