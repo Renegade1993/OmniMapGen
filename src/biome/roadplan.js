@@ -333,7 +333,7 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null, stan
 				const cellsK = k >= 0 ? zc.filter(c => piece.get(c) === k) : zc;
 				const innerK = inner.filter(c => k < 0 || piece.get(c) === k);
 				const t = require('./roadsplines').zoneTree({ W, H, open: inZone, openLoose: plan.p && plan.p.zonePlan ? null : c => holeCells.has(c) || (zone[c] === z && !(blocked[base + c] & OCCUPIED) && !lineCell(c)), /* never on a tile touching another zone: the leak trace found one there (s108p4chain_s11, 3-7) */ /* free layouts only: a template's map stays as it was (the Reviewer, Coldshadow seed 1) */ wallRetried, cost, zoneCells: cellsK.length ? cellsK : zc, inner: innerK.length ? innerK : (cellsK.length ? cellsK : zc),
-					town: townNode && k === townPiece ? townNode[0] : -1, ends, rng: rnd, existing: before || null, missed, edges: splineEdges, stub: Number(process.env.VMAPGEN_ROAD_STUB || 7) });
+					town: townNode && k === townPiece ? townNode[0] : -1, ends, rng: rnd, existing: before || null, free: !(plan.p && plan.p.zonePlan), missed, edges: splineEdges, stub: Number(process.env.VMAPGEN_ROAD_STUB || 7) });
 				if (t) for (const c of t) tree.add(c);
 			}
 			if (tree) {
@@ -378,7 +378,7 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null, stan
 							plan.openMask[wall] = 1;
 							blocked[base + wall] &= ~OCCUPIED;
 							let p = null;
-							for (const st of st0) { p = require('./roadsplines').routeEdge(st, tree, { W, H, open: inZone, cost }); if (p) break; }
+							for (const st of st0) { p = require('./roadsplines').routeEdge(st, tree, { W, H, open: inZone, cost, free: !(plan.p && plan.p.zonePlan) }); if (p) break; }
 							if (p) { p.forEach(c => { tree.add(c); laid.add(c); }); ok = true; if (process.env.VMAPGEN_ROAD_TRACE) console.error(`[roads] level ${l}: zone ${z}: end at (${st0[0] % W},${(st0[0] / W) | 0}) reached through the rock at (${wall % W},${(wall / W) | 0})`); }
 						}
 						if (!ok) still.push(e);
@@ -427,7 +427,7 @@ function planRoads({ plan, towns, W, H, blocked, l, approach, avoid = null, stan
 						for (let c = hit; prev.has(c); c = prev.get(c)) if (elbow.has(c)) opened.push(elbow.get(c));
 						for (const c of opened) blocked[base + c] |= RESERVED;
 						let p = null;
-						for (const st of st0) { p = require('./roadsplines').routeEdge(st, targets, { W, H, open: inZone, cost }); if (p) break; }
+						for (const st of st0) { p = require('./roadsplines').routeEdge(st, targets, { W, H, open: inZone, cost, free: !(plan.p && plan.p.zonePlan) }); if (p) break; }
 						if (!p) { for (const c of opened) blocked[base + c] &= ~RESERVED; still.push(e); continue; }
 						p.forEach(c => { tree.add(c); laid.add(c); goal.add(c); });
 						if (townNode) for (const g of townGates.get(townNode) || []) { const gx = g % W, gy = (g / W) | 0; if (DIRS4.some(([dx, dy]) => laid.has((gy + dy) * W + gx + dx))) laid.add(g); }

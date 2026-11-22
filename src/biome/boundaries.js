@@ -255,7 +255,7 @@ function addRimBand(zone, W, H, connections, edgeInfo, barriers, openings, water
 	// keeps one crossing pair on the zone line and a one-cell walk from each
 	// side of it, inside that zone, to the first cell past the band.
 	const passage = new Uint8Array(N);
-	const walkOut = (from, side) => {
+	const walkOut = (from, side, jog = false) => {
 		const prev = new Int32Array(N).fill(-2);
 		const q = [from];
 		prev[from] = -1;
@@ -274,7 +274,21 @@ function addRimBand(zone, W, H, connections, edgeInfo, barriers, openings, water
 		}
 		const cut = [];
 		for (let c = end; c >= 0; c = prev[c]) cut.push(c);
-		return cut.length ? cut : [from];
+		if (!cut.length) return [from];
+		// S428 (the 72-wide straight roads): the shortest way through the band is a straight line, and a road in it ran straight for the band's whole thickness and on into the zone's own road (a run of 17 to
+		// 25). A passage of three cells or more steps one cell sideways part-way: the cells nearer the exit shift by one, and one cell joins the two parts. Off unless VMAPGEN_PASSAGE_JOG=1 (S428: with the run limit it raised the dwelling fronts open on K's settings from 13 to 21.5 percent, seeds 20 to 39, for a median run 17 to 16 alone).
+		if (jog && !template && process.env.VMAPGEN_PASSAGE_JOG === '1' && cut.length >= 3) {
+			const k = cut.length - 1, hsh = (Math.imul(from + 1, 2654435761) >>> 0), m = 1 + (hsh % (k - 1));
+			const along = Math.abs(cut[1] - cut[0]) === 1 ? [0, 1] : [1, 0];   // the line runs along x when neighbours differ by 1, so the sideways step is a row; else a column
+			for (const sgn of [((hsh >>> 8) & 1) ? 1 : -1, ((hsh >>> 8) & 1) ? -1 : 1]) {
+				const dx = along[0] ? sgn : 0, dy = along[1] ? sgn : 0;
+				const sh = c => { const x = (c % W) + dx, y = ((c / W) | 0) + dy; return x < 0 || y < 0 || x >= W || y >= H ? -1 : y * W + x; };
+				const ok = c => { const s = sh(c); return s >= 0 && zone[s] === side && !wet(s); };
+				if (!cut.slice(0, m + 1).every(ok)) continue;
+				return [...cut.slice(0, m).map(sh), sh(cut[m]), ...cut.slice(m)];
+			}
+		}
+		return cut;
 	};
 	for (const o of openings) {
 		if (o.kind === 'portal') {
@@ -303,7 +317,7 @@ function addRimBand(zone, W, H, connections, edgeInfo, barriers, openings, water
 		}
 		if (!pair) continue;          // keep the old doorway as it was
 		const [h, n] = pair;
-		const cut = [...walkOut(h, zone[h]), ...walkOut(n, zone[n])];
+		const cut = [...walkOut(h, zone[h], true), ...walkOut(n, zone[n], true)];
 		for (const c of cut) passage[c] = 1;
 		// the rest of the old hole goes back to the wall
 		for (const c of o.hole) if (!passage[c]) barriers.add(c);
