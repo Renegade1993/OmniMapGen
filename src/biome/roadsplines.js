@@ -35,7 +35,9 @@ const TURN = Number(process.env.VMAPGEN_ROAD_TURN ?? 0.3);
 // S428: a straight run past RUN tiles costs RUNPEN a tile more, in every direction (the stair penalty below covers diagonals only). The 127 originals' longest run of road is 12 to 14
 // tiles at the median and 18 to 21 at the 90th percentile at every map size, 8 to 16 percent of maps have a run of 20 or more; ours had 17 to 23 at the median and 27 to 75 percent.
 // VMAPGEN_ROAD_RUN=0 gives the earlier routing.
-const RUN = Number(process.env.VMAPGEN_ROAD_RUN ?? 13), RUNPEN = Number(process.env.VMAPGEN_ROAD_RUN_PEN ?? 0.4);
+// S428 second measure (72 wide x30, 108 two-level x10, run limit 13 and 0.4 a tile): the longest run's median stayed 16 and 21 against the originals' 12 and 13, because two edges that each end under 13 meet in
+// line (a zone's link edge and the tree edge it joins) and the run limit counts each alone; limit 5 at 0.8 a tile gave 12 and 14, 90th percentile 18 and 17, runs of 20 or more 3 and 0 percent (originals 8 and 11).
+const RUN = Number(process.env.VMAPGEN_ROAD_RUN ?? 5), RUNPEN = Number(process.env.VMAPGEN_ROAD_RUN_PEN ?? 0.8);
 const RC = RUN > 0 ? RUN + 3 : 4;   // run lengths tracked up to RC (4 when the rule is off)
 function routeEdge(from, to, opts) {
 	const { W, H, open } = opts;
