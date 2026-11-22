@@ -152,3 +152,24 @@ test('after Reset the lobby sends every stored number and the lean still draws: 
 	assert.ok(/changed: none/.test(reset.settings), reset.settings);
 	fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('Monster tier is drawn by the Classic lean (S404): a whole number from 0 to 2 at the old-school end, 0 at the Nostalgia end; set, Random and Template (S358) as for every lever', { timeout: 900000 }, () => {
+	const ranges = { monsterStrength: { min: -2, max: 2 } };
+	const at = (u, f) => feel.apply({ f, group: { layout: f, economy: f, danger: f, dressing: f }, u: { guardDensity: 0.5, monsterStrength: u }, pockets: 0 }, { monsterStrength: 0, guardDensity: 1.3 }, ranges, { W: 108, H: 108, levels: 1, players: 4 }).monsterStrength;
+	assert.strictEqual(at(0.1, 0), 0);
+	assert.strictEqual(at(0.9, 0), 2, 'old school, the top of the spread: two levels up');
+	assert.strictEqual(at(0.4, 0), 1);
+	assert.strictEqual(at(0.9, 1), 0, 'the Nostalgia end is the band as it is');
+	for (let u = 0; u <= 1; u += 0.1) assert.ok(Number.isInteger(at(u, 0.3)), `whole at feel 0.3, u ${u}`);
+	assert.ok(LEAN.has('monsterStrength'));
+	const absent = plan(0, []);
+	const tier = leanValue(absent.settings, 'monsterStrength');
+	assert.ok(tier !== undefined && tier >= 0 && tier <= 2, `the lean drew a tier at feel 0: ${absent.settings}`);
+	const set = plan(0, ['--bio.monsterStrength', '-1']);
+	assert.ok(/changed: monsterStrength -1;/.test(set.settings) && leanValue(set.settings, 'monsterStrength') === undefined, `set stays law: ${set.settings}`);
+	for (const word of ['random', '-3']) {
+		const s = plan(0, ['--bio.monsterStrength', word]);
+		assert.strictEqual(leanValue(s.settings, 'monsterStrength'), tier, `${word} hands Monster tier to the lean`);
+		assert.ok(/handed to the lean: monsterStrength/.test(s.random), s.random);
+	}
+});

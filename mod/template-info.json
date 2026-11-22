@@ -470,6 +470,10 @@
 							"guardDensity": [
 								0.8,
 								2.2
+							],
+							"monsterStrength": [
+								0,
+								2
 							]
 						},
 						"dressing": {

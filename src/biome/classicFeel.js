@@ -62,6 +62,9 @@ function draw(seed, forced, side) {
 	return { f, group, u, pockets };
 }
 
+// levers whose draw is a whole number (their slider steps by one)
+const WHOLE = new Set(['monsterStrength']);
+
 /** The levers the draw moves, given the draw and the values the levers have now (band or default): { lever: value }. */
 function apply(d, current, range, ctx) {
 	const t = feelTable(), out = {};
@@ -84,6 +87,8 @@ function apply(d, current, range, ctx) {
 			let v = now * (1 - wOld) + old * wOld;
 			const r = range && range[k];
 			if (r) v = Math.max(r.min, Math.min(r.max, v));
+			// Monster tier moves whole creature levels (a stop, not a number): the draw is rounded to one (S404)
+			if (WHOLE.has(k)) v = Math.round(v);
 			out[k] = Math.round(v * 1e4) / 1e4;
 		}
 	}
