@@ -75,6 +75,8 @@ function build(info) {
 						if (inert[name] || inert['*named']) continue;
 						if (Number.isFinite(Number(base[k.key]))) n[k.key] = Number(base[k.key]);
 					}
+					// Special buildings on a named template: Template is none (S366, K: "Coldshadow none; slide up to add"), not the lever's default of 1
+					if (n.specialDensity !== undefined) n.specialDensity = 0;
 				}
 				const r = {};
 				for (const [key, v] of Object.entries(n)) {
