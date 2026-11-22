@@ -2619,6 +2619,134 @@
 						"waterBuildings": [0, 2]
 					}
 				}
+			},
+			"max": {
+				"36": {
+					"2": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"72": {
+					"2": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"108": {
+					"2": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"144": {
+					"2": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"180": {
+					"2": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"216": {
+					"2": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3108,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"252": {
+					"2": {
+						"zoneCells": 3598,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 4520,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 4482,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3332,
+						"startZoneShare": 1
+					}
+				}
 			}
 		},
 		"Classic": {
@@ -7484,6 +7612,134 @@
 						"waterBuildings": [0, 2]
 					}
 				}
+			},
+			"max": {
+				"36": {
+					"2": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"72": {
+					"2": {
+						"zoneCells": 4196,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3260,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"108": {
+					"2": {
+						"zoneCells": 8710,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 8122,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 4800,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 4338,
+						"startZoneShare": 1
+					}
+				},
+				"144": {
+					"2": {
+						"zoneCells": 12054,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 15212,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 9042,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 9298,
+						"startZoneShare": 1
+					}
+				},
+				"180": {
+					"2": {
+						"zoneCells": 20002,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 14376,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 14784,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 10116,
+						"startZoneShare": 1
+					}
+				},
+				"216": {
+					"2": {
+						"zoneCells": 25058,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 21298,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 21604,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 21006,
+						"startZoneShare": 1
+					}
+				},
+				"252": {
+					"2": {
+						"zoneCells": 34482,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 29740,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 30158,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 20212,
+						"startZoneShare": 1
+					}
+				}
 			}
 		},
 		"Headquarters": {
@@ -9828,6 +10084,134 @@
 						"waterAccess": [1, 3],
 						"waterTreasure": [0, 2],
 						"waterBuildings": [0, 2]
+					}
+				}
+			},
+			"max": {
+				"36": {
+					"2": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"72": {
+					"2": {
+						"zoneCells": 3154,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"108": {
+					"2": {
+						"zoneCells": 7392,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 5706,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 5782,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 4890,
+						"startZoneShare": 1
+					}
+				},
+				"144": {
+					"2": {
+						"zoneCells": 12972,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 11402,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 10848,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 9156,
+						"startZoneShare": 1
+					}
+				},
+				"180": {
+					"2": {
+						"zoneCells": 20308,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 18002,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 17436,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 14462,
+						"startZoneShare": 1
+					}
+				},
+				"216": {
+					"2": {
+						"zoneCells": 29184,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 26932,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 25358,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 21546,
+						"startZoneShare": 1
+					}
+				},
+				"252": {
+					"2": {
+						"zoneCells": 43844,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 36666,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 33676,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 30190,
+						"startZoneShare": 1
 					}
 				}
 			}
@@ -12342,6 +12726,134 @@
 						"waterAccess": [1, 3],
 						"waterTreasure": [0, 2],
 						"waterBuildings": [0, 2]
+					}
+				}
+			},
+			"max": {
+				"36": {
+					"2": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"72": {
+					"2": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3000,
+						"startZoneShare": 1
+					}
+				},
+				"108": {
+					"2": {
+						"zoneCells": 5162,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 5274,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 3562,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 3818,
+						"startZoneShare": 1
+					}
+				},
+				"144": {
+					"2": {
+						"zoneCells": 7864,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 9808,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 6740,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 5438,
+						"startZoneShare": 1
+					}
+				},
+				"180": {
+					"2": {
+						"zoneCells": 12144,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 11372,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 10790,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 8916,
+						"startZoneShare": 1
+					}
+				},
+				"216": {
+					"2": {
+						"zoneCells": 20316,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 16808,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 14372,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 13616,
+						"startZoneShare": 1
+					}
+				},
+				"252": {
+					"2": {
+						"zoneCells": 24030,
+						"startZoneShare": 1
+					},
+					"4": {
+						"zoneCells": 22950,
+						"startZoneShare": 1
+					},
+					"6": {
+						"zoneCells": 21986,
+						"startZoneShare": 1
+					},
+					"8": {
+						"zoneCells": 18626,
+						"startZoneShare": 1
 					}
 				}
 			}

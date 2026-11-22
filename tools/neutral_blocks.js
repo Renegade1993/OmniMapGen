@@ -60,9 +60,9 @@ function build(info) {
 		const had = t.neutral;
 		const named = name !== 'Classic' && !!had;
 		if (name !== 'Classic' && !had) continue;
-		const neutral = {}, range = {};
+		const neutral = {}, range = {}, max = {};
 		for (const s of SIDES) {
-			neutral[s] = {}; range[s] = {};
+			neutral[s] = {}; range[s] = {}; max[s] = {};
 			for (const p of PLAYERS) {
 				let n;
 				if (name === 'Classic') n = classicNeutral(s, p);
@@ -86,9 +86,22 @@ function build(info) {
 					if (!rg) (ends[name] = ends[name] || new Set()).add(key);
 				}
 				neutral[s][p] = n; range[s][p] = r;
+				// S444 (K: Biome size and Start biome size tops widen on a named template so the template's own value has room above it): the top is the neutral plus the room it has below the lever's
+				// minimum (the same room up and down), and never under the lever's own maximum; Start biome size stops at 1 (a start zone cannot be more than the whole map). Checked on the generator:
+				// every named template at 72 wide accepts Biome size up to 6 times its neutral and Start biome size 0.9 and 1 (s444_probe.js, exit 0 and the same zone count on each).
+				if (named) {
+					const top = {};
+					for (const key of ['zoneCells', 'startZoneShare']) {
+						if (n[key] === undefined || !knob[key]) continue;
+						const k = knob[key];
+						top[key] = key === 'startZoneShare' ? 1 : round(Math.max(k.max, n[key] + (n[key] - k.min)));
+					}
+					max[s][p] = top;
+				}
 			}
 		}
 		t.neutral = neutral; t.range = range;
+		if (named) t.max = max; else delete t.max;
 	}
 	return ends;
 }

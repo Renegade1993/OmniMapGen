@@ -55,3 +55,15 @@ test('a named template has a neutral for each live slider and none for one that 
 		}
 	}
 });
+
+test('S444: a named template has a widened top for Biome size and Start biome size that covers its own value with the same room above as below, and Classic has none', () => {
+	assert.strictEqual(info.Classic.max, undefined);
+	for (const name of ["Coldshadow's Fantasy", 'Jebus Cross', 'Headquarters', 'Golems Aplenty']) {
+		for (const s of SIDES) for (const p of PLAYERS) {
+			const n = info[name].neutral[s][p], m = info[name].max[s][p];
+			assert.ok(m.zoneCells >= n.zoneCells + (n.zoneCells - 150) - 1e-6 && m.zoneCells >= 3000, name + ' ' + s + '/' + p + ': Biome size top ' + m.zoneCells + ' for ' + n.zoneCells);
+			assert.strictEqual(m.startZoneShare, 1);
+			assert.ok(n.startZoneShare <= 1, name + ' ' + s + '/' + p + ': Start biome size ' + n.startZoneShare);
+		}
+	}
+});
