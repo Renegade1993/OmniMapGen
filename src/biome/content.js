@@ -4372,11 +4372,19 @@ function fillBiome(cls, cells, blocked, W, H, l, rng, params, towns = [], player
 	// targets that must carry a guard (a pile's, a pocket's, a dear pickup's chosen by share) and the targets that got one
 	const requiredTargets = new Set(), guardedTargets = new Set();
 	const postGuard = ({ entry, tpl }, preset = null, seal = false, gather = 0, retried = false) => {
+		// S432: the free layout posted a box's guard by the zone class (a random level, its count rolled at load), so a 12,000 box stood beside a stack worth 0.85 of it. A box with a value takes the guard the
+		// engine's rule gives that value (lootGuard: creature and count, never under the value), as a template zone's box does. VMAPGEN_PANDORA_GUARD_VALUE=0 off.
+		if (!preset && !zoneMeta && entry.type === 'pandoraBox' && process.env.VMAPGEN_PANDORA_GUARD_VALUE !== '0') {
+			const v = pandoraBoxValue(entry);
+			const g = Number.isFinite(v) && v > 0 ? lootGuard('pandoraBox', p, rng, objectPools.guards && objectPools.guards.length ? objectPools.guards : GUARD_POOL, v) : null;
+			if (g) preset = { level: g.level, amount: g.amount, creature: g.creature, concrete: true, strength: g.strength };
+		}
 		if (seal && /^(creatureGenerator\w*|creatureBank|dragonUtopia|crypt|randomArtifactRelic|randomArtifactMajor|artifact|pandoraBox|prison)$/.test(entry.type)) requiredTargets.add(entry);
 		if (preset && !entry.__wantGuard) entry.__wantGuard = preset;
 		// a guard already stands beside its visiting tile (another pile's, a mine's): this one goes to the next object (a dwelling keeps its own: its
 		// approach is five tiles wide and one neighbour's ring left most of it open, 25 to 39% of dwellings on K's maps)
-		if (entry.__stockGuard === undefined && !(entry.__guardAt && entry.__walled) && !/^creatureGenerator/.test(entry.type) && !(entry.type === 'prison' && entry.options && entry.options.experience >= 90000) && (guardBeside(tpl, entry.x, entry.y) || pileGuarded(entry, l))) { guardedTargets.add(entry); if (SEAL_TRACE) SEAL_TRACE['guard shared'] = (SEAL_TRACE['guard shared'] || 0) + 1; return false; }
+		// a free-layout box with a value takes its own fitted guard (preset above), never a neighbour's stack of any strength (the 0.29 of a 20,000 box beside an automaton)
+		if (!(preset && !zoneMeta && entry.type === 'pandoraBox') && entry.__stockGuard === undefined && !(entry.__guardAt && entry.__walled) && !/^creatureGenerator/.test(entry.type) && !(entry.type === 'prison' && entry.options && entry.options.experience >= 90000) && (guardBeside(tpl, entry.x, entry.y) || pileGuarded(entry, l))) { guardedTargets.add(entry); if (SEAL_TRACE) SEAL_TRACE['guard shared'] = (SEAL_TRACE['guard shared'] || 0) + 1; return false; }
 		// A guard watches the approach its target's visitableFrom permits.
 		// Standing on a forbidden side of a front-facing building guards
 		// nothing: the engine will not let a hero come at it that way anyway.
