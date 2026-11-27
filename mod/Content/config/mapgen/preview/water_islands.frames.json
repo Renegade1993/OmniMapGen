@@ -12,7 +12,7 @@
    "water": "islands",
    "preferred": true,
    "caption": "Islands, Medium 72x72: 4 players, 1 level",
-   "drawHash": "f861c1f9f021b1d25ec9a05b7db3a62f9d04d31a975b5d92489cd70515f417f4",
+   "drawHash": "9e925f31f34ee2ca9357842e7082f3ddc7e2ce87f8516ebfe9be4d7ffe8aa1b9",
    "zones": 7,
    "lanes": 1,
    "portals": 0,
@@ -29,13 +29,13 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "39ea49aaff6539c4db068e2fa97f56f212e43fb3caefae691c716a213c5078ab"
+     "contentSha256": "d09b9bb052ab698404f2afea2ff2d4e14cbf5bdef3dddec06681397d6a4f8863"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/water_islands/01",
    "seconds": 3.0,
-   "contentSha256": "0e42a4f6ecf6bdd9ef250c57afec6197f8ab3afe0caa4a00efeb75d71c74eefa",
+   "contentSha256": "772cad5228a270bf8f0241573db201c0f3a68f43681d43464c3e06be9b0b2303",
    "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
   },
   {
@@ -48,9 +48,9 @@
    "water": "islands",
    "preferred": false,
    "caption": "Islands, Large 108x108: 4 players, 1 level",
-   "drawHash": "a9483d1a8a7e3881c24be59b9d12581fb70a01b5dd5e422c7d1829c7b78c8b0c",
+   "drawHash": "63379c75ff4a2ffaa271b91f7ec4312a8c383c7710e4f349c54ccb2cc883b8f1",
    "zones": 10,
-   "lanes": 2,
+   "lanes": 1,
    "portals": 0,
    "starts": 4,
    "towns": 6,
@@ -66,13 +66,13 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "f7463fd9e853704c8551c60a88577820757c747bc5c837e21e9a445bbf06f4f3"
+     "contentSha256": "a828878766b3081e94e70e894e392ed3c910250fd295c5ee61446c0a591a11a5"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/water_islands/02",
    "seconds": 3.0,
-   "contentSha256": "877690f90899c68a04f7e3f8845faa23919305f07777259a6a2d168d3d72c750",
+   "contentSha256": "688b6d53f47e2fb543770d12b0d52d66a8ba18d79913adb9d2f9bcf34c007ce4",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -85,9 +85,9 @@
    "water": "islands",
    "preferred": false,
    "caption": "Islands, Extra Large 144x144: 6 players, 1 level",
-   "drawHash": "2d1681ca7e22e3fed37d40c97dd2f49569597075051ddbc0d8c26ae1b248b5ca",
+   "drawHash": "5d0a0cbd22bec73903b2452032efb3d74af693e2a77c8bdfffbcf996bd76b5d4",
    "zones": 15,
-   "lanes": 2,
+   "lanes": 3,
    "portals": 0,
    "starts": 6,
    "towns": 7,
@@ -103,13 +103,13 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "3d26097b8f03b320fedb267fa9b192681a488a9ed7cdb1574835aca0bdf798e8"
+     "contentSha256": "ccf92801ac8c5c437f6b0c4e000a4b13213bebe38cb9b2b4486f37cae8ae7640"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/water_islands/03",
    "seconds": 3.0,
-   "contentSha256": "339a9c6ba72c90b70ffb8014787cb3c79dddb6655570bb36bed55213250722f3",
+   "contentSha256": "cae8cf08c88b10cf23cc80dd5a38e3eadc0827c224ebcbf082a5bd6a49f3bf5e",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -122,9 +122,9 @@
    "water": "islands",
    "preferred": false,
    "caption": "Islands, Huge 180x180: 8 players, 1 level",
-   "drawHash": "e1cb90a8aac4098b2687592a93c5863da036285178465d87067971d5c89de463",
+   "drawHash": "99af9b395c8e9f50f22093ff9b7303c9a55b94b13753bddb10c74599bdf414de",
    "zones": 19,
-   "lanes": 3,
+   "lanes": 1,
    "portals": 0,
    "starts": 8,
    "towns": 9,
@@ -140,13 +140,13 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "6c473aba24f3cc78901c8fd2440321fa62695948bed953623c5b0a564c915846"
+     "contentSha256": "0a55b2681caba83e406e0e520fb3c4286420a94b93b34f310e7c147d0c6a9675"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/water_islands/04",
    "seconds": 3.0,
-   "contentSha256": "3703dd97aa804b790c55e18345a3c81a42d1e733125617f541525e9ba9a6b5ad",
+   "contentSha256": "16894486dea8c392ffc8d769e690edaad8f5e7baf252288fc25efff15ceecd12",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -159,7 +159,7 @@
    "water": "islands",
    "preferred": false,
    "caption": "Islands, Extra Huge 216x216: 8 players, 1 level",
-   "drawHash": "1892fc96d3b6cd893a4a73856c72940c695c4ea104e49b4546f2896baab755ca",
+   "drawHash": "d35253d29b11103e738008c8f3b7eaf08aecc0d469442c68ecd7f8f047218fa4",
    "zones": 19,
    "lanes": 2,
    "portals": 0,
@@ -177,13 +177,13 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "80452fda47ed21b306d285fad17ae7cfc779ce14655c35354442d07ba586ad48"
+     "contentSha256": "ef0ae62c67f189ede01f49d44ed08a13e24ec90f39c3024130bdd7bbfa63e463"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/water_islands/05",
    "seconds": 3.0,
-   "contentSha256": "119b160c8f87b2c7d969e0c194fd93c26c9eb3ded2160fd119920719ed374b74",
+   "contentSha256": "a0e6197d6bf5c24b093983bda473e2cc5d795c50bdb294660f6ba2184d45a1c5",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -196,8 +196,8 @@
    "water": "islands",
    "preferred": false,
    "caption": "Islands, Giant 252x252: 8 players, 1 level",
-   "drawHash": "cea697e80913e46b59ab9385d0a7dbda5eba0fd141eb362938509780143a0f43",
-   "zones": 19,
+   "drawHash": "25ac02291e7bec32288ed84264af1ce500fa398469e9aeb6e02d574c65bd5351",
+   "zones": 20,
    "lanes": 2,
    "portals": 0,
    "starts": 8,
@@ -214,13 +214,13 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "6b466d4db03c5e166b43c1b8b02a30071e18cea0be338e46848b873e11eb7fb8"
+     "contentSha256": "9c68c7123acd7e8bfb0217c5bf9dc94ddf658067f5713bbe5b3c19c89857a285"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/water_islands/06",
    "seconds": 3.0,
-   "contentSha256": "b593b65819575ad87bcc0c02e9cc363a746d2a7e1345d82f19b4cebdad2ecca8",
+   "contentSha256": "c270b155b8db3e078b18d5112250b89a626cb4cab51e354d161f1f39fcb62861",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -233,9 +233,9 @@
    "water": "islands",
    "preferred": false,
    "caption": "Islands, Small 36x36: 2 players, 1 level",
-   "drawHash": "6ec026fe9436b9bfa64196bd093f044ac55aba242f5cd53cff8e72c7dec7e103",
+   "drawHash": "71570c22f2fd96454dfe48aa9aabfefbd1c99fec2cbbff37d12a3e8e5650a968",
    "zones": 4,
-   "lanes": 1,
+   "lanes": 2,
    "portals": 0,
    "starts": 2,
    "towns": 2,
@@ -250,13 +250,13 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "ec79b67c31fda55ca19dd79b8b64014244ed21b426d2f299a3bcc39566957228"
+     "contentSha256": "19770615cc5aec980c220554d4d358a6a4a9c20df5c11ade7ed62b9a716b10e9"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/water_islands/07",
    "seconds": 3.0,
-   "contentSha256": "360ed1898da227b87d927a48e92644d8900cb350e3b2eebebdd5da4d5a5cc109",
+   "contentSha256": "632b81d6cb82c57a8916ba955958dc8a4699750e7e21cb0ef21a2c89167091d2",
    "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
   },
   {
@@ -269,7 +269,7 @@
    "water": "islands",
    "preferred": false,
    "caption": "Islands, Small 36x36: 4 players, 1 level",
-   "drawHash": "21239c0d6e6aba50d4b7dbc3178e783c8e3f14c7e1935f87463cd7a243adab7e",
+   "drawHash": "1ccaeba6478fcb02eec81a1a0982d05ab43496bd138f352e10410336ba5926d3",
    "zones": 6,
    "lanes": 2,
    "portals": 0,
@@ -286,13 +286,13 @@
     {
      "file": "08-surface.png",
      "label": "Surface",
-     "contentSha256": "1e212a62289d7ffe364d3c064ce134a65719a57264ad16d5cb717fcfade45a73"
+     "contentSha256": "b3e1b2de1f96f038a7bd9529b338263315f8dc77b0c68df98b3f40736aec69d5"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/water_islands/08",
    "seconds": 3.0,
-   "contentSha256": "9bea2838713cb4b70c90cd5244c9d63019a0778338cdb52cf31c9ba3d244e713",
+   "contentSha256": "d366566114768d7a54210a6546d35151fd0a270e1580428cdd8e9c251ac93c2d",
    "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
   },
   {
@@ -305,12 +305,12 @@
    "water": "islands",
    "preferred": false,
    "caption": "Islands, Medium 72x72: 2 players, 2 levels",
-   "drawHash": "2e686779ed1c8eb5931121ba1f10dd3c16fa3c31964b9b9149cf40f5c2a0069b",
-   "zones": 7,
-   "lanes": 4,
+   "drawHash": "0dd7ce8e740cc95bc61856d0ed87d71068fc3d0bca92b9d810c005289a01290e",
+   "zones": 9,
+   "lanes": 6,
    "portals": 0,
    "starts": 2,
-   "towns": 5,
+   "towns": 6,
    "legend": [
     "Player start",
     "Neutral town",
@@ -323,18 +323,18 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "70c430f6a1d68a0afe8d18589d36fa67ab22b5a10095d2a541e1095f09fdc544"
+     "contentSha256": "d7f16d0fb9bf209074916342eb965c194972acb676344afab74a56f2452a64d4"
     },
     {
      "file": "09-underground.png",
      "label": "Underground",
-     "contentSha256": "9e85dcedd9ff3fd5924e70275573f691e9f8f221c26b414cc901d1f55ec4fee3"
+     "contentSha256": "5713ad25e8e395782c141cba88cfebb12a8039609df2ac50ef40f5b91f351a92"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/water_islands/09",
    "seconds": 3.0,
-   "contentSha256": "521fbb4a00c0d76d115b5e5dc4d7cdc90f7ab0c59c9a85aca0ce75961c93b5c0",
+   "contentSha256": "a9b48fabb909709e7060dfacea10c14bbfc051c7ff01f104f134ed8472ecb732",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -347,7 +347,7 @@
    "water": "islands",
    "preferred": false,
    "caption": "Islands, Large 108x108: 6 players, 1 level",
-   "drawHash": "5a75ea9b4beee1d21bcf7a86608e5fb70531010b2aa93b8d1b2872d907f006c4",
+   "drawHash": "04667f0441dc303f5167efde6d9c688ff84bd6d8a13341f099f50e754d5f5a08",
    "zones": 10,
    "lanes": 2,
    "portals": 0,
@@ -364,13 +364,13 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "1278814dc3a0e50bdb144275a360e1b404cbbdd6c5c0c93f5459114a2dae4824"
+     "contentSha256": "62b14d003bcb323918d808291810207bad6768c0ba1dc0a9bd6d125947c68472"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/water_islands/10",
    "seconds": 3.0,
-   "contentSha256": "4a8497f8ecff7b683526f367b68728eb99e223b2011030a64ec80a8a3fb4130a",
+   "contentSha256": "5c56d734c6f69f67ab766226af7772663d5a3bd13e1410cfb0b61b2aa2fafa88",
    "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
   },
   {
@@ -383,15 +383,16 @@
    "water": "islands",
    "preferred": false,
    "caption": "Islands, Extra Large 144x144: 3 players, 2 levels, starts on both levels",
-   "drawHash": "f87951ce5b487bf695409a2a91e0058499db065d6c6008e6a2c82b2d99ecfe00",
-   "zones": 34,
-   "lanes": 36,
-   "portals": 3,
+   "drawHash": "74297a8f9a8b3751db4ea44a985b6a70703815cfc552c3f4e2e28cfb126557ff",
+   "zones": 24,
+   "lanes": 22,
+   "portals": 4,
    "starts": 3,
    "towns": 13,
    "legend": [
     "Player start",
     "Neutral town",
+    "Passage",
     "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
@@ -401,19 +402,19 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "3de3ea7912a701f687465f7b5a6246783c2fd80279d4a481357846813c599bed"
+     "contentSha256": "a20a86cbf6ef1a6b20c630e671763db7c6f891174d65fff1b643922bbd86853b"
     },
     {
      "file": "11-underground.png",
      "label": "Underground",
-     "contentSha256": "6f17097e71a0bf31cd92a78dccc8afbc6e25fda801735e91f754106d8da99cef"
+     "contentSha256": "53fcdc3f33bc4d9bbe7c20183e62b06265021282784c69e4a7afd3fa35056b58"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/water_islands/11",
    "seconds": 3.0,
-   "contentSha256": "9a2fb32e5768697c85e2537f8885cfc087195f063d7c116dfa6c2fd8580f44f4",
-   "legendSha256": "51a5626fd3859cdfed0f19f778a6db9404d2216696a0b84994ecdcdee9b76c16"
+   "contentSha256": "45fada6153c271def5932a2e605c4bb4b687453706abd68f2f66cb44dbdb074d",
+   "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   },
   {
    "order": 12,
@@ -425,8 +426,8 @@
    "water": "islands",
    "preferred": false,
    "caption": "Islands, Huge 180x180: 4 players, 1 level",
-   "drawHash": "b993c04888cba8e79b1241d1699f06aa2a528ec739ce94e93e83c7bd5b598cdb",
-   "zones": 21,
+   "drawHash": "9ddf6a62d76f4814adacfff9595055a4cf3c97213ad01ef42f024152f4855f0e",
+   "zones": 20,
    "lanes": 6,
    "portals": 0,
    "starts": 4,
@@ -443,13 +444,13 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "7960b57610ef9409f02bb222bb7c540ee53b96b5ea97ef3e7f1e757ca870265a"
+     "contentSha256": "b76f1f16a950f4aaf3d3638ad1f080f841877ab814f463514ff2eff2cb06606c"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/water_islands/12",
    "seconds": 3.0,
-   "contentSha256": "de24d8745e85e9afc06b5024787a67f6df2cd52aa768c87a19cfcd2d9a7d5a4e",
+   "contentSha256": "bd66fafbd913eff7a4b8c67988352c9617999014f6cc232710b1324047361bd9",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   }
  ],

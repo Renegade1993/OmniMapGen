@@ -12,7 +12,7 @@
    "water": null,
    "preferred": true,
    "caption": "Classic, Large 108x108: 4 players, 1 level",
-   "drawHash": "52eaae2f94c5ce5873180cef971655633a924e8fd6a2cd913086efd39121b0fe",
+   "drawHash": "2beeb894185bdb25a2f49f1b6d5af03dff3841f6b30c6904671125881cf75929",
    "zones": 12,
    "lanes": 4,
    "portals": 0,
@@ -29,13 +29,13 @@
     {
      "file": "01-surface.png",
      "label": "Surface",
-     "contentSha256": "03c21a885226ba4a70c0182a06cff5b17317bcd685566b04cd551ed0f4dc6ec3"
+     "contentSha256": "6a4a91c94d584459f2778e3295b7b3e25fbc327b7f14dac6fd4bfb039f7cd72b"
     }
    ],
    "legendFile": "01-legend.png",
    "path": "mapgen/preview/classic/01",
    "seconds": 3.0,
-   "contentSha256": "b65c866eb9c0861f42d74f353f22953337331a9dd86b488952e648415cd2b2d7",
+   "contentSha256": "abef66f719229aab48f9c8cbf6d1cf6a17627452dbd82b9eb528b99204e57a2d",
    "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
@@ -48,17 +48,16 @@
    "water": null,
    "preferred": true,
    "caption": "Classic, Extra Large 144x144: 6 players, 1 level",
-   "drawHash": "6b046e42bc724bae0adb03bb670408390f30ca74969ab5310a0a7872ccbffd59",
+   "drawHash": "c92473885e6c9fb36e1a423cd36ce6449cae9a30234015d54756457d291b1543",
    "zones": 20,
-   "lanes": 15,
-   "portals": 6,
+   "lanes": 11,
+   "portals": 0,
    "starts": 6,
    "towns": 12,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
@@ -66,14 +65,14 @@
     {
      "file": "02-surface.png",
      "label": "Surface",
-     "contentSha256": "16e2ddd96d0a626b3f72689082bcc2a722086b061a63b0d2ab130912adc6c1ef"
+     "contentSha256": "4317d7b61a7e9ad1bccfa7e058fd32fed415e9a4bddb645793646db186af8682"
     }
    ],
    "legendFile": "02-legend.png",
    "path": "mapgen/preview/classic/02",
    "seconds": 3.0,
-   "contentSha256": "eae4fc2fec07ad84e77196699509114b7449ed52f5486d109f3a2f82053ddf41",
-   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
+   "contentSha256": "ce511ab382005fc32fb8cadff5af4c634cc2e8276924adc79611a34cb5c6036f",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 3,
@@ -85,17 +84,16 @@
    "water": null,
    "preferred": true,
    "caption": "Classic, Huge 180x180: 8 players, 1 level",
-   "drawHash": "0f1c1ffda047edfd871eab61ba0f5ce7890bb541862c77b8702389c937f586fa",
+   "drawHash": "97121f18eb04fba01dc3abd26d14e1f1f5ff70be5a0c68caad0d21cac566a319",
    "zones": 30,
-   "lanes": 23,
-   "portals": 4,
+   "lanes": 15,
+   "portals": 0,
    "starts": 8,
    "towns": 14,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
@@ -103,14 +101,14 @@
     {
      "file": "03-surface.png",
      "label": "Surface",
-     "contentSha256": "07e1e722cce5fcb87f0ed2b331bae17885289f630f023d6b9759b98ca9f31a50"
+     "contentSha256": "319628248f04abb23f9fef9313088d320c4e74bc5e017c2009f5415534023bb3"
     }
    ],
    "legendFile": "03-legend.png",
    "path": "mapgen/preview/classic/03",
    "seconds": 3.0,
-   "contentSha256": "1fe0a1b3ec5753593ac96debcbce5c637bcba12c187f11feccf7a963821dcde0",
-   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
+   "contentSha256": "568cf785feb45d84c490d3984ac309d62cdf857d78df30def55f65d783cb699d",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 4,
@@ -122,17 +120,16 @@
    "water": null,
    "preferred": true,
    "caption": "Classic, Extra Huge 216x216: 8 players, 1 level",
-   "drawHash": "984775d9a757006b33e06fa6c07cdd82505fc6a2f4b33f37cae0dcbe8759799b",
-   "zones": 41,
-   "lanes": 25,
-   "portals": 4,
+   "drawHash": "51ad81a314a5e41210adec356ea641b5d5227c162a69b0836d25de881616b7c9",
+   "zones": 42,
+   "lanes": 13,
+   "portals": 0,
    "starts": 8,
-   "towns": 17,
+   "towns": 18,
    "legend": [
     "Player start",
     "Neutral town",
     "Passage",
-    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
@@ -140,14 +137,14 @@
     {
      "file": "04-surface.png",
      "label": "Surface",
-     "contentSha256": "017cde00d18743c345691020a1d314c2ca3bcc98bae7eec87252bcfa4aba1bb9"
+     "contentSha256": "d65341c2a949744d1939f03c87767e82c5e634e8aac48a7b77b1aa93f04fe45d"
     }
    ],
    "legendFile": "04-legend.png",
    "path": "mapgen/preview/classic/04",
    "seconds": 3.0,
-   "contentSha256": "1d0bc612b5bf37637aaa8b2a8493ad00d6bc54538dd6ecdde0cdaac79f244719",
-   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
+   "contentSha256": "47905ed9333c59cb917081cbbcddd73ab0ec956eb990ee490f792f06feba5fd5",
+   "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
    "order": 5,
@@ -159,17 +156,15 @@
    "water": null,
    "preferred": true,
    "caption": "Classic, Giant 252x252: 8 players, 1 level",
-   "drawHash": "4ea950c6237f7c0f49a076c1b03943f03583a06c102d3ba8f24afa42c537e9f4",
-   "zones": 53,
-   "lanes": 38,
-   "portals": 8,
+   "drawHash": "7cb31da31a6693bd172c2a9ec64b05560a7902c1f1df5ac26d67ab681a068460",
+   "zones": 57,
+   "lanes": 41,
+   "portals": 0,
    "starts": 8,
    "towns": 27,
    "legend": [
     "Player start",
     "Neutral town",
-    "Passage",
-    "Portal pair (same number)",
     "Start zone",
     "Treasure zone"
    ],
@@ -177,14 +172,14 @@
     {
      "file": "05-surface.png",
      "label": "Surface",
-     "contentSha256": "f23ce776b11962c7ff38da28d4f592e71a7ef79e6abf0b951704dda5f47e6dd3"
+     "contentSha256": "34c3009f8dfdda152c8f906a8294fc8536fa62dcd0aa28cd03a89b6389af44d9"
     }
    ],
    "legendFile": "05-legend.png",
    "path": "mapgen/preview/classic/05",
    "seconds": 3.0,
-   "contentSha256": "b1e20942baf149efb00c59b905eb39e20e19f80d0dea82800463cc11959bc04f",
-   "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
+   "contentSha256": "c601f76715872a0fe92b068bc1988f101a52b562c1345db756668b1655b953d1",
+   "legendSha256": "d5c61aa7e59d8777a2c911e0b83dcafe93c46ff934b0225b7a54ace3f4774b0c"
   },
   {
    "order": 6,
@@ -196,9 +191,9 @@
    "water": null,
    "preferred": true,
    "caption": "Classic, Small 36x36: 2 players, 1 level",
-   "drawHash": "15a94a23627dc8e1607e7a9c625f81f964e72c04eb50c42a1a5ea441e6cc7b7b",
+   "drawHash": "4542ed1f7acbeb3d4325e78537b64c68bc85716fd04918ea0c02220ea20a8462",
    "zones": 4,
-   "lanes": 2,
+   "lanes": 1,
    "portals": 0,
    "starts": 2,
    "towns": 2,
@@ -212,13 +207,13 @@
     {
      "file": "06-surface.png",
      "label": "Surface",
-     "contentSha256": "2f4c71fd087e981702db983491ed3af641bf1e34533cc8d28eda6950b4a9e775"
+     "contentSha256": "26e77bd5ce1f6ae0ee1ec674ca75b083ffeff9fb2d8d02c46fc56b55c0b5ce9a"
     }
    ],
    "legendFile": "06-legend.png",
    "path": "mapgen/preview/classic/06",
    "seconds": 3.0,
-   "contentSha256": "12072e4d8bce4ac56ffc09526bfa70ec5da0ddaefbeeb4482895f4cb6067a95f",
+   "contentSha256": "645a8f0ca5d163e53b926124f60621ed28767286cc15899e417f9aa946dc3ca8",
    "legendSha256": "272b1deb4ced4e4eb99d7e666422f4508062622bfe276e14bd6b2e8279b69831"
   },
   {
@@ -231,9 +226,9 @@
    "water": null,
    "preferred": true,
    "caption": "Classic, Medium 72x72: 4 players, 1 level",
-   "drawHash": "bdb5b6560baf0dcb7e64dc39143593617e565278d3105ece7469f50520c56b5b",
+   "drawHash": "ad1922b93e2919c8671be6a5d89645ad7ee8d773c4fafd150fa583d7ff871511",
    "zones": 6,
-   "lanes": 1,
+   "lanes": 2,
    "portals": 0,
    "starts": 4,
    "towns": 5,
@@ -248,13 +243,13 @@
     {
      "file": "07-surface.png",
      "label": "Surface",
-     "contentSha256": "7971f2d8ae767628fd4a24e93ceea9f4e5a19ebaecc8ea60a11ebdc3c43dd3d8"
+     "contentSha256": "73f70de74a549f3da4ad42863a914b1d1b71a69ab789f1b2de1671a02daad95f"
     }
    ],
    "legendFile": "07-legend.png",
    "path": "mapgen/preview/classic/07",
    "seconds": 3.0,
-   "contentSha256": "59ef5477e889e37fc8cafe76827855557764074609cbb6dc7430b31e4071e741",
+   "contentSha256": "5501b3496a1b87ad5d3c522f19d59b0bcaad8a0122c2af1f86cd662540ca89c2",
    "legendSha256": "6dd1535b89261815bab4571e0687cf3b7c6bb968c4f067b9bb30cf3acef7b3d1"
   },
   {
@@ -267,7 +262,7 @@
    "water": null,
    "preferred": false,
    "caption": "Classic, Small 36x36: 2 players, 2 levels, starts underground",
-   "drawHash": "095d85543770c947b2141e4f9bb4089bb9804c69871dec2dec6856c959106f4a",
+   "drawHash": "021f281ae7523d3084fc497d9765c9df9f7a59bc887b44387d259c8b184b9411",
    "zones": 6,
    "lanes": 4,
    "portals": 0,
@@ -288,13 +283,13 @@
     {
      "file": "08-underground.png",
      "label": "Underground",
-     "contentSha256": "712bc728940ee7071dda3cf7940754bdd638d4835584fd1fca6efcfaa17a59d5"
+     "contentSha256": "491b992b6f313f176d01f94160aaf73d5e597c5db78431723f0954b76f264e40"
     }
    ],
    "legendFile": "08-legend.png",
    "path": "mapgen/preview/classic/08",
    "seconds": 3.0,
-   "contentSha256": "5d1c9e93b2d73e54d7b69aa8de934965f6ac26aae3d3c598b6b709217b922a3d",
+   "contentSha256": "244847233c7e4a5a5aeb611c6a4680299e993849b14fd621d6e37b7c02b55132",
    "legendSha256": "272b1deb4ced4e4eb99d7e666422f4508062622bfe276e14bd6b2e8279b69831"
   },
   {
@@ -307,15 +302,16 @@
    "water": "coastal",
    "preferred": false,
    "caption": "Classic, Medium 72x72: 6 players, 1 level, Coastal water",
-   "drawHash": "f091cf97ba53c27cfeb0e424f5cd7351a1881d72139a1165632177ff800f7809",
+   "drawHash": "26b36b02cd24f38fa0dfd9d2f5eb144256012bbb63abed3ba297e3a6a319c2c0",
    "zones": 8,
-   "lanes": 7,
-   "portals": 0,
+   "lanes": 8,
+   "portals": 1,
    "starts": 6,
    "towns": 6,
    "legend": [
     "Player start",
     "Passage",
+    "Portal pair (same number)",
     "Start zone",
     "Treasure zone",
     "Water"
@@ -324,14 +320,14 @@
     {
      "file": "09-surface.png",
      "label": "Surface",
-     "contentSha256": "ca07d96d2dd3f65196dc7b249bcf9870dac37377f1768877529c802381431d05"
+     "contentSha256": "ba017970f505cf47a6e0841b2947ec34921c70cef582cf48a2d10f28304df252"
     }
    ],
    "legendFile": "09-legend.png",
    "path": "mapgen/preview/classic/09",
    "seconds": 3.0,
-   "contentSha256": "ceedb58503c125cc8e2ec117bef51e7f3e864ae29b6b7556f54a8934ade30862",
-   "legendSha256": "27a7ff881045b93bbcb9efd2faa72f5764f14b5539bceaf0c8a64300ceb64497"
+   "contentSha256": "ebc6b5d0ef1643e37ca231b4cc297e613b6bec039f554fae96fc0e5cff9e467b",
+   "legendSha256": "60a5e4ca26db61944709064bc54c42edd5e8ee14cf47b2b5593cec8abd2a5f2a"
   },
   {
    "order": 10,
@@ -343,12 +339,12 @@
    "water": null,
    "preferred": false,
    "caption": "Classic, Large 108x108: 3 players, 2 levels, starts on both levels",
-   "drawHash": "762b1a21ef2abead1cadf3ed39bcc5817ed73869a5e318b0d387aa390569758f",
-   "zones": 16,
-   "lanes": 12,
-   "portals": 1,
+   "drawHash": "6c28a2ac99380ad6ecbe3bb94ccca334368c835e4e32202c2c6aacdc5eff4b43",
+   "zones": 20,
+   "lanes": 17,
+   "portals": 2,
    "starts": 3,
-   "towns": 13,
+   "towns": 15,
    "legend": [
     "Player start",
     "Neutral town",
@@ -361,18 +357,18 @@
     {
      "file": "10-surface.png",
      "label": "Surface",
-     "contentSha256": "b63f9a990006b780ff1788fbf89688a68016c82d3b78baaa30f0e858abdfaa0a"
+     "contentSha256": "d2e88387de56f3ff4d304fe253edb00444a1518ee1e3175600104574522203ce"
     },
     {
      "file": "10-underground.png",
      "label": "Underground",
-     "contentSha256": "67703dc504b2511a7da79eed67bf26f144c5d843daefcc27b30d385a7fd00782"
+     "contentSha256": "233373583ca1adb06e93cad60a1bb27a46b5d08561d7e5dc36d4b8a2311c4a05"
     }
    ],
    "legendFile": "10-legend.png",
    "path": "mapgen/preview/classic/10",
    "seconds": 3.0,
-   "contentSha256": "0d9020d3167f4f39ac5a6ff83ffa965371f8a51fbe6286c44fda67f762246b75",
+   "contentSha256": "64abc51ceb056df655653fe6afac43251bede5602545a4680e3f93c005061be4",
    "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
@@ -385,9 +381,9 @@
    "water": "islands",
    "preferred": false,
    "caption": "Classic, Extra Large 144x144: 8 players, 1 level, Islands water",
-   "drawHash": "14afc8ca0e5109d9d7bbd6728a7ef4edbfe89d1e644c09b9df40b84f3e2bf424",
-   "zones": 15,
-   "lanes": 1,
+   "drawHash": "73685be547cc203d48944846a0574dd92a102ebbed4e78cf01f74f990b032a42",
+   "zones": 16,
+   "lanes": 3,
    "portals": 0,
    "starts": 8,
    "towns": 9,
@@ -403,13 +399,13 @@
     {
      "file": "11-surface.png",
      "label": "Surface",
-     "contentSha256": "11c38fa72ae05eb2feb5377ad73a5b5a82c2b7d06c9f0bbc125ce12b623c6012"
+     "contentSha256": "c6c29083634c79a925e24e635d1d3592d6a0b031c753c0ac1052dce15cf5f5dc"
     }
    ],
    "legendFile": "11-legend.png",
    "path": "mapgen/preview/classic/11",
    "seconds": 3.0,
-   "contentSha256": "88c7eaf6a601e7cbd1801976fbb49f08a7cce9c35abf56ca3ac20d11483ea082",
+   "contentSha256": "5d9beb4d780fac69308c16efa8d851d490a43d9d0eae9762f6d8dadac7649e1c",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -422,10 +418,10 @@
    "water": null,
    "preferred": false,
    "caption": "Classic, Huge 180x180: 5 players, 2 levels, starts on both levels",
-   "drawHash": "3bd823e941c923875804b94cd1c7a43d37831575e8802fb1df234be5dac19998",
-   "zones": 29,
-   "lanes": 33,
-   "portals": 7,
+   "drawHash": "a8b1297bdc6779d712ff39bdf2eefbae4cf25cc5a43bf5d15e4cc0f85f15cc39",
+   "zones": 27,
+   "lanes": 28,
+   "portals": 3,
    "starts": 5,
    "towns": 21,
    "legend": [
@@ -440,18 +436,18 @@
     {
      "file": "12-surface.png",
      "label": "Surface",
-     "contentSha256": "9cf32620710d4e89461440e4def41f8e43f760e77866ff6f83b85b3fd6ee3343"
+     "contentSha256": "b7aae589c22f47e97b44b2aa3a217be046deb183be763fadc7249ba6f3bfbb61"
     },
     {
      "file": "12-underground.png",
      "label": "Underground",
-     "contentSha256": "a991be91691312dfa16122209d68d2a2ecb6948f5b1860b58ec1aee631e66405"
+     "contentSha256": "aba4ed0152a5358882cde54e4b3efa07db2169a7258ce6b0de7622415d184e94"
     }
    ],
    "legendFile": "12-legend.png",
    "path": "mapgen/preview/classic/12",
    "seconds": 3.0,
-   "contentSha256": "2f2c0d6d8d6ca1b7a4ab495c5e721c31582ce25b2b138df8a81cc43c538b7d5e",
+   "contentSha256": "aa9708c11e7a82a3a7dcac09d82bf72f3ca86a300ebe4bb86c20141539180be1",
    "legendSha256": "03fa83287c96c1ba7d89ba413eae2e1d32cb2beaa9e135fd0da2e7a6d0781ee6"
   },
   {
@@ -464,9 +460,9 @@
    "water": "archipelago",
    "preferred": false,
    "caption": "Classic, Giant 252x252: 4 players, 1 level, Archipelago water",
-   "drawHash": "f87d0993b57d639fbffb607777f2b8cdc8914da0f3978beb9b114e2f53c50f6e",
-   "zones": 37,
-   "lanes": 11,
+   "drawHash": "59e80912445cfc44f5aa4684d7b8eac23cbdfde37c81a6071de6cf799ef70f3f",
+   "zones": 38,
+   "lanes": 10,
    "portals": 0,
    "starts": 4,
    "towns": 18,
@@ -482,13 +478,13 @@
     {
      "file": "13-surface.png",
      "label": "Surface",
-     "contentSha256": "8b551e7eb4c60eaf76c2c56125871c969b0b024a08a7548a9e88e6c04b366a31"
+     "contentSha256": "c653a8e9398a02dc1c00467fe946bcf5618f8ccaec937d91f143ce6c414998a5"
     }
    ],
    "legendFile": "13-legend.png",
    "path": "mapgen/preview/classic/13",
    "seconds": 3.0,
-   "contentSha256": "1d820f05cbc3bc28ea0397ce6a8de2c21523164268927ee3381e7a12ca961998",
+   "contentSha256": "f5d6776259d9bf11bdc1fa5ed3c5394e432dc3231e7afcaf7365760401774c6c",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -501,9 +497,9 @@
    "water": "continental",
    "preferred": false,
    "caption": "Classic, Medium 72x72: 2 players, 1 level, Continental water",
-   "drawHash": "3b6d47a87beafa10c434cfb374a81841041e10c9cfc96563ebc5ce97ba5c9697",
+   "drawHash": "1dc99d4bab1a01ddf42be22c227e9ee87df92ca85928f6c1ce8cfa838cda8fb7",
    "zones": 6,
-   "lanes": 4,
+   "lanes": 3,
    "portals": 0,
    "starts": 2,
    "towns": 4,
@@ -519,13 +515,13 @@
     {
      "file": "14-surface.png",
      "label": "Surface",
-     "contentSha256": "84538a043109a7b715053756d11f5ad192f50233fd285f87dc6e62cd890e6a11"
+     "contentSha256": "8921a7b4c6902eba59cd912adf73c48f1b421bceb9e026d8bb3b28470e0d6054"
     }
    ],
    "legendFile": "14-legend.png",
    "path": "mapgen/preview/classic/14",
    "seconds": 3.0,
-   "contentSha256": "8b93491125e7f27391f2d37e9221d41b424f82277ddf0e38d99275d6250ff663",
+   "contentSha256": "b14d9196b6316cd00b6d2e50249e71cd6290f4b9c5a0686fa42d8c2942befddd",
    "legendSha256": "65a29c2219bac57dbcae9ca063c4220273a64d5791e1aee5f6c486583db1db72"
   },
   {
@@ -538,12 +534,12 @@
    "water": "mediterranean",
    "preferred": false,
    "caption": "Classic, Large 108x108: 4 players, 1 level, Mediterranean water",
-   "drawHash": "6453c0fed4506460355ffbd0d94da964135ccb5df39f4c17aa7ab358dad75285",
-   "zones": 8,
-   "lanes": 3,
+   "drawHash": "f88150356338ad9f082344f461f2498ca7320c53a3d6115375f38dfe1b779d63",
+   "zones": 7,
+   "lanes": 5,
    "portals": 1,
    "starts": 4,
-   "towns": 8,
+   "towns": 7,
    "legend": [
     "Player start",
     "Neutral town",
@@ -557,13 +553,13 @@
     {
      "file": "15-surface.png",
      "label": "Surface",
-     "contentSha256": "262f58c99495ed1f3526c2fa505028dbd7119d1e6addcedc7fe6209a8e7ea5ca"
+     "contentSha256": "3bb00b495cd8c20e4f1260bc7d2db2188cf720d8c42455d33f4f4a675e0a4db6"
     }
    ],
    "legendFile": "15-legend.png",
    "path": "mapgen/preview/classic/15",
    "seconds": 3.0,
-   "contentSha256": "397bcd6981e94806044c4ab4ca6afd5f81d7efd2e4b212af7b05bf713e58a45e",
+   "contentSha256": "90693e0ffc9e4f3565e374cca223e0c2bf8e2026fa9626d4301266fedf383c1c",
    "legendSha256": "47f4b58277234f863325d47b4c5ad70a341e81f8b7433c1ca27f01c34f3ac082"
   }
  ],
