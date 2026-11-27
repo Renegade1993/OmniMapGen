@@ -17,7 +17,9 @@ const { genEnv, testTmp } = require('./_vcmi');
 const N8 = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 0], [-1, 1]];
 const NOS = ['--bio.zoneCells', '1500', '--bio.interconnectPortal', '0.8', '--bio.guardDensity', '0.5', '--bio.highLootRatio', '0.1', '--bio.artifactDensity', '0.003',
 	'--bio.dwellingDensity', '1.2', '--bio.guardGradient', '1'];
-const CASES = [['tb144x2 s7402', '7402', []], ['no144x2 s8307', '8307', NOS], ['no144x2 s8312', '8312', NOS], ['no144x2 s8302', '8302', NOS]];
+const CASES = [['tb144x2 s7402', '7402', []], ['no144x2 s8307', '8307', NOS], ['no144x2 s8312', '8312', NOS], ['no144x2 s8302', '8302', NOS], ['no144x2 s8303', '8303', NOS]];
+// S370 (2026-11-22): s8303 is the case the late pass left a seat boxed in: a mine's stack on the seat's only way out was kept, and red walked 170 tiles against blue's 1,990 (ratio 11.71,
+// after the Pandora count change moved the stream). A seat under a quarter of the best start's ring-free ground now loses such a stack (VMAPGEN_START_MINE_CUT=0 keeps it); the case reads 1.29.
 // S255 (2026-11-15, rc-1116): S249 and S253 shifted the random stream and s8302 reads 1.26 with the passes off (8.09 before): the control seeds were re-seeded. Of no144x2 seeds 8303 to 8322
 // probed with the passes off (.tmp\m1113\ov\pw_*_off.txt) two read over 2.2: s8303 2.23 (on: 1.46, so the control) and s8318 2.46 (on: 2.24, over the limit with the passes on too, so no control and no case: left to the lead);
 // the rest read 1.01 to 2.00. s8303 sits close to the line
